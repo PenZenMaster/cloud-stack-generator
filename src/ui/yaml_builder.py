@@ -426,7 +426,7 @@ class YAMLBuilderWidget(QWidget):
             )
             return
 
-        if "maps.google.com" not in embed_code:
+        if "google.com/maps" not in embed_code:
             QMessageBox.warning(
                 self, "Invalid Source", "The embed code must be from Google Maps."
             )
