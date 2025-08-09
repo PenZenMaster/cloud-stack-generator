@@ -1,0 +1,33 @@
+# .prettierignore v1.0.0
+# Exclude Python files from Prettier formatting
+# Black formatter will handle Python code style
+
+# Python files
+*.py
+*.pyx
+*.pyi
+
+# Python directories
+__pycache__/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Python virtual environments
+venv/
+env/
+ENV/
+
+# Configuration files that should use specific formatters
+pytest.ini
+setup.cfg
+tox.ini
+requirements*.txt
+
+# Output directories
+output/
+*.log
