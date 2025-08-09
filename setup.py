@@ -68,7 +68,7 @@ testpaths = tests
 python_files = test_*.py
 python_classes = Test*
 python_functions = test_*
-addopts = 
+addopts =
     --strict-markers
     --strict-config
     --verbose
@@ -78,7 +78,7 @@ addopts =
     --cov-fail-under=90
 markers =
     unit: Unit tests
-    integration: Integration tests  
+    integration: Integration tests
     ui: UI tests requiring PyQt6
     aws: Tests requiring AWS credentials
     slow: Slow running tests
@@ -96,19 +96,19 @@ filterwarnings =
       - id: check-yaml
       - id: check-added-large-files
       - id: check-merge-conflict
-      
+
   - repo: https://github.com/psf/black
     rev: 22.10.0
     hooks:
       - id: black
         language_version: python3
-        
+
   - repo: https://github.com/pycqa/flake8
     rev: 5.0.4
     hooks:
       - id: flake8
         args: [--max-line-length=88, --extend-ignore=E203]
-        
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.991
     hooks:

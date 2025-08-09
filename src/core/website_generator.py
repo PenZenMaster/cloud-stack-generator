@@ -161,8 +161,8 @@ class WebsiteGenerator:
 
         if page.hero_image:
             hero_content += f"""
-                        <img src="{page.hero_image}" 
-                             alt="{page.title} hero image" 
+                        <img src="{page.hero_image}"
+                             alt="{page.title} hero image"
                              class="img-fluid">"""
 
         hero_content += """
@@ -181,41 +181,41 @@ class WebsiteGenerator:
         <section class="main-content container">
             <div class="row">
                 <div class="col-12">
-                    <p>Welcome to {business_name}, your trusted provider of 
-                    <strong>{primary_keyword}</strong>. We specialize in 
-                    delivering exceptional {primary_keyword} to help you 
+                    <p>Welcome to {business_name}, your trusted provider of
+                    <strong>{primary_keyword}</strong>. We specialize in
+                    delivering exceptional {primary_keyword} to help you
                     achieve your goals.</p>
-                    
+
                     <h2>About Our {primary_keyword.title()}</h2>
-                    <p>At {business_name}, we understand that quality 
-                    <strong>{primary_keyword}</strong> make a difference. 
-                    Our team of experienced professionals is dedicated to 
+                    <p>At {business_name}, we understand that quality
+                    <strong>{primary_keyword}</strong> make a difference.
+                    Our team of experienced professionals is dedicated to
                     providing solutions that exceed expectations.</p>
-                    
+
                     <h3>Why Choose Our {primary_keyword.title()}?</h3>
-                    <p>Our commitment to excellence in 
-                    <strong>{primary_keyword}</strong> sets us apart from 
-                    the competition. We combine industry expertise with 
+                    <p>Our commitment to excellence in
+                    <strong>{primary_keyword}</strong> sets us apart from
+                    the competition. We combine industry expertise with
                     personalized service to deliver results that matter.</p>
-                    
-                    <p>Whether you're looking for comprehensive 
-                    {primary_keyword} or specific solutions, {business_name} 
-                    has the experience and knowledge to help you succeed. 
-                    Our <strong>{primary_keyword}</strong> are designed to 
+
+                    <p>Whether you're looking for comprehensive
+                    {primary_keyword} or specific solutions, {business_name}
+                    has the experience and knowledge to help you succeed.
+                    Our <strong>{primary_keyword}</strong> are designed to
                     meet your unique needs and budget requirements.</p>
-                    
+
                     <h3>Our Approach to {primary_keyword.title()}</h3>
-                    <p>We believe that effective 
-                    <strong>{primary_keyword}</strong> require careful 
-                    planning and execution. That's why we work closely with 
-                    each client to understand their specific requirements 
-                    and develop customized solutions that deliver measurable 
+                    <p>We believe that effective
+                    <strong>{primary_keyword}</strong> require careful
+                    planning and execution. That's why we work closely with
+                    each client to understand their specific requirements
+                    and develop customized solutions that deliver measurable
                     results.</p>
-                    
-                    <p>Contact {business_name} today to learn more about our 
-                    <strong>{primary_keyword}</strong> and how we can help 
-                    you achieve your objectives. Our team is ready to 
-                    discuss your needs and provide a personalized proposal 
+
+                    <p>Contact {business_name} today to learn more about our
+                    <strong>{primary_keyword}</strong> and how we can help
+                    you achieve your objectives. Our team is ready to
+                    discuss your needs and provide a personalized proposal
                     for your consideration.</p>
                 </div>
             </div>
@@ -276,10 +276,10 @@ Sitemap: {base_url.rstrip('/')}/sitemap.xml
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page_title }}</title>
     <meta name="description" content="{{ meta_description }}">
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Custom Styles -->
     <style>
         :root {
@@ -294,21 +294,21 @@ Sitemap: {base_url.rstrip('/')}/sitemap.xml
             --secondary-color: #6c757d;
             {% endif %}
         }
-        
+
         .navbar-brand { color: var(--primary-color) !important; }
-        .btn-primary { 
-            background-color: var(--primary-color); 
-            border-color: var(--primary-color); 
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
         }
         .hero { background-color: #f8f9fa; padding: 60px 0; }
-        .footer { 
-            background-color: #343a40; 
-            color: white; 
-            padding: 40px 0; 
-            margin-top: 60px; 
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 40px 0;
+            margin-top: 60px;
         }
     </style>
-    
+
     <!-- Schema.org Markup -->
     <script type="application/ld+json">
     {
@@ -326,7 +326,7 @@ Sitemap: {base_url.rstrip('/')}/sitemap.xml
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="index.html">{{ client.business_name }}</a>
-            <button class="navbar-toggler" type="button" 
+            <button class="navbar-toggler" type="button"
                     data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -343,12 +343,12 @@ Sitemap: {base_url.rstrip('/')}/sitemap.xml
             </div>
         </div>
     </nav>
-    
+
     <!-- Main Content -->
     <main>
         {{ page_content | safe }}
     </main>
-    
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -370,19 +370,19 @@ Sitemap: {base_url.rstrip('/')}/sitemap.xml
                     {% if client.social_media %}
                     <div class="social-links">
                         {% if client.social_media.facebook %}
-                        <a href="{{ client.social_media.facebook }}" 
+                        <a href="{{ client.social_media.facebook }}"
                            class="text-light me-3">Facebook</a>
                         {% endif %}
                         {% if client.social_media.twitter %}
-                        <a href="{{ client.social_media.twitter }}" 
+                        <a href="{{ client.social_media.twitter }}"
                            class="text-light me-3">Twitter</a>
                         {% endif %}
                         {% if client.social_media.linkedin %}
-                        <a href="{{ client.social_media.linkedin }}" 
+                        <a href="{{ client.social_media.linkedin }}"
                            class="text-light me-3">LinkedIn</a>
                         {% endif %}
                         {% if client.social_media.instagram %}
-                        <a href="{{ client.social_media.instagram }}" 
+                        <a href="{{ client.social_media.instagram }}"
                            class="text-light me-3">Instagram</a>
                         {% endif %}
                     </div>
@@ -391,7 +391,7 @@ Sitemap: {base_url.rstrip('/')}/sitemap.xml
             </div>
         </div>
     </footer>
-    
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
