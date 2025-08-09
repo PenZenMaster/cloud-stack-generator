@@ -1,14 +1,16 @@
 """
-Refactored YAML Builder Widget for SEO Authority Website Generator
-Integrates with new nested config structure and ConfigParser
+Filename: src/ui/yaml_builder.py
+Path: E:\\projects\\cloud-stack-generator\\src\\ui\\yaml_builder.py
+Description: Enhanced YAML Builder Widget with GBP integration and city selection
 
-Version: 2.0.0
+Version: 2.1.0
 Date: 2025-08-09
 Author: Cloud Stack Generator Team
 """
 
 import sys
 from pathlib import Path
+from typing import Dict, Any, Optional
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -25,21 +27,22 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QScrollArea,
     QTabWidget,
+    QComboBox,
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 import yaml
+import tempfile
+import webbrowser
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-
-from src.core.config_parser import ConfigParser, ConfigValidationError
-from src.ui.dialogs.city_embed_dialog import CityEmbedDialog
+# Import our modules - fixed import paths
+from core.config_parser import ConfigParser, ConfigValidationError
+from ui.dialogs.city_embed_dialog import CityEmbedDialog
 
 
 class YAMLBuilderWidget(QWidget):
     """
-    Refactored YAML builder that creates nested config structure
+    Enhanced YAML builder with GBP integration and city selection
     Compatible with ConfigParser and WebsiteGenerator
     """
 
@@ -58,6 +61,7 @@ class YAMLBuilderWidget(QWidget):
         self.branding_inputs = {}
         self.page_inputs = {}
         self.service_inputs = {}
+        self.gbp_inputs = {}
 
         self.setup_ui()
 
@@ -73,6 +77,7 @@ class YAMLBuilderWidget(QWidget):
         # Add form sections
         scroll_layout.addWidget(self.create_business_section())
         scroll_layout.addWidget(self.create_contact_section())
+        scroll_layout.addWidget(self.create_gbp_section())  # New GBP section
         scroll_layout.addWidget(self.create_social_section())
         scroll_layout.addWidget(self.create_branding_section())
         scroll_layout.addWidget(self.create_pages_section())
@@ -152,6 +157,39 @@ class YAMLBuilderWidget(QWidget):
 
             self.contact_inputs[field_key] = widget
             row += 1
+
+        group.setLayout(layout)
+        return group
+
+    def create_gbp_section(self) -> QGroupBox:
+        """Create Google Business Profile section"""
+        group = QGroupBox("Google Business Profile (GBP)")
+        layout = QVBoxLayout()
+
+        # Instructions
+        instructions = QLabel(
+            "Add your Google Business Profile map embed for the main location. "
+            "This will appear in the footer of your homepage as a 480x480 map."
+        )
+        instructions.setWordWrap(True)
+        instructions.setStyleSheet(
+            "color: #666; font-style: italic; margin-bottom: 10px;"
+        )
+        layout.addWidget(instructions)
+
+        # GBP embed code
+        layout.addWidget(QLabel("Google Business Profile Map Embed:"))
+        self.gbp_inputs["embed_code"] = QTextEdit()
+        self.gbp_inputs["embed_code"].setFixedHeight(100)
+        self.gbp_inputs["embed_code"].setPlaceholderText(
+            "Paste your Google Business Profile <iframe> embed code here..."
+        )
+        layout.addWidget(self.gbp_inputs["embed_code"])
+
+        # Validate GBP button
+        validate_gbp_btn = QPushButton("Validate GBP Embed")
+        validate_gbp_btn.clicked.connect(self.validate_gbp_embed)
+        layout.addWidget(validate_gbp_btn)
 
         group.setLayout(layout)
         return group
@@ -237,6 +275,7 @@ class YAMLBuilderWidget(QWidget):
         self.page_inputs["target_cities"].setPlaceholderText(
             "Detroit\nGrand Rapids\nAnn Arbor"
         )
+        self.page_inputs["target_cities"].textChanged.connect(self.update_city_selector)
         layout.addWidget(self.page_inputs["target_cities"])
 
         group.setLayout(layout)
@@ -258,6 +297,9 @@ class YAMLBuilderWidget(QWidget):
         layout.addWidget(QLabel("FAQ Questions (one per line):"))
         self.service_inputs["faq"] = QTextEdit()
         self.service_inputs["faq"].setFixedHeight(80)
+        self.service_inputs["faq"].setPlaceholderText(
+            "What services do you offer?\nHow long have you been in business?\nWhat areas do you serve?"
+        )
         layout.addWidget(self.service_inputs["faq"])
 
         group.setLayout(layout)
@@ -268,18 +310,40 @@ class YAMLBuilderWidget(QWidget):
         group = QGroupBox("Cities with Google Maps")
         layout = QVBoxLayout()
 
+        # Instructions
+        instructions = QLabel(
+            "Select cities from your Target Cities list to add Google Maps embeds. "
+            "Maps will appear in the footer of each city page."
+        )
+        instructions.setWordWrap(True)
+        instructions.setStyleSheet(
+            "color: #666; font-style: italic; margin-bottom: 10px;"
+        )
+        layout.addWidget(instructions)
+
+        # City selector dropdown
+        selector_layout = QHBoxLayout()
+        selector_layout.addWidget(QLabel("Select City:"))
+        self.city_selector = QComboBox()
+        self.city_selector.addItem("Select a city...")
+        selector_layout.addWidget(self.city_selector)
+
+        self.add_city_map_btn = QPushButton("Add Google Map")
+        self.add_city_map_btn.clicked.connect(self.add_city_map)
+        self.add_city_map_btn.setEnabled(False)
+        selector_layout.addWidget(self.add_city_map_btn)
+
+        layout.addLayout(selector_layout)
+
         # City list display
-        layout.addWidget(QLabel("Added Cities:"))
+        layout.addWidget(QLabel("Cities with Maps:"))
         self.city_list = QListWidget()
         self.city_list.setFont(QFont("Arial", self.font_size))
         self.city_list.setFixedHeight(150)
         layout.addWidget(self.city_list)
 
-        # Manage cities button
-        self.manage_cities_button = QPushButton("Manage Cities & Google Maps")
-        self.manage_cities_button.setFont(QFont("Arial", self.font_size))
-        self.manage_cities_button.clicked.connect(self.open_city_dialog)
-        layout.addWidget(self.manage_cities_button)
+        # Connect city selector change
+        self.city_selector.currentTextChanged.connect(self.on_city_selector_changed)
 
         group.setLayout(layout)
         return group
@@ -312,15 +376,65 @@ class YAMLBuilderWidget(QWidget):
         widget.setLayout(layout)
         return widget
 
-    def open_city_dialog(self):
-        """Open dialog to manage cities and Google Maps embeds"""
-        dialog = CityEmbedDialog(self)
-        if dialog.exec():
-            city_data = dialog.get_data()
-            key = f"{city_data['city']}, {city_data['state']}"
-            self.city_data[key] = {"embed_code": city_data["embed_code"]}
-            self.refresh_city_list()
-            self.config_changed.emit()
+    def update_city_selector(self):
+        """Update the city selector dropdown when target cities change"""
+        cities_text = self.page_inputs.get("target_cities", QTextEdit()).toPlainText()
+        cities = [city.strip() for city in cities_text.split("\n") if city.strip()]
+
+        # Clear and repopulate selector
+        self.city_selector.clear()
+        self.city_selector.addItem("Select a city...")
+
+        for city in cities:
+            if city not in [key.split(",")[0] for key in self.city_data.keys()]:
+                self.city_selector.addItem(city)
+
+    def on_city_selector_changed(self, city_name):
+        """Handle city selector change"""
+        self.add_city_map_btn.setEnabled(
+            city_name != "Select a city..." and city_name != ""
+        )
+
+    def add_city_map(self):
+        """Add Google Map for selected city"""
+        selected_city = self.city_selector.currentText()
+        if selected_city and selected_city != "Select a city...":
+            dialog = CityEmbedDialog(self)
+            dialog.city_input.setText(selected_city)
+
+            if dialog.exec():
+                city_data = dialog.get_data()
+                key = f"{city_data['city']}, {city_data['state']}"
+                self.city_data[key] = {"embed_code": city_data["embed_code"]}
+                self.refresh_city_list()
+                self.update_city_selector()  # Refresh selector
+                self.config_changed.emit()
+
+    def validate_gbp_embed(self):
+        """Validate Google Business Profile embed code"""
+        embed_code = self.gbp_inputs["embed_code"].toPlainText().strip()
+
+        if not embed_code:
+            QMessageBox.warning(
+                self, "No Embed Code", "Please paste your GBP embed code."
+            )
+            return
+
+        if not embed_code.startswith("<iframe") or not embed_code.endswith("</iframe>"):
+            QMessageBox.warning(
+                self, "Invalid Format", "Please paste the complete <iframe> embed code."
+            )
+            return
+
+        if "maps.google.com" not in embed_code:
+            QMessageBox.warning(
+                self, "Invalid Source", "The embed code must be from Google Maps."
+            )
+            return
+
+        QMessageBox.information(
+            self, "Valid Embed", "✅ Valid Google Business Profile embed code!"
+        )
 
     def refresh_city_list(self):
         """Refresh the city list display"""
@@ -362,12 +476,16 @@ class YAMLBuilderWidget(QWidget):
                 "social_media": self.build_social_media(),
                 # Branding
                 "branding": self.build_branding(),
-                # Google Maps
+                # Google Business Profile
+                "google_business_profile": self.build_gbp(),
+                # Google Maps for cities
                 "google_maps": self.build_google_maps(),
                 # Pages
                 "pages": self.build_pages(),
                 # Services/Offerings
                 "offerings": self.build_offerings(),
+                # FAQ
+                "faq": self.build_faq(),
             }
         }
 
@@ -403,7 +521,92 @@ class YAMLBuilderWidget(QWidget):
 
         return phone  # Return original if can't parse
 
-    def build_social_media(self) -> dict:
+    def load_yaml(self):
+        """Load YAML configuration from a file and populate the UI fields"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Open YAML File", "", "YAML Files (*.yaml *.yml)"
+        )
+        if not file_path:
+            return
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                config = yaml.safe_load(f)
+            self.populate_fields_from_config(config)
+            QMessageBox.information(
+                self, "Load YAML", "✅ YAML configuration loaded successfully!"
+            )
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"❌ Failed to load YAML:\n{str(e)}")
+
+    def populate_fields_from_config(self, config: dict):
+        """Populate UI fields from loaded config dictionary"""
+        client = config.get("client", {})
+        # Business info
+        self.business_inputs["business_name"].setText(client.get("business_name", ""))
+        self.business_inputs["domain"].setText(client.get("domain", ""))
+        self.business_inputs["industry"].setText(client.get("industry", ""))
+        # Contact info
+        contact = client.get("contact", {})
+        self.contact_inputs["name"].setText(contact.get("name", ""))
+        address = contact.get("address", "")
+        # Attempt to split address into fields (simple heuristic)
+        address_parts = address.split(",")
+        self.contact_inputs["street_address"].setText(
+            address_parts[0].strip() if len(address_parts) > 0 else ""
+        )
+        self.contact_inputs["city"].setText(
+            address_parts[1].strip() if len(address_parts) > 1 else ""
+        )
+        self.contact_inputs["state"].setText(
+            address_parts[2].strip() if len(address_parts) > 2 else ""
+        )
+        self.contact_inputs["zip"].setText(
+            address_parts[3].strip() if len(address_parts) > 3 else ""
+        )
+        self.contact_inputs["phone"].setText(contact.get("phone", ""))
+        # Social media
+        social = client.get("social_media", {})
+        for platform in self.social_inputs:
+            self.social_inputs[platform].setText(social.get(platform, ""))
+        # Branding
+        branding = client.get("branding", {})
+        for key in self.branding_inputs:
+            self.branding_inputs[key].setText(branding.get(key, ""))
+        # GBP
+        gbp = client.get("google_business_profile", {})
+        self.gbp_inputs["embed_code"].setPlainText(gbp.get("embed_code", ""))
+        # Google Maps for cities
+        google_maps = client.get("google_maps", {})
+        self.city_data = {}
+        for city_key, city_info in google_maps.items():
+            self.city_data[city_key] = {"embed_code": city_info.get("embed_code", "")}
+        self.refresh_city_list()
+        self.update_city_selector()
+        # Pages
+        pages = client.get("pages", {})
+        self.page_inputs["hero_image"].setText(pages.get("hero_image", ""))
+        target_cities = pages.get("target_cities", [])
+        if isinstance(target_cities, list):
+            self.page_inputs["target_cities"].setPlainText("\n".join(target_cities))
+        else:
+            self.page_inputs["target_cities"].setPlainText(str(target_cities))
+        # Services/Offerings
+        offerings = client.get("offerings", [])
+        if isinstance(offerings, list):
+            self.service_inputs["services"].setPlainText("\n".join(offerings))
+        else:
+            self.service_inputs["services"].setPlainText(str(offerings))
+            # FAQ
+        faq = client.get("faq", [])
+        if isinstance(faq, list):
+            faq_questions = [
+                item.get("question", "") for item in faq if isinstance(item, dict)
+            ]
+            self.service_inputs["faq"].setPlainText("\n".join(faq_questions))
+        else:
+            self.service_inputs["faq"].setPlainText("")
+
+    def build_social_media(self) -> Optional[Dict[str, str]]:
         """Build social media dict from inputs"""
         social = {}
         for platform, widget in self.social_inputs.items():
@@ -411,7 +614,7 @@ class YAMLBuilderWidget(QWidget):
                 social[platform] = url
         return social if social else None
 
-    def build_branding(self) -> dict:
+    def build_branding(self) -> Dict[str, str]:
         """Build branding dict from inputs"""
         branding = {}
         for key, widget in self.branding_inputs.items():
@@ -425,25 +628,22 @@ class YAMLBuilderWidget(QWidget):
                 "secondary_color": "#6c757d",
                 "font_family": "Arial, sans-serif",
             }
-
         return branding
 
-    def build_google_maps(self) -> dict:
+    def build_gbp(self) -> Optional[Dict[str, str]]:
+        """Build Google Business Profile config"""
+        embed_code = (
+            self.gbp_inputs.get("embed_code", QTextEdit()).toPlainText().strip()
+        )
+        if embed_code:
+            return {"embed_code": embed_code}
+        return None
+
+    def build_google_maps(self) -> Optional[Dict[str, Any]]:
         """Build Google Maps config from city data"""
         if not self.city_data:
             return None
-
-        # Use the first city's embed as the main one
-        for city_data in self.city_data.values():
-            if embed_code := city_data.get("embed_code"):
-                # Extract URL from iframe if present
-                import re
-
-                match = re.search(r'src=["\']([^"\']*)["\']', embed_code)
-                if match:
-                    return {"embed_url": match.group(1)}
-
-        return None
+        return {"cities": self.city_data}
 
     def build_pages(self) -> list:
         """Build pages list from target cities and business info"""
@@ -479,9 +679,9 @@ class YAMLBuilderWidget(QWidget):
                                 f"local {industry.lower()}",
                             ],
                             "hero_image": hero_image,
+                            "city": city,
                         }
                     )
-
         return pages
 
     def build_offerings(self) -> list:
@@ -501,68 +701,29 @@ class YAMLBuilderWidget(QWidget):
                             "category": industry,
                         }
                     )
-
         return offerings
 
-    def load_yaml(self):
-        """Load YAML configuration from file"""
-        file_name, _ = QFileDialog.getOpenFileName(
-            self, "Open YAML File", "", "YAML Files (*.yaml *.yml)"
-        )
-        if not file_name:
-            return
+    def build_faq(self) -> list:
+        """Build FAQ list from input"""
+        faq_list = []
+        faq_text = self.service_inputs.get("faq", QTextEdit()).toPlainText()
 
-        try:
-            with open(file_name, "r", encoding="utf-8") as file:
-                data = yaml.safe_load(file)
-
-            self.populate_from_config(data)
-            QMessageBox.information(self, "Loaded", "✅ YAML loaded successfully.")
-
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"❌ Failed to load YAML file:\n{e}")
-
-    def populate_from_config(self, config: dict):
-        """Populate UI fields from config dictionary"""
-        client = config.get("client", {})
-
-        # Business info
-        self.business_inputs["business_name"].setText(client.get("business_name", ""))
-        self.business_inputs["domain"].setText(client.get("domain", ""))
-        self.business_inputs["industry"].setText(client.get("industry", ""))
-
-        # Contact info
-        contact = client.get("contact", {})
-        self.contact_inputs["name"].setText(contact.get("name", ""))
-        self.contact_inputs["phone"].setText(contact.get("phone", ""))
-
-        # Parse address back to components if needed
-        if address := contact.get("address"):
-            # This is simplified - you might want more sophisticated address parsing
-            parts = address.split(", ")
-            if len(parts) >= 1:
-                self.contact_inputs.get("street_address", QLineEdit()).setText(parts[0])
-            if len(parts) >= 2:
-                self.contact_inputs.get("city", QLineEdit()).setText(parts[1])
-
-        # Social media
-        social = client.get("social_media", {})
-        for platform, widget in self.social_inputs.items():
-            widget.setText(social.get(platform, ""))
-
-        # Branding
-        branding = client.get("branding", {})
-        for key, widget in self.branding_inputs.items():
-            widget.setText(branding.get(key, ""))
-
-        # TODO: Populate other sections (pages, cities, etc.)
-        # This would require more complex reverse-mapping logic
+        if faq_text:
+            for question in faq_text.split("\n"):
+                question = question.strip()
+                if question:
+                    faq_list.append(
+                        {
+                            "question": question,
+                            "answer": f"We provide comprehensive answers about {question.lower()}. Contact us for more details.",
+                        }
+                    )
+        return faq_list
 
     def save_yaml(self):
         """Save current configuration to YAML file"""
         try:
             config_dict = self.build_config_dict()
-
             # Validate before saving
             self.config_parser.parse(config_dict)
 
@@ -590,28 +751,31 @@ class YAMLBuilderWidget(QWidget):
             config = self.config_parser.parse(config_dict)
 
             # Import and use WebsiteGenerator
-            from src.core.website_generator import WebsiteGenerator
+            from core.website_generator import WebsiteGenerator
 
             generator = WebsiteGenerator()
 
             # Generate to temporary directory
-            import tempfile
+            temp_dir = tempfile.mkdtemp()
+            result = generator.generate(config, temp_dir)
 
-            with tempfile.TemporaryDirectory() as temp_dir:
-                result = generator.generate(config, temp_dir)
+            if result.success:
+                # Open the generated index.html in browser
+                index_path = Path(temp_dir) / "index.html"
+                file_url = index_path.as_uri()
+                webbrowser.open(file_url)
 
-                if result.success:
-                    # Open the generated index.html in browser
-                    import webbrowser
-
-                    index_path = Path(temp_dir) / "index.html"
-                    webbrowser.open(f"file://{index_path}")
-                else:
-                    QMessageBox.warning(
-                        self,
-                        "Preview Error",
-                        f"❌ Failed to generate preview:\n{result.errors}",
-                    )
+                QMessageBox.information(
+                    self,
+                    "Preview Opened",
+                    f"✅ Website preview opened in your browser!\n\nTemporary files: {temp_dir}",
+                )
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Preview Error",
+                    f"❌ Failed to generate preview:\n{result.errors}",
+                )
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"❌ Preview failed:\n{e}")

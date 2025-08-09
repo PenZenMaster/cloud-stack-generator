@@ -1,10 +1,10 @@
 """
 Filename: src/ui/main_window.py
-Path: /src/ui/main_window.py
+Path: E:\\projects\\cloud-stack-generator\\src\\ui\\main_window.py
 Description: Integrated Main Window for SEO Authority Website Generator
 Combines YAML Builder with Website Generator in tabbed interface
 
-Version: 2.0.2
+Version: 2.0.4
 Date: 2025-08-09
 Author: Cloud Stack Generator Team
 """
@@ -31,12 +31,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QAction, QFont
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-
-from src.core.config_parser import ConfigParser, ConfigValidationError
-from src.core.website_generator import WebsiteGenerator, GenerationError
-from src.ui.yaml_builder import YAMLBuilderWidget
+# Import our modules - fixed import paths
+from core.config_parser import ConfigParser, ConfigValidationError
+from core.website_generator import WebsiteGenerator, GenerationError
+from ui.yaml_builder import YAMLBuilderWidget
 
 
 class GenerationWorker(QThread):
@@ -383,7 +381,7 @@ class SEOGeneratorMainWindow(QMainWindow):
             self,
             "About",
             "SEO Authority Website Generator\n"
-            "Sprint 1 MVP - Version 2.0.2\n\n"
+            "Sprint 1 MVP - Version 2.0.4\n\n"
             "Test-driven development approach\n"
             "Built with PyQt6 and modern web technologies\n\n"
             "Features:\n"
@@ -419,7 +417,7 @@ def main():
 
     # Set application properties
     app.setApplicationName("SEO Authority Website Generator")
-    app.setApplicationVersion("2.0.2-sprint1")
+    app.setApplicationVersion("2.0.4-sprint1")
     app.setOrganizationName("Cloud Stack Generator")
 
     # Create and show main window

@@ -1,14 +1,15 @@
 """
-Configuration parser for the SEO Authority Website Generator
-This implementation is driven by the test requirements
+Filename: src/core/config_parser.py
+Path: E:\\projects\\cloud-stack-generator\\src\\core\\config_parser.py
+Description: Enhanced Configuration Parser with GBP and FAQ support
 
-Version: 1.0.1
+Version: 1.1.0
 Date: 2025-08-09
 Author: Cloud Stack Generator Team
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from typing import Dict, Any, Optional
+from dataclasses import dataclass
 
 
 class ConfigValidationError(Exception):
@@ -18,132 +19,81 @@ class ConfigValidationError(Exception):
 
 
 @dataclass
-class ContactInfo:
-    """Contact information (NAP - Name, Address, Phone)"""
-
-    name: Optional[str] = None
-    address: Optional[str] = None
-    phone: str = ""
-
-
-@dataclass
-class SocialMedia:
-    """Social media account URLs"""
-
-    facebook: Optional[str] = None
-    twitter: Optional[str] = None
-    linkedin: Optional[str] = None
-    instagram: Optional[str] = None
-
-
-@dataclass
-class GoogleMaps:
-    """Google Maps configuration"""
-
-    place_id: Optional[str] = None
-    embed_url: Optional[str] = None
-
-
-@dataclass
-class Branding:
-    """Branding configuration"""
-
-    primary_color: Optional[str] = None
-    secondary_color: Optional[str] = None
-    logo_url: Optional[str] = None
-    font_family: Optional[str] = None
-
-
-@dataclass
-class Page:
-    """Page configuration"""
-
-    title: str
-    slug: str
-    primary_keyword: Optional[str] = None
-    secondary_keywords: List[str] = field(default_factory=list)
-    hero_image: Optional[str] = None
-    meta_description: Optional[str] = None
-
-
-@dataclass
-class Offering:
-    """Product or service offering"""
-
-    name: str
-    description: Optional[str] = None
-    price_range: Optional[str] = None
-    category: Optional[str] = None
-
-
-@dataclass
 class ClientConfig:
-    """Complete client configuration"""
+    """Client configuration data class"""
 
     business_name: str
-    contact: ContactInfo
-    pages: List[Page]
-    offerings: List[Offering] = field(default_factory=list)
-    domain: Optional[str] = None
-    industry: Optional[str] = None
-    social_media: Optional[SocialMedia] = None
-    google_maps: Optional[GoogleMaps] = None
-    branding: Optional[Branding] = None
-
-
-@dataclass
-class Config:
-    """Root configuration object"""
-
-    client: ClientConfig
+    domain: str
+    industry: str
+    contact: Dict[str, Any]
+    social_media: Optional[Dict[str, str]] = None
+    branding: Optional[Dict[str, str]] = None
+    google_business_profile: Optional[Dict[str, str]] = None
+    google_maps: Optional[Dict[str, Any]] = None
+    pages: Optional[list] = None
+    offerings: Optional[list] = None
+    faq: Optional[list] = None
 
 
 class ConfigParser:
-    """Parser for YAML configuration files"""
+    """Parse and validate YAML configuration for website generation"""
 
-    def parse(self, config_dict: Dict[str, Any]) -> Config:
-        """Parse configuration dictionary into Config object"""
-        client_data = config_dict.get("client", {})
+    def __init__(self):
+        self.required_fields = [
+            "client.business_name",
+            "client.domain",
+            "client.industry",
+            "client.contact.phone",
+        ]
 
-        # Parse contact info
-        contact_data = client_data.get("contact", {})
-        contact = ContactInfo(
-            name=contact_data.get("name"),
-            address=contact_data.get("address"),
-            phone=contact_data.get("phone", ""),
-        )
+    def parse(self, config_dict: Dict[str, Any]) -> ClientConfig:
+        """Parse configuration dictionary and return ClientConfig object"""
+        try:
+            # Basic validation
+            if "client" not in config_dict:
+                raise ConfigValidationError("Missing 'client' section in configuration")
 
-        # Parse social media
-        social_data = client_data.get("social_media", {})
-        social_media = SocialMedia(**social_data) if social_data else None
+            client_data = config_dict["client"]
 
-        # Parse Google Maps
-        maps_data = client_data.get("google_maps", {})
-        google_maps = GoogleMaps(**maps_data) if maps_data else None
+            # Validate required fields
+            self._validate_required_fields(client_data)
 
-        # Parse branding
-        branding_data = client_data.get("branding", {})
-        branding = Branding(**branding_data) if branding_data else None
+            # Create ClientConfig object
+            return ClientConfig(
+                business_name=client_data.get("business_name", ""),
+                domain=client_data.get("domain", ""),
+                industry=client_data.get("industry", ""),
+                contact=client_data.get("contact", {}),
+                social_media=client_data.get("social_media"),
+                branding=client_data.get("branding"),
+                google_business_profile=client_data.get("google_business_profile"),
+                google_maps=client_data.get("google_maps"),
+                pages=client_data.get("pages", []),
+                offerings=client_data.get("offerings", []),
+                faq=client_data.get("faq", []),
+            )
 
-        # Parse pages
-        pages_data = client_data.get("pages", [])
-        pages = [Page(**page_data) for page_data in pages_data]
+        except KeyError as e:
+            raise ConfigValidationError(f"Missing required configuration key: {e}")
+        except Exception as e:
+            raise ConfigValidationError(f"Configuration parsing error: {e}")
 
-        # Parse offerings
-        offerings_data = client_data.get("offerings", [])
-        offerings = [Offering(**offering_data) for offering_data in offerings_data]
+    def _validate_required_fields(self, client_data: Dict[str, Any]) -> None:
+        """Validate required fields in client data"""
+        errors = []
 
-        # Create client config
-        client = ClientConfig(
-            business_name=client_data.get("business_name", ""),
-            domain=client_data.get("domain"),
-            industry=client_data.get("industry"),
-            contact=contact,
-            social_media=social_media,
-            google_maps=google_maps,
-            branding=branding,
-            pages=pages,
-            offerings=offerings,
-        )
+        if not client_data.get("business_name"):
+            errors.append("Business name is required")
 
-        return Config(client=client)
+        if not client_data.get("domain"):
+            errors.append("Domain is required")
+
+        if not client_data.get("industry"):
+            errors.append("Industry is required")
+
+        contact = client_data.get("contact", {})
+        if not contact.get("phone"):
+            errors.append("Contact phone is required")
+
+        if errors:
+            raise ConfigValidationError("; ".join(errors))

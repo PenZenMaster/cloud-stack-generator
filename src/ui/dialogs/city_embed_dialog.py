@@ -1,8 +1,10 @@
 """
-Refactored City Embed Dialog for SEO Authority Website Generator
+Filename: src/ui/dialogs/city_embed_dialog.py
+Path: E:\\projects\\cloud-stack-generator\\src\\ui\\dialogs\\city_embed_dialog.py
+Description: Refactored City Embed Dialog for SEO Authority Website Generator
 Enhanced with validation and better user experience
 
-Version: 2.0.0
+Version: 2.0.2
 Date: 2025-08-09
 Author: Cloud Stack Generator Team
 """
@@ -189,4 +191,112 @@ class CityEmbedDialog(QDialog):
                 )
             return True
 
-        self.set_status
+        self.set_status("✅ Valid Google Maps embed code", "green")
+        return True
+
+    def set_status(self, message: str, color: str):
+        """Set the status message with color"""
+        self.status_label.setText(message)
+        self.status_label.setStyleSheet(f"color: {color}; font-weight: bold;")
+
+    def update_validation_status(self):
+        """Update validation status based on all inputs"""
+        if self.auto_validate_check.isChecked():
+            self.validate_all_inputs()
+
+    def validate_all_inputs(self):
+        """Validate all inputs and update status"""
+        city = self.city_input.text().strip()
+        state = self.state_input.text().strip()
+        embed_code = self.embed_input.toPlainText().strip()
+
+        if not city:
+            self.set_status("⚠️ City name required", "orange")
+            return False
+
+        if not state:
+            self.set_status("⚠️ State abbreviation required", "orange")
+            return False
+
+        if len(state) != 2:
+            self.set_status("⚠️ State must be 2-letter abbreviation", "orange")
+            return False
+
+        if not embed_code:
+            self.set_status("⚠️ Google Maps embed code required", "orange")
+            return False
+
+        # Validate embed code
+        return self.validate_embed_code(show_message=False)
+
+    def validate_and_accept(self):
+        """Validate all inputs before accepting"""
+        city = self.city_input.text().strip()
+        state = self.state_input.text().strip().upper()
+        embed_code = self.embed_input.toPlainText().strip()
+
+        # Validate city
+        if not city:
+            QMessageBox.warning(
+                self, "Missing Information", "Please enter a city name."
+            )
+            self.city_input.setFocus()
+            return
+
+        # Validate state
+        if not state:
+            QMessageBox.warning(
+                self, "Missing Information", "Please enter a state abbreviation."
+            )
+            self.state_input.setFocus()
+            return
+
+        if len(state) != 2:
+            QMessageBox.warning(
+                self,
+                "Invalid State",
+                "Please enter a 2-letter state abbreviation (e.g., MI, CA, NY).",
+            )
+            self.state_input.setFocus()
+            return
+
+        # Validate embed code
+        if not embed_code:
+            QMessageBox.warning(
+                self,
+                "Missing Embed Code",
+                "Please paste the Google Maps embed code.",
+            )
+            self.embed_input.setFocus()
+            return
+
+        if not self.validate_embed_code(show_message=True):
+            self.embed_input.setFocus()
+            return
+
+        # Update state field to uppercase
+        self.state_input.setText(state)
+
+        # All validation passed
+        self.accept()
+
+    def get_data(self) -> dict:
+        """Get the entered data"""
+        return {
+            "city": self.city_input.text().strip(),
+            "state": self.state_input.text().strip().upper(),
+            "embed_code": self.embed_input.toPlainText().strip(),
+        }
+
+    def set_data(self, data: dict):
+        """Set the dialog data (for editing existing entries)"""
+        self.city_input.setText(data.get("city", ""))
+        self.state_input.setText(data.get("state", ""))
+        self.embed_input.setPlainText(data.get("embed_code", ""))
+
+    def clear_inputs(self):
+        """Clear all input fields"""
+        self.city_input.clear()
+        self.state_input.clear()
+        self.embed_input.clear()
+        self.status_label.clear()

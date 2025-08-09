@@ -1,18 +1,19 @@
 """
-Website generator for the SEO Authority Website Generator
-This minimal implementation is driven by the test requirements (TDD approach)
+Filename: src/core/website_generator.py
+Path: E:\\projects\\cloud-stack-generator\\src\\core\\website_generator.py
+Description: Enhanced Website Generator with GBP integration and fixes
 
-Version: 1.0.1
+Version: 2.0.0
 Date: 2025-08-09
 Author: Cloud Stack Generator Team
 """
 
+import os
+import re
 from pathlib import Path
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional
-from jinja2 import Environment, DictLoader
-
-from .config_parser import Config, Page
+from typing import List, Optional
+from dataclasses import dataclass
+from .config_parser import ClientConfig
 
 
 class GenerationError(Exception):
@@ -23,376 +24,584 @@ class GenerationError(Exception):
 
 @dataclass
 class GenerationResult:
-    """Result of website generation process"""
+    """Result of website generation"""
 
     success: bool
-    generated_files: List[str] = field(default_factory=list)
-    output_dir: str = ""
-    errors: List[str] = field(default_factory=list)
+    generated_files: List[str]
+    errors: Optional[str] = None
 
 
 class WebsiteGenerator:
-    """Generates static HTML websites from configuration"""
+    """Generate static HTML websites from configuration"""
 
     def __init__(self):
-        self.templates = self._get_default_templates()
-        self.jinja_env = Environment(loader=DictLoader(self.templates), autoescape=True)
+        self.output_dir: Optional[str] = None
+        self.config: Optional[ClientConfig] = None
 
-    def generate(self, config: Config, output_dir: str) -> GenerationResult:
-        """Generate complete website from configuration"""
+    def generate(self, config: ClientConfig, output_dir: str) -> GenerationResult:
+        """Generate website from configuration"""
         try:
-            # Validate output directory
-            output_path = Path(output_dir)
-
-            # Check if path is clearly invalid
-            if output_dir.startswith(("/invalid", "/readonly")) or (
-                ":" in output_dir and len(output_dir) < 5
-            ):
-                raise GenerationError(f"Invalid output directory: {output_dir}")
-
-            if not self._ensure_output_dir(output_path):
-                raise GenerationError(f"Cannot create output directory: {output_dir}")
-
+            self.output_dir = output_dir
+            self.config = config
             generated_files = []
 
-            # Generate HTML pages
-            for page in config.client.pages:
-                html_content = self._generate_page_html(config, page)
-                filename = f"{page.slug}.html"
-                file_path = output_path / filename
+            # Ensure output directory exists
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-                with open(file_path, "w", encoding="utf-8") as f:
-                    f.write(html_content)
+            # Generate index.html
+            index_path = self._generate_index_page(config)
+            generated_files.append(index_path)
 
-                generated_files.append(filename)
+            # Generate city pages if configured
+            if config.pages:
+                for page in config.pages:
+                    if page.get("slug") != "index":  # Skip home page
+                        page_path = self._generate_city_page(config, page)
+                        generated_files.append(page_path)
 
-            # Generate sitemap.xml
-            sitemap_content = self._generate_sitemap(config)
-            sitemap_path = output_path / "sitemap.xml"
-            with open(sitemap_path, "w", encoding="utf-8") as f:
-                f.write(sitemap_content)
-            generated_files.append("sitemap.xml")
+            # Generate CSS file
+            css_path = self._generate_css_file(config)
+            generated_files.append(css_path)
 
-            # Generate robots.txt
-            robots_content = self._generate_robots_txt(config)
-            robots_path = output_path / "robots.txt"
-            with open(robots_path, "w", encoding="utf-8") as f:
-                f.write(robots_content)
-            generated_files.append("robots.txt")
+            return GenerationResult(success=True, generated_files=generated_files)
 
-            return GenerationResult(
-                success=True, generated_files=generated_files, output_dir=output_dir
-            )
-
-        except GenerationError:
-            # Re-raise GenerationError as-is
-            raise
         except Exception as e:
-            # Wrap other exceptions in GenerationError
-            raise GenerationError(f"Website generation failed: {str(e)}")
+            return GenerationResult(success=False, generated_files=[], errors=str(e))
 
-    def render_template(
-        self, template_content: str, config: Optional[Config] = None, **kwargs
-    ) -> str:
-        """Render a template string with given context"""
-        template = self.jinja_env.from_string(template_content)
+    def _generate_index_page(self, config: ClientConfig) -> str:
+        """Generate the main index.html page"""
+        if not self.output_dir:
+            raise GenerationError("Output directory not set")
 
-        # If config is provided, add it to context
-        context = kwargs.copy()
-        if config:
-            context.update({"client": config.client, "config": config})
+        html_content = self._create_html_template(config, "Home", is_home=True)
 
-        return template.render(**context)
+        file_path = os.path.join(self.output_dir, "index.html")
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(html_content)
 
-    def get_template_context(self, config: Config, page: Page) -> Dict[str, Any]:
-        """Get template context variables for a page"""
-        return {"client": config.client, "page": page, "all_pages": config.client.pages}
+        return file_path
 
-    def _ensure_output_dir(self, output_path: Path) -> bool:
-        """Ensure output directory exists and is writable"""
-        try:
-            # Check for obviously invalid paths
-            path_str = str(output_path)
-            if "/invalid" in path_str or "/readonly" in path_str:
-                return False
+    def _generate_city_page(self, config: ClientConfig, page_config: dict) -> str:
+        """Generate a city-specific page"""
+        if not self.output_dir:
+            raise GenerationError("Output directory not set")
 
-            output_path.mkdir(parents=True, exist_ok=True)
+        title = page_config.get("title", "Services")
+        slug = page_config.get("slug", "page")
+        city = page_config.get("city", "")
 
-            # Test if directory is writable
-            test_file = output_path / ".write_test"
-            test_file.touch()
-            test_file.unlink()
-
-            return True
-        except (OSError, PermissionError):
-            return False
-
-    def _generate_page_html(self, config: Config, page: Page) -> str:
-        """Generate HTML content for a single page"""
-        context = self.get_template_context(config, page)
-        template = self.jinja_env.get_template("base.html")
-
-        # Add page-specific content
-        context.update(
-            {
-                "page_title": f"{page.title} | {config.client.business_name}",
-                "meta_description": (
-                    page.meta_description
-                    or f"{page.title} - {config.client.business_name}"
-                ),
-                "page_content": self._generate_page_content(config, page),
-            }
+        html_content = self._create_html_template(
+            config, title, is_home=False, city=city
         )
 
-        return template.render(**context)
+        file_path = os.path.join(self.output_dir, f"{slug}.html")
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(html_content)
 
-    def _generate_page_content(self, config: Config, page: Page) -> str:
-        """Generate main content for a page with keywords bolded"""
-        # Generate approximately 800 words of content
-        content_parts = []
+        return file_path
 
-        # Hero section content
-        hero_content = f"""
-        <section class="hero container-fluid">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12">
-                        <h1>{page.title}</h1>"""
+    def _generate_css_file(self, config: ClientConfig) -> str:
+        """Generate basic CSS file"""
+        if not self.output_dir:
+            raise GenerationError("Output directory not set")
 
-        if page.hero_image:
-            hero_content += f"""
-                        <img src="{page.hero_image}"
-                             alt="{page.title} hero image"
-                             class="img-fluid">"""
+        css_content = self._create_css_template(config)
 
-        hero_content += """
-                    </div>
-                </div>
-            </div>
-        </section>
-        """
-        content_parts.append(hero_content)
+        file_path = os.path.join(self.output_dir, "styles.css")
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(css_content)
 
-        # Main content with keywords
-        primary_keyword = page.primary_keyword or config.client.industry or "services"
-        business_name = config.client.business_name
+        return file_path
 
-        main_content = f"""
-        <section class="main-content container">
-            <div class="row">
-                <div class="col-12">
-                    <p>Welcome to {business_name}, your trusted provider of
-                    <strong>{primary_keyword}</strong>. We specialize in
-                    delivering exceptional {primary_keyword} to help you
-                    achieve your goals.</p>
+    def _create_html_template(
+        self,
+        config: ClientConfig,
+        page_title: str,
+        is_home: bool = False,
+        city: str = "",
+    ) -> str:
+        """Create enhanced HTML template with proper navigation and GBP integration"""
+        business_name = config.business_name
+        industry = config.industry
 
-                    <h2>About Our {primary_keyword.title()}</h2>
-                    <p>At {business_name}, we understand that quality
-                    <strong>{primary_keyword}</strong> make a difference.
-                    Our team of experienced professionals is dedicated to
-                    providing solutions that exceed expectations.</p>
+        # Get branding colors
+        branding = config.branding or {}
+        primary_color = branding.get("primary_color", "#007bff")
 
-                    <h3>Why Choose Our {primary_keyword.title()}?</h3>
-                    <p>Our commitment to excellence in
-                    <strong>{primary_keyword}</strong> sets us apart from
-                    the competition. We combine industry expertise with
-                    personalized service to deliver results that matter.</p>
+        # Build navigation with proper page titles
+        nav_links = self._build_navigation(config)
 
-                    <p>Whether you're looking for comprehensive
-                    {primary_keyword} or specific solutions, {business_name}
-                    has the experience and knowledge to help you succeed.
-                    Our <strong>{primary_keyword}</strong> are designed to
-                    meet your unique needs and budget requirements.</p>
+        # Page-specific content
+        if is_home:
+            page_content = self._create_home_content(config)
+        else:
+            page_content = self._create_city_content(config, city)
 
-                    <h3>Our Approach to {primary_keyword.title()}</h3>
-                    <p>We believe that effective
-                    <strong>{primary_keyword}</strong> require careful
-                    planning and execution. That's why we work closely with
-                    each client to understand their specific requirements
-                    and develop customized solutions that deliver measurable
-                    results.</p>
+        # Footer content with GBP and city maps
+        footer_content = self._create_footer_content(config, city, is_home)
 
-                    <p>Contact {business_name} today to learn more about our
-                    <strong>{primary_keyword}</strong> and how we can help
-                    you achieve your objectives. Our team is ready to
-                    discuss your needs and provide a personalized proposal
-                    for your consideration.</p>
-                </div>
-            </div>
-        </section>
-        """
-        content_parts.append(main_content)
-
-        return "\n".join(content_parts)
-
-    def _generate_sitemap(self, config: Config) -> str:
-        """Generate sitemap.xml content"""
-        base_url = config.client.domain or "https://example.com"
-
-        sitemap_content = [
-            '<?xml version="1.0" encoding="UTF-8"?>',
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-        ]
-
-        for page in config.client.pages:
-            if page.slug == "index":
-                url = base_url
-            else:
-                url = f"{base_url.rstrip('/')}/{page.slug}.html"
-
-            sitemap_content.extend(
-                [
-                    "  <url>",
-                    f"    <loc>{url}</loc>",
-                    "    <changefreq>weekly</changefreq>",
-                    "    <priority>0.8</priority>",
-                    "  </url>",
-                ]
-            )
-
-        sitemap_content.append("</urlset>")
-        return "\n".join(sitemap_content)
-
-    def _generate_robots_txt(self, config: Config) -> str:
-        """Generate robots.txt content"""
-        base_url = config.client.domain or "https://example.com"
-
-        return f"""User-agent: *
-Allow: /
-
-Sitemap: {base_url.rstrip('/')}/sitemap.xml
-"""
-
-    def _get_default_templates(self) -> Dict[str, str]:
-        """Get default HTML templates"""
-        return {"base.html": self._get_base_template()}
-
-    def _get_base_template(self) -> str:
-        """Get the base HTML template"""
-        return """<!DOCTYPE html>
+        return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page_title }}</title>
-    <meta name="description" content="{{ meta_description }}">
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Custom Styles -->
-    <style>
-        :root {
-            {% if client.branding and client.branding.primary_color %}
-            --primary-color: {{ client.branding.primary_color }};
-            {% else %}
-            --primary-color: #007bff;
-            {% endif %}
-            {% if client.branding and client.branding.secondary_color %}
-            --secondary-color: {{ client.branding.secondary_color }};
-            {% else %}
-            --secondary-color: #6c757d;
-            {% endif %}
-        }
-
-        .navbar-brand { color: var(--primary-color) !important; }
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .hero { background-color: #f8f9fa; padding: 60px 0; }
-        .footer {
-            background-color: #343a40;
-            color: white;
-            padding: 40px 0;
-            margin-top: 60px;
-        }
-    </style>
-
-    <!-- Schema.org Markup -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        "name": "{{ client.business_name }}",
-        {% if client.contact.phone %}"telephone": "{{ client.contact.phone }}",{% endif %}
-        {% if client.contact.address %}"address": "{{ client.contact.address }}",{% endif %}
-        {% if client.domain %}"url": "{{ client.domain }}"{% endif %}
-    }
-    </script>
+    <title>{page_title} - {business_name}</title>
+    <meta name="description" content="{industry} services by {business_name}{' in ' + city if city else ''}">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">{{ client.business_name }}</a>
-            <button class="navbar-toggler" type="button"
-                    data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% for nav_page in all_pages %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ nav_page.slug }}.html">
-                            {{ nav_page.title }}
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
+    <header>
+        <h1>{business_name}</h1>
+        <nav>{nav_links}</nav>
+    </header>
+    
     <main>
-        {{ page_content | safe }}
+        {page_content}
     </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>Contact Information</h5>
-                    {% if client.contact %}
-                    <p>{{ client.contact.name }}</p>
-                    {% if client.contact.address %}
-                    <p>{{ client.contact.address }}</p>
-                    {% endif %}
-                    {% if client.contact.phone %}
-                    <p>{{ client.contact.phone }}</p>
-                    {% endif %}
-                    {% endif %}
-                </div>
-                <div class="col-md-6">
-                    <h5>Follow Us</h5>
-                    {% if client.social_media %}
-                    <div class="social-links">
-                        {% if client.social_media.facebook %}
-                        <a href="{{ client.social_media.facebook }}"
-                           class="text-light me-3">Facebook</a>
-                        {% endif %}
-                        {% if client.social_media.twitter %}
-                        <a href="{{ client.social_media.twitter }}"
-                           class="text-light me-3">Twitter</a>
-                        {% endif %}
-                        {% if client.social_media.linkedin %}
-                        <a href="{{ client.social_media.linkedin }}"
-                           class="text-light me-3">LinkedIn</a>
-                        {% endif %}
-                        {% if client.social_media.instagram %}
-                        <a href="{{ client.social_media.instagram }}"
-                           class="text-light me-3">Instagram</a>
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+    
+    <footer>
+        {footer_content}
     </footer>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>"""
+
+    def _build_navigation(self, config: ClientConfig) -> str:
+        """Build proper navigation menu"""
+        nav_links = ""
+        if config.pages:
+            for page in config.pages:
+                slug = page.get("slug", "")
+                # Use proper page titles instead of phone numbers
+                if slug == "index":
+                    title = "Home"
+                else:
+                    # Extract city name from page title
+                    page_title = page.get("title", "")
+                    city = page.get("city", "")
+                    title = (
+                        city
+                        if city
+                        else page_title.replace(f"{config.industry} in ", "")
+                    )
+
+                link = "index.html" if slug == "index" else f"{slug}.html"
+                nav_links += f'<a href="{link}">{title}</a> | '
+
+        return nav_links.rstrip(" | ")
+
+    def _create_home_content(self, config: ClientConfig) -> str:
+        """Create content for the home page"""
+        business_name = config.business_name
+        industry = config.industry
+
+        # Hero section
+        content = f"""
+        <section class="hero">
+            <h2>Welcome to {business_name}</h2>
+            <p>Professional {industry.lower()} services you can trust</p>
+        </section>
+        
+        <section class="content">
+            <h3>About Our {industry}</h3>
+            <p>Welcome to {business_name}, your trusted provider of {industry.lower()} services. We are committed to delivering exceptional results and outstanding customer service.</p>
+            
+            <h3>Our Services</h3>
+            <ul>"""
+
+        # Add services if available
+        if config.offerings:
+            for offering in config.offerings:
+                service_name = offering.get("name", "Service")
+                content += f"                <li><strong>{service_name}</strong></li>\n"
+        else:
+            content += (
+                f"                <li>Professional {industry} consultation</li>\n"
+            )
+            content += f"                <li>Expert {industry.lower()} solutions</li>\n"
+            content += f"                <li>Quality {industry.lower()} services</li>\n"
+
+        content += "            </ul>\n"
+
+        # Add FAQ section if available
+        if hasattr(config, "faq") and config.faq:
+            content += """
+            <h3>Frequently Asked Questions</h3>
+            <div class="faq-section">"""
+
+            for faq_item in config.faq:
+                question = faq_item.get("question", "")
+                answer = faq_item.get("answer", "")
+                content += f"""
+                <div class="faq-item">
+                    <h4>{question}</h4>
+                    <p>{answer}</p>
+                </div>"""
+
+            content += "</div>"
+
+        # Add service areas if city pages exist
+        if config.pages and len(config.pages) > 1:
+            content += """
+            <h3>Service Areas</h3>
+            <p>We proudly serve the following areas:</p>
+            <ul>"""
+
+            for page in config.pages:
+                if page.get("slug") != "index":
+                    city = page.get("city", "")
+                    if city:
+                        content += f"                <li>{city}</li>\n"
+
+            content += "            </ul>"
+
+        content += "        </section>"
+        return content
+
+    def _create_city_content(self, config: ClientConfig, city: str) -> str:
+        """Create content for city-specific pages"""
+        business_name = config.business_name
+        industry = config.industry
+
+        content = f"""
+        <section class="hero">
+            <h2>{industry} Services in {city}</h2>
+            <p>Professional {industry.lower()} services serving {city} and surrounding areas</p>
+        </section>
+        
+        <section class="content">
+            <h3>Local {industry} Experts in {city}</h3>
+            <p>{business_name} is proud to serve {city} with professional {industry.lower()} services. Our local expertise and commitment to excellence make us the preferred choice for {city} residents and businesses.</p>
+            
+            <h3>Why Choose Us in {city}</h3>
+            <ul>
+                <li>Local {city} expertise and knowledge</li>
+                <li>Proven track record in the {city} area</li>
+                <li>Personalized {industry.lower()} solutions</li>
+                <li>Committed to the {city} community</li>
+            </ul>
+            
+            <h3>Our {industry} Services in {city}</h3>
+            <ul>"""
+
+        # Add services if available
+        if config.offerings:
+            for offering in config.offerings:
+                service_name = offering.get("name", "Service")
+                content += f"                <li><strong>{service_name}</strong> in {city}</li>\n"
+        else:
+            content += f"                <li>Professional {industry} consultation in {city}</li>\n"
+            content += f"                <li>Expert {industry.lower()} solutions for {city}</li>\n"
+            content += f"                <li>Quality {industry.lower()} services in {city}</li>\n"
+
+        content += (
+            """            </ul>
+            
+            <h3>Contact Us Today</h3>
+            <p>Ready to get started? Contact us today to learn more about our services in """
+            + city
+            + """.</p>
+        </section>"""
+        )
+
+        return content
+
+    def _create_footer_content(
+        self, config: ClientConfig, city: str = "", is_home: bool = False
+    ) -> str:
+        """Create footer content with contact info, GBP map, and social links"""
+        business_name = config.business_name
+        contact = config.contact or {}
+
+        footer_content = """
+        <div class="footer-container">
+            <div class="footer-section contact-info">
+                <h4>Contact Information</h4>"""
+
+        # Add contact info
+        if contact.get("phone"):
+            footer_content += (
+                f'                <p><strong>Phone:</strong> {contact["phone"]}</p>\n'
+            )
+        if contact.get("address"):
+            footer_content += f'                <p><strong>Address:</strong> {contact["address"]}</p>\n'
+        if contact.get("email"):
+            footer_content += (
+                f'                <p><strong>Email:</strong> {contact["email"]}</p>\n'
+            )
+
+        footer_content += "            </div>\n"
+
+        # Add Google Business Profile map for home page
+        if (
+            is_home
+            and hasattr(config, "google_business_profile")
+            and config.google_business_profile
+        ):
+            gbp_embed = config.google_business_profile.get("embed_code", "")
+            if gbp_embed:
+                # Modify the iframe to be 480x480
+                modified_embed = self._modify_iframe_size(gbp_embed, 480, 480)
+                footer_content += f"""
+            <div class="footer-section gbp-map">
+                <h4>Find Us</h4>
+                {modified_embed}
+            </div>"""
+
+        # Add city-specific Google Map
+        elif city and hasattr(config, "google_maps") and config.google_maps:
+            city_maps = config.google_maps.get("cities", {})
+            for city_key, city_data in city_maps.items():
+                if city.lower() in city_key.lower():
+                    city_embed = city_data.get("embed_code", "")
+                    if city_embed:
+                        modified_embed = self._modify_iframe_size(city_embed, 480, 480)
+                        footer_content += f"""
+            <div class="footer-section city-map">
+                <h4>{city} Location</h4>
+                {modified_embed}
+            </div>"""
+                    break
+
+        # Add social media links
+        if config.social_media:
+            footer_content += """
+            <div class="footer-section social-links">
+                <h4>Follow Us</h4>"""
+
+            for platform, url in config.social_media.items():
+                footer_content += f'                <a href="{url}" target="_blank">{platform.title()}</a><br>\n'
+
+            footer_content += "            </div>"
+
+        footer_content += f"""
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 {business_name}. All rights reserved.</p>
+        </div>"""
+
+        return footer_content
+
+    def _modify_iframe_size(self, iframe_code: str, width: int, height: int) -> str:
+        """Modify iframe dimensions to specified size"""
+        # Replace width and height attributes
+        iframe_code = re.sub(r'width="[^"]*"', f'width="{width}"', iframe_code)
+        iframe_code = re.sub(r'height="[^"]*"', f'height="{height}"', iframe_code)
+
+        # Also replace in style attribute if present
+        iframe_code = re.sub(r"width:\s*\d+px", f"width: {width}px", iframe_code)
+        iframe_code = re.sub(r"height:\s*\d+px", f"height: {height}px", iframe_code)
+
+        return iframe_code
+
+    def _create_css_template(self, config: ClientConfig) -> str:
+        """Create enhanced CSS template with footer layout"""
+        branding = config.branding or {}
+        primary_color = branding.get("primary_color", "#007bff")
+        secondary_color = branding.get("secondary_color", "#6c757d")
+        font_family = branding.get("font_family", "Arial, sans-serif")
+
+        return f"""/* Enhanced styles for {config.business_name} website */
+
+* {{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}}
+
+body {{
+    font-family: {font_family};
+    line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}}
+
+header {{
+    background-color: {primary_color};
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}}
+
+header h1 {{
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}}
+
+nav a {{
+    color: white;
+    text-decoration: none;
+    margin: 0 0.5rem;
+    font-weight: 500;
+}}
+
+nav a:hover {{
+    text-decoration: underline;
+}}
+
+main {{
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+}}
+
+.hero {{
+    background-color: white;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}}
+
+.hero h2 {{
+    color: {primary_color};
+    margin-bottom: 1rem;
+    font-size: 2.5rem;
+}}
+
+.content {{
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}}
+
+.content h3 {{
+    color: {secondary_color};
+    margin: 1.5rem 0 1rem 0;
+    font-size: 1.5rem;
+}}
+
+.content h4 {{
+    color: {primary_color};
+    margin: 1rem 0 0.5rem 0;
+}}
+
+.content ul {{
+    margin-left: 2rem;
+    margin-bottom: 1.5rem;
+}}
+
+.content li {{
+    margin-bottom: 0.5rem;
+}}
+
+.faq-section {{
+    margin-top: 1rem;
+}}
+
+.faq-item {{
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid {primary_color};
+}}
+
+.faq-item h4 {{
+    margin-bottom: 0.5rem;
+}}
+
+/* Footer Styles */
+footer {{
+    background-color: {secondary_color};
+    color: white;
+    padding: 2rem 0 1rem 0;
+    margin-top: 2rem;
+}}
+
+.footer-container {{
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 0 2rem;
+}}
+
+.footer-section {{
+    text-align: center;
+}}
+
+.footer-section h4 {{
+    margin-bottom: 1rem;
+    color: white;
+    font-size: 1.2rem;
+}}
+
+.footer-section p {{
+    margin-bottom: 0.5rem;
+}}
+
+.footer-section iframe {{
+    border-radius: 8px;
+    max-width: 100%;
+}}
+
+.social-links a {{
+    color: white;
+    text-decoration: none;
+    margin: 0 0.5rem;
+    font-size: 1.1rem;
+}}
+
+.social-links a:hover {{
+    text-decoration: underline;
+}}
+
+.footer-bottom {{
+    text-align: center;
+    padding: 1rem 2rem;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    margin-top: 1rem;
+}}
+
+/* Responsive design */
+@media (max-width: 768px) {{
+    main {{
+        padding: 1rem;
+    }}
+    
+    .hero {{
+        padding: 2rem 1rem;
+    }}
+    
+    .hero h2 {{
+        font-size: 2rem;
+    }}
+    
+    nav a {{
+        display: block;
+        margin: 0.5rem 0;
+    }}
+    
+    .footer-container {{
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }}
+    
+    .footer-section iframe {{
+        width: 100%;
+        height: 300px;
+    }}
+}}
+
+@media (max-width: 480px) {{
+    header h1 {{
+        font-size: 1.5rem;
+    }}
+    
+    .hero h2 {{
+        font-size: 1.5rem;
+    }}
+    
+    .content {{
+        padding: 1rem;
+    }}
+}}
+"""
