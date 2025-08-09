@@ -1,0 +1,31 @@
+client:
+  business_name: "Sample Business"
+  domain: "https://samplebusiness.com"
+  industry: "Professional Services"
+  
+  contact:
+    name: "Sample Business"
+    address: "123 Main St, Anytown, ST 12345"
+    phone: "+1-555-123-4567"
+    
+  social_media:
+    facebook: "https://facebook.com/samplebusiness"
+    linkedin: "https://linkedin.com/company/samplebusiness"
+    
+  branding:
+    primary_color: "#007bff"
+    secondary_color: "#6c757d"
+    logo_url: "https://samplebusiness.com/logo.png"
+    font_family: "Arial, sans-serif"
+    
+  pages:
+    - title: "Home"
+      slug: "index"
+      primary_keyword: "professional services"
+      secondary_keywords: ["local business", "expert solutions"]
+      hero_image: "https://via.placeholder.com/1200x600"
+      
+  offerings:
+    - name: "Consulting Services"
+      description: "Expert consulting for your business needs"
+      category: "Professional Service"

@@ -131,9 +131,10 @@ def main():
     print("Setting up SEO Authority Website Generator development environment...")
     print("=" * 60)
     
-    # Check if we're in the right directory
-    if not Path("main.py").exists():
+    # Check if we're in the right directory (setup.py should exist)
+    if not Path("setup.py").exists():
         print("❌ Please run this script from the project root directory")
+        print("The setup.py file should be in the current directory")
         sys.exit(1)
     
     # Create project structure
