@@ -38,6 +38,66 @@ def create_directory_structure():
     print("✅ Directory structure created")
 
 
+def create_requirements_files():
+    """Create requirements.txt and requirements-dev.txt"""
+    
+    requirements_txt = """PyQt6>=6.4.0
+PyYAML>=6.0
+Jinja2>=3.1.0
+boto3>=1.26.0
+requests>=2.28.0
+Pillow>=9.3.0
+beautifulsoup4>=4.11.0"""
+    
+    requirements_dev_txt = """-r requirements.txt
+pytest>=7.2.0
+pytest-qt>=4.2.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+black>=22.10.0
+flake8>=5.0.0
+mypy>=0.991
+pre-commit>=2.20.0"""
+    
+    pytest_ini = """[tool:pytest]
+testpaths = tests
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+addopts = 
+    --strict-markers
+    --strict-config
+    --verbose
+    --cov=src
+    --cov-report=html
+    --cov-report=term-missing
+    --cov-fail-under=90
+markers =
+    unit: Unit tests
+    integration: Integration tests  
+    ui: UI tests requiring PyQt6
+    aws: Tests requiring AWS credentials
+    slow: Slow running tests
+
+filterwarnings =
+    ignore::DeprecationWarning
+    ignore::PendingDeprecationWarning"""
+    
+    # Write requirements.txt
+    with open("requirements.txt", 'w') as f:
+        f.write(requirements_txt)
+    
+    # Write requirements-dev.txt
+    with open("requirements-dev.txt", 'w') as f:
+        f.write(requirements_dev_txt)
+    
+    # Write pytest.ini
+    with open("pytest.ini", 'w') as f:
+        f.write(pytest_ini)
+    
+    print("✅ Requirements files created")
+
+
 def create_sample_files():
     """Create sample configuration and template files"""
     
@@ -139,6 +199,9 @@ def main():
     
     # Create project structure
     create_directory_structure()
+    
+    # Create requirements files
+    create_requirements_files()
     
     # Create sample files
     create_sample_files()
