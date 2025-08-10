@@ -149,8 +149,8 @@ class YAMLBuilderWidget(QWidget):
             widget = QLineEdit()
             widget.setFont(QFont("Arial", self.font_size))
 
-            if "Phone" in label_text:
-                widget.setInputMask("(000) 000-0000;_")
+        if "Phone" in label_text:
+            widget.setPlaceholderText("(555) 123-4567")
 
             layout.addWidget(label, row, 0)
             layout.addWidget(widget, row, 1)
