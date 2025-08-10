@@ -150,8 +150,7 @@ class YAMLBuilderWidget(QWidget):
             widget.setFont(QFont("Arial", self.font_size))
 
         if "Phone" in label_text:
-            widget.setPlaceholderText("(555) 123-4567")
-
+            widget.setPlaceholderText("(866) 713-3396")
             layout.addWidget(label, row, 0)
             layout.addWidget(widget, row, 1)
 
