@@ -1,9 +1,9 @@
 """
 Filename: src/core/website_generator.py
 Path: E:\\projects\\cloud-stack-generator\\src\\core\\website_generator.py
-Description: Enhanced Website Generator with GBP integration and fixes
+Description: Enhanced Website Generator with GBP integration and complete fixes
 
-Version: 2.0.0
+Version: 2.1.0
 Date: 2025-08-09
 Author: Cloud Stack Generator Team
 """
@@ -120,13 +120,25 @@ class WebsiteGenerator:
         is_home: bool = False,
         city: str = "",
     ) -> str:
-        """Create enhanced HTML template with proper navigation and GBP integration"""
+        """Create enhanced HTML template with proper data handling and logo/hero display"""
         business_name = config.business_name
         industry = config.industry
+        contact = config.contact or {}
 
-        # Get branding colors
+        # Get branding
         branding = config.branding or {}
         primary_color = branding.get("primary_color", "#007bff")
+        logo_url = branding.get("logo_url", "")
+
+        # Get hero image
+        hero_image = ""
+        if config.pages:
+            for page in config.pages:
+                if (is_home and page.get("slug") == "index") or (
+                    not is_home and page.get("city") == city
+                ):
+                    hero_image = page.get("hero_image", "")
+                    break
 
         # Build navigation with proper page titles
         nav_links = self._build_navigation(config)
@@ -140,19 +152,26 @@ class WebsiteGenerator:
         # Footer content with GBP and city maps
         footer_content = self._create_footer_content(config, city, is_home)
 
+        # Fix meta description - use industry instead of phone
+        meta_description = f"{industry} services by {business_name}"
+        if city:
+            meta_description = f"{industry} services in {city} by {business_name}"
+
         return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{page_title} - {business_name}</title>
-    <meta name="description" content="{industry} services by {business_name}{' in ' + city if city else ''}">
+    <meta name="description" content="{meta_description}">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>{business_name}</h1>
-        <nav>{nav_links}</nav>
+        <div class="header-content">
+            {f'<img src="{logo_url}" alt="{business_name} Logo" class="logo">' if logo_url else f'<h1>{business_name}</h1>'}
+            <nav>{nav_links}</nav>
+        </div>
     </header>
     
     <main>
@@ -190,37 +209,92 @@ class WebsiteGenerator:
         return nav_links.rstrip(" | ")
 
     def _create_home_content(self, config: ClientConfig) -> str:
-        """Create content for the home page"""
+        """Create content for the home page with proper hero image display"""
         business_name = config.business_name
         industry = config.industry
 
-        # Hero section
+        # Get hero image for home page
+        hero_image = ""
+        if config.pages:
+            for page in config.pages:
+                if page.get("slug") == "index":
+                    hero_image = page.get("hero_image", "")
+                    break
+
+        # Hero section with proper image display
+        hero_style = ""
+        hero_img_tag = ""
+        if hero_image:
+            hero_style = f" style=\"background-image: url('{hero_image}'); background-size: cover; background-position: center;\""
+            hero_img_tag = f'<img src="{hero_image}" alt="{business_name} Hero" class="hero-image">'
+
         content = f"""
-        <section class="hero">
-            <h2>Welcome to {business_name}</h2>
-            <p>Professional {industry.lower()} services you can trust</p>
+        <section class="hero"{hero_style}>
+            <div class="hero-overlay">
+                {hero_img_tag}
+                <div class="hero-text">
+                    <h2>Welcome to {business_name}</h2>
+                    <p>Professional {industry.lower()} services you can trust</p>
+                </div>
+            </div>
         </section>
         
         <section class="content">
             <h3>About Our {industry}</h3>
-            <p>Welcome to {business_name}, your trusted provider of {industry.lower()} services. We are committed to delivering exceptional results and outstanding customer service.</p>
-            
-            <h3>Our Services</h3>
-            <ul>"""
+            <p>Welcome to {business_name}, your trusted provider of {industry.lower()} services. We are committed to delivering exceptional results and outstanding customer service.</p>"""
 
-        # Add services if available
+        # Add services section with enhanced display
         if config.offerings:
-            for offering in config.offerings:
-                service_name = offering.get("name", "Service")
-                content += f"                <li><strong>{service_name}</strong></li>\n"
-        else:
-            content += (
-                f"                <li>Professional {industry} consultation</li>\n"
-            )
-            content += f"                <li>Expert {industry.lower()} solutions</li>\n"
-            content += f"                <li>Quality {industry.lower()} services</li>\n"
+            services = [
+                item for item in config.offerings if item.get("type") != "product"
+            ]
+            products = [
+                item for item in config.offerings if item.get("type") == "product"
+            ]
 
-        content += "            </ul>\n"
+            if services:
+                content += """
+            <h3>Our Services</h3>
+            <div class="services-grid">"""
+
+                for offering in services:
+                    service_name = offering.get("name", "Service")
+                    service_desc = offering.get(
+                        "description", f"Professional {service_name.lower()}"
+                    )
+                    content += f"""
+                    <div class="service-item">
+                        <h4>{service_name}</h4>
+                        <p>{service_desc}</p>
+                    </div>"""
+
+                content += "</div>"
+
+            if products:
+                content += """
+            <h3>Our Products</h3>
+            <div class="services-grid">"""
+
+                for offering in products:
+                    product_name = offering.get("name", "Product")
+                    product_desc = offering.get(
+                        "description", f"High-quality {product_name.lower()}"
+                    )
+                    content += f"""
+                    <div class="service-item">
+                        <h4>{product_name}</h4>
+                        <p>{product_desc}</p>
+                    </div>"""
+
+                content += "</div>"
+        else:
+            content += f"""
+            <h3>Our Services</h3>
+            <ul>
+                <li>Professional {industry} consultation</li>
+                <li>Expert {industry.lower()} solutions</li>
+                <li>Quality {industry.lower()} services</li>
+            </ul>"""
 
         # Add FAQ section if available
         if hasattr(config, "faq") and config.faq:
@@ -258,14 +332,34 @@ class WebsiteGenerator:
         return content
 
     def _create_city_content(self, config: ClientConfig, city: str) -> str:
-        """Create content for city-specific pages"""
+        """Create content for city-specific pages with proper hero image"""
         business_name = config.business_name
         industry = config.industry
 
+        # Get hero image for this city page
+        hero_image = ""
+        if config.pages:
+            for page in config.pages:
+                if page.get("city") == city:
+                    hero_image = page.get("hero_image", "")
+                    break
+
+        # Hero section with proper image display
+        hero_style = ""
+        hero_img_tag = ""
+        if hero_image:
+            hero_style = f" style=\"background-image: url('{hero_image}'); background-size: cover; background-position: center;\""
+            hero_img_tag = f'<img src="{hero_image}" alt="{industry} in {city}" class="hero-image">'
+
         content = f"""
-        <section class="hero">
-            <h2>{industry} Services in {city}</h2>
-            <p>Professional {industry.lower()} services serving {city} and surrounding areas</p>
+        <section class="hero"{hero_style}>
+            <div class="hero-overlay">
+                {hero_img_tag}
+                <div class="hero-text">
+                    <h2>{industry} Services in {city}</h2>
+                    <p>Professional {industry.lower()} services serving {city} and surrounding areas</p>
+                </div>
+            </div>
         </section>
         
         <section class="content">
@@ -281,20 +375,34 @@ class WebsiteGenerator:
             </ul>
             
             <h3>Our {industry} Services in {city}</h3>
-            <ul>"""
+            <div class="services-grid">"""
 
         # Add services if available
         if config.offerings:
             for offering in config.offerings:
                 service_name = offering.get("name", "Service")
-                content += f"                <li><strong>{service_name}</strong> in {city}</li>\n"
+                service_desc = offering.get(
+                    "description", f"Professional {service_name.lower()} in {city}"
+                )
+                content += f"""
+                <div class="service-item">
+                    <h4>{service_name} in {city}</h4>
+                    <p>{service_desc}</p>
+                </div>"""
         else:
-            content += f"                <li>Professional {industry} consultation in {city}</li>\n"
-            content += f"                <li>Expert {industry.lower()} solutions for {city}</li>\n"
-            content += f"                <li>Quality {industry.lower()} services in {city}</li>\n"
+            content += f"""
+                <div class="service-item">
+                    <h4>Professional {industry} Consultation</h4>
+                    <p>Expert {industry.lower()} consultation services in {city}</p>
+                </div>
+                <div class="service-item">
+                    <h4>Local {industry} Solutions</h4>
+                    <p>Customized {industry.lower()} solutions for {city} businesses</p>
+                </div>"""
 
         content += (
-            """            </ul>
+            """
+            </div>
             
             <h3>Contact Us Today</h3>
             <p>Ready to get started? Contact us today to learn more about our services in """
@@ -308,7 +416,7 @@ class WebsiteGenerator:
     def _create_footer_content(
         self, config: ClientConfig, city: str = "", is_home: bool = False
     ) -> str:
-        """Create footer content with contact info, GBP map, and social links"""
+        """Create footer content with proper phone display and contact info"""
         business_name = config.business_name
         contact = config.contact or {}
 
@@ -317,11 +425,14 @@ class WebsiteGenerator:
             <div class="footer-section contact-info">
                 <h4>Contact Information</h4>"""
 
-        # Add contact info
-        if contact.get("phone"):
+        # Fix phone display - get original phone format, not normalized
+        if phone := contact.get("phone"):
+            # Display the phone as originally entered, not the normalized version
+            display_phone = self._get_display_phone(phone)
             footer_content += (
-                f'                <p><strong>Phone:</strong> {contact["phone"]}</p>\n'
+                f"                <p><strong>Phone:</strong> {display_phone}</p>\n"
             )
+
         if contact.get("address"):
             footer_content += f'                <p><strong>Address:</strong> {contact["address"]}</p>\n'
         if contact.get("email"):
@@ -393,8 +504,27 @@ class WebsiteGenerator:
 
         return iframe_code
 
+    def _get_display_phone(self, phone: str) -> str:
+        """Get proper display format for phone number"""
+        if not phone:
+            return ""
+
+        # If phone looks like it's already formatted nicely, keep it
+        if "(" in phone and ")" in phone and "-" in phone:
+            return phone
+
+        # Extract digits and format for display
+        digits = "".join(filter(str.isdigit, phone))
+
+        if len(digits) == 10:
+            return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+        elif len(digits) == 11 and digits.startswith("1"):
+            return f"({digits[1:4]}) {digits[4:7]}-{digits[7:]}"
+
+        return phone  # Return original if can't parse
+
     def _create_css_template(self, config: ClientConfig) -> str:
-        """Create enhanced CSS template with footer layout"""
+        """Create enhanced CSS template with logo and hero image support"""
         branding = config.branding or {}
         primary_color = branding.get("primary_color", "#007bff")
         secondary_color = branding.get("secondary_color", "#6c757d")
@@ -418,57 +548,112 @@ body {{
     flex-direction: column;
 }}
 
+/* Header Styles with Logo Support */
 header {{
     background-color: {primary_color};
     color: white;
     padding: 1rem;
-    text-align: center;
+}}
+
+.header-content {{
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}}
+
+.logo {{
+    max-height: 60px;
+    max-width: 200px;
+    height: auto;
+    width: auto;
 }}
 
 header h1 {{
-    margin-bottom: 0.5rem;
+    margin: 0;
     font-size: 2rem;
+}}
+
+nav {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
 }}
 
 nav a {{
     color: white;
     text-decoration: none;
-    margin: 0 0.5rem;
     font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 }}
 
 nav a:hover {{
-    text-decoration: underline;
+    background-color: rgba(255,255,255,0.2);
 }}
 
 main {{
     flex: 1;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
     width: 100%;
 }}
 
+/* Enhanced Hero Section with Image Support */
 .hero {{
-    background-color: white;
-    padding: 3rem 2rem;
+    position: relative;
+    padding: 4rem 2rem;
     text-align: center;
     margin-bottom: 2rem;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }}
 
-.hero h2 {{
+.hero-overlay {{
+    position: relative;
+    z-index: 2;
+    background-color: rgba(255,255,255,0.95);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 600px;
+}}
+
+.hero-image {{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}}
+
+.hero-text h2 {{
     color: {primary_color};
     margin-bottom: 1rem;
     font-size: 2.5rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }}
 
+.hero-text p {{
+    font-size: 1.2rem;
+    color: {secondary_color};
+}}
+
+/* Content Styles */
 .content {{
     background-color: white;
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin: 0 2rem 2rem 2rem;
 }}
 
 .content h3 {{
@@ -491,6 +676,33 @@ main {{
     margin-bottom: 0.5rem;
 }}
 
+/* Services Grid */
+.services-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}}
+
+.service-item {{
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid {primary_color};
+    transition: transform 0.3s, box-shadow 0.3s;
+}}
+
+.service-item:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}}
+
+.service-item h4 {{
+    color: {primary_color};
+    margin-bottom: 0.5rem;
+}}
+
+/* FAQ Styles */
 .faq-section {{
     margin-top: 1rem;
 }}
@@ -505,6 +717,7 @@ main {{
 
 .faq-item h4 {{
     margin-bottom: 0.5rem;
+    color: {primary_color};
 }}
 
 /* Footer Styles */
@@ -548,10 +761,13 @@ footer {{
     text-decoration: none;
     margin: 0 0.5rem;
     font-size: 1.1rem;
+    display: inline-block;
+    padding: 0.5rem;
+    transition: color 0.3s;
 }}
 
 .social-links a:hover {{
-    text-decoration: underline;
+    color: {primary_color};
 }}
 
 .footer-bottom {{
@@ -563,21 +779,32 @@ footer {{
 
 /* Responsive design */
 @media (max-width: 768px) {{
-    main {{
-        padding: 1rem;
+    .header-content {{
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }}
+    
+    nav {{
+        justify-content: center;
     }}
     
     .hero {{
         padding: 2rem 1rem;
+        min-height: 300px;
     }}
     
-    .hero h2 {{
+    .hero-text h2 {{
         font-size: 2rem;
     }}
     
-    nav a {{
-        display: block;
-        margin: 0.5rem 0;
+    .content {{
+        margin: 0 1rem 1rem 1rem;
+        padding: 1rem;
+    }}
+    
+    .services-grid {{
+        grid-template-columns: 1fr;
     }}
     
     .footer-container {{
@@ -596,12 +823,13 @@ footer {{
         font-size: 1.5rem;
     }}
     
-    .hero h2 {{
+    .hero-text h2 {{
         font-size: 1.5rem;
     }}
     
-    .content {{
-        padding: 1rem;
+    nav a {{
+        padding: 0.25rem 0.5rem;
+        font-size: 0.9rem;
     }}
 }}
 """
