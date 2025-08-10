@@ -1,0 +1,84 @@
+ <html>
+<section style="max-width:800px;margin:0 auto;padding:1rem;font-family:sans-serif;">
+<h2>Custom Chimney Shrouds</h2>
+
+<style>
+  .chimney-faq-item {
+    border: 3px solid #393536;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .chimney-faq-question {
+    background: #ff9c1a;
+    padding: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .chimney-faq-question:hover {
+    background: #ffb901;
+  }
+  .chimney-faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 1rem;
+    transition: max-height 0.4s ease, padding 0.4s ease;
+  }
+  .chimney-faq-answer.open {
+    padding: 1rem;
+    max-height: 500px;
+  }
+  @media (max-width: 600px) {
+    .chimney-faq-question,
+    .chimney-faq-answer {
+      padding: 0.75rem;
+    }
+  }
+</style>
+
+<div class="chimney-faq-item">
+    <div class="chimney-faq-question">What are custom chimney shrouds and when are they needed?</div>
+    <div class="chimney-faq-answer">
+      Custom chimney shrouds are tailored metal covers designed to protect chimney tops from water, debris, and critters. They're needed when standard off‑the‑shelf caps don't fit properly or when the chimney has multiple flues, unusual dimensions, or aesthetic concerns. A custom shroud ensures precise fit, better durability, and a more refined architectural look.
+    </div>
+  </div>
+
+  <div class="chimney-faq-item">
+    <div class="chimney-faq-question">How do custom chimney shrouds improve draft and airflow?</div>
+    <div class="chimney-faq-answer">
+      A well‑designed shroud directs airflow efficiently by minimizing downdrafts and turbulence at the chimney top. This improves draft, reducing smoke backup and enhancing fireplace performance. The mesh and hood geometry can be optimized to support smoother venting and fire safety.
+    </div>
+  </div>
+
+  <div class="chimney-faq-item">
+    <div class="chimney-faq-question">What materials are used for custom chimney shrouds?</div>
+    <div class="chimney-faq-answer">
+      Common materials include copper, stainless steel, galvanized or powder‑coated steel, and aluminum. Copper offers a rich patina over time and high durability, while stainless steel resists corrosion with a sleek finish. The choice depends on climate exposure, architectural style, and budget considerations.
+    </div>
+  </div>
+
+  <div class="chimney-faq-item">
+    <div class="chimney-faq-question">How are custom shrouds measured and installed?</div>
+    <div class="chimney-faq-answer">
+      Installation begins with precise measurements of the flue or chimney crown dimensions, flue count, and clearance to combustibles. The shroud is fabricated to those specs and typically installed with clamps or bolts directly to the flue or chimney chase. Proper sealing and anchoring are essential for long‑term performance.
+    </div>
+  </div>
+
+  <div class="chimney-faq-item">
+    <div class="chimney-faq-question">Are custom chimney shrouds required by code or building standards?</div>
+    <div class="chimney-faq-answer">
+      Local building codes may require chimney caps or spark arrestors, but not always custom shrouds specifically. However, custom shrouds often help meet code requirements more reliably by providing full coverage, spark arresting mesh, and proper clearances. It's best to check local regulations and work with certified fabricators.
+    </div>
+  </div>
+
+<script>
+  document.querySelectorAll('.chimney-faq-question').forEach((q) => {
+    q.addEventListener('click', () => {
+      const ans = q.nextElementSibling;
+      ans.classList.toggle('open');
+    });
+  });
+</script>
+
+</section>

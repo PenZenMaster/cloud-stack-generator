@@ -3,8 +3,8 @@ Filename: src/ui/yaml_builder.py
 Path: E:\\projects\\cloud-stack-generator\\src\\ui\\yaml_builder.py
 Description: Enhanced YAML Builder Widget with GBP integration and city selection
 
-Version: 2.1.0
-Date: 2025-08-09
+Version: 2.2.0
+Date: 2025-08-10
 Author: Cloud Stack Generator Team
 """
 
@@ -149,11 +149,15 @@ class YAMLBuilderWidget(QWidget):
             widget = QLineEdit()
             widget.setFont(QFont("Arial", self.font_size))
 
-        if "Phone" in label_text:
-            widget.setPlaceholderText("(866) 713-3396")
+            # Set placeholder text for phone field
+            if "Phone" in label_text:
+                widget.setPlaceholderText("(866) 713-3396")
+
+            # Add all widgets to layout (moved outside the if condition)
             layout.addWidget(label, row, 0)
             layout.addWidget(widget, row, 1)
 
+            # Store the widget reference
             self.contact_inputs[field_key] = widget
             row += 1
 
@@ -281,18 +285,29 @@ class YAMLBuilderWidget(QWidget):
         return group
 
     def create_services_section(self) -> QGroupBox:
-        """Create services/offerings section"""
-        group = QGroupBox("Services & Offerings")
+        """Create services/offerings section with SEPARATE Services and Products"""
+        group = QGroupBox("Services & Products")
         layout = QVBoxLayout()
 
+        # Services section
         layout.addWidget(QLabel("* Services (one per line):"))
         self.service_inputs["services"] = QTextEdit()
         self.service_inputs["services"].setFixedHeight(100)
         self.service_inputs["services"].setPlaceholderText(
-            "Business Consulting\nStrategic Planning\nManagement Advice"
+            "Metal Fabrication\nCustom Welding\nArchitectural Metal"
         )
         layout.addWidget(self.service_inputs["services"])
 
+        # Products section - NEW
+        layout.addWidget(QLabel("Products (one per line):"))
+        self.service_inputs["products"] = QTextEdit()
+        self.service_inputs["products"].setFixedHeight(100)
+        self.service_inputs["products"].setPlaceholderText(
+            "Steel Components\nCustom Railings\nMetal Fixtures"
+        )
+        layout.addWidget(self.service_inputs["products"])
+
+        # FAQ section
         layout.addWidget(QLabel("FAQ Questions (one per line):"))
         self.service_inputs["faq"] = QTextEdit()
         self.service_inputs["faq"].setFixedHeight(80)
@@ -547,72 +562,85 @@ class YAMLBuilderWidget(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"❌ Failed to load YAML:\n{str(e)}")
 
+    # PART 3 - Final section from Part 2
+
     def populate_fields_from_config(self, config: dict):
-        """
-        Populate UI fields from loaded YAML config dictionary.
-        """
-        client = config.get("client", {})
+        """Populate UI fields from loaded config dictionary - with error handling"""
+        try:
+            # Ensure we have the right structure
+            if not isinstance(config, dict):
+                raise ValueError("Config must be a dictionary")
 
-        # Business info
-        self.business_inputs.get("business_name", QLineEdit()).setText(
-            client.get("business_name", "")
-        )
-        self.business_inputs.get("domain", QLineEdit()).setText(
-            client.get("domain", "")
-        )
-        self.business_inputs.get("industry", QLineEdit()).setText(
-            client.get("industry", "")
-        )
+            client = config.get("client", {})
+            if not isinstance(client, dict):
+                raise ValueError("Client section must be a dictionary")
 
-        # Contact info
-        contact = client.get("contact", {})
-        self.contact_inputs.get("name", QLineEdit()).setText(contact.get("name", ""))
-        address = contact.get("address", "")
-        # Try to split address into street, city, state, zip
-        address_parts = [part.strip() for part in address.split(",")]
-        if len(address_parts) > 0:
-            self.contact_inputs.get("street_address", QLineEdit()).setText(
-                address_parts[0] if len(address_parts) > 0 else ""
+            # Business info - with safe defaults
+            self.business_inputs["business_name"].setText(
+                str(client.get("business_name", ""))
             )
-        if len(address_parts) > 1:
-            self.contact_inputs.get("city", QLineEdit()).setText(
-                address_parts[1] if len(address_parts) > 1 else ""
-            )
-        if len(address_parts) > 2:
-            self.contact_inputs.get("state", QLineEdit()).setText(
-                address_parts[2] if len(address_parts) > 2 else ""
-            )
-        if len(address_parts) > 3:
-            self.contact_inputs.get("zip", QLineEdit()).setText(
-                address_parts[3] if len(address_parts) > 3 else ""
-            )
-        self.contact_inputs.get("phone", QLineEdit()).setText(contact.get("phone", ""))
-        self.contact_inputs.get("country", QLineEdit()).setText(
-            client.get("country", "")
-        )
-        self.contact_inputs.get("email", QLineEdit()).setText(client.get("email", ""))
+            self.business_inputs["domain"].setText(str(client.get("domain", "")))
+            self.business_inputs["industry"].setText(str(client.get("industry", "")))
 
-        # Social media
-        social_media = client.get("social_media", {})
-        for platform, widget in self.social_inputs.items():
-            widget.setText(social_media.get(platform, ""))
+            # Contact info - with safe handling and FIXED phone loading
+            contact = client.get("contact", {})
+            if isinstance(contact, dict):
+                self.contact_inputs["name"].setText(str(contact.get("name", "")))
 
-        # Branding
-        branding = client.get("branding", {})
-        for key, widget in self.branding_inputs.items():
-            widget.setText(branding.get(key, ""))
+                # FIX: Load phone as-is without normalization during populate
+                original_phone = str(contact.get("phone", ""))
+                self.contact_inputs["phone"].setText(original_phone)
 
-        # GBP
-        gbp = client.get("google_business_profile", {})
-        self.gbp_inputs.get("embed_code", QTextEdit()).setPlainText(
-            gbp.get("embed_code", "")
-        )
+                # Handle address parsing safely
+                address = contact.get("address", "")
+                if isinstance(address, str) and address:
+                    address_parts = address.split(",")
+                    self.contact_inputs["street_address"].setText(
+                        address_parts[0].strip() if len(address_parts) > 0 else ""
+                    )
+                    self.contact_inputs["city"].setText(
+                        address_parts[1].strip() if len(address_parts) > 1 else ""
+                    )
+                    self.contact_inputs["state"].setText(
+                        address_parts[2].strip() if len(address_parts) > 2 else ""
+                    )
+                    self.contact_inputs["zip"].setText(
+                        address_parts[3].strip() if len(address_parts) > 3 else ""
+                    )
 
-        # Google Maps cities
-        google_maps = client.get("google_maps", {})
-        self.city_data = google_maps.get("cities", {}) if google_maps else {}
-        self.refresh_city_list()
-        self.update_city_selector()
+            # Social media - with safe handling
+            social = client.get("social_media", {})
+            if isinstance(social, dict):
+                for platform in self.social_inputs:
+                    self.social_inputs[platform].setText(str(social.get(platform, "")))
+
+            # Branding - with safe handling
+            branding = client.get("branding", {})
+            if isinstance(branding, dict):
+                for key in self.branding_inputs:
+                    self.branding_inputs[key].setText(str(branding.get(key, "")))
+
+            # GBP - with safe handling
+            gbp = client.get("google_business_profile", {})
+            if isinstance(gbp, dict):
+                self.gbp_inputs["embed_code"].setPlainText(
+                    str(gbp.get("embed_code", ""))
+                )
+
+            # Google Maps for cities - with safe handling
+            google_maps = client.get("google_maps", {})
+            self.city_data = {}
+            if isinstance(google_maps, dict):
+                cities = google_maps.get("cities", {})
+                if isinstance(cities, dict):
+                    for city_key, city_info in cities.items():
+                        if isinstance(city_info, dict):
+                            self.city_data[city_key] = {
+                                "embed_code": city_info.get("embed_code", "")
+                            }
+
+            self.refresh_city_list()
+            self.update_city_selector()
 
             # Pages - with safe handling
             pages = client.get("pages", [])
@@ -633,18 +661,33 @@ class YAMLBuilderWidget(QWidget):
 
                 self.page_inputs["target_cities"].setPlainText("\n".join(target_cities))
 
-            # Services/Offerings - with safe handling
+            # Services/Offerings - enhanced to handle both services and products
             offerings = client.get("offerings", [])
             if isinstance(offerings, list):
                 service_names = []
+                product_names = []
+
                 for offering in offerings:
                     if isinstance(offering, dict):
-                        service_names.append(str(offering.get("name", "")))
+                        name = str(offering.get("name", ""))
+                        offering_type = offering.get("type", "service")
+
+                        if offering_type == "product":
+                            product_names.append(name)
+                        else:
+                            service_names.append(name)
                     else:
                         service_names.append(str(offering))
+
                 self.service_inputs["services"].setPlainText(
                     "\n".join(filter(None, service_names))
                 )
+
+                # Handle products if the field exists
+                if "products" in self.service_inputs:
+                    self.service_inputs["products"].setPlainText(
+                        "\n".join(filter(None, product_names))
+                    )
 
             # FAQ - with safe handling
             faq = client.get("faq", [])
@@ -751,11 +794,12 @@ class YAMLBuilderWidget(QWidget):
         return pages
 
     def build_offerings(self) -> list:
-        """Build offerings list from services"""
+        """Build offerings list from both services and products"""
         offerings = []
-        services_text = self.service_inputs.get("services", QTextEdit()).toPlainText()
         industry = self.business_inputs["industry"].text() or "Professional Service"
 
+        # Add services
+        services_text = self.service_inputs.get("services", QTextEdit()).toPlainText()
         if services_text:
             for service in services_text.split("\n"):
                 service = service.strip()
@@ -765,8 +809,25 @@ class YAMLBuilderWidget(QWidget):
                             "name": service,
                             "description": f"Professional {service.lower()} services",
                             "category": industry,
+                            "type": "service",
                         }
                     )
+
+        # Add products
+        products_text = self.service_inputs.get("products", QTextEdit()).toPlainText()
+        if products_text:
+            for product in products_text.split("\n"):
+                product = product.strip()
+                if product:
+                    offerings.append(
+                        {
+                            "name": product,
+                            "description": f"High-quality {product.lower()}",
+                            "category": industry,
+                            "type": "product",
+                        }
+                    )
+
         return offerings
 
     def build_faq(self) -> list:

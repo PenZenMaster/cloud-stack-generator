@@ -3,8 +3,8 @@ Filename: src/core/website_generator.py
 Path: E:\\projects\\cloud-stack-generator\\src\\core\\website_generator.py
 Description: Enhanced Website Generator with GBP integration and complete fixes
 
-Version: 2.1.0
-Date: 2025-08-09
+Version: 2.2.0
+Date: 2025-08-10
 Author: Cloud Stack Generator Team
 """
 
@@ -208,8 +208,10 @@ class WebsiteGenerator:
 
         return nav_links.rstrip(" | ")
 
+    # PART 2 - Continue from Part 1
+
     def _create_home_content(self, config: ClientConfig) -> str:
-        """Create content for the home page with proper hero image display"""
+        """Create content for the home page with SEPARATE Services and Products sections"""
         business_name = config.business_name
         industry = config.industry
 
@@ -221,17 +223,14 @@ class WebsiteGenerator:
                     hero_image = page.get("hero_image", "")
                     break
 
-        # Hero section with proper image display
+        # Hero section with ONLY background image (no img tag)
         hero_style = ""
-        hero_img_tag = ""
         if hero_image:
             hero_style = f" style=\"background-image: url('{hero_image}'); background-size: cover; background-position: center;\""
-            hero_img_tag = f'<img src="{hero_image}" alt="{business_name} Hero" class="hero-image">'
 
         content = f"""
         <section class="hero"{hero_style}>
             <div class="hero-overlay">
-                {hero_img_tag}
                 <div class="hero-text">
                     <h2>Welcome to {business_name}</h2>
                     <p>Professional {industry.lower()} services you can trust</p>
@@ -243,7 +242,7 @@ class WebsiteGenerator:
             <h3>About Our {industry}</h3>
             <p>Welcome to {business_name}, your trusted provider of {industry.lower()} services. We are committed to delivering exceptional results and outstanding customer service.</p>"""
 
-        # Add services section with enhanced display
+        # Add services and products sections SEPARATELY
         if config.offerings:
             services = [
                 item for item in config.offerings if item.get("type") != "product"
@@ -252,6 +251,7 @@ class WebsiteGenerator:
                 item for item in config.offerings if item.get("type") == "product"
             ]
 
+            # SERVICES SECTION
             if services:
                 content += """
             <h3>Our Services</h3>
@@ -270,10 +270,11 @@ class WebsiteGenerator:
 
                 content += "</div>"
 
+            # PRODUCTS SECTION - SEPARATE with different styling
             if products:
                 content += """
             <h3>Our Products</h3>
-            <div class="services-grid">"""
+            <div class="products-grid">"""
 
                 for offering in products:
                     product_name = offering.get("name", "Product")
@@ -281,13 +282,14 @@ class WebsiteGenerator:
                         "description", f"High-quality {product_name.lower()}"
                     )
                     content += f"""
-                    <div class="service-item">
+                    <div class="product-item">
                         <h4>{product_name}</h4>
                         <p>{product_desc}</p>
                     </div>"""
 
                 content += "</div>"
         else:
+            # Default services if none specified
             content += f"""
             <h3>Our Services</h3>
             <ul>
@@ -332,7 +334,7 @@ class WebsiteGenerator:
         return content
 
     def _create_city_content(self, config: ClientConfig, city: str) -> str:
-        """Create content for city-specific pages with proper hero image"""
+        """Create content for city-specific pages with separate Services and Products"""
         business_name = config.business_name
         industry = config.industry
 
@@ -344,17 +346,14 @@ class WebsiteGenerator:
                     hero_image = page.get("hero_image", "")
                     break
 
-        # Hero section with proper image display
+        # Hero section with ONLY background image (no img tag)
         hero_style = ""
-        hero_img_tag = ""
         if hero_image:
             hero_style = f" style=\"background-image: url('{hero_image}'); background-size: cover; background-position: center;\""
-            hero_img_tag = f'<img src="{hero_image}" alt="{industry} in {city}" class="hero-image">'
 
         content = f"""
         <section class="hero"{hero_style}>
             <div class="hero-overlay">
-                {hero_img_tag}
                 <div class="hero-text">
                     <h2>{industry} Services in {city}</h2>
                     <p>Professional {industry.lower()} services serving {city} and surrounding areas</p>
@@ -377,9 +376,17 @@ class WebsiteGenerator:
             <h3>Our {industry} Services in {city}</h3>
             <div class="services-grid">"""
 
-        # Add services if available
+        # Add services and products separately for city pages
         if config.offerings:
-            for offering in config.offerings:
+            services = [
+                item for item in config.offerings if item.get("type") != "product"
+            ]
+            products = [
+                item for item in config.offerings if item.get("type") == "product"
+            ]
+
+            # Add services
+            for offering in services:
                 service_name = offering.get("name", "Service")
                 service_desc = offering.get(
                     "description", f"Professional {service_name.lower()} in {city}"
@@ -389,7 +396,31 @@ class WebsiteGenerator:
                     <h4>{service_name} in {city}</h4>
                     <p>{service_desc}</p>
                 </div>"""
+
+            content += "</div>"
+
+            # Add products section if products exist
+            if products:
+                content += f"""
+            
+            <h3>Our Products Available in {city}</h3>
+            <div class="products-grid">"""
+
+                for offering in products:
+                    product_name = offering.get("name", "Product")
+                    product_desc = offering.get(
+                        "description",
+                        f"High-quality {product_name.lower()} available in {city}",
+                    )
+                    content += f"""
+                    <div class="product-item">
+                        <h4>{product_name}</h4>
+                        <p>{product_desc}</p>
+                    </div>"""
+
+                content += "</div>"
         else:
+            # Default services if none specified
             content += f"""
                 <div class="service-item">
                     <h4>Professional {industry} Consultation</h4>
@@ -398,20 +429,36 @@ class WebsiteGenerator:
                 <div class="service-item">
                     <h4>Local {industry} Solutions</h4>
                     <p>Customized {industry.lower()} solutions for {city} businesses</p>
+                </div>
+            </div>"""
+
+        # Add FAQ section if available
+        if hasattr(config, "faq") and config.faq:
+            content += """
+            
+            <h3>Frequently Asked Questions</h3>
+            <div class="faq-section">"""
+
+            for faq_item in config.faq:
+                question = faq_item.get("question", "")
+                answer = faq_item.get("answer", "")
+                content += f"""
+                <div class="faq-item">
+                    <h4>{question}</h4>
+                    <p>{answer}</p>
                 </div>"""
 
-        content += (
-            """
-            </div>
+            content += "</div>"
+
+        content += f"""
             
             <h3>Contact Us Today</h3>
-            <p>Ready to get started? Contact us today to learn more about our services in """
-            + city
-            + """.</p>
+            <p>Ready to get started? Contact us today to learn more about our services in {city}.</p>
         </section>"""
-        )
 
         return content
+
+    # PART 3 - Final section from Part 2
 
     def _create_footer_content(
         self, config: ClientConfig, city: str = "", is_home: bool = False
@@ -524,7 +571,7 @@ class WebsiteGenerator:
         return phone  # Return original if can't parse
 
     def _create_css_template(self, config: ClientConfig) -> str:
-        """Create enhanced CSS template with logo and hero image support"""
+        """Create enhanced CSS template with logo and hero image support + Products styling"""
         branding = config.branding or {}
         primary_color = branding.get("primary_color", "#007bff")
         secondary_color = branding.get("secondary_color", "#6c757d")
@@ -702,6 +749,32 @@ main {{
     margin-bottom: 0.5rem;
 }}
 
+/* Products Grid - Similar to Services but with distinct styling */
+.products-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}}
+
+.product-item {{
+    background-color: #f1f8ff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid {secondary_color};
+    transition: transform 0.3s, box-shadow 0.3s;
+}}
+
+.product-item:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}}
+
+.product-item h4 {{
+    color: {secondary_color};
+    margin-bottom: 0.5rem;
+}}
+
 /* FAQ Styles */
 .faq-section {{
     margin-top: 1rem;
@@ -803,7 +876,7 @@ footer {{
         padding: 1rem;
     }}
     
-    .services-grid {{
+    .services-grid, .products-grid {{
         grid-template-columns: 1fr;
     }}
     

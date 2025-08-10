@@ -199,6 +199,225 @@ Python 3.9+
 - Consistent branding across pages
 - Page preview functionality in UI
 
+# Enhanced Website Layout Specification - Sprint 2
+
+## Overview
+Transform the basic brochure-style websites into professional business websites with enhanced navigation, product catalogs, and improved user experience.
+
+## 1. Enhanced Header & Navigation
+
+### 1.1 Header Structure
+```
+Full-width header with:
+- Business Logo/Name (left)
+- Main Navigation Menu (center) 
+- Phone Number (right, prominent)
+```
+
+### 1.2 Main Navigation Menu
+**Primary Menu Items:**
+- Home
+- Products (when products exist in config)
+- Services (when services exist in config)  
+- Cities We Serve (when multiple cities configured)
+- Contact Us
+
+### 1.3 Mega Menu Implementation
+**Dropdown Structure:**
+- **Products/Services**: Grid layout, 4 items per row, stacked rows
+- **Cities We Serve**: Horizontal list, multiple rows as needed
+- **Responsive**: Single column on mobile devices
+
+**Visual Design:**
+- Dropdown appears on hover/click
+- Smooth animations (fade in/out)
+- Shadow/border for visual separation
+- Close on outside click or ESC key
+
+## 2. Product/Service Enhancement
+
+### 2.1 CSV Integration
+**Supported Fields:**
+- Product URL (for SEO-friendly URLs)
+- SKU (unique identifier)
+- Name (display title)
+- Image URL (product photo)
+- Description (generated or provided)
+
+**Implementation:**
+- CSV upload in YAML Builder
+- Automatic page generation for each product
+- SEO-optimized URLs based on product names
+
+### 2.2 Product/Service Display
+**Layout:**
+- 2-column responsive grid (1 column on mobile)
+- Rounded corner boxes with drop shadows
+- Consistent spacing and alignment
+
+**Box Content:**
+```
+┌─────────────────────────────┐
+│  [Product Image]            │
+│  Product/Service Name       │
+│  SKU: [SKU-CODE]           │
+│  Description text...        │
+│  [Learn More Button]        │
+└─────────────────────────────┘
+```
+
+### 2.3 Individual Product/Service Pages
+**URL Structure:**
+- Products: `/products/[product-slug]/`
+- Services: `/services/[service-slug]/`
+
+**Page Content:**
+- Hero section with product image
+- Detailed description
+- Specifications (if applicable)
+- Related products/services
+- Contact form/CTA
+
+## 3. Content Architecture
+
+### 3.1 Page Hierarchy
+```
+Homepage
+├── Products/
+│   ├── Category Pages (if applicable)
+│   └── Individual Product Pages
+├── Services/
+│   ├── Category Pages (if applicable) 
+│   └── Individual Service Pages
+├── Cities/
+│   └── City-specific Landing Pages
+└── Contact
+```
+
+### 3.2 Service Areas Section
+**Layout:**
+- Horizontal items in rows
+- Responsive grid (4-3-2-1 items per row based on screen size)
+- Each item as clickable link to city page
+- Visual styling consistent with overall design
+
+## 4. Technical Implementation
+
+### 4.1 CSS Architecture
+**Recommendation: External CSS**
+- Main stylesheet for layout/components
+- Modular CSS for specific sections
+- CSS custom properties for theming
+- Mobile-first responsive design
+
+### 4.2 JavaScript Enhancements
+**Required Features:**
+- Mega menu interactions
+- Mobile menu toggle
+- Smooth scrolling
+- Form validation
+- Image lazy loading
+
+### 4.3 Configuration Updates
+**YAML Structure Enhancement:**
+```yaml
+client:
+  # ... existing fields ...
+  
+  # Enhanced product structure
+  products:
+    csv_file: "path/to/products.csv"
+    categories: ["Category 1", "Category 2"]
+    enable_individual_pages: true
+    
+  # Enhanced service structure  
+  services:
+    categories: ["Service Type 1", "Service Type 2"]
+    enable_individual_pages: true
+    
+  # Navigation preferences
+  navigation:
+    show_phone_in_header: true
+    mega_menu_style: "grid" # or "list"
+    mobile_menu_style: "slide" # or "overlay"
+```
+
+## 5. SEO Enhancements
+
+### 5.1 URL Structure
+- Clean, keyword-rich URLs
+- Proper internal linking
+- Breadcrumb navigation
+- Canonical URLs
+
+### 5.2 Content Optimization
+- Unique meta descriptions per page
+- Product/service schema markup
+- Image alt text optimization
+- H1/H2/H3 hierarchy
+
+## 6. Performance Considerations
+
+### 6.1 Image Optimization
+- Responsive images with srcset
+- WebP format support
+- Lazy loading implementation
+- Image compression
+
+### 6.2 Code Optimization
+- Minified CSS/JS
+- Critical CSS inlining
+- Gzip compression
+- CDN-ready assets
+
+## 7. Implementation Timeline
+
+### Phase 1: Navigation Enhancement (Week 1)
+- Header redesign
+- Basic mega menu implementation
+- Mobile menu functionality
+
+### Phase 2: Product/Service Pages (Week 2)
+- CSV integration
+- Individual page generation
+- Enhanced layouts
+
+### Phase 3: Polish & Optimization (Week 3)
+- Performance optimization
+- SEO enhancements
+- Cross-browser testing
+
+## 8. Success Criteria
+
+### Functional Requirements
+- ✅ Mega menu works on all devices
+- ✅ All products from CSV have individual pages
+- ✅ Navigation is intuitive and accessible
+- ✅ Site loads in under 3 seconds
+- ✅ Mobile experience is excellent
+
+### Business Requirements
+- ✅ Professional appearance suitable for B2B clients
+- ✅ Easy content management via CSV uploads
+- ✅ SEO-optimized for local search
+- ✅ Conversion-focused design with clear CTAs
+
+## 9. Future Considerations
+
+### Potential Enhancements
+- Search functionality
+- Product filtering/sorting
+- Image galleries
+- Customer testimonials integration
+- Blog/news section
+- Multi-language support
+
+### Scalability
+- Support for 100+ products
+- Multiple product categories
+- Bulk content updates
+- Performance at scale
+
 #### Sprint 3: SEO Optimization & Schema (2 weeks)
 **Goal**: Complete SEO implementation
 
