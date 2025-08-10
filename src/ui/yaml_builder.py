@@ -633,46 +633,33 @@ class YAMLBuilderWidget(QWidget):
 
                 self.page_inputs["target_cities"].setPlainText("\n".join(target_cities))
 
-            # Services/Offerings - enhanced to handle both services and products
+            # Services/Offerings - with safe handling
             offerings = client.get("offerings", [])
             if isinstance(offerings, list):
                 service_names = []
-                product_names = []
-
                 for offering in offerings:
                     if isinstance(offering, dict):
-                        name = str(offering.get("name", ""))
-                        offering_type = offering.get("type", "service")
-
-                        if offering_type == "product":
-                            product_names.append(name)
-                        else:
-                            service_names.append(name)
+                        service_names.append(str(offering.get("name", "")))
                     else:
                         service_names.append(str(offering))
-
                 self.service_inputs["services"].setPlainText(
                     "\n".join(filter(None, service_names))
                 )
-            # Handle products if the field exists
-            if "products" in self.service_inputs:
-                self.service_inputs["products"].setPlainText(
-                    "\n".join(filter(None, product_names))
+
+            # FAQ - with safe handling
+            faq = client.get("faq", [])
+            if isinstance(faq, list):
+                faq_questions = []
+                for item in faq:
+                    if isinstance(item, dict):
+                        question = item.get("question", "")
+                        if question:
+                            faq_questions.append(str(question))
+                    else:
+                        faq_questions.append(str(item))
+                self.service_inputs["faq"].setPlainText(
+                    "\n".join(filter(None, faq_questions))
                 )
-                # FAQ - with safe handling
-                faq = client.get("faq", [])
-                if isinstance(faq, list):
-                    faq_questions = []
-                    for item in faq:
-                        if isinstance(item, dict):
-                            question = item.get("question", "")
-                            if question:
-                                faq_questions.append(str(question))
-                        else:
-                            faq_questions.append(str(item))
-                    self.service_inputs["faq"].setPlainText(
-                        "\n".join(filter(None, faq_questions))
-                    )
 
         except Exception as e:
             # Show detailed error for debugging
