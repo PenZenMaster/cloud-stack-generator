@@ -4,7 +4,7 @@ CSV data management and validation
 This module handles CSV file upload, validation, and parsing for products and services.
 Provides robust error handling and data validation.
 
-Version: 1.0.0
+Version: 1.0.1
 Author: Cloud Stack Generator Team
 """
 
@@ -12,7 +12,7 @@ import pandas as pd
 import os
 from typing import List, Tuple, Dict, Any, Optional
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from ..config.models import ProductConfig, ServiceConfig
 
 
@@ -31,16 +31,10 @@ class ValidationResult:
     """Result of CSV validation process"""
 
     is_valid: bool = True
-    errors: List[ValidationError] = None
-    warnings: List[ValidationError] = None
+    errors: List[ValidationError] = field(default_factory=list)
+    warnings: List[ValidationError] = field(default_factory=list)
     total_rows: int = 0
     valid_rows: int = 0
-
-    def __post_init__(self):
-        if self.errors is None:
-            self.errors = []
-        if self.warnings is None:
-            self.warnings = []
 
     def add_error(self, row: int, column: str, message: str):
         """Add a validation error"""
@@ -90,20 +84,29 @@ class CSVManager:
 
     def detect_csv_encoding(self, file_path: str) -> str:
         """Detect the encoding of a CSV file"""
-        import chardet
+        # First check if file exists
+        if not os.path.exists(file_path):
+            return "utf-8"  # Return default if file doesn't exist
 
         try:
-            with open(file_path, "rb") as f:
-                raw_data = f.read()
-                result = chardet.detect(raw_data)
-                detected_encoding = result.get("encoding", "utf-8")
+            # Try chardet if available
+            try:
+                import chardet
 
-                # Verify the detected encoding works
-                try:
-                    pd.read_csv(file_path, encoding=detected_encoding, nrows=1)
-                    return detected_encoding
-                except UnicodeDecodeError:
-                    pass
+                with open(file_path, "rb") as f:
+                    raw_data = f.read()
+                    result = chardet.detect(raw_data)
+                    detected_encoding = result.get("encoding") or "utf-8"
+
+                    # Verify the detected encoding works
+                    try:
+                        pd.read_csv(file_path, encoding=detected_encoding, nrows=1)
+                        return detected_encoding
+                    except UnicodeDecodeError:
+                        pass
+            except ImportError:
+                # chardet not available, fall back to manual detection
+                pass
         except Exception:
             pass
 
@@ -112,7 +115,7 @@ class CSVManager:
             try:
                 pd.read_csv(file_path, encoding=encoding, nrows=1)
                 return encoding
-            except UnicodeDecodeError:
+            except (UnicodeDecodeError, FileNotFoundError):
                 continue
 
         return "utf-8"  # Last resort
@@ -193,39 +196,43 @@ class CSVManager:
         """Validate the quality of data in the CSV"""
         valid_rows = 0
 
-        for index, row in df.iterrows():
+        for index in range(len(df)):
+            row = df.iloc[index]
             row_valid = True
+            row_number = index + 2  # +2 because CSV rows start at 1 and we skip header
 
             if csv_type == "products":
                 # Validate SKU
                 sku = str(row.get("SKU", "")).strip()
                 if not sku or sku.lower() == "nan":
-                    result.add_error(index + 2, "SKU", "SKU is required")
+                    result.add_error(row_number, "SKU", "SKU is required")
                     row_valid = False
 
                 # Validate Name
                 name = str(row.get("Name", "")).strip()
                 if not name or name.lower() == "nan":
-                    result.add_error(index + 2, "Name", "Product name is required")
+                    result.add_error(row_number, "Name", "Product name is required")
                     row_valid = False
 
                 # Check for duplicate SKUs within the file
                 if sku and not sku.lower() == "nan":
                     duplicate_count = (df["SKU"].astype(str).str.strip() == sku).sum()
                     if duplicate_count > 1:
-                        result.add_warning(index + 2, "SKU", f"Duplicate SKU: {sku}")
+                        result.add_warning(row_number, "SKU", f"Duplicate SKU: {sku}")
 
                 # Validate Image URL if provided
                 image_url = str(row.get("Image URL", "")).strip()
                 if image_url and image_url.lower() != "nan":
                     if not self._is_valid_url(image_url):
-                        result.add_warning(index + 2, "Image URL", "Invalid URL format")
+                        result.add_warning(
+                            row_number, "Image URL", "Invalid URL format"
+                        )
 
             elif csv_type == "services":
                 # Validate Service Name
                 name = str(row.get("Name", "")).strip()
                 if not name or name.lower() == "nan":
-                    result.add_error(index + 2, "Name", "Service name is required")
+                    result.add_error(row_number, "Name", "Service name is required")
                     row_valid = False
 
             if row_valid:
@@ -269,7 +276,12 @@ class CSVManager:
             df = pd.read_csv(file_path, encoding=encoding)
             result.total_rows = len(df)
 
-            for index, row in df.iterrows():
+            for index in range(len(df)):
+                row = df.iloc[index]
+                row_number = (
+                    index + 2
+                )  # +2 because CSV rows start at 1 and we skip header
+
                 try:
                     # Extract and clean data
                     sku = str(row.get("SKU", "")).strip()
@@ -297,7 +309,7 @@ class CSVManager:
                         or name.lower() == "nan"
                     ):
                         result.add_error(
-                            index + 2, "Data", "Missing required SKU or Name"
+                            row_number, "Data", "Missing required SKU or Name"
                         )
                         continue
 
@@ -314,9 +326,9 @@ class CSVManager:
                     products.append(product)
 
                 except ValueError as e:
-                    result.add_error(index + 2, "Data", str(e))
+                    result.add_error(row_number, "Data", str(e))
                 except Exception as e:
-                    result.add_error(index + 2, "Data", f"Unexpected error: {str(e)}")
+                    result.add_error(row_number, "Data", f"Unexpected error: {str(e)}")
 
             result.valid_rows = len(products)
 
@@ -346,7 +358,12 @@ class CSVManager:
             df = pd.read_csv(file_path, encoding=encoding)
             result.total_rows = len(df)
 
-            for index, row in df.iterrows():
+            for index in range(len(df)):
+                row = df.iloc[index]
+                row_number = (
+                    index + 2
+                )  # +2 because CSV rows start at 1 and we skip header
+
                 try:
                     # Extract and clean data
                     name = str(row.get("Name", "")).strip()
@@ -361,7 +378,7 @@ class CSVManager:
 
                     # Skip rows with missing required data
                     if not name or name.lower() == "nan":
-                        result.add_error(index + 2, "Name", "Service name is required")
+                        result.add_error(row_number, "Name", "Service name is required")
                         continue
 
                     # Create ServiceConfig object
@@ -372,9 +389,9 @@ class CSVManager:
                     services.append(service)
 
                 except ValueError as e:
-                    result.add_error(index + 2, "Data", str(e))
+                    result.add_error(row_number, "Data", str(e))
                 except Exception as e:
-                    result.add_error(index + 2, "Data", f"Unexpected error: {str(e)}")
+                    result.add_error(row_number, "Data", f"Unexpected error: {str(e)}")
 
             result.valid_rows = len(services)
 
