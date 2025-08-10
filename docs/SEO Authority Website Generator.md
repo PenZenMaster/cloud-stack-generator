@@ -517,3 +517,398 @@ client:
 - **CMS Integration**: WordPress/headless CMS connection
 - **Multi-cloud Support**: Azure, GCP deployment options
 - **Web-based Interface**: Browser-based configuration and management
+
+* Apendix
+# Modular Architecture Specification
+
+## 1. Current vs. Proposed Structure
+
+### **Current Structure (Monolithic)**
+```
+src/
+├── core/
+│   ├── config_parser.py (300+ lines)
+│   └── website_generator.py (900+ lines) ❌ TOO LARGE
+└── ui/
+    ├── yaml_builder.py (900+ lines) ❌ TOO LARGE
+    └── dialogs/
+        └── city_embed_dialog.py
+```
+
+### **Proposed Structure (Modular)**
+```
+src/
+├── core/
+│   ├── config/
+│   │   ├── __init__.py
+│   │   ├── parser.py (150 lines)
+│   │   ├── validator.py (100 lines)
+│   │   └── models.py (200 lines)
+│   │
+│   ├── generators/
+│   │   ├── __init__.py
+│   │   ├── base_generator.py (100 lines)
+│   │   ├── html_generator.py (200 lines)
+│   │   ├── css_generator.py (150 lines)
+│   │   ├── page_generator.py (200 lines)
+│   │   └── template_manager.py (150 lines)
+│   │
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── csv_manager.py (200 lines)
+│   │   ├── image_manager.py (150 lines)
+│   │   └── seo_manager.py (100 lines)
+│   │
+│   └── utils/
+│       ├── __init__.py
+│       ├── file_utils.py (100 lines)
+│       ├── url_utils.py (50 lines)
+│       └── validation_utils.py (100 lines)
+│
+├── ui/
+│   ├── components/
+│   │   ├── __init__.py
+│   │   ├── base_tab.py (100 lines)
+│   │   ├── business_tab.py (150 lines)
+│   │   ├── contact_tab.py (120 lines)
+│   │   ├── content_tab.py (100 lines)
+│   │   ├── branding_tab.py (80 lines)
+│   │   └── preview_tab.py (200 lines)
+│   │
+│   ├── content_tabs/
+│   │   ├── __init__.py
+│   │   ├── services_tab.py (200 lines)
+│   │   ├── products_tab.py (250 lines)
+│   │   ├── faq_tab.py (100 lines)
+│   │   └── cities_tab.py (150 lines)
+│   │
+│   ├── dialogs/
+│   │   ├── __init__.py
+│   │   ├── csv_preview_dialog.py (200 lines)
+│   │   ├── city_embed_dialog.py (100 lines)
+│   │   ├── product_edit_dialog.py (150 lines)
+│   │   └── validation_dialog.py (100 lines)
+│   │
+│   ├── widgets/
+│   │   ├── __init__.py
+│   │   ├── csv_upload_widget.py (150 lines)
+│   │   ├── image_preview_widget.py (100 lines)
+│   │   ├── validation_widget.py (80 lines)
+│   │   └── color_picker_widget.py (50 lines)
+│   │
+│   └── main_window.py (150 lines)
+│
+├── templates/
+│   ├── __init__.py
+│   ├── base/
+│   │   ├── base.html
+│   │   ├── header.html
+│   │   └── footer.html
+│   │
+│   ├── professional/
+│   │   ├── layout.html
+│   │   ├── components/
+│   │   └── styles/
+│   │
+│   └── basic/
+│       ├── layout.html
+│       └── styles/
+│
+└── tests/
+    ├── unit/
+    │   ├── test_config/
+    │   ├── test_generators/
+    │   ├── test_data/
+    │   └── test_ui/
+    │
+    └── integration/
+        ├── test_workflows/
+        └── test_templates/
+```
+
+## 2. Separation of Concerns
+
+### **Core Domain Logic**
+
+#### **config/ - Configuration Management**
+```python
+# config/models.py
+@dataclass
+class BusinessConfig:
+    business_name: str
+    domain: str
+    industry: str
+
+@dataclass 
+class ProductConfig:
+    sku: str
+    name: str
+    image_url: str
+    description: str
+    category: Optional[str] = None
+
+# config/parser.py
+class ConfigParser:
+    def parse_yaml(self, file_path: str) -> ClientConfig:
+        # Parse YAML into structured models
+        pass
+        
+# config/validator.py  
+class ConfigValidator:
+    def validate_business_info(self, config: BusinessConfig) -> ValidationResult:
+        # Validate business configuration
+        pass
+```
+
+#### **generators/ - Website Generation**
+```python
+# generators/base_generator.py
+class BaseGenerator:
+    def __init__(self, config: ClientConfig):
+        self.config = config
+        
+    def generate(self, output_dir: str) -> GenerationResult:
+        # Template method pattern
+        pass
+
+# generators/html_generator.py
+class HTMLGenerator(BaseGenerator):
+    def generate_page(self, page_config: PageConfig) -> str:
+        # Generate individual HTML pages
+        pass
+
+# generators/css_generator.py
+class CSSGenerator(BaseGenerator):
+    def generate_styles(self) -> str:
+        # Generate CSS based on branding
+        pass
+```
+
+#### **data/ - Data Management**
+```python
+# data/csv_manager.py
+class CSVManager:
+    def parse_products_csv(self, file_path: str) -> List[ProductConfig]:
+        # Parse and validate CSV data
+        pass
+        
+    def validate_csv_structure(self, file_path: str) -> ValidationResult:
+        # Validate CSV format and required columns
+        pass
+
+# data/image_manager.py
+class ImageManager:
+    def validate_image_url(self, url: str) -> bool:
+        # Validate image URLs
+        pass
+        
+    def optimize_images(self, images: List[str]) -> List[str]:
+        # Image optimization logic
+        pass
+```
+
+### **UI Components**
+
+#### **components/ - Main UI Tabs**
+```python
+# components/base_tab.py
+class BaseTab(QWidget):
+    config_changed = pyqtSignal()
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setup_ui()
+        
+    def setup_ui(self):
+        # Base UI setup
+        pass
+        
+    def get_config_data(self) -> dict:
+        # Abstract method for getting config data
+        raise NotImplementedError
+
+# components/business_tab.py
+class BusinessTab(BaseTab):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.business_inputs = {}
+        
+    def setup_ui(self):
+        # Business-specific UI
+        pass
+        
+    def get_config_data(self) -> dict:
+        # Return business configuration
+        pass
+```
+
+#### **content_tabs/ - Content Management**
+```python
+# content_tabs/products_tab.py
+class ProductsTab(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.csv_manager = CSVManager()
+        self.products = []
+        
+    def setup_ui(self):
+        # Products-specific UI with CSV upload
+        pass
+        
+    def upload_csv(self):
+        # Handle CSV upload workflow
+        pass
+        
+    def validate_products(self) -> ValidationResult:
+        # Validate product data
+        pass
+```
+
+## 3. Implementation Benefits
+
+### **Development Benefits**
+- ✅ **Smaller Files**: Each file has single responsibility (100-250 lines)
+- ✅ **Easier Testing**: Test individual components in isolation
+- ✅ **Parallel Development**: Multiple developers can work simultaneously
+- ✅ **Code Reuse**: Shared components across different parts
+- ✅ **Easier Debugging**: Isolate issues to specific modules
+
+### **Maintenance Benefits**
+- ✅ **Clear Ownership**: Each module has defined purpose
+- ✅ **Easier Refactoring**: Change one component without affecting others
+- ✅ **Better Documentation**: Each module can be documented independently
+- ✅ **Version Control**: Smaller, focused commits
+- ✅ **Code Review**: Easier to review specific functionality
+
+### **Architecture Benefits**
+- ✅ **Loose Coupling**: Components depend on interfaces, not implementations
+- ✅ **High Cohesion**: Related functionality grouped together
+- ✅ **Extensibility**: Easy to add new generators, tabs, or data sources
+- ✅ **Testability**: Mock dependencies for unit testing
+- ✅ **Scalability**: Add new features without touching existing code
+
+## 4. Migration Strategy
+
+### **Phase 1: Extract Core Logic (Week 1)**
+```python
+# Step 1: Extract configuration models
+# Step 2: Create separate validator
+# Step 3: Split website generator into components
+```
+
+### **Phase 2: Modularize UI (Week 2)**  
+```python
+# Step 1: Create base tab class
+# Step 2: Extract each tab into separate file
+# Step 3: Create content sub-tabs
+```
+
+### **Phase 3: Add New Features (Week 3)**
+```python
+# Step 1: Add CSV manager
+# Step 2: Create specialized dialogs
+# Step 3: Add template system
+```
+
+### **Backward Compatibility**
+```python
+# Create facade classes to maintain existing interfaces
+class YAMLBuilderWidget(QWidget):
+    """Legacy interface that delegates to new modular components"""
+    def __init__(self):
+        self.business_tab = BusinessTab()
+        self.contact_tab = ContactTab()
+        # ... etc
+```
+
+## 5. Dependency Management
+
+### **Clear Dependencies**
+```python
+# High-level modules don't depend on low-level modules
+# Both depend on abstractions
+
+# Good ✅
+class HTMLGenerator:
+    def __init__(self, template_manager: TemplateManager):
+        self.template_manager = template_manager
+
+# Bad ❌  
+class HTMLGenerator:
+    def __init__(self):
+        self.template_manager = SpecificTemplateManager()
+```
+
+### **Dependency Injection**
+```python
+# main.py - Composition root
+def create_application():
+    # Create dependencies
+    csv_manager = CSVManager()
+    config_parser = ConfigParser()
+    html_generator = HTMLGenerator()
+    
+    # Inject dependencies
+    products_tab = ProductsTab(csv_manager)
+    main_window = MainWindow(config_parser, html_generator)
+    
+    return main_window
+```
+
+## 6. Testing Strategy
+
+### **Unit Tests** (Fast, Isolated)
+```python
+# test_csv_manager.py
+def test_parse_valid_csv():
+    csv_manager = CSVManager()
+    result = csv_manager.parse_products_csv("test_data.csv")
+    assert len(result) == 5
+    assert result[0].sku == "TEST-001"
+
+# test_html_generator.py  
+def test_generate_product_page():
+    config = create_test_config()
+    generator = HTMLGenerator()
+    html = generator.generate_product_page(config.products[0])
+    assert "TEST-001" in html
+```
+
+### **Integration Tests** (Component Interaction)
+```python
+# test_workflow.py
+def test_csv_upload_to_website_generation():
+    # Upload CSV -> Parse -> Validate -> Generate Website
+    # Test the entire workflow
+    pass
+```
+
+## 7. File Size Guidelines
+
+### **Target File Sizes**
+- **UI Components**: 100-200 lines
+- **Business Logic**: 150-250 lines  
+- **Data Models**: 50-150 lines
+- **Utilities**: 50-100 lines
+- **Tests**: 100-200 lines per test file
+
+### **When to Split Further**
+- File exceeds 300 lines
+- Multiple responsibilities in one class
+- Hard to test due to complexity
+- Multiple developers working on same file
+
+## 8. Benefits Summary
+
+### **Short Term**
+- Easier to understand individual components
+- Faster development of new features
+- Better testing coverage
+- Reduced merge conflicts
+
+### **Long Term**  
+- Easier to onboard new developers
+- Plugin architecture for templates
+- Microservice potential
+- Better maintainability at scale
+
