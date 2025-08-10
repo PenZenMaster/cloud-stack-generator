@@ -516,20 +516,30 @@ class YAMLBuilderWidget(QWidget):
         return ", ".join(filter(None, parts))
 
     def normalize_phone(self, phone: str) -> str:
-        """Convert phone to normalized format"""
+        """Convert phone to normalized format - FIXED VERSION"""
         if not phone:
             return ""
+
+        # If it's already in normalized format, return as-is
+        if phone.startswith("+1-") and phone.count("-") == 3:
+            return phone
 
         # Remove all non-digits
         digits = "".join(filter(str.isdigit, phone))
 
-        # Format as +1-XXX-XXX-XXXX
+        # Handle different digit lengths
         if len(digits) == 10:
+            # Standard US 10-digit number: 8667133396 -> +1-866-713-3396
             return f"+1-{digits[:3]}-{digits[3:6]}-{digits[6:]}"
         elif len(digits) == 11 and digits.startswith("1"):
+            # 11-digit with country code: 18667133396 -> +1-866-713-3396
             return f"+1-{digits[1:4]}-{digits[4:7]}-{digits[7:]}"
+        elif len(digits) == 11:
+            # 11-digit not starting with 1, take last 10 digits
+            return f"+1-{digits[-10:-7]}-{digits[-7:-4]}-{digits[-4:]}"
 
-        return phone  # Return original if can't parse
+        # If we can't parse to a valid format, return original unchanged
+        return phone
 
     def load_yaml(self):
         """Load YAML configuration from a file and populate the UI fields"""
@@ -549,150 +559,100 @@ class YAMLBuilderWidget(QWidget):
             QMessageBox.critical(self, "Error", f"❌ Failed to load YAML:\n{str(e)}")
 
     def populate_fields_from_config(self, config: dict):
-        """Populate UI fields from loaded config dictionary - with error handling"""
-        try:
-            # Ensure we have the right structure
-            if not isinstance(config, dict):
-                raise ValueError("Config must be a dictionary")
+        """
+        Populate UI fields from loaded YAML config dictionary.
+        """
+        client = config.get("client", {})
 
-            client = config.get("client", {})
-            if not isinstance(client, dict):
-                raise ValueError("Client section must be a dictionary")
+        # Business info
+        self.business_inputs.get("business_name", QLineEdit()).setText(
+            client.get("business_name", "")
+        )
+        self.business_inputs.get("domain", QLineEdit()).setText(
+            client.get("domain", "")
+        )
+        self.business_inputs.get("industry", QLineEdit()).setText(
+            client.get("industry", "")
+        )
 
-            # Business info - with safe defaults
-            self.business_inputs["business_name"].setText(
-                str(client.get("business_name", ""))
+        # Contact info
+        contact = client.get("contact", {})
+        self.contact_inputs.get("name", QLineEdit()).setText(contact.get("name", ""))
+        address = contact.get("address", "")
+        # Try to split address into street, city, state, zip
+        address_parts = [part.strip() for part in address.split(",")]
+        if len(address_parts) > 0:
+            self.contact_inputs.get("street_address", QLineEdit()).setText(
+                address_parts[0] if len(address_parts) > 0 else ""
             )
-            self.business_inputs["domain"].setText(str(client.get("domain", "")))
-            self.business_inputs["industry"].setText(str(client.get("industry", "")))
-
-            # Contact info - with safe handling
-            contact = client.get("contact", {})
-            if isinstance(contact, dict):
-                self.contact_inputs["name"].setText(str(contact.get("name", "")))
-                self.contact_inputs["phone"].setText(str(contact.get("phone", "")))
-
-                # Handle address parsing safely
-                address = contact.get("address", "")
-                if isinstance(address, str) and address:
-                    address_parts = address.split(",")
-                    self.contact_inputs["street_address"].setText(
-                        address_parts[0].strip() if len(address_parts) > 0 else ""
-                    )
-                    self.contact_inputs["city"].setText(
-                        address_parts[1].strip() if len(address_parts) > 1 else ""
-                    )
-                    self.contact_inputs["state"].setText(
-                        address_parts[2].strip() if len(address_parts) > 2 else ""
-                    )
-                    self.contact_inputs["zip"].setText(
-                        address_parts[3].strip() if len(address_parts) > 3 else ""
-                    )
-
-            # Social media - with safe handling
-            social = client.get("social_media", {})
-            if isinstance(social, dict):
-                for platform in self.social_inputs:
-                    self.social_inputs[platform].setText(str(social.get(platform, "")))
-
-            # Branding - with safe handling
-            branding = client.get("branding", {})
-            if isinstance(branding, dict):
-                for key in self.branding_inputs:
-                    self.branding_inputs[key].setText(str(branding.get(key, "")))
-
-            # GBP - with safe handling
-            gbp = client.get("google_business_profile", {})
-            if isinstance(gbp, dict):
-                self.gbp_inputs["embed_code"].setPlainText(
-                    str(gbp.get("embed_code", ""))
-                )
-
-            # Google Maps for cities - with safe handling
-            google_maps = client.get("google_maps", {})
-            self.city_data = {}
-            if isinstance(google_maps, dict):
-                cities = google_maps.get("cities", {})
-                if isinstance(cities, dict):
-                    for city_key, city_info in cities.items():
-                        if isinstance(city_info, dict):
-                            self.city_data[city_key] = {
-                                "embed_code": city_info.get("embed_code", "")
-                            }
-
-            self.refresh_city_list()
-            self.update_city_selector()
-
-            # Pages - with safe handling
-            pages = client.get("pages", [])
-            if isinstance(pages, list) and pages:
-                # Extract hero image from first page
-                first_page = pages[0] if isinstance(pages[0], dict) else {}
-                self.page_inputs["hero_image"].setText(
-                    str(first_page.get("hero_image", ""))
-                )
-
-                # Extract cities from pages (skip home page)
-                target_cities = []
-                for page in pages:
-                    if isinstance(page, dict) and page.get("slug") != "index":
-                        city = page.get("city", "")
-                        if city and city not in target_cities:
-                            target_cities.append(city)
-
-                self.page_inputs["target_cities"].setPlainText("\n".join(target_cities))
-
-            # Services/Offerings - enhanced to handle both services and products
-            offerings = client.get("offerings", [])
-            if isinstance(offerings, list):
-                service_names = []
-                product_names = []
-
-                for offering in offerings:
-                    if isinstance(offering, dict):
-                        name = str(offering.get("name", ""))
-                        offering_type = offering.get("type", "service")
-
-                        if offering_type == "product":
-                            product_names.append(name)
-                        else:
-                            service_names.append(name)
-                    else:
-                        service_names.append(str(offering))
-
-                self.service_inputs["services"].setPlainText(
-                    "\n".join(filter(None, service_names))
-                )
-            # Handle products if the field exists
-            if "products" in self.service_inputs:
-                self.service_inputs["products"].setPlainText(
-                    "\n".join(filter(None, product_names))
-                )
-                # FAQ - with safe handling
-                faq = client.get("faq", [])
-                if isinstance(faq, list):
-                    faq_questions = []
-                    for item in faq:
-                        if isinstance(item, dict):
-                            question = item.get("question", "")
-                            if question:
-                                faq_questions.append(str(question))
-                        else:
-                            faq_questions.append(str(item))
-                    self.service_inputs["faq"].setPlainText(
-                        "\n".join(filter(None, faq_questions))
-                    )
-
-        except Exception as e:
-            # Show detailed error for debugging
-            QMessageBox.critical(
-                self,
-                "YAML Load Error",
-                f"Error loading YAML configuration:\n\n{str(e)}\n\n"
-                f"This usually means the YAML file structure doesn't match what's expected.\n"
-                f"You may need to create a new configuration.",
+        if len(address_parts) > 1:
+            self.contact_inputs.get("city", QLineEdit()).setText(
+                address_parts[1] if len(address_parts) > 1 else ""
             )
-            print(f"DEBUG - Config structure: {config}")  # For debugging
+        if len(address_parts) > 2:
+            self.contact_inputs.get("state", QLineEdit()).setText(
+                address_parts[2] if len(address_parts) > 2 else ""
+            )
+        if len(address_parts) > 3:
+            self.contact_inputs.get("zip", QLineEdit()).setText(
+                address_parts[3] if len(address_parts) > 3 else ""
+            )
+        self.contact_inputs.get("phone", QLineEdit()).setText(contact.get("phone", ""))
+        self.contact_inputs.get("country", QLineEdit()).setText(
+            client.get("country", "")
+        )
+        self.contact_inputs.get("email", QLineEdit()).setText(client.get("email", ""))
+
+        # Social media
+        social_media = client.get("social_media", {})
+        for platform, widget in self.social_inputs.items():
+            widget.setText(social_media.get(platform, ""))
+
+        # Branding
+        branding = client.get("branding", {})
+        for key, widget in self.branding_inputs.items():
+            widget.setText(branding.get(key, ""))
+
+        # GBP
+        gbp = client.get("google_business_profile", {})
+        self.gbp_inputs.get("embed_code", QTextEdit()).setPlainText(
+            gbp.get("embed_code", "")
+        )
+
+        # Google Maps cities
+        google_maps = client.get("google_maps", {})
+        self.city_data = google_maps.get("cities", {}) if google_maps else {}
+        self.refresh_city_list()
+        self.update_city_selector()
+
+        # Pages
+        pages = client.get("pages", [])
+        # Set hero image and target cities from first page and city pages
+        if pages:
+            hero_image = pages[0].get("hero_image", "")
+            self.page_inputs.get("hero_image", QLineEdit()).setText(hero_image)
+            city_names = [page.get("city", "") for page in pages if page.get("city")]
+            self.page_inputs.get("target_cities", QTextEdit()).setPlainText(
+                "\n".join(city_names)
+            )
+
+        # Offerings (services/products)
+        offerings = client.get("offerings", [])
+        services = [o["name"] for o in offerings if o.get("type") == "service"]
+        products = [o["name"] for o in offerings if o.get("type") == "product"]
+        self.service_inputs.get("services", QTextEdit()).setPlainText(
+            "\n".join(services)
+        )
+        self.service_inputs.get("products", QTextEdit()).setPlainText(
+            "\n".join(products)
+        )
+
+        # FAQ
+        faq = client.get("faq", [])
+        faq_questions = [item.get("question", "") for item in faq]
+        self.service_inputs.get("faq", QTextEdit()).setPlainText(
+            "\n".join(faq_questions)
+        )
 
     def build_social_media(self) -> Optional[Dict[str, str]]:
         """Build social media dict from inputs"""
