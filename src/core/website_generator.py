@@ -223,12 +223,15 @@ class WebsiteGenerator:
 
         # Hero section with proper image display
         hero_style = ""
+        hero_img_tag = ""
         if hero_image:
             hero_style = f" style=\"background-image: url('{hero_image}'); background-size: cover; background-position: center;\""
+            hero_img_tag = f'<img src="{hero_image}" alt="{business_name} Hero" class="hero-image">'
 
         content = f"""
         <section class="hero"{hero_style}>
             <div class="hero-overlay">
+                {hero_img_tag}
                 <div class="hero-text">
                     <h2>Welcome to {business_name}</h2>
                     <p>Professional {industry.lower()} services you can trust</p>
@@ -343,12 +346,15 @@ class WebsiteGenerator:
 
         # Hero section with proper image display
         hero_style = ""
+        hero_img_tag = ""
         if hero_image:
             hero_style = f" style=\"background-image: url('{hero_image}'); background-size: cover; background-position: center;\""
+            hero_img_tag = f'<img src="{hero_image}" alt="{industry} in {city}" class="hero-image">'
 
         content = f"""
         <section class="hero"{hero_style}>
             <div class="hero-overlay">
+                {hero_img_tag}
                 <div class="hero-text">
                     <h2>{industry} Services in {city}</h2>
                     <p>Professional {industry.lower()} services serving {city} and surrounding areas</p>

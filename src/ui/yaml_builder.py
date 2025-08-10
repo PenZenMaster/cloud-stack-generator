@@ -281,29 +281,18 @@ class YAMLBuilderWidget(QWidget):
         return group
 
     def create_services_section(self) -> QGroupBox:
-        """Create services/offerings section with both Services and Products"""
-        group = QGroupBox("Services & Products")
+        """Create services/offerings section"""
+        group = QGroupBox("Services & Offerings")
         layout = QVBoxLayout()
 
-        # Services section
         layout.addWidget(QLabel("* Services (one per line):"))
         self.service_inputs["services"] = QTextEdit()
         self.service_inputs["services"].setFixedHeight(100)
         self.service_inputs["services"].setPlaceholderText(
-            "Metal Fabrication\nCustom Welding\nArchitectural Metal"
+            "Business Consulting\nStrategic Planning\nManagement Advice"
         )
         layout.addWidget(self.service_inputs["services"])
 
-        # Products section - NEW
-        layout.addWidget(QLabel("Products (one per line):"))
-        self.service_inputs["products"] = QTextEdit()
-        self.service_inputs["products"].setFixedHeight(100)
-        self.service_inputs["products"].setPlaceholderText(
-            "Steel Components\nCustom Railings\nMetal Fixtures"
-        )
-        layout.addWidget(self.service_inputs["products"])
-
-        # FAQ section
         layout.addWidget(QLabel("FAQ Questions (one per line):"))
         self.service_inputs["faq"] = QTextEdit()
         self.service_inputs["faq"].setFixedHeight(80)
@@ -625,34 +614,76 @@ class YAMLBuilderWidget(QWidget):
         self.refresh_city_list()
         self.update_city_selector()
 
-        # Pages
-        pages = client.get("pages", [])
-        # Set hero image and target cities from first page and city pages
-        if pages:
-            hero_image = pages[0].get("hero_image", "")
-            self.page_inputs.get("hero_image", QLineEdit()).setText(hero_image)
-            city_names = [page.get("city", "") for page in pages if page.get("city")]
-            self.page_inputs.get("target_cities", QTextEdit()).setPlainText(
-                "\n".join(city_names)
+            # Pages - with safe handling
+            pages = client.get("pages", [])
+            if isinstance(pages, list) and pages:
+                # Extract hero image from first page
+                first_page = pages[0] if isinstance(pages[0], dict) else {}
+                self.page_inputs["hero_image"].setText(
+                    str(first_page.get("hero_image", ""))
+                )
+
+                # Extract cities from pages (skip home page)
+                target_cities = []
+                for page in pages:
+                    if isinstance(page, dict) and page.get("slug") != "index":
+                        city = page.get("city", "")
+                        if city and city not in target_cities:
+                            target_cities.append(city)
+
+                self.page_inputs["target_cities"].setPlainText("\n".join(target_cities))
+
+            # Services/Offerings - enhanced to handle both services and products
+            offerings = client.get("offerings", [])
+            if isinstance(offerings, list):
+                service_names = []
+                product_names = []
+
+                for offering in offerings:
+                    if isinstance(offering, dict):
+                        name = str(offering.get("name", ""))
+                        offering_type = offering.get("type", "service")
+
+                        if offering_type == "product":
+                            product_names.append(name)
+                        else:
+                            service_names.append(name)
+                    else:
+                        service_names.append(str(offering))
+
+                self.service_inputs["services"].setPlainText(
+                    "\n".join(filter(None, service_names))
+                )
+            # Handle products if the field exists
+            if "products" in self.service_inputs:
+                self.service_inputs["products"].setPlainText(
+                    "\n".join(filter(None, product_names))
+                )
+                # FAQ - with safe handling
+                faq = client.get("faq", [])
+                if isinstance(faq, list):
+                    faq_questions = []
+                    for item in faq:
+                        if isinstance(item, dict):
+                            question = item.get("question", "")
+                            if question:
+                                faq_questions.append(str(question))
+                        else:
+                            faq_questions.append(str(item))
+                    self.service_inputs["faq"].setPlainText(
+                        "\n".join(filter(None, faq_questions))
+                    )
+
+        except Exception as e:
+            # Show detailed error for debugging
+            QMessageBox.critical(
+                self,
+                "YAML Load Error",
+                f"Error loading YAML configuration:\n\n{str(e)}\n\n"
+                f"This usually means the YAML file structure doesn't match what's expected.\n"
+                f"You may need to create a new configuration.",
             )
-
-        # Offerings (services/products)
-        offerings = client.get("offerings", [])
-        services = [o["name"] for o in offerings if o.get("type") == "service"]
-        products = [o["name"] for o in offerings if o.get("type") == "product"]
-        self.service_inputs.get("services", QTextEdit()).setPlainText(
-            "\n".join(services)
-        )
-        self.service_inputs.get("products", QTextEdit()).setPlainText(
-            "\n".join(products)
-        )
-
-        # FAQ
-        faq = client.get("faq", [])
-        faq_questions = [item.get("question", "") for item in faq]
-        self.service_inputs.get("faq", QTextEdit()).setPlainText(
-            "\n".join(faq_questions)
-        )
+            print(f"DEBUG - Config structure: {config}")  # For debugging
 
     def build_social_media(self) -> Optional[Dict[str, str]]:
         """Build social media dict from inputs"""
@@ -733,12 +764,11 @@ class YAMLBuilderWidget(QWidget):
         return pages
 
     def build_offerings(self) -> list:
-        """Build offerings list from both services and products"""
+        """Build offerings list from services"""
         offerings = []
+        services_text = self.service_inputs.get("services", QTextEdit()).toPlainText()
         industry = self.business_inputs["industry"].text() or "Professional Service"
 
-        # Add services
-        services_text = self.service_inputs.get("services", QTextEdit()).toPlainText()
         if services_text:
             for service in services_text.split("\n"):
                 service = service.strip()
@@ -748,25 +778,8 @@ class YAMLBuilderWidget(QWidget):
                             "name": service,
                             "description": f"Professional {service.lower()} services",
                             "category": industry,
-                            "type": "service",
                         }
                     )
-
-        # Add products
-        products_text = self.service_inputs.get("products", QTextEdit()).toPlainText()
-        if products_text:
-            for product in products_text.split("\n"):
-                product = product.strip()
-                if product:
-                    offerings.append(
-                        {
-                            "name": product,
-                            "description": f"High-quality {product.lower()}",
-                            "category": industry,
-                            "type": "product",
-                        }
-                    )
-
         return offerings
 
     def build_faq(self) -> list:
