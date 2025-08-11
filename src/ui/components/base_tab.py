@@ -3,7 +3,7 @@ Filename: src/ui/components/base_tab.py
 Path: E:/projects/cloud-stack-generator/src/ui/components/base_tab.py
 Description: Abstract base class for all configuration tabs with standardized interface
 
-Version: 1.0.1
+Version: 1.0.3
 Date: 2025-08-10
 Author: Cloud Stack Generator Team
 """
@@ -18,8 +18,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QPalette
-from typing import Dict, Any, List, Tuple, Optional
-from abc import ABC, abstractmethod
+from typing import Dict, Any, List, Tuple, Optional, Protocol
 
 
 class ValidationResult:
@@ -64,15 +63,33 @@ class ValidationResult:
         return f"Validation completed with {', '.join(parts)}"
 
 
-class BaseTab(QWidget, ABC):
+class TabInterface(Protocol):
+    """Protocol defining the interface for configuration tabs"""
+
+    def setup_ui(self) -> None:
+        """Setup the user interface for this tab"""
+        ...
+
+    def get_config_data(self) -> Dict[str, Any]:
+        """Get configuration data from this tab"""
+        ...
+
+    def set_config_data(self, data: Dict[str, Any]) -> None:
+        """Set configuration data for this tab"""
+        ...
+
+
+class BaseTab(QWidget):
     """
-    Abstract base class for all configuration tabs.
+    Base class for all configuration tabs.
 
     Provides standardized interface for:
     - Configuration data management
     - Validation with visual feedback
     - Change tracking and notifications
     - UI setup and teardown
+
+    Note: Subclasses must implement setup_ui(), get_config_data(), and set_config_data()
     """
 
     # Signals
@@ -102,30 +119,42 @@ class BaseTab(QWidget, ABC):
         # Set initial state
         self._update_ui_state()
 
-    @abstractmethod
     def setup_ui(self):
-        """Setup the user interface for this tab"""
-        pass
+        """
+        Setup the user interface for this tab.
 
-    @abstractmethod
+        This method must be implemented by subclasses.
+        Raises NotImplementedError if not overridden.
+        """
+        raise NotImplementedError("Subclasses must implement setup_ui()")
+
     def get_config_data(self) -> Dict[str, Any]:
         """
         Get configuration data from this tab.
 
+        This method must be implemented by subclasses.
+
         Returns:
             Dict containing the configuration data for this tab
-        """
-        pass
 
-    @abstractmethod
+        Raises:
+            NotImplementedError if not overridden by subclass
+        """
+        raise NotImplementedError("Subclasses must implement get_config_data()")
+
     def set_config_data(self, data: Dict[str, Any]):
         """
         Set configuration data for this tab.
 
+        This method must be implemented by subclasses.
+
         Args:
             data: Configuration data to populate the tab
+
+        Raises:
+            NotImplementedError if not overridden by subclass
         """
-        pass
+        raise NotImplementedError("Subclasses must implement set_config_data()")
 
     def get_tab_name(self) -> str:
         """Get the display name for this tab"""
