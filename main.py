@@ -4,8 +4,8 @@ SEO Authority Website Generator v2.0
 Sprint 2 Week 2 - Enhanced Main Application Entry Point
 
 Updated: August 12, 2025
-Version: 2.0.0 - Enhanced Modular Architecture
-Working Directory: E:\projects\cloud-stack-generator\
+Version: 2.0.1 - Enhanced Modular Architecture
+Working Directory: E:\\projects\\cloud-stack-generator\
 """
 
 import sys
@@ -34,10 +34,6 @@ try:
         # Set default font
         font = QFont("Arial", 9)
         app.setFont(font)
-
-        # Enable high DPI support
-        app.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
-        app.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
 
         return app
 

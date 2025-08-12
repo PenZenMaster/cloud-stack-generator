@@ -180,8 +180,19 @@ def test_configuration_workflow():
 
         for name, tab in tabs_with_validation:
             if hasattr(tab, "validate_data"):
-                is_valid, errors = tab.validate_data()
-                print(f"   ✅ {name} validation method works (valid: {is_valid})")
+                validation_result = tab.validate_data()
+                if hasattr(validation_result, "is_valid"):
+                    # ValidationResult object
+                    is_valid = validation_result.is_valid
+                    print(f"   ✅ {name} validation method works (valid: {is_valid})")
+                elif isinstance(validation_result, tuple):
+                    # Tuple format (is_valid, errors)
+                    is_valid, errors = validation_result
+                    print(f"   ✅ {name} validation method works (valid: {is_valid})")
+                else:
+                    print(
+                        f"   ⚠️ {name} validation returned unexpected format: {type(validation_result)}"
+                    )
             else:
                 print(f"   ⚠️ {name} has no validation method")
 

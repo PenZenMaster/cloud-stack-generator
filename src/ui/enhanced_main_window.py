@@ -76,18 +76,27 @@ class EnhancedMainWindow(QMainWindow):
 
     def move_to_center(self):
         """Center the window on the screen"""
-        screen = self.screen().availableGeometry()
-        size = self.geometry()
-        self.move(
-            (screen.width() - size.width()) // 2, (screen.height() - size.height()) // 2
-        )
+        screen = self.screen()
+        if screen:
+            geometry = screen.availableGeometry()
+            size = self.geometry()
+            self.move(
+                (geometry.width() - size.width()) // 2,
+                (geometry.height() - size.height()) // 2,
+            )
 
     def setup_menu_bar(self):
         """Setup application menu bar"""
         menubar = self.menuBar()
+        if menubar is None:
+            menubar = QMenuBar(self)
+            self.setMenuBar(menubar)
 
         # File Menu
         file_menu = menubar.addMenu("&File")
+        if file_menu is None:
+            file_menu = QMenu("&File", self)
+            menubar.addMenu(file_menu)
 
         # New Config
         new_action = QAction("&New Configuration", self)
@@ -123,6 +132,9 @@ class EnhancedMainWindow(QMainWindow):
 
         # Tools Menu
         tools_menu = menubar.addMenu("&Tools")
+        if tools_menu is None:
+            tools_menu = QMenu("&Tools", self)
+            menubar.addMenu(tools_menu)
 
         # Validate All
         validate_action = QAction("&Validate All Tabs", self)
@@ -136,8 +148,34 @@ class EnhancedMainWindow(QMainWindow):
         generate_action.triggered.connect(self.generate_website)
         tools_menu.addAction(generate_action)
 
+        # View Menu (NEW)
+        view_menu = menubar.addMenu("&View")
+        if view_menu is None:
+            view_menu = QMenu("&View", self)
+            menubar.addMenu(view_menu)
+
+        # Font Size submenu
+        font_menu = QMenu("Font Size", self)
+        view_menu.addMenu(font_menu)
+
+        font_sizes = [
+            ("Small (10pt)", 10),
+            ("Normal (12pt)", 12),
+            ("Large (14pt)", 14),
+            ("Extra Large (16pt)", 16),
+            ("Huge (18pt)", 18),
+        ]
+
+        for name, size in font_sizes:
+            action = QAction(name, self)
+            action.triggered.connect(lambda checked, s=size: self.change_font_size(s))
+            font_menu.addAction(action)
+
         # Help Menu
         help_menu = menubar.addMenu("&Help")
+        if help_menu is None:
+            help_menu = QMenu("&Help", self)
+            menubar.addMenu(help_menu)
 
         about_action = QAction("&About", self)
         about_action.triggered.connect(self.show_about)
@@ -479,8 +517,6 @@ class EnhancedMainWindow(QMainWindow):
             branding=branding,
             products=products,
             services=services,
-            target_cities=config_data.get("services", {}).get("target_cities", []),
-            faq=config_data.get("services", {}).get("faq", []),
         )
 
     def load_config_into_tabs(self, config: ClientConfig):
@@ -531,9 +567,7 @@ class EnhancedMainWindow(QMainWindow):
             "services": [
                 {"name": s.name, "description": s.description, "category": s.category}
                 for s in config.services
-            ],
-            "target_cities": config.target_cities,
-            "faq": config.faq,
+            ]
         }
         self.services_tab.set_config_data(services_data)
 
@@ -617,6 +651,25 @@ class EnhancedMainWindow(QMainWindow):
             | QMessageBox.StandardButton.Discard
             | QMessageBox.StandardButton.Cancel,
         )
+
+    def change_font_size(self, size: int):
+        """Change application font size"""
+        font = QFont("Arial", size)
+        self.setFont(font)
+
+        # Apply to all child widgets recursively
+        self._apply_font_to_children(self, font)
+
+        self.status_label.setText(f"Font size changed to {size}pt")
+
+    def _apply_font_to_children(self, widget, font):
+        """Recursively apply font to all child widgets"""
+        for child in widget.findChildren(QWidget):
+            if not child.font().bold():  # Preserve bold fonts
+                child.setFont(font)
+            else:
+                bold_font = QFont("Arial", font.pointSize(), QFont.Weight.Bold)
+                child.setFont(bold_font)
 
     def show_about(self):
         """Show about dialog"""
