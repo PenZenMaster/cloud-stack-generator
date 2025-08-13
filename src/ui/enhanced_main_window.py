@@ -765,24 +765,66 @@ class EnhancedMainWindow(QMainWindow):
 
     def generate_website(self):
         """Generate website from current configuration"""
-        # First validate
-        self.validate_all_tabs()
+        try:
+            # First validate
+            validation_errors = self.validate_all_tabs()
+            if validation_errors:
+                QMessageBox.warning(
+                    self,
+                    "Validation Errors",
+                    f"Please fix the following errors before generating:\n\n" + "\n".join(validation_errors)
+                )
+                return
 
-        # Get all configuration data
-        config_data = self.get_all_config_data()
-
-        # Emit signal for website generation
-        self.website_generation_requested.emit(config_data)
-
-        # Show progress (for now, just a message)
-        QMessageBox.information(
-            self,
-            "Website Generation",
-            "Website generation requested!\n\n"
-            "This will be connected to the website generator in the next phase.",
-        )
-
-        self.status_label.setText("Website generation requested")
+            # Create ClientConfig from current UI data
+            config_data = self.get_all_config_data()
+            config = self.create_client_config(config_data)
+            
+            # Ask user for output directory
+            output_dir = QFileDialog.getExistingDirectory(
+                self,
+                "Select Output Directory for Website",
+                str(Path.cwd() / "output" / "websites")
+            )
+            
+            if not output_dir:
+                return  # User cancelled
+            
+            # Create website generator
+            from ..core.website_generator import WebsiteGenerator
+            generator = WebsiteGenerator()
+            
+            # Generate website
+            self.status_label.setText("Generating website...")
+            result = generator.generate(config, output_dir)
+            
+            if result.success:
+                message = f"Website generated successfully!\n\nFiles created:\n"
+                for file_path in result.generated_files:
+                    message += f"• {Path(file_path).name}\n"
+                message += f"\nLocation: {output_dir}"
+                
+                QMessageBox.information(
+                    self,
+                    "Website Generation Complete",
+                    message
+                )
+                self.status_label.setText(f"Website generated successfully in {output_dir}")
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Website Generation Failed",
+                    f"Failed to generate website:\n\n{result.errors}"
+                )
+                self.status_label.setText("Website generation failed")
+                
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Website Generation Error",
+                f"An error occurred during website generation:\n\n{str(e)}"
+            )
+            self.status_label.setText("Website generation error")
 
     def ask_save_changes(self) -> QMessageBox.StandardButton:
         """Ask user if they want to save unsaved changes"""

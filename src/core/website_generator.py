@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 from typing import List, Optional
 from dataclasses import dataclass
-from .config_parser import ClientConfig
+from .config.models import ClientConfig
 
 
 class GenerationError(Exception):
@@ -55,7 +55,7 @@ class WebsiteGenerator:
             # Generate city pages if configured
             if config.pages:
                 for page in config.pages:
-                    if page.get("slug") != "index":  # Skip home page
+                    if page.slug != "index":  # Skip home page
                         page_path = self._generate_city_page(config, page)
                         generated_files.append(page_path)
 
@@ -86,9 +86,9 @@ class WebsiteGenerator:
         if not self.output_dir:
             raise GenerationError("Output directory not set")
 
-        title = page_config.get("title", "Services")
-        slug = page_config.get("slug", "page")
-        city = page_config.get("city", "")
+        title = page_config.title or "Services"
+        slug = page_config.slug or "page"
+        city = page_config.city
 
         html_content = self._create_html_template(
             config, title, is_home=False, city=city
@@ -121,23 +121,23 @@ class WebsiteGenerator:
         city: str = "",
     ) -> str:
         """Create enhanced HTML template with proper data handling and logo/hero display"""
-        business_name = config.business_name
-        industry = config.industry
-        contact = config.contact or {}
+        business_name = config.business.business_name
+        industry = config.business.industry
+        contact = config.contact
 
         # Get branding
-        branding = config.branding or {}
-        primary_color = branding.get("primary_color", "#007bff")
-        logo_url = branding.get("logo_url", "")
+        branding = config.branding
+        primary_color = branding.primary_color
+        logo_url = branding.logo_url
 
         # Get hero image
         hero_image = ""
         if config.pages:
             for page in config.pages:
-                if (is_home and page.get("slug") == "index") or (
-                    not is_home and page.get("city") == city
+                if (is_home and page.slug == "index") or (
+                    not is_home and page.city == city
                 ):
-                    hero_image = page.get("hero_image", "")
+                    hero_image = page.hero_image
                     break
 
         # Build navigation with proper page titles
@@ -189,18 +189,18 @@ class WebsiteGenerator:
         nav_links = ""
         if config.pages:
             for page in config.pages:
-                slug = page.get("slug", "")
+                slug = page.slug
                 # Use proper page titles instead of phone numbers
                 if slug == "index":
                     title = "Home"
                 else:
                     # Extract city name from page title
-                    page_title = page.get("title", "")
-                    city = page.get("city", "")
+                    page_title = page.title
+                    city = page.city
                     title = (
                         city
                         if city
-                        else page_title.replace(f"{config.industry} in ", "")
+                        else page_title.replace(f"{config.business.industry} in ", "")
                     )
 
                 link = "index.html" if slug == "index" else f"{slug}.html"
@@ -212,15 +212,15 @@ class WebsiteGenerator:
 
     def _create_home_content(self, config: ClientConfig) -> str:
         """Create content for the home page with SEPARATE Services and Products sections"""
-        business_name = config.business_name
-        industry = config.industry
+        business_name = config.business.business_name
+        industry = config.business.industry
 
         # Get hero image for home page
         hero_image = ""
         if config.pages:
             for page in config.pages:
-                if page.get("slug") == "index":
-                    hero_image = page.get("hero_image", "")
+                if page.slug == "index":
+                    hero_image = page.hero_image
                     break
 
         # Hero section with ONLY background image (no img tag)
@@ -243,51 +243,42 @@ class WebsiteGenerator:
             <p>Welcome to {business_name}, your trusted provider of {industry.lower()} services. We are committed to delivering exceptional results and outstanding customer service.</p>"""
 
         # Add services and products sections SEPARATELY
-        if config.offerings:
-            services = [
-                item for item in config.offerings if item.get("type") != "product"
-            ]
-            products = [
-                item for item in config.offerings if item.get("type") == "product"
-            ]
+        services = config.services
+        products = config.products
 
-            # SERVICES SECTION
-            if services:
-                content += """
+        # SERVICES SECTION
+        if services:
+            content += """
             <h3>Our Services</h3>
             <div class="services-grid">"""
 
-                for offering in services:
-                    service_name = offering.get("name", "Service")
-                    service_desc = offering.get(
-                        "description", f"Professional {service_name.lower()}"
-                    )
-                    content += f"""
+            for service in services:
+                service_name = service.name
+                service_desc = service.description or f"Professional {service_name.lower()}"
+                content += f"""
                     <div class="service-item">
                         <h4>{service_name}</h4>
                         <p>{service_desc}</p>
                     </div>"""
 
-                content += "</div>"
+            content += "</div>"
 
-            # PRODUCTS SECTION - SEPARATE with different styling
-            if products:
-                content += """
+        # PRODUCTS SECTION - SEPARATE with different styling
+        if products:
+            content += """
             <h3>Our Products</h3>
             <div class="products-grid">"""
 
-                for offering in products:
-                    product_name = offering.get("name", "Product")
-                    product_desc = offering.get(
-                        "description", f"High-quality {product_name.lower()}"
-                    )
-                    content += f"""
+            for product in products:
+                product_name = product.name
+                product_desc = product.description or f"High-quality {product_name.lower()}"
+                content += f"""
                     <div class="product-item">
                         <h4>{product_name}</h4>
                         <p>{product_desc}</p>
                     </div>"""
 
-                content += "</div>"
+            content += "</div>"
         else:
             # Default services if none specified
             content += f"""
@@ -299,7 +290,7 @@ class WebsiteGenerator:
             </ul>"""
 
         # Add FAQ section if available
-        if hasattr(config, "faq") and config.faq:
+        if config.faq:
             content += """
             <h3>Frequently Asked Questions</h3>
             <div class="faq-section">"""
@@ -323,8 +314,8 @@ class WebsiteGenerator:
             <ul>"""
 
             for page in config.pages:
-                if page.get("slug") != "index":
-                    city = page.get("city", "")
+                if page.slug != "index":
+                    city = page.city
                     if city:
                         content += f"                <li>{city}</li>\n"
 
@@ -335,15 +326,15 @@ class WebsiteGenerator:
 
     def _create_city_content(self, config: ClientConfig, city: str) -> str:
         """Create content for city-specific pages with separate Services and Products"""
-        business_name = config.business_name
-        industry = config.industry
+        business_name = config.business.business_name
+        industry = config.business.industry
 
         # Get hero image for this city page
         hero_image = ""
         if config.pages:
             for page in config.pages:
-                if page.get("city") == city:
-                    hero_image = page.get("hero_image", "")
+                if page.city == city:
+                    hero_image = page.hero_image
                     break
 
         # Hero section with ONLY background image (no img tag)
@@ -377,21 +368,14 @@ class WebsiteGenerator:
             <div class="services-grid">"""
 
         # Add services and products separately for city pages
-        if config.offerings:
-            services = [
-                item for item in config.offerings if item.get("type") != "product"
-            ]
-            products = [
-                item for item in config.offerings if item.get("type") == "product"
-            ]
+        services = config.services
+        products = config.products
 
-            # Add services
-            for offering in services:
-                service_name = offering.get("name", "Service")
-                service_desc = offering.get(
-                    "description", f"Professional {service_name.lower()} in {city}"
-                )
-                content += f"""
+        # Add services
+        for service in services:
+            service_name = service.name
+            service_desc = service.description or f"Professional {service_name.lower()} in {city}"
+            content += f"""
                 <div class="service-item">
                     <h4>{service_name} in {city}</h4>
                     <p>{service_desc}</p>
@@ -406,12 +390,9 @@ class WebsiteGenerator:
             <h3>Our Products Available in {city}</h3>
             <div class="products-grid">"""
 
-                for offering in products:
-                    product_name = offering.get("name", "Product")
-                    product_desc = offering.get(
-                        "description",
-                        f"High-quality {product_name.lower()} available in {city}",
-                    )
+                for product in products:
+                    product_name = product.name
+                    product_desc = product.description or f"High-quality {product_name.lower()} available in {city}"
                     content += f"""
                     <div class="product-item">
                         <h4>{product_name}</h4>
@@ -433,7 +414,7 @@ class WebsiteGenerator:
             </div>"""
 
         # Add FAQ section if available
-        if hasattr(config, "faq") and config.faq:
+        if config.faq:
             content += """
             
             <h3>Frequently Asked Questions</h3>
@@ -464,8 +445,8 @@ class WebsiteGenerator:
         self, config: ClientConfig, city: str = "", is_home: bool = False
     ) -> str:
         """Create footer content with proper phone display and contact info"""
-        business_name = config.business_name
-        contact = config.contact or {}
+        business_name = config.business.business_name
+        contact = config.contact
 
         footer_content = """
         <div class="footer-container">
@@ -473,26 +454,42 @@ class WebsiteGenerator:
                 <h4>Contact Information</h4>"""
 
         # Fix phone display - get original phone format, not normalized
-        if phone := contact.get("phone"):
+        if phone := contact.phone:
             # Display the phone as originally entered, not the normalized version
             display_phone = self._get_display_phone(phone)
             footer_content += (
                 f"                <p><strong>Phone:</strong> {display_phone}</p>\n"
             )
 
-        if contact.get("address"):
-            footer_content += f'                <p><strong>Address:</strong> {contact["address"]}</p>\n'
-        if contact.get("email"):
+        if contact.address:
+            footer_content += f'                <p><strong>Address:</strong> {contact.address}</p>\n'
+        if contact.email:
             footer_content += (
-                f'                <p><strong>Email:</strong> {contact["email"]}</p>\n'
+                f'                <p><strong>Email:</strong> {contact.email}</p>\n'
             )
 
         footer_content += "            </div>\n"
 
+        # Add social media links if available
+        social_links = config.social_media.get_valid_links()
+        if social_links:
+            footer_content += """
+            <div class="footer-section social-media">
+                <h4>Follow Us</h4>
+                <div class="social-links">"""
+            
+            for platform, url in social_links.items():
+                platform_name = platform.title()
+                if platform == "twitter":
+                    platform_name = "Twitter/X"
+                footer_content += f'                    <a href="{url}" target="_blank" rel="noopener noreferrer">{platform_name}</a>\n'
+            
+            footer_content += """                </div>
+            </div>"""
+
         # Add Google Business Profile map for home page
         if (
             is_home
-            and hasattr(config, "google_business_profile")
             and config.google_business_profile
         ):
             gbp_embed = config.google_business_profile.get("embed_code", "")
@@ -520,16 +517,6 @@ class WebsiteGenerator:
             </div>"""
                     break
 
-        # Add social media links
-        if config.social_media:
-            footer_content += """
-            <div class="footer-section social-links">
-                <h4>Follow Us</h4>"""
-
-            for platform, url in config.social_media.items():
-                footer_content += f'                <a href="{url}" target="_blank">{platform.title()}</a><br>\n'
-
-            footer_content += "            </div>"
 
         footer_content += f"""
         </div>
@@ -572,12 +559,12 @@ class WebsiteGenerator:
 
     def _create_css_template(self, config: ClientConfig) -> str:
         """Create enhanced CSS template with logo and hero image support + Products styling"""
-        branding = config.branding or {}
-        primary_color = branding.get("primary_color", "#007bff")
-        secondary_color = branding.get("secondary_color", "#6c757d")
-        font_family = branding.get("font_family", "Arial, sans-serif")
+        branding = config.branding
+        primary_color = branding.primary_color
+        secondary_color = branding.secondary_color
+        font_family = branding.font_family
 
-        return f"""/* Enhanced styles for {config.business_name} website */
+        return f"""/* Enhanced styles for {config.business.business_name} website */
 
 * {{
     margin: 0;
