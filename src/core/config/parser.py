@@ -170,6 +170,7 @@ class ConfigParser:
             twitter=social_data.get("twitter", ""),
             linkedin=social_data.get("linkedin", ""),
             instagram=social_data.get("instagram", ""),
+            youtube=social_data.get("youtube", ""),
         )
 
     def _parse_google_maps_config(

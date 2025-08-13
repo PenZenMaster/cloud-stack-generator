@@ -194,6 +194,7 @@ class SocialMediaConfig:
     twitter: str = ""
     linkedin: str = ""
     instagram: str = ""
+    youtube: str = ""
 
     def get_valid_links(self) -> Dict[str, str]:
         """Get only the social media links that are provided"""

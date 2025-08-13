@@ -55,6 +55,8 @@ class ContactTab(BaseTab):
 
     def __init__(self, parent=None):
         self.contact_inputs = {}
+        self.social_media_inputs = {}
+        self.google_business_inputs = {}
         self.error_labels = {}
         self.has_changes = False
         super().__init__(parent)
@@ -67,6 +69,8 @@ class ContactTab(BaseTab):
         # Create main sections
         self._create_contact_section(main_layout)
         self._create_address_section(main_layout)
+        self._create_social_media_section(main_layout)
+        self._create_google_business_section(main_layout)
         self._create_validation_section(main_layout)
 
         # Add stretch to push content to top
@@ -161,6 +165,99 @@ class ContactTab(BaseTab):
 
         address_group.setLayout(address_layout)
         parent_layout.addWidget(address_group)
+
+    def _create_social_media_section(self, parent_layout: QVBoxLayout):
+        """Create social media links section (optional)"""
+        # Section header
+        header_label = self._create_section_header("Social Media Links (Optional)")
+        parent_layout.addWidget(header_label)
+
+        # Social media form
+        social_group = QGroupBox()
+        social_layout = QGridLayout()
+        social_layout.setSpacing(10)
+
+        # Social media platforms (up to 5)
+        platforms = [
+            ("Facebook", "facebook", "https://facebook.com/yourbusiness"),
+            ("Twitter/X", "twitter", "https://twitter.com/yourbusiness"),
+            ("LinkedIn", "linkedin", "https://linkedin.com/company/yourbusiness"),
+            ("Instagram", "instagram", "https://instagram.com/yourbusiness"),
+            ("YouTube", "youtube", "https://youtube.com/@yourbusiness"),
+        ]
+
+        row = 0
+        for label_text, field_key, placeholder in platforms:
+            # Label
+            label = QLabel(label_text)
+            label.setFont(QFont("Arial", 10))
+
+            # Input widget
+            widget = QLineEdit()
+            widget.setFont(QFont("Arial", 10))
+            widget.setPlaceholderText(placeholder)
+            widget.setMinimumHeight(30)
+            widget.textChanged.connect(self._emit_config_changed)
+
+            # Layout
+            social_layout.addWidget(label, row, 0)
+            social_layout.addWidget(widget, row, 1)
+
+            self.social_media_inputs[field_key] = widget
+            row += 1
+
+        # Help text
+        help_label = QLabel("💡 Add your social media URLs to enhance your online presence. All fields are optional.")
+        help_label.setFont(QFont("Arial", 9))
+        help_label.setStyleSheet("color: #666; padding: 5px; font-style: italic;")
+        help_label.setWordWrap(True)
+        social_layout.addWidget(help_label, row, 0, 1, 2)
+
+        social_group.setLayout(social_layout)
+        parent_layout.addWidget(social_group)
+
+    def _create_google_business_section(self, parent_layout: QVBoxLayout):
+        """Create Google Business Profile section (optional)"""
+        # Section header
+        header_label = self._create_section_header("Google Business Profile (Optional)")
+        parent_layout.addWidget(header_label)
+
+        # Google Business form
+        gbp_group = QGroupBox()
+        gbp_layout = QVBoxLayout()
+        gbp_layout.setSpacing(10)
+
+        # Embed code field
+        embed_label = QLabel("Google Business Profile Embed Code")
+        embed_label.setFont(QFont("Arial", 10))
+
+        embed_widget = QTextEdit()
+        embed_widget.setFont(QFont("Arial", 9))
+        embed_widget.setPlaceholderText(
+            "Paste your Google Business Profile embed code here...\n"
+            "Example: <iframe src=\"https://www.google.com/maps/embed?pb=...\" ...></iframe>"
+        )
+        embed_widget.setMaximumHeight(100)
+        embed_widget.textChanged.connect(self._emit_config_changed)
+
+        self.google_business_inputs["embed_code"] = embed_widget
+
+        # Help text
+        help_label = QLabel(
+            "💡 Get your embed code from Google Maps by searching for your business, "
+            "clicking 'Share' → 'Embed a map', then copying the iframe code. "
+            "This will display your business location and reviews on your website."
+        )
+        help_label.setFont(QFont("Arial", 9))
+        help_label.setStyleSheet("color: #666; padding: 5px; font-style: italic;")
+        help_label.setWordWrap(True)
+
+        gbp_layout.addWidget(embed_label)
+        gbp_layout.addWidget(embed_widget)
+        gbp_layout.addWidget(help_label)
+
+        gbp_group.setLayout(gbp_layout)
+        parent_layout.addWidget(gbp_group)
 
     def _create_validation_section(self, parent_layout: QVBoxLayout):
         """Create validation controls section"""
@@ -353,21 +450,51 @@ class ContactTab(BaseTab):
 
     def get_config_data(self) -> Dict[str, Any]:
         """Get contact configuration data"""
-        return {
+        # Basic contact data
+        contact_data = {
             "name": self.contact_inputs["name"].text().strip(),
             "phone": self.contact_inputs["phone"].text().strip(),
             "email": self.contact_inputs["email"].text().strip(),
             "address": self.contact_inputs["address"].toPlainText().strip(),
         }
+        
+        # Social media data
+        social_media_data = {}
+        for platform, widget in self.social_media_inputs.items():
+            url = widget.text().strip()
+            if url:  # Only include non-empty URLs
+                social_media_data[platform] = url
+        
+        # Google Business Profile data
+        google_business_data = {}
+        embed_code = self.google_business_inputs["embed_code"].toPlainText().strip()
+        if embed_code:  # Only include if embed code is provided
+            google_business_data["embed_code"] = embed_code
+        
+        # Combine all data
+        all_data = contact_data.copy()
+        all_data["social_media"] = social_media_data
+        all_data["google_business_profile"] = google_business_data
+        
+        return all_data
 
     def set_config_data(self, data: Dict[str, Any]):
         """Set contact configuration data"""
-        contact_data = data
-
-        self.contact_inputs["name"].setText(contact_data.get("name", ""))
-        self.contact_inputs["phone"].setText(contact_data.get("phone", ""))
-        self.contact_inputs["email"].setText(contact_data.get("email", ""))
-        self.contact_inputs["address"].setPlainText(contact_data.get("address", ""))
+        # Set basic contact data
+        self.contact_inputs["name"].setText(data.get("name", ""))
+        self.contact_inputs["phone"].setText(data.get("phone", ""))
+        self.contact_inputs["email"].setText(data.get("email", ""))
+        self.contact_inputs["address"].setPlainText(data.get("address", ""))
+        
+        # Set social media data
+        social_media_data = data.get("social_media", {})
+        for platform, widget in self.social_media_inputs.items():
+            widget.setText(social_media_data.get(platform, ""))
+        
+        # Set Google Business Profile data
+        google_business_data = data.get("google_business_profile", {})
+        embed_code = google_business_data.get("embed_code", "")
+        self.google_business_inputs["embed_code"].setPlainText(embed_code)
 
         # Clear any existing errors
         for field_name in self.error_labels:
@@ -378,11 +505,20 @@ class ContactTab(BaseTab):
 
     def clear_data(self):
         """Clear all contact data"""
+        # Clear basic contact data
         for field_name, widget in self.contact_inputs.items():
             if isinstance(widget, QLineEdit):
                 widget.clear()
             else:  # QTextEdit
                 widget.clear()
+        
+        # Clear social media data
+        for platform, widget in self.social_media_inputs.items():
+            widget.clear()
+        
+        # Clear Google Business Profile data
+        for field_name, widget in self.google_business_inputs.items():
+            widget.clear()
 
         # Clear errors
         for field_name in self.error_labels:

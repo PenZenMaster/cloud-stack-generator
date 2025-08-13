@@ -509,6 +509,7 @@ class EnhancedMainWindow(QMainWindow):
             BrandingConfig,
             ProductConfig,
             ServiceConfig,
+            SocialMediaConfig,
         )
 
         # Create business config
@@ -528,6 +529,19 @@ class EnhancedMainWindow(QMainWindow):
             address=contact_data.get("address", ""),
             email=contact_data.get("email", ""),
         )
+        
+        # Create social media config
+        social_media_data = contact_data.get("social_media", {})
+        social_media = SocialMediaConfig(
+            facebook=social_media_data.get("facebook", ""),
+            twitter=social_media_data.get("twitter", ""),
+            linkedin=social_media_data.get("linkedin", ""),
+            instagram=social_media_data.get("instagram", ""),
+            youtube=social_media_data.get("youtube", ""),
+        )
+        
+        # Get Google Business Profile data
+        google_business_profile = contact_data.get("google_business_profile", {})
 
         # Create branding config
         branding_data = config_data.get("branding", {})
@@ -571,6 +585,8 @@ class EnhancedMainWindow(QMainWindow):
             branding=branding,
             products=products,
             services=services,
+            social_media=social_media,
+            google_business_profile=google_business_profile,
         )
 
     def load_config_into_tabs(self, config: ClientConfig):
@@ -584,12 +600,14 @@ class EnhancedMainWindow(QMainWindow):
         }
         self.business_tab.set_config_data(business_data)
 
-        # Load contact data
+        # Load contact data (including social media and Google Business Profile)
         contact_data = {
             "name": config.contact.name,
             "phone": config.contact.phone,
             "address": config.contact.address,
             "email": config.contact.email,
+            "social_media": config.social_media.get_valid_links(),
+            "google_business_profile": config.google_business_profile,
         }
         self.contact_tab.set_config_data(contact_data)
 
