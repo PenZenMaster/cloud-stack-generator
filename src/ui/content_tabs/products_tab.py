@@ -919,7 +919,10 @@ class ProductsTab(BaseTab):
 
             # Change button to update mode
             self.add_product_btn.setText("💾 Update Product")
-            self.add_product_btn.clicked.disconnect()
+            try:
+                self.add_product_btn.clicked.disconnect()
+            except TypeError:
+                pass  # No connections to disconnect
             self.add_product_btn.clicked.connect(lambda: self._update_product(row))
 
     def _update_product(self, row: int):
@@ -966,7 +969,10 @@ class ProductsTab(BaseTab):
     def _reset_add_button(self):
         """Reset add button to add mode"""
         self.add_product_btn.setText("➕ Add Product")
-        self.add_product_btn.clicked.disconnect()
+        try:
+            self.add_product_btn.clicked.disconnect()
+        except TypeError:
+            pass  # No connections to disconnect
         self.add_product_btn.clicked.connect(self._add_product)
 
     def _select_all_products(self):

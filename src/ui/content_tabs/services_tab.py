@@ -888,7 +888,10 @@ class ServicesTab(BaseTab):
 
             # Change button to update mode
             self.add_service_btn.setText("💾 Update Service")
-            self.add_service_btn.clicked.disconnect()
+            try:
+                self.add_service_btn.clicked.disconnect()
+            except TypeError:
+                pass  # No connections to disconnect
             self.add_service_btn.clicked.connect(lambda: self._update_service(row))
 
     def _update_service(self, row: int):
@@ -943,7 +946,10 @@ class ServicesTab(BaseTab):
     def _reset_add_service_button(self):
         """Reset add service button to add mode"""
         self.add_service_btn.setText("➕ Add Service")
-        self.add_service_btn.clicked.disconnect()
+        try:
+            self.add_service_btn.clicked.disconnect()
+        except TypeError:
+            pass  # No connections to disconnect
         self.add_service_btn.clicked.connect(self._add_service)
 
     def _select_all_services(self):
@@ -1134,7 +1140,10 @@ class ServicesTab(BaseTab):
 
             # Change button to update mode
             self.add_faq_btn.setText("💾 Update FAQ")
-            self.add_faq_btn.clicked.disconnect()
+            try:
+                self.add_faq_btn.clicked.disconnect()
+            except TypeError:
+                pass  # No connections to disconnect
             self.add_faq_btn.clicked.connect(lambda: self._update_faq(row))
 
     def _update_faq(self, row: int):
@@ -1172,7 +1181,10 @@ class ServicesTab(BaseTab):
     def _reset_add_faq_button(self):
         """Reset add FAQ button to add mode"""
         self.add_faq_btn.setText("➕ Add FAQ")
-        self.add_faq_btn.clicked.disconnect()
+        try:
+            self.add_faq_btn.clicked.disconnect()
+        except TypeError:
+            pass  # No connections to disconnect
         self.add_faq_btn.clicked.connect(self._add_faq)
 
     def _select_all_faqs(self):
