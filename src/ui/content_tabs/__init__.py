@@ -19,7 +19,7 @@ try:
 
     __all__ = ["ProductsTab", "Product", "ProductsValidationResult"]
 except ImportError:
-    print("⚠️ Warning: ProductsTab not available")
+    print("Warning: ProductsTab not available")
     __all__ = []
 
 try:
@@ -32,13 +32,13 @@ try:
 
     __all__.extend(["ServicesTab", "Service", "FAQ", "ServicesValidationResult"])
 except ImportError:
-    print("⚠️ Warning: ServicesTab not available")
+    print("Warning: ServicesTab not available")
 
 # Future content tabs will be added here
 # try:
 #     from .cities_tab import CitiesTab
 #     __all__.append("CitiesTab")
 # except ImportError:
-#     print("⚠️ Warning: CitiesTab not available")
+#     print("Warning: CitiesTab not available")
 
-print(f"📦 Content Tabs loaded: {', '.join(__all__)}")
+print(f"Content Tabs loaded: {', '.join(__all__)}")

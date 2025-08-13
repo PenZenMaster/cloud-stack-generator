@@ -86,9 +86,9 @@ pip install PyQt6 PyYAML pandas chardet
             return 1
 
     if __name__ == "__main__":
-        print("🚀 Starting SEO Authority Website Generator v2.0...")
-        print("📂 Working Directory:", Path.cwd())
-        print("🔧 Enhanced Modular Architecture")
+        print("Starting SEO Authority Website Generator v2.0...")
+        print("Working Directory:", Path.cwd())
+        print("Enhanced Modular Architecture")
         print("=" * 50)
 
         exit_code = main()
@@ -103,7 +103,7 @@ pip install PyQt6 PyYAML pandas chardet
 except ImportError as import_error:
     print(
         f"""
-🚨 CRITICAL IMPORT ERROR 🚨
+CRITICAL IMPORT ERROR
 
 Error: {str(import_error)}
 
@@ -124,7 +124,7 @@ This appears to be a module import issue. Here are the most likely solutions:
    If the enhanced main window isn't ready, you can temporarily use:
    python -c "from src.ui.main_window import MainWindow; import sys; from PyQt6.QtWidgets import QApplication; app=QApplication(sys.argv); w=MainWindow(); w.show(); sys.exit(app.exec())"
 
-📋 Component Status Check:
+Component Status Check:
 """
     )
 
@@ -140,12 +140,12 @@ This appears to be a module import issue. Here are the most likely solutions:
 
     for component in components_to_check:
         if Path(component).exists():
-            print(f"   ✅ {component}")
+            print(f"   OK {component}")
         else:
-            print(f"   ❌ {component} (MISSING)")
+            print(f"   MISSING {component}")
 
-    print(f"\n💡 If components are missing, you may need to create them first.")
-    print(f"💡 Try running your working tests to verify component status:")
+    print(f"\nIf components are missing, you may need to create them first.")
+    print(f"Try running your working tests to verify component status:")
     print(f"   python tests/simple_business_test.py")
 
     sys.exit(1)
@@ -153,7 +153,7 @@ This appears to be a module import issue. Here are the most likely solutions:
 except Exception as critical_error:
     print(
         f"""
-🚨 CRITICAL APPLICATION ERROR 🚨
+CRITICAL APPLICATION ERROR
 
 Error: {str(critical_error)}
 Stack Trace:

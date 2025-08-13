@@ -16,7 +16,7 @@ try:
 
     __all__ = ["BaseTab"]
 except ImportError:
-    print("⚠️ Warning: BaseTab not available")
+    print("Warning: BaseTab not available")
     __all__ = []
 
 # Import specialized tab components
@@ -25,20 +25,20 @@ try:
 
     __all__.append("BusinessTab")
 except ImportError:
-    print("⚠️ Warning: BusinessTab not available")
+    print("Warning: BusinessTab not available")
 
 try:
     from .contact_tab import ContactTab, ValidationResult
 
     __all__.extend(["ContactTab", "ValidationResult"])
 except ImportError:
-    print("⚠️ Warning: ContactTab not available")
+    print("Warning: ContactTab not available")
 
 # Future tab components will be added here
 # try:
 #     from .branding_tab import BrandingTab
 #     __all__.append("BrandingTab")
 # except ImportError:
-#     print("⚠️ Warning: BrandingTab not available")
+#     print("Warning: BrandingTab not available")
 
-print(f"📦 UI Components loaded: {', '.join(__all__)}")
+print(f"UI Components loaded: {', '.join(__all__)}")
