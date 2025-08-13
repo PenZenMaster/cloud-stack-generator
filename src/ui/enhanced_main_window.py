@@ -363,26 +363,26 @@ class EnhancedMainWindow(QMainWindow):
             return
 
         try:
-            # Parse configuration
+            # Add your logic here
             config = self.config_parser.parse_yaml_file(file_path)
-
-            # Load data into tabs
-            self.load_config_into_tabs(config)
-
-            self.current_config_file = file_path
-            self.unsaved_changes = False
-            self.update_window_title()
-            self.status_label.setText(f"Configuration loaded: {Path(file_path).name}")
-
-            # Emit signal for other components
-            self.config_loaded.emit(self.get_all_config_data())
-
         except Exception as e:
             QMessageBox.critical(
                 self,
                 "Error Loading Configuration",
                 f"Failed to load configuration:\n{str(e)}",
             )
+            return
+
+        # Load data into tabs
+        self.load_config_into_tabs(config)
+
+        self.current_config_file = file_path
+        self.unsaved_changes = False
+        self.update_window_title()
+        self.status_label.setText(f"Configuration loaded: {Path(file_path).name}")
+
+        # Emit signal for other components
+        self.config_loaded.emit(self.get_all_config_data())
 
     def save_configuration(self) -> bool:
         """Save current configuration"""
@@ -571,8 +571,8 @@ class EnhancedMainWindow(QMainWindow):
         }
         self.services_tab.set_config_data(services_data)
 
-    def validate_all_tabs(self):
-        """Validate all tabs and show results"""
+    def validate_all_tabs_simple(self):
+        """Validate all tabs and show results with proper ValidationResult handling"""
         self.status_label.setText("Validating configuration...")
 
         validation_results = {}
@@ -589,9 +589,70 @@ class EnhancedMainWindow(QMainWindow):
 
         for tab_name, tab in tabs.items():
             if hasattr(tab, "validate_data"):
-                is_valid, errors = tab.validate_data()
-                validation_results[tab_name] = {"valid": is_valid, "errors": errors}
-                if not is_valid:
+                try:
+                    validation_result = tab.validate_data()
+                except Exception as e:
+                    print(f"DEBUG: Exception during validation of {tab_name}: {e}")
+                    validation_results[tab_name] = {
+                        "valid": False,
+                        "errors": [f"Validation error: {str(e)}"],
+                    }
+                    all_valid = False
+
+        self.show_validation_results(validation_results, all_valid)
+        self.status_label.setText("Validating configuration...")
+
+    def validate_all_tabs(self):
+        """Validate all tabs and show results with proper ValidationResult handling"""
+        self.status_label.setText("Validating configuration...")
+
+        validation_results = {}
+        all_valid = True
+
+        # Validate each tab
+        tabs = {
+            "Business Info": self.business_tab,
+            "Contact Details": self.contact_tab,
+            "Branding & Style": self.branding_tab,
+            "Products": self.products_tab,
+            "Services & FAQ": self.services_tab,
+        }
+
+        for tab_name, tab in tabs.items():
+            if hasattr(tab, "validate_data"):
+                try:
+                    # Handle different return types from validate_data()
+                    validation_result = tab.validate_data()
+                    if (
+                        isinstance(validation_result, tuple)
+                        and len(validation_result) == 2
+                    ):
+                        is_valid, errors = validation_result
+                    elif isinstance(validation_result, bool):
+                        is_valid = validation_result
+                        errors = [] if validation_result else ["Validation failed"]
+                    else:
+                        # Handle ValidationResult objects with attributes
+                        is_valid = getattr(validation_result, "is_valid", False)
+                        errors = getattr(
+                            validation_result,
+                            "errors",
+                            ["Unable to determine validation result"],
+                        )
+                        print(
+                            f"DEBUG {tab_name}: ValidationResult object - is_valid: {is_valid}, errors: {errors}"
+                        )
+
+                    validation_results[tab_name] = {"valid": is_valid, "errors": errors}
+                    if not is_valid:
+                        all_valid = False
+
+                except Exception as e:
+                    print(f"DEBUG: Exception during validation of {tab_name}: {e}")
+                    validation_results[tab_name] = {
+                        "valid": False,
+                        "errors": [f"Validation error: {str(e)}"],
+                    }
                     all_valid = False
 
         # Show validation results
