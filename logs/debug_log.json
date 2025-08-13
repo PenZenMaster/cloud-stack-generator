@@ -1,0 +1,130 @@
+[
+  {
+    "timestamp": "2025-08-13 08:25:32",
+    "type": "error_dialog",
+    "title": "Test Error Dialog",
+    "message": "This is a test error message for verification",
+    "context": "Testing error logging functionality",
+    "component": "test_error_logging.py",
+    "exception": null,
+    "exception_type": null,
+    "user_action": "Running test script",
+    "stack_trace": null
+  },
+  {
+    "timestamp": "2025-08-13 08:25:32",
+    "type": "validation_error",
+    "field": "test_field",
+    "message": "Test validation failed",
+    "value": "'invalid_value'",
+    "component": "TestComponent"
+  },
+  {
+    "timestamp": "2025-08-13 08:25:32",
+    "type": "error_dialog",
+    "title": "Test Error 1",
+    "message": "Test error message number 1",
+    "context": "Batch test 1",
+    "component": null,
+    "exception": null,
+    "exception_type": null,
+    "user_action": null,
+    "stack_trace": null
+  },
+  {
+    "timestamp": "2025-08-13 08:25:32",
+    "type": "error_dialog",
+    "title": "Test Error 2",
+    "message": "Test error message number 2",
+    "context": "Batch test 2",
+    "component": null,
+    "exception": null,
+    "exception_type": null,
+    "user_action": null,
+    "stack_trace": null
+  },
+  {
+    "timestamp": "2025-08-13 08:25:32",
+    "type": "error_dialog",
+    "title": "Test Error 3",
+    "message": "Test error message number 3",
+    "context": "Batch test 3",
+    "component": null,
+    "exception": null,
+    "exception_type": null,
+    "user_action": null,
+    "stack_trace": null
+  },
+  {
+    "timestamp": "2025-08-13 08:25:33",
+    "type": "validation_error",
+    "field": "primary_color",
+    "message": "Invalid hex color format",
+    "value": "'#invalid_color'",
+    "component": "BrandingTab"
+  },
+  {
+    "timestamp": "2025-08-13 08:25:54",
+    "type": "error_dialog",
+    "title": "Test Error Dialog",
+    "message": "This is a test error message for verification",
+    "context": "Testing error logging functionality",
+    "component": "test_error_logging.py",
+    "exception": null,
+    "exception_type": null,
+    "user_action": "Running test script",
+    "stack_trace": null
+  },
+  {
+    "timestamp": "2025-08-13 08:25:54",
+    "type": "validation_error",
+    "field": "test_field",
+    "message": "Test validation failed",
+    "value": "'invalid_value'",
+    "component": "TestComponent"
+  },
+  {
+    "timestamp": "2025-08-13 08:25:55",
+    "type": "error_dialog",
+    "title": "Test Error 1",
+    "message": "Test error message number 1",
+    "context": "Batch test 1",
+    "component": null,
+    "exception": null,
+    "exception_type": null,
+    "user_action": null,
+    "stack_trace": null
+  },
+  {
+    "timestamp": "2025-08-13 08:25:55",
+    "type": "error_dialog",
+    "title": "Test Error 2",
+    "message": "Test error message number 2",
+    "context": "Batch test 2",
+    "component": null,
+    "exception": null,
+    "exception_type": null,
+    "user_action": null,
+    "stack_trace": null
+  },
+  {
+    "timestamp": "2025-08-13 08:25:55",
+    "type": "error_dialog",
+    "title": "Test Error 3",
+    "message": "Test error message number 3",
+    "context": "Batch test 3",
+    "component": null,
+    "exception": null,
+    "exception_type": null,
+    "user_action": null,
+    "stack_trace": null
+  },
+  {
+    "timestamp": "2025-08-13 08:25:55",
+    "type": "validation_error",
+    "field": "primary_color",
+    "message": "Invalid hex color format",
+    "value": "'#invalid_color'",
+    "component": "BrandingTab"
+  }
+]

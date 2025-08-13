@@ -12,6 +12,7 @@ Author: Cloud Stack Generator Team
 import csv
 import json
 import os
+import chardet
 from typing import Dict, Any, List, Tuple, Optional
 from PyQt6.QtWidgets import (
     QVBoxLayout,
@@ -552,13 +553,61 @@ class ProductsTab(BaseTab):
             self.validate_csv_btn.setEnabled(True)
             self._update_import_status(f"Selected: {os.path.basename(file_path)}")
 
+    def _detect_file_encoding(self, file_path: str) -> str:
+        """Detect file encoding using chardet with fallback options"""
+        try:
+            # Read a sample of the file to detect encoding
+            with open(file_path, 'rb') as f:
+                raw_data = f.read(10000)  # Read first 10KB for detection
+                
+            if raw_data:
+                # Use chardet to detect encoding
+                result = chardet.detect(raw_data)
+                encoding = result.get('encoding', 'utf-8').lower()
+                confidence = result.get('confidence', 0)
+                
+                print(f"DEBUG: Detected encoding: {encoding} (confidence: {confidence:.2f})")
+                
+                # Map common encoding variations
+                encoding_map = {
+                    'windows-1252': 'cp1252',
+                    'iso-8859-1': 'latin1', 
+                    'ascii': 'utf-8'
+                }
+                
+                encoding = encoding_map.get(encoding, encoding)
+                
+                # If confidence is low, try common fallbacks
+                if confidence < 0.7:
+                    fallback_encodings = ['utf-8', 'cp1252', 'latin1', 'utf-16']
+                    for fallback in fallback_encodings:
+                        try:
+                            with open(file_path, 'r', encoding=fallback) as f:
+                                f.read(1000)  # Try to read some content
+                            print(f"DEBUG: Using fallback encoding: {fallback}")
+                            return fallback
+                        except (UnicodeDecodeError, UnicodeError):
+                            continue
+                
+                return encoding
+            
+        except Exception as e:
+            print(f"DEBUG: Error detecting encoding: {e}")
+        
+        # Default fallback
+        return 'utf-8'
+
     def _validate_csv_file(self):
-        """Validate CSV file structure"""
+        """Validate CSV file structure with automatic encoding detection"""
         if not self.current_file_path:
             return
 
         try:
-            with open(self.current_file_path, "r", encoding="utf-8") as file:
+            # Detect file encoding
+            encoding = self._detect_file_encoding(self.current_file_path)
+            print(f"DEBUG: Using encoding {encoding} for CSV validation")
+            
+            with open(self.current_file_path, "r", encoding=encoding, errors='replace') as file:
                 reader = csv.DictReader(file)
 
                 # Check required columns
@@ -629,7 +678,11 @@ class ProductsTab(BaseTab):
             errors = []
             warnings = []
 
-            with open(self.current_file_path, "r", encoding="utf-8") as file:
+            # Detect file encoding
+            encoding = self._detect_file_encoding(self.current_file_path)
+            print(f"DEBUG: Using encoding {encoding} for CSV import")
+            
+            with open(self.current_file_path, "r", encoding=encoding, errors='replace') as file:
                 reader = csv.DictReader(file)
 
                 for row_num, row in enumerate(reader, start=2):  # Start at 2 for header
