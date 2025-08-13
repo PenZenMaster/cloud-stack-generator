@@ -138,7 +138,20 @@ class BrandingTab(BaseTab):
             hex_input.setFont(QFont("Arial", 10))
             hex_input.setPlaceholderText("#FFFFFF")
             hex_input.setMaximumWidth(100)
-            hex_input.textChanged.connect(lambda: self._on_hex_input_changed(color_key))
+            # Enhanced input styling for better scaling
+            hex_input.setStyleSheet("""
+                QLineEdit {
+                    min-height: 25px;
+                    padding: 5px;
+                    font-size: inherit;
+                    border: 1px solid #ccc;
+                    border-radius: 3px;
+                }
+                QLineEdit:focus {
+                    border: 2px solid #007bff;
+                }
+            """)
+            hex_input.textChanged.connect(lambda text, key=color_key: self._on_hex_input_changed(key, text))
 
             # Color picker button
             color_button = QPushButton()
@@ -211,9 +224,20 @@ class BrandingTab(BaseTab):
 
         font_combo = QComboBox()
         font_combo.setFont(QFont("Arial", 10))
+        # Enhanced font scaling support
+        font_combo.setStyleSheet("""
+            QComboBox {
+                min-height: 25px;
+                padding: 5px;
+                font-size: inherit;
+            }
+            QComboBox::drop-down {
+                width: 20px;
+            }
+        """)
         font_combo.addItems(self.WEB_FONTS)
         font_combo.setCurrentText("Arial, sans-serif")
-        font_combo.currentTextChanged.connect(self._emit_config_changed)
+        font_combo.currentTextChanged.connect(self._on_font_changed)
 
         # Font preview
         font_preview = QLabel("The quick brown fox jumps over the lazy dog")
@@ -391,16 +415,35 @@ class BrandingTab(BaseTab):
             self._update_live_preview()
             self._emit_config_changed()
 
-    def _on_hex_input_changed(self, color_key: str):
-        """Handle hex input changes"""
+    def _on_hex_input_changed(self, color_key: str, text: str = None):
+        """Handle hex input changes with live updates"""
+        if text is None:
+            # Fallback for cases where text is not provided
+            hex_input = self.branding_inputs[f"{color_key}_color"]
+            hex_value = hex_input.text().strip()
+        else:
+            hex_value = text.strip()
+        
+        # Clean the input - add # if missing and convert to uppercase
+        if hex_value and not hex_value.startswith("#"):
+            hex_value = "#" + hex_value
+        
+        # Always update the input field to show the cleaned value
         hex_input = self.branding_inputs[f"{color_key}_color"]
-        hex_value = hex_input.text().strip()
+        if hex_input.text() != hex_value and hex_value != "#":
+            hex_input.blockSignals(True)  # Prevent recursive calls
+            hex_input.setText(hex_value)
+            hex_input.blockSignals(False)
 
         if self._is_valid_hex_color(hex_value):
             self.current_colors[color_key] = hex_value
             self._update_color_display(color_key, hex_value)
             self._update_live_preview()
             self._hide_field_error(f"{color_key}_color")
+        else:
+            # Show error for invalid colors but don't reset immediately
+            if hex_value and len(hex_value) > 1:  # Don't show error for partial input
+                self._show_field_error(f"{color_key}_color", "Invalid hex color format")
 
         self._emit_config_changed()
 
@@ -429,6 +472,18 @@ class BrandingTab(BaseTab):
         """
         )
 
+    def _on_font_changed(self, font_family: str):
+        """Handle font family changes with live preview updates"""
+        try:
+            # Update the font preview
+            self._update_font_preview(font_family)
+            # Update the live preview section
+            self._update_live_preview()
+            # Emit config changed signal
+            self._emit_config_changed()
+        except Exception as e:
+            print(f"DEBUG: Error in font change handler: {e}")
+
     def _update_font_preview(self, font_family: str):
         """Update font preview display"""
         font_preview = self.preview_labels["font"]
@@ -444,21 +499,49 @@ class BrandingTab(BaseTab):
         )
 
     def _update_live_preview(self):
-        """Update the live color scheme preview"""
-        if "scheme" in self.preview_labels:
-            scheme_preview = self.preview_labels["scheme"]
-            primary = self.current_colors["primary"]
-            text_color = "#ffffff" if self._is_dark_color(primary) else "#000000"
+        """Update the live color scheme preview with enhanced display"""
+        try:
+            if "scheme" in self.preview_labels:
+                scheme_preview = self.preview_labels["scheme"]
+                primary = self.current_colors["primary"]
+                secondary = self.current_colors["secondary"]
+                text_color = "#ffffff" if self._is_dark_color(primary) else "#000000"
+                
+                # Get current font family
+                font_family = "Arial, sans-serif"
+                if hasattr(self, 'branding_inputs') and 'font_family' in self.branding_inputs:
+                    font_family = self.branding_inputs['font_family'].currentText()
+                
+                # Extract base font name for CSS
+                base_font = font_family.split(",")[0].strip().strip('"').strip("'")
 
-            scheme_preview.setStyleSheet(
-                f"""
-                background: {primary};
-                color: {text_color};
-                padding: 15px;
-                border-radius: 5px;
-                text-align: center;
-            """
-            )
+                scheme_preview.setStyleSheet(
+                    f"""
+                    QLabel {{
+                        background: linear-gradient(45deg, {primary} 0%, {secondary} 100%);
+                        color: {text_color};
+                        padding: 15px;
+                        border-radius: 8px;
+                        text-align: center;
+                        font-family: '{base_font}';
+                        font-size: 14px;
+                        font-weight: bold;
+                        border: 2px solid {self._darken_color(primary, 0.2)};
+                    }}
+                """
+                )
+                
+                # Update the text to show both colors
+                scheme_preview.setText(
+                    f"Website Preview\nPrimary: {primary}\nSecondary: {secondary}\nFont: {base_font}"
+                )
+        except Exception as e:
+            print(f"DEBUG: Error updating live preview: {e}")
+            # Fallback to simple display
+            if "scheme" in self.preview_labels:
+                scheme_preview = self.preview_labels["scheme"]
+                scheme_preview.setStyleSheet("background: #f8f9fa; padding: 15px; border-radius: 5px;")
+                scheme_preview.setText("Preview unavailable")
 
     def _is_valid_hex_color(self, hex_color: str) -> bool:
         """Validate hex color format"""
@@ -475,6 +558,18 @@ class BrandingTab(BaseTab):
             return brightness < 128
         except:
             return True  # Default to dark if can't determine
+
+    def _darken_color(self, hex_color: str, factor: float = 0.2) -> str:
+        """Darken a hex color by the given factor"""
+        try:
+            hex_color = hex_color.lstrip("#")
+            rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+            # Darken each component
+            darkened_rgb = tuple(int(c * (1 - factor)) for c in rgb)
+            # Convert back to hex
+            return f"#{darkened_rgb[0]:02x}{darkened_rgb[1]:02x}{darkened_rgb[2]:02x}"
+        except:
+            return hex_color  # Return original if conversion fails
 
     def _browse_logo_file(self):
         """Browse for logo file (placeholder for future implementation)"""
