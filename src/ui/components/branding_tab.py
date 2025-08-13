@@ -32,6 +32,9 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from .base_tab import BaseTab
 from typing import Dict, Any, List, Tuple
 
+# Import error logging
+from ...utils import log_validation_error
+
 
 class ValidationResult:
     """Validation result container"""
@@ -443,7 +446,14 @@ class BrandingTab(BaseTab):
         else:
             # Show error for invalid colors but don't reset immediately
             if hex_value and len(hex_value) > 1:  # Don't show error for partial input
-                self._show_field_error(f"{color_key}_color", "Invalid hex color format")
+                error_msg = "Invalid hex color format"
+                log_validation_error(
+                    field=f"{color_key}_color",
+                    error_message=error_msg,
+                    value=hex_value,
+                    component="BrandingTab"
+                )
+                self._show_field_error(f"{color_key}_color", error_msg)
 
         self._emit_config_changed()
 

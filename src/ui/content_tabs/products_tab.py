@@ -39,6 +39,9 @@ from PyQt6.QtGui import QFont, QAction, QPixmap, QIcon
 from PyQt6.QtCore import Qt, pyqtSignal, QThread, QTimer
 from ..components.base_tab import BaseTab
 
+# Import error logging
+from ...utils import log_error_dialog, log_file_operation_error, log_validation_error
+
 
 class ValidationResult:
     """Validation result container"""
@@ -602,8 +605,15 @@ class ProductsTab(BaseTab):
                 )
 
         except Exception as e:
+            error_msg = f"Error reading CSV file:\n{str(e)}"
+            log_file_operation_error(
+                operation="validate_csv",
+                file_path=self.current_file_path or "unknown",
+                error_message=error_msg,
+                exception=e
+            )
             QMessageBox.critical(
-                self, "CSV Validation Error", f"Error reading CSV file:\n{str(e)}"
+                self, "CSV Validation Error", error_msg
             )
 
     def _import_csv(self):
@@ -684,8 +694,15 @@ class ProductsTab(BaseTab):
 
         except Exception as e:
             self.import_progress.hide()
+            error_msg = f"Error importing CSV:\n{str(e)}"
+            log_file_operation_error(
+                operation="import_csv",
+                file_path=self.current_file_path,
+                error_message=error_msg,
+                exception=e
+            )
             QMessageBox.critical(
-                self, "Import Error", f"Error importing CSV:\n{str(e)}"
+                self, "Import Error", error_msg
             )
 
     def _export_csv(self):

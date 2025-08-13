@@ -36,6 +36,9 @@ from .content_tabs.services_tab import ServicesTab
 from ..core.config.models import ClientConfig
 from ..core.config.parser import ConfigParser
 
+# Import error logging
+from ..utils import log_error_dialog, log_file_operation_error, log_validation_error
+
 
 class EnhancedMainWindow(QMainWindow):
     """Enhanced main window with full modular tab integration"""
@@ -366,10 +369,17 @@ class EnhancedMainWindow(QMainWindow):
             # Add your logic here
             config = self.config_parser.parse_yaml_file(file_path)
         except Exception as e:
+            error_msg = f"Failed to load configuration:\n{str(e)}"
+            log_file_operation_error(
+                operation="load",
+                file_path=file_path,
+                error_message=error_msg,
+                exception=e
+            )
             QMessageBox.critical(
                 self,
                 "Error Loading Configuration",
-                f"Failed to load configuration:\n{str(e)}",
+                error_msg,
             )
             return
 
@@ -427,14 +437,27 @@ class EnhancedMainWindow(QMainWindow):
                 self.config_saved.emit(file_path)
                 return True
             else:
+                error_msg = "Failed to save configuration file"
+                log_file_operation_error(
+                    operation="save",
+                    file_path=file_path,
+                    error_message=error_msg
+                )
                 QMessageBox.critical(
-                    self, "Save Error", "Failed to save configuration file"
+                    self, "Save Error", error_msg
                 )
                 return False
 
         except Exception as e:
+            error_msg = f"Failed to save configuration:\n{str(e)}"
+            log_file_operation_error(
+                operation="save",
+                file_path=file_path,
+                error_message=error_msg,
+                exception=e
+            )
             QMessageBox.critical(
-                self, "Save Error", f"Failed to save configuration:\n{str(e)}"
+                self, "Save Error", error_msg
             )
             return False
 
@@ -677,6 +700,15 @@ class EnhancedMainWindow(QMainWindow):
                     error_text += "\n"
 
             error_text += "Please fix these issues before generating your website."
+
+            # Log validation errors
+            log_error_dialog(
+                title="Validation Errors",
+                message=error_text,
+                context="User attempted to validate all tabs",
+                component="EnhancedMainWindow.show_validation_results",
+                user_action="Validating configuration before website generation"
+            )
 
             QMessageBox.warning(self, "Validation Errors", error_text)
             self.status_label.setText("Validation failed - Please fix errors")
