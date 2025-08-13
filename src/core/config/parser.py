@@ -128,6 +128,7 @@ class ConfigParser:
             business_name=client_data.get("business_name", ""),
             domain=client_data.get("domain", ""),
             industry=client_data.get("industry", ""),
+            description=client_data.get("description", ""),
         )
 
     def _parse_contact_config(self, client_data: Dict[str, Any]) -> ContactConfig:
@@ -327,6 +328,7 @@ class ConfigParser:
                 "business_name": config.business.business_name,
                 "domain": config.business.domain,
                 "industry": config.business.industry,
+                "description": config.business.description,
                 "contact": {
                     "name": config.contact.name,
                     "phone": config.contact.phone,

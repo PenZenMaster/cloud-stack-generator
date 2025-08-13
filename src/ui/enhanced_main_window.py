@@ -517,6 +517,7 @@ class EnhancedMainWindow(QMainWindow):
             business_name=business_data.get("business_name", ""),
             domain=business_data.get("domain", ""),
             industry=business_data.get("industry", ""),
+            description=business_data.get("description", ""),
         )
 
         # Create contact config
@@ -579,6 +580,7 @@ class EnhancedMainWindow(QMainWindow):
             "business_name": config.business.business_name,
             "domain": config.business.domain,
             "industry": config.business.industry,
+            "description": config.business.description,
         }
         self.business_tab.set_config_data(business_data)
 

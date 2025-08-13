@@ -125,6 +125,7 @@ class BusinessConfig:
     business_name: str = ""
     domain: str = ""
     industry: str = ""
+    description: str = ""
 
     def __post_init__(self):
         """Clean up domain format"""
