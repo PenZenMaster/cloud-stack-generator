@@ -61,6 +61,7 @@ Thumbs.db
 # Project specific
 docs/
 output/
+logs/
 *.log
 
 # Temporary files
