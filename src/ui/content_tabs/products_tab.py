@@ -631,27 +631,102 @@ class ProductsTab(BaseTab):
                     )
                     return
 
-                # Count rows
+                # Count rows and validate each product
                 rows = list(reader)
                 row_count = len(rows)
+                
+                validation_errors = []
+                validation_warnings = []
+                valid_products = 0
 
-                # Check for duplicates
+                # Check for duplicates in CSV file
                 skus = [row.get("SKU", "").strip() for row in rows]
-                duplicates = len(skus) - len(set(skus))
+                duplicate_skus = [sku for sku in set(skus) if skus.count(sku) > 1]
+                
+                for row_num, row in enumerate(rows, start=2):  # Start at 2 for header
+                    try:
+                        # Create temporary product for validation
+                        product = Product(
+                            sku=row.get("SKU", "").strip(),
+                            name=row.get("Name", "").strip(),
+                            description=row.get("Description", "").strip(),
+                            category=row.get("Category", "General").strip(),
+                            price=row.get("Price", "").strip(),
+                            image_url=row.get("Image URL", "").strip(),
+                        )
 
-                # Show validation results
-                msg = f"✅ CSV Validation Successful!\n\n"
-                msg += f"• Rows: {row_count}\n"
-                msg += f"• Required columns: {', '.join(required_columns)} ✅\n"
-                msg += f"• Optional columns found: {', '.join(available_optional)}\n"
+                        # Validate product data
+                        is_valid, product_errors = product.is_valid()
+                        if not is_valid:
+                            validation_errors.extend(
+                                [f"Row {row_num}: {error}" for error in product_errors]
+                            )
+                        else:
+                            valid_products += 1
+                            
+                        # Check for existing SKU in current products
+                        if any(p.sku == product.sku for p in self.products):
+                            validation_warnings.append(
+                                f"Row {row_num}: SKU '{product.sku}' already exists in current products"
+                            )
 
-                if duplicates > 0:
-                    msg += f"• ⚠️ Warning: {duplicates} duplicate SKUs found"
+                    except Exception as e:
+                        validation_errors.append(f"Row {row_num}: {str(e)}")
 
-                QMessageBox.information(self, "CSV Validation Results", msg)
-                self._update_import_status(
-                    f"✅ Valid CSV - {row_count} products ready to import"
-                )
+                # Add CSV duplicate warnings
+                for sku in duplicate_skus:
+                    if sku:  # Only warn about non-empty SKUs
+                        validation_warnings.append(f"SKU '{sku}' appears multiple times in CSV file")
+
+                # Show comprehensive validation results
+                if validation_errors:
+                    msg = f"❌ CSV Validation Failed!\n\n"
+                    msg += f"• Total rows: {row_count}\n"
+                    msg += f"• Valid products: {valid_products}\n"
+                    msg += f"• Errors: {len(validation_errors)}\n"
+                    
+                    if validation_warnings:
+                        msg += f"• Warnings: {len(validation_warnings)}\n"
+                    
+                    detailed_msg = msg + "\n\nERRORS:\n" + "\n".join(validation_errors)
+                    if validation_warnings:
+                        detailed_msg += "\n\nWARNINGS:\n" + "\n".join(validation_warnings)
+                    
+                    msgbox = QMessageBox(self)
+                    msgbox.setWindowTitle("CSV Validation Failed")
+                    msgbox.setIcon(QMessageBox.Icon.Warning)
+                    msgbox.setText(msg)
+                    msgbox.setDetailedText(detailed_msg)
+                    msgbox.exec()
+                    
+                    self._update_import_status(f"❌ Validation failed - {len(validation_errors)} errors found")
+                    
+                elif validation_warnings:
+                    msg = f"⚠️ CSV Validation Passed with Warnings!\n\n"
+                    msg += f"• Total rows: {row_count}\n"
+                    msg += f"• Valid products: {valid_products}\n"
+                    msg += f"• Warnings: {len(validation_warnings)}\n"
+                    
+                    detailed_msg = msg + "\n\nWARNINGS:\n" + "\n".join(validation_warnings)
+                    
+                    msgbox = QMessageBox(self)
+                    msgbox.setWindowTitle("CSV Validation - Warnings Found")
+                    msgbox.setIcon(QMessageBox.Icon.Information)
+                    msgbox.setText(msg)
+                    msgbox.setDetailedText(detailed_msg)
+                    msgbox.exec()
+                    
+                    self._update_import_status(f"⚠️ Valid CSV with {len(validation_warnings)} warnings - {valid_products} products ready")
+                    
+                else:
+                    msg = f"✅ CSV Validation Successful!\n\n"
+                    msg += f"• Total rows: {row_count}\n"
+                    msg += f"• Valid products: {valid_products}\n"
+                    msg += f"• Required columns: {', '.join(required_columns)} ✅\n"
+                    msg += f"• Optional columns found: {', '.join(available_optional)}"
+
+                    QMessageBox.information(self, "CSV Validation Results", msg)
+                    self._update_import_status(f"✅ Valid CSV - {valid_products} products ready to import")
 
         except Exception as e:
             error_msg = f"Error reading CSV file:\n{str(e)}"
@@ -733,7 +808,12 @@ class ProductsTab(BaseTab):
                 msg += f"• Errors: {len(errors)}\n"
 
             if warnings or errors:
-                detailed_msg = msg + "\n" + "\n".join(warnings + errors)
+                detailed_msg = msg + "\n"
+                if errors:
+                    detailed_msg += "\nERRORS:\n" + "\n".join(errors)
+                if warnings:
+                    detailed_msg += "\nWARNINGS:\n" + "\n".join(warnings)
+                    
                 msgbox = QMessageBox(self)
                 msgbox.setWindowTitle("Import Results")
                 msgbox.setText(msg)

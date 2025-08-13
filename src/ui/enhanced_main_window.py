@@ -434,6 +434,14 @@ class EnhancedMainWindow(QMainWindow):
                 self.status_label.setText(
                     f"Configuration saved: {Path(file_path).name}"
                 )
+                
+                # Show success notification dialog
+                QMessageBox.information(
+                    self,
+                    "Configuration Saved",
+                    f"✅ Configuration successfully saved!\n\nFile: {Path(file_path).name}\nLocation: {Path(file_path).parent}"
+                )
+                
                 self.config_saved.emit(file_path)
                 return True
             else:
