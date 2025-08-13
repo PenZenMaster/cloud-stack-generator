@@ -403,11 +403,30 @@ class EnhancedMainWindow(QMainWindow):
 
     def save_configuration_as(self) -> bool:
         """Save configuration with new filename"""
+        # Create default filename with business name if available
+        default_filename = "website_config.yaml"
+        try:
+            business_data = self.business_tab.get_config_data()
+            business_name = business_data.get("business_name", "").strip()
+            if business_name:
+                # Create safe filename from business name
+                import re
+                safe_name = re.sub(r'[^\w\s-]', '', business_name.lower())
+                safe_name = re.sub(r'[-\s]+', '_', safe_name)
+                default_filename = f"{safe_name}_config.yaml"
+        except:
+            pass  # Use default if there's any error
+            
+        # Use current working directory as default location
+        default_path = str(Path.cwd() / default_filename)
+        
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Configuration", "", "YAML Files (*.yaml);;All Files (*)"
+            self, "Save Configuration", default_path, "YAML Files (*.yaml);;All Files (*)"
         )
 
         if not file_path:
+            # User cancelled the dialog - provide feedback
+            self.status_label.setText("Save cancelled by user")
             return False
 
         if not file_path.endswith((".yaml", ".yml")):
@@ -435,11 +454,14 @@ class EnhancedMainWindow(QMainWindow):
                     f"Configuration saved: {Path(file_path).name}"
                 )
                 
-                # Show success notification dialog
+                # Show success notification dialog with full path for clarity
                 QMessageBox.information(
                     self,
                     "Configuration Saved",
-                    f"✅ Configuration successfully saved!\n\nFile: {Path(file_path).name}\nLocation: {Path(file_path).parent}"
+                    f"✅ Configuration successfully saved!\n\n"
+                    f"File: {Path(file_path).name}\n"
+                    f"Full path: {Path(file_path).absolute()}\n\n"
+                    f"You can find your configuration file at the above location."
                 )
                 
                 self.config_saved.emit(file_path)
