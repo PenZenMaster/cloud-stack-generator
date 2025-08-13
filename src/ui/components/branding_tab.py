@@ -671,19 +671,17 @@ class BrandingTab(BaseTab):
     def get_config_data(self) -> Dict[str, Any]:
         """Get branding configuration data"""
         return {
-            "branding": {
-                "primary_color": self.branding_inputs["primary_color"].text().strip(),
-                "secondary_color": self.branding_inputs["secondary_color"]
-                .text()
-                .strip(),
-                "font_family": self.branding_inputs["font_family"].currentText(),
-                "logo_url": self.branding_inputs["logo_url"].text().strip(),
-            }
+            "primary_color": self.branding_inputs["primary_color"].text().strip(),
+            "secondary_color": self.branding_inputs["secondary_color"]
+            .text()
+            .strip(),
+            "font_family": self.branding_inputs["font_family"].currentText(),
+            "logo_url": self.branding_inputs["logo_url"].text().strip(),
         }
 
     def set_config_data(self, data: Dict[str, Any]):
         """Set branding configuration data"""
-        branding_data = data.get("branding", {})
+        branding_data = data
 
         # Set colors
         primary_color = branding_data.get("primary_color", self.DEFAULT_PRIMARY)

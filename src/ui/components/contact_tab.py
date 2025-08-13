@@ -354,17 +354,15 @@ class ContactTab(BaseTab):
     def get_config_data(self) -> Dict[str, Any]:
         """Get contact configuration data"""
         return {
-            "contact": {
-                "name": self.contact_inputs["name"].text().strip(),
-                "phone": self.contact_inputs["phone"].text().strip(),
-                "email": self.contact_inputs["email"].text().strip(),
-                "address": self.contact_inputs["address"].toPlainText().strip(),
-            }
+            "name": self.contact_inputs["name"].text().strip(),
+            "phone": self.contact_inputs["phone"].text().strip(),
+            "email": self.contact_inputs["email"].text().strip(),
+            "address": self.contact_inputs["address"].toPlainText().strip(),
         }
 
     def set_config_data(self, data: Dict[str, Any]):
         """Set contact configuration data"""
-        contact_data = data.get("contact", {})
+        contact_data = data
 
         self.contact_inputs["name"].setText(contact_data.get("name", ""))
         self.contact_inputs["phone"].setText(contact_data.get("phone", ""))
