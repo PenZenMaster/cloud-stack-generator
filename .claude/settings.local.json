@@ -8,6 +8,7 @@
       "Bash(git add:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "defaultMode": "acceptEdits"
   }
 }
