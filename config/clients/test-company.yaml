@@ -1,0 +1,26 @@
+client:
+  business_name: test
+  domain: https://test.com
+  industry: Industry
+  description: ''
+  contact:
+    name: test
+    phone: +1-999-555-1212
+    address: ''
+    email: me@mail,com
+  branding:
+    primary_color: '#007bff'
+    secondary_color: '#6c757d'
+    font_family: Arial, sans-serif
+    logo_url: ''
+  social_media: {}
+  google_business_profile: {}
+  pages:
+  - title: Home
+    slug: index
+    primary_keyword: industry
+    secondary_keywords:
+    - test
+    - local business
+  offerings: []
+  faq: []
