@@ -233,6 +233,10 @@ class ClientConfig:
     social_media: SocialMediaConfig = field(default_factory=SocialMediaConfig)
     google_maps: GoogleMapsConfig = field(default_factory=GoogleMapsConfig)
     google_business_profile: Dict[str, str] = field(default_factory=dict)
+    
+    # Cities and local SEO data
+    target_cities: List[str] = field(default_factory=list)
+    seo_content: Dict[str, str] = field(default_factory=dict)
 
     # Metadata
     created_date: datetime = field(default_factory=datetime.now)
@@ -354,8 +358,10 @@ class ClientConfig:
                 "google_maps": (
                     {"cities": self.google_maps.cities}
                     if self.google_maps.cities
-                    else None
+                    else {}
                 ),
+                "target_cities": self.target_cities,
+                "seo_content": self.seo_content,
                 "pages": pages_list,
                 "offerings": offerings,
                 "faq": faq_list,

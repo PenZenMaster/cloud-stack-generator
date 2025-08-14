@@ -104,6 +104,10 @@ class ConfigParser:
 
         # Parse FAQ
         faq = self._parse_faq_config(client_data)
+        
+        # Parse cities data
+        target_cities = client_data.get("target_cities", [])
+        seo_content = client_data.get("seo_content", {})
 
         # Build complete configuration
         config = ClientConfig(
@@ -117,6 +121,8 @@ class ConfigParser:
             products=products,
             services=services,
             faq=faq,
+            target_cities=target_cities,
+            seo_content=seo_content,
         )
 
         self.current_config = config
@@ -353,6 +359,13 @@ class ConfigParser:
         # Add Google Maps if cities exist
         if config.google_maps.cities:
             yaml_data["client"]["google_maps"] = {"cities": config.google_maps.cities}
+            
+        # Add cities data
+        if config.target_cities:
+            yaml_data["client"]["target_cities"] = config.target_cities
+            
+        if config.seo_content:
+            yaml_data["client"]["seo_content"] = config.seo_content
 
         return yaml_data
 
