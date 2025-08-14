@@ -29,6 +29,7 @@ import yaml
 from .components.business_tab import BusinessTab
 from .components.contact_tab import ContactTab
 from .components.branding_tab import BrandingTab
+from .components.cities_tab import CitiesTab
 from .content_tabs.products_tab import ProductsTab
 from .content_tabs.services_tab import ServicesTab
 
@@ -197,6 +198,7 @@ class EnhancedMainWindow(QMainWindow):
         self.business_tab = BusinessTab()
         self.contact_tab = ContactTab()
         self.branding_tab = BrandingTab()
+        self.cities_tab = CitiesTab()
         self.products_tab = ProductsTab()
         self.services_tab = ServicesTab()
 
@@ -204,6 +206,7 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.business_tab, "📊 Business Info")
         self.main_tabs.addTab(self.contact_tab, "📞 Contact Details")
         self.main_tabs.addTab(self.branding_tab, "🎨 Branding & Style")
+        self.main_tabs.addTab(self.cities_tab, "🏙️ Cities & Locations")
         self.main_tabs.addTab(self.products_tab, "📦 Products")
         self.main_tabs.addTab(self.services_tab, "⚙️ Services & FAQ")
 
@@ -276,6 +279,8 @@ class EnhancedMainWindow(QMainWindow):
         self.business_tab.config_changed.connect(self.on_config_changed)
         self.contact_tab.config_changed.connect(self.on_config_changed)
         self.branding_tab.config_changed.connect(self.on_config_changed)
+        # Cities tab uses manual save only (no auto-save)
+        self.cities_tab.config_changed.connect(self.on_cities_config_changed)
         self.products_tab.config_changed.connect(self.on_config_changed)
         self.services_tab.config_changed.connect(self.on_config_changed)
 
@@ -283,15 +288,30 @@ class EnhancedMainWindow(QMainWindow):
         self.business_tab.validation_requested.connect(self.validate_all_tabs)
         self.contact_tab.validation_requested.connect(self.validate_all_tabs)
         self.branding_tab.validation_requested.connect(self.validate_all_tabs)
+        self.cities_tab.validation_requested.connect(self.validate_all_tabs)
 
         # Tab change signal
         self.main_tabs.currentChanged.connect(self.on_tab_changed)
 
     def on_config_changed(self):
-        """Handle configuration changes"""
+        """Handle configuration changes (with auto-save)"""
         self.unsaved_changes = True
         self.update_window_title()
         self.status_label.setText("Configuration modified")
+        
+        # Auto-save if we have an existing config file
+        if self.current_config_file:
+            try:
+                if self.save_to_file(self.current_config_file):
+                    self.status_label.setText("Configuration auto-saved")
+            except Exception as e:
+                self.status_label.setText(f"Auto-save failed: {str(e)}")
+
+    def on_cities_config_changed(self):
+        """Handle Cities tab configuration changes (manual save only)"""
+        self.unsaved_changes = True
+        self.update_window_title()
+        self.status_label.setText("Cities configuration modified - use Save Configuration to save changes")
 
     def on_tab_changed(self, index):
         """Handle tab change events"""
@@ -497,6 +517,7 @@ class EnhancedMainWindow(QMainWindow):
             "business": self.business_tab.get_config_data(),
             "contact": self.contact_tab.get_config_data(),
             "branding": self.branding_tab.get_config_data(),
+            "cities": self.cities_tab.get_config_data(),
             "products": self.products_tab.get_config_data(),
             "services": self.services_tab.get_config_data(),
         }
@@ -578,6 +599,21 @@ class EnhancedMainWindow(QMainWindow):
                 )
             )
 
+        # Import GoogleMapsConfig for cities data
+        from ..core.config.models import GoogleMapsConfig
+        
+        # Create Google Maps config with cities data
+        cities_data = config_data.get("cities", {})
+        google_maps = GoogleMapsConfig()
+        
+        # Add cities from the cities tab
+        google_maps_cities = cities_data.get("google_maps", {}).get("cities", {})
+        google_maps.cities = google_maps_cities
+        
+        # Get target cities and SEO content
+        target_cities = cities_data.get("target_cities", [])
+        seo_content = cities_data.get("seo_content", {})
+
         # Create complete config
         return ClientConfig(
             business=business,
@@ -587,6 +623,9 @@ class EnhancedMainWindow(QMainWindow):
             services=services,
             social_media=social_media,
             google_business_profile=google_business_profile,
+            google_maps=google_maps,
+            target_cities=target_cities,
+            seo_content=seo_content,
         )
 
     def load_config_into_tabs(self, config: ClientConfig):
@@ -619,6 +658,14 @@ class EnhancedMainWindow(QMainWindow):
             "logo_url": config.branding.logo_url,
         }
         self.branding_tab.set_config_data(branding_data)
+
+        # Load cities data from config
+        cities_data = {
+            "target_cities": config.target_cities,
+            "seo_content": config.seo_content,
+            "google_maps": {"cities": config.google_maps.cities},
+        }
+        self.cities_tab.set_config_data(cities_data)
 
         # Load products data
         products_data = {
@@ -656,6 +703,7 @@ class EnhancedMainWindow(QMainWindow):
             "Business Info": self.business_tab,
             "Contact Details": self.contact_tab,
             "Branding & Style": self.branding_tab,
+            "Cities & Locations": self.cities_tab,
             "Products": self.products_tab,
             "Services & FAQ": self.services_tab,
         }
@@ -687,6 +735,7 @@ class EnhancedMainWindow(QMainWindow):
             "Business Info": self.business_tab,
             "Contact Details": self.contact_tab,
             "Branding & Style": self.branding_tab,
+            "Cities & Locations": self.cities_tab,
             "Products": self.products_tab,
             "Services & FAQ": self.services_tab,
         }

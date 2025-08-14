@@ -45,20 +45,12 @@ class CityEmbedDialog(QDialog):
         city_group = QGroupBox("City Information")
         city_layout = QVBoxLayout()
 
-        # City name
-        city_layout.addWidget(QLabel("City Name:"))
+        # Location name (city, neighborhood, or area)
+        city_layout.addWidget(QLabel("Location Name:"))
         self.city_input = QLineEdit()
-        self.city_input.setPlaceholderText("e.g., Detroit")
+        self.city_input.setPlaceholderText("e.g., Detroit, Evanston Illinois, or Downtown Chicago")
         self.city_input.setFont(QFont("Arial", 10))
         city_layout.addWidget(self.city_input)
-
-        # State
-        city_layout.addWidget(QLabel("State (2-letter abbreviation):"))
-        self.state_input = QLineEdit()
-        self.state_input.setPlaceholderText("e.g., MI")
-        self.state_input.setFont(QFont("Arial", 10))
-        self.state_input.setMaxLength(2)
-        city_layout.addWidget(self.state_input)
 
         city_group.setLayout(city_layout)
         layout.addWidget(city_group)
@@ -128,7 +120,6 @@ class CityEmbedDialog(QDialog):
         # Connect validation on text change
         self.embed_input.textChanged.connect(self.on_embed_text_changed)
         self.city_input.textChanged.connect(self.update_validation_status)
-        self.state_input.textChanged.connect(self.update_validation_status)
 
     def on_embed_text_changed(self):
         """Handle embed code text changes"""
@@ -206,20 +197,11 @@ class CityEmbedDialog(QDialog):
 
     def validate_all_inputs(self):
         """Validate all inputs and update status"""
-        city = self.city_input.text().strip()
-        state = self.state_input.text().strip()
+        location = self.city_input.text().strip()
         embed_code = self.embed_input.toPlainText().strip()
 
-        if not city:
-            self.set_status("⚠️ City name required", "orange")
-            return False
-
-        if not state:
-            self.set_status("⚠️ State abbreviation required", "orange")
-            return False
-
-        if len(state) != 2:
-            self.set_status("⚠️ State must be 2-letter abbreviation", "orange")
+        if not location:
+            self.set_status("⚠️ Location name required", "orange")
             return False
 
         if not embed_code:
@@ -231,33 +213,15 @@ class CityEmbedDialog(QDialog):
 
     def validate_and_accept(self):
         """Validate all inputs before accepting"""
-        city = self.city_input.text().strip()
-        state = self.state_input.text().strip().upper()
+        location = self.city_input.text().strip()
         embed_code = self.embed_input.toPlainText().strip()
 
-        # Validate city
-        if not city:
+        # Validate location
+        if not location:
             QMessageBox.warning(
-                self, "Missing Information", "Please enter a city name."
+                self, "Missing Information", "Please enter a location name."
             )
             self.city_input.setFocus()
-            return
-
-        # Validate state
-        if not state:
-            QMessageBox.warning(
-                self, "Missing Information", "Please enter a state abbreviation."
-            )
-            self.state_input.setFocus()
-            return
-
-        if len(state) != 2:
-            QMessageBox.warning(
-                self,
-                "Invalid State",
-                "Please enter a 2-letter state abbreviation (e.g., MI, CA, NY).",
-            )
-            self.state_input.setFocus()
             return
 
         # Validate embed code
@@ -274,29 +238,25 @@ class CityEmbedDialog(QDialog):
             self.embed_input.setFocus()
             return
 
-        # Update state field to uppercase
-        self.state_input.setText(state)
-
         # All validation passed
         self.accept()
 
     def get_data(self) -> dict:
         """Get the entered data"""
         return {
-            "city": self.city_input.text().strip(),
-            "state": self.state_input.text().strip().upper(),
+            "location": self.city_input.text().strip(),
             "embed_code": self.embed_input.toPlainText().strip(),
         }
 
     def set_data(self, data: dict):
         """Set the dialog data (for editing existing entries)"""
-        self.city_input.setText(data.get("city", ""))
-        self.state_input.setText(data.get("state", ""))
+        # Support both old format (city, state) and new format (location)
+        location = data.get("location", "") or data.get("city", "")
+        self.city_input.setText(location)
         self.embed_input.setPlainText(data.get("embed_code", ""))
 
     def clear_inputs(self):
         """Clear all input fields"""
         self.city_input.clear()
-        self.state_input.clear()
         self.embed_input.clear()
         self.status_label.clear()
