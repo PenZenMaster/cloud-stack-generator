@@ -2,9 +2,10 @@
 Filename: src/ui/components/base_tab.py
 Path: E:/projects/cloud-stack-generator/src/ui/components/base_tab.py
 Description: Abstract base class for all configuration tabs with standardized interface
+Enhanced with scalable layout system integration
 
-Version: 1.0.3
-Date: 2025-08-10
+Version: 1.1.0
+Date: 2025-08-15
 Author: Cloud Stack Generator Team
 """
 
@@ -15,10 +16,20 @@ from PyQt6.QtWidgets import (
     QLabel,
     QFrame,
     QTabWidget,
+    QScrollArea,
+    QSizePolicy,
 )
-from PyQt6.QtCore import pyqtSignal, QTimer
+from PyQt6.QtCore import pyqtSignal, QTimer, Qt
 from PyQt6.QtGui import QFont, QPalette
 from typing import Dict, Any, List, Tuple, Optional, Protocol
+
+# Import the new layout system
+from ..layouts import (
+    ScalableLayout, 
+    ResponsiveSection, 
+    StandardFormLayout,
+    ResponsiveLabel
+)
 
 
 class ValidationResult:
@@ -286,6 +297,82 @@ class BaseTab(QWidget):
 
     def _update_ui_state(self):
         """Update UI state based on current tab state"""
+        pass  # Can be overridden by subclasses
+
+    # New layout system helper methods
+    
+    def create_scalable_layout(self) -> ScalableLayout:
+        """
+        Create a scalable layout for the tab content
+        
+        Returns:
+            ScalableLayout instance with proper DPI scaling
+        """
+        return ScalableLayout(self)
+    
+    def create_responsive_section(self, title: str = "") -> ResponsiveSection:
+        """
+        Create a responsive section container with scroll support
+        
+        Args:
+            title: Section title (optional)
+            
+        Returns:
+            ResponsiveSection instance with built-in scroll area
+        """
+        return ResponsiveSection(title, self)
+    
+    def create_standard_form(self) -> StandardFormLayout:
+        """
+        Create a standard form layout with consistent field scaling
+        
+        Returns:
+            StandardFormLayout instance for form fields
+        """
+        return StandardFormLayout(self)
+    
+    def create_section_header(self, title: str) -> ResponsiveLabel:
+        """
+        Create a responsive section header with proper scaling
+        
+        Args:
+            title: Header text
+            
+        Returns:
+            ResponsiveLabel configured as section header
+        """
+        header = ResponsiveLabel(title, self)
+        font = header.font()
+        font.setBold(True)
+        font.setPointSize(font.pointSize() + 2)
+        header.setFont(font)
+        header.setStyleSheet("color: #2c3e50; margin: 15px 0 10px 0; padding: 5px 0;")
+        return header
+    
+    def wrap_in_scroll_area(self, widget: QWidget) -> QScrollArea:
+        """
+        Wrap a widget in a scroll area with proper configuration
+        
+        Args:
+            widget: Widget to wrap in scroll area
+            
+        Returns:
+            QScrollArea containing the widget
+        """
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setWidget(widget)
+        
+        # Ensure proper size policies
+        scroll_area.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        
+        return scroll_area
+    
+    def _update_tab_title(self):
+        """Update tab title to show unsaved changes"""
         # Update tab title to show unsaved changes
         tab_name = self.get_tab_name()
         if self._has_unsaved_changes:
@@ -301,6 +388,10 @@ class BaseTab(QWidget):
             except AttributeError:
                 # Fallback if indexOf/setTabText not available
                 pass
+    
+    def get_tab_name(self) -> str:
+        """Get the name of this tab - override in subclasses"""
+        return "Tab"
 
 
 class TabConfigurationError(Exception):

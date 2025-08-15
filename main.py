@@ -11,12 +11,39 @@ Working Directory: E:\\projects\\cloud-stack-generator\
 import sys
 import traceback
 from pathlib import Path
+from datetime import datetime
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
 # Add src directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+def log_error_to_file(error_type, error_msg, stack_trace=""):
+    """Log errors to error_log.txt for better debugging"""
+    try:
+        error_log_path = Path(__file__).parent / "logs" / "error_log.txt"
+        error_log_path.parent.mkdir(exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        with open(error_log_path, "a", encoding="utf-8") as f:
+            f.write(f"\n{'='*60}\n")
+            f.write(f"ERROR LOG ENTRY - {timestamp}\n")
+            f.write(f"{'='*60}\n")
+            f.write(f"Error Type: {error_type}\n")
+            f.write(f"Error Message: {error_msg}\n")
+            if stack_trace:
+                f.write(f"\nStack Trace:\n{stack_trace}\n")
+            f.write(f"Working Directory: {Path.cwd()}\n")
+            f.write(f"Python Path: {sys.path[:3]}...\n")  # First 3 entries
+            f.write(f"{'='*60}\n\n")
+            
+        print(f"Error logged to: {error_log_path}")
+        return str(error_log_path)
+    except Exception as log_error:
+        print(f"Failed to log error to file: {log_error}")
+        return None
 
 try:
     # Import the enhanced main window
@@ -51,7 +78,12 @@ try:
             return app.exec()
 
         except ImportError as e:
-            error_msg = f"""
+            stack_trace = traceback.format_exc()
+            error_msg = f"Import Error: {str(e)}"
+            
+            log_error_to_file("ImportError", error_msg, stack_trace)
+            
+            full_error_msg = f"""
 Import Error: {str(e)}
 
 This usually means one of the following:
@@ -60,29 +92,37 @@ This usually means one of the following:
 3. Python path is not set correctly
 
 Please run this from the project root directory and ensure all component files exist.
+Error logged to logs/error_log.txt for detailed analysis.
             """
 
             if "app" in locals():
-                QMessageBox.critical(None, "Import Error", error_msg)
+                QMessageBox.critical(None, "Import Error", full_error_msg)
             else:
-                print(error_msg)
+                print(full_error_msg)
             return 1
 
         except Exception as e:
-            error_msg = f"""
+            stack_trace = traceback.format_exc()
+            error_msg = f"Unexpected Error: {str(e)}"
+            
+            log_error_to_file("Exception", error_msg, stack_trace)
+            
+            full_error_msg = f"""
 Unexpected Error: {str(e)}
 
 Stack trace:
-{traceback.format_exc()}
+{stack_trace}
 
 Please check that all dependencies are installed:
 pip install PyQt6 PyYAML pandas chardet
+
+Error logged to logs/error_log.txt for detailed analysis.
             """
 
             if "app" in locals():
-                QMessageBox.critical(None, "Application Error", error_msg)
+                QMessageBox.critical(None, "Application Error", full_error_msg)
             else:
-                print(error_msg)
+                print(full_error_msg)
             return 1
 
     if __name__ == "__main__":
@@ -94,13 +134,18 @@ pip install PyQt6 PyYAML pandas chardet
         exit_code = main()
 
         if exit_code == 0:
-            print("✅ Application closed successfully")
+            print("Application closed successfully")
         else:
-            print("❌ Application closed with errors")
+            print("Application closed with errors")
 
         sys.exit(exit_code)
 
 except ImportError as import_error:
+    stack_trace = traceback.format_exc()
+    error_msg = f"CRITICAL IMPORT ERROR: {str(import_error)}"
+    
+    log_error_to_file("CRITICAL_ImportError", error_msg, stack_trace)
+    
     print(
         f"""
 CRITICAL IMPORT ERROR
@@ -123,6 +168,8 @@ This appears to be a module import issue. Here are the most likely solutions:
 4. **Fallback to Legacy Mode**:
    If the enhanced main window isn't ready, you can temporarily use:
    python -c "from src.ui.main_window import MainWindow; import sys; from PyQt6.QtWidgets import QApplication; app=QApplication(sys.argv); w=MainWindow(); w.show(); sys.exit(app.exec())"
+
+Error logged to logs/error_log.txt for detailed analysis.
 
 Component Status Check:
 """
@@ -151,18 +198,25 @@ Component Status Check:
     sys.exit(1)
 
 except Exception as critical_error:
+    stack_trace = traceback.format_exc()
+    error_msg = f"CRITICAL APPLICATION ERROR: {str(critical_error)}"
+    
+    log_error_to_file("CRITICAL_Exception", error_msg, stack_trace)
+    
     print(
         f"""
 CRITICAL APPLICATION ERROR
 
 Error: {str(critical_error)}
 Stack Trace:
-{traceback.format_exc()}
+{stack_trace}
 
 This is an unexpected error. Please check:
 1. All dependencies are installed
 2. File permissions are correct  
 3. No syntax errors in component files
+
+Error logged to logs/error_log.txt for detailed analysis.
 
 If the problem persists, please run individual component tests:
 - python tests/simple_business_test.py

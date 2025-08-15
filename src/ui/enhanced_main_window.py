@@ -294,18 +294,10 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.currentChanged.connect(self.on_tab_changed)
 
     def on_config_changed(self):
-        """Handle configuration changes (with auto-save)"""
+        """Handle configuration changes (manual save only)"""
         self.unsaved_changes = True
         self.update_window_title()
-        self.status_label.setText("Configuration modified")
-        
-        # Auto-save if we have an existing config file
-        if self.current_config_file:
-            try:
-                if self.save_to_file(self.current_config_file):
-                    self.status_label.setText("Configuration auto-saved")
-            except Exception as e:
-                self.status_label.setText(f"Auto-save failed: {str(e)}")
+        self.status_label.setText("Configuration modified - use Save Configuration to save changes")
 
     def on_cities_config_changed(self):
         """Handle Cities tab configuration changes (manual save only)"""
@@ -566,11 +558,14 @@ class EnhancedMainWindow(QMainWindow):
 
         # Create branding config
         branding_data = config_data.get("branding", {})
+        colors = branding_data.get("colors", {})
+        typography = branding_data.get("typography", {})
+        logo = branding_data.get("logo", {})
         branding = BrandingConfig(
-            primary_color=branding_data.get("primary_color", "#007bff"),
-            secondary_color=branding_data.get("secondary_color", "#6c757d"),
-            font_family=branding_data.get("font_family", "Arial, sans-serif"),
-            logo_url=branding_data.get("logo_url", ""),
+            primary_color=colors.get("primary_color", "#007bff"),
+            secondary_color=colors.get("secondary_color", "#6c757d"),
+            font_family=typography.get("font_family", "Arial, sans-serif"),
+            logo_url=logo.get("logo_url", ""),
         )
 
         # Create products list
@@ -639,23 +634,45 @@ class EnhancedMainWindow(QMainWindow):
         }
         self.business_tab.set_config_data(business_data)
 
-        # Load contact data (including social media and Google Business Profile)
+        # Load contact data with new structure for migrated contact tab
         contact_data = {
-            "name": config.contact.name,
-            "phone": config.contact.phone,
-            "address": config.contact.address,
-            "email": config.contact.email,
-            "social_media": config.social_media.get_valid_links(),
-            "google_business_profile": config.google_business_profile,
+            "contact": {
+                "name": config.contact.name,
+                "phone": config.contact.phone,
+                "email": config.contact.email,
+            },
+            "address": {
+                "street": config.contact.address,  # For now, put full address in street
+                "city": "",
+                "state": "",
+                "zip_code": "",
+                "country": "United States"
+            },
+            "social_media": {
+                "facebook": getattr(config.social_media, 'facebook', ''),
+                "twitter": getattr(config.social_media, 'twitter', ''),
+                "linkedin": getattr(config.social_media, 'linkedin', ''),
+                "instagram": getattr(config.social_media, 'instagram', ''),
+                "youtube": getattr(config.social_media, 'youtube', ''),
+            },
+            "google_business": {
+                "embed_code": getattr(config, 'google_business_profile', {}).get('embed_code', '') if hasattr(config, 'google_business_profile') else ''
+            },
         }
         self.contact_tab.set_config_data(contact_data)
 
-        # Load branding data
+        # Load branding data with new structure for migrated branding tab
         branding_data = {
-            "primary_color": config.branding.primary_color,
-            "secondary_color": config.branding.secondary_color,
-            "font_family": config.branding.font_family,
-            "logo_url": config.branding.logo_url,
+            "colors": {
+                "primary_color": config.branding.primary_color,
+                "secondary_color": config.branding.secondary_color,
+            },
+            "typography": {
+                "font_family": config.branding.font_family,
+            },
+            "logo": {
+                "logo_url": config.branding.logo_url,
+            },
         }
         self.branding_tab.set_config_data(branding_data)
 
