@@ -15,6 +15,7 @@ from .models import (
     ClientConfig,
     BusinessConfig,
     ContactConfig,
+    AddressConfig,
     BrandingConfig,
     ProductConfig,
     ServiceConfig,
@@ -145,10 +146,25 @@ class ConfigParser:
         if not isinstance(contact_data, dict):
             contact_data = {}
 
+        # Handle address - could be string (legacy) or dict (new format)
+        address_data = contact_data.get("address", "")
+        if isinstance(address_data, dict):
+            # New structured format
+            address_config = AddressConfig(
+                street=address_data.get("street", ""),
+                city=address_data.get("city", ""),
+                state=address_data.get("state", ""),
+                zip_code=address_data.get("zip_code", ""),
+                country=address_data.get("country", "United States")
+            )
+        else:
+            # Legacy string format - convert to structured
+            address_config = AddressConfig.from_single_line(str(address_data) if address_data else "")
+
         return ContactConfig(
             name=contact_data.get("name", ""),
             phone=contact_data.get("phone", ""),
-            address=contact_data.get("address", ""),
+            address=address_config,
             email=contact_data.get("email", ""),
         )
 
@@ -341,7 +357,13 @@ class ConfigParser:
                 "contact": {
                     "name": config.contact.name,
                     "phone": config.contact.phone,
-                    "address": config.contact.address,
+                    "address": {
+                        "street": config.contact.address.street,
+                        "city": config.contact.address.city,
+                        "state": config.contact.address.state,
+                        "zip_code": config.contact.address.zip_code,
+                        "country": config.contact.address.country,
+                    },
                     "email": config.contact.email,
                 },
                 "branding": {

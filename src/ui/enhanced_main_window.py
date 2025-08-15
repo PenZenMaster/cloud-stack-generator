@@ -536,11 +536,28 @@ class EnhancedMainWindow(QMainWindow):
 
         # Create contact config
         contact_data = config_data.get("contact", {})
+        
+        # Handle address data - create AddressConfig from separate fields
+        from src.core.config.models import AddressConfig
+        address_data = contact_data.get("address", {})
+        if isinstance(address_data, dict):
+            # Create structured address from separate fields
+            address_config = AddressConfig(
+                street=address_data.get("street", ""),
+                city=address_data.get("city", ""),
+                state=address_data.get("state", ""),
+                zip_code=address_data.get("zip_code", ""),
+                country=address_data.get("country", "United States")
+            )
+        else:
+            # Handle legacy single address string
+            address_config = AddressConfig.from_single_line(str(address_data) if address_data else "")
+        
         contact = ContactConfig(
-            name=contact_data.get("name", ""),
-            phone=contact_data.get("phone", ""),
-            address=contact_data.get("address", ""),
-            email=contact_data.get("email", ""),
+            name=contact_data.get("contact", {}).get("name", "") if "contact" in contact_data else contact_data.get("name", ""),
+            phone=contact_data.get("contact", {}).get("phone", "") if "contact" in contact_data else contact_data.get("phone", ""),
+            address=address_config,
+            email=contact_data.get("contact", {}).get("email", "") if "contact" in contact_data else contact_data.get("email", ""),
         )
         
         # Create social media config
@@ -635,6 +652,7 @@ class EnhancedMainWindow(QMainWindow):
         self.business_tab.set_config_data(business_data)
 
         # Load contact data with new structure for migrated contact tab
+        # Address is now a structured AddressConfig object
         contact_data = {
             "contact": {
                 "name": config.contact.name,
@@ -642,11 +660,11 @@ class EnhancedMainWindow(QMainWindow):
                 "email": config.contact.email,
             },
             "address": {
-                "street": config.contact.address,  # For now, put full address in street
-                "city": "",
-                "state": "",
-                "zip_code": "",
-                "country": "United States"
+                "street": config.contact.address.street,
+                "city": config.contact.address.city,
+                "state": config.contact.address.state,
+                "zip_code": config.contact.address.zip_code,
+                "country": config.contact.address.country
             },
             "social_media": {
                 "facebook": getattr(config.social_media, 'facebook', ''),

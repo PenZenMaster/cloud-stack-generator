@@ -52,12 +52,12 @@ class WebsiteGenerator:
             index_path = self._generate_index_page(config)
             generated_files.append(index_path)
 
-            # Generate city pages if configured
-            if config.pages:
-                for page in config.pages:
-                    if page.slug != "index":  # Skip home page
-                        page_path = self._generate_city_page(config, page)
-                        generated_files.append(page_path)
+            # Generate city pages from target_cities using new CityPageGenerator
+            if hasattr(config, 'target_cities') and config.target_cities:
+                from .generators.city_page_generator import CityPageGenerator
+                city_generator = CityPageGenerator(config)
+                city_files = city_generator.generate_all_city_pages(output_dir)
+                generated_files.extend(city_files)
 
             # Generate CSS file
             css_path = self._generate_css_file(config)
@@ -185,28 +185,31 @@ class WebsiteGenerator:
 </html>"""
 
     def _build_navigation(self, config: ClientConfig) -> str:
-        """Build proper navigation menu"""
-        nav_links = ""
-        if config.pages:
-            for page in config.pages:
-                slug = page.slug
-                # Use proper page titles instead of phone numbers
-                if slug == "index":
-                    title = "Home"
-                else:
-                    # Extract city name from page title
-                    page_title = page.title
-                    city = page.city
-                    title = (
-                        city
-                        if city
-                        else page_title.replace(f"{config.business.industry} in ", "")
-                    )
-
-                link = "index.html" if slug == "index" else f"{slug}.html"
-                nav_links += f'<a href="{link}">{title}</a> | '
-
-        return nav_links.rstrip(" | ")
+        """Build proper navigation menu dynamically from target cities"""
+        # Start with Home
+        nav_links = '<a href="index.html">Home</a>'
+        
+        # Add city pages dynamically from target_cities
+        if hasattr(config, 'target_cities') and config.target_cities:
+            for city in config.target_cities:
+                # Generate slug using same pattern as location_page_generator
+                city_slug = self._generate_city_slug(city)
+                # Clean city name for display (remove state suffix)
+                city_display = city.split(',')[0].strip()
+                nav_links += f' | <a href="{city_slug}.html">{city_display}</a>'
+        
+        return nav_links
+    
+    def _generate_city_slug(self, city_name: str) -> str:
+        """Generate URL slug from city name (matches location_page_generator pattern)"""
+        # Replicate slugify functionality from location_page_generator
+        slug = city_name.lower()
+        slug = slug.replace(' ', '-')      # Spaces to hyphens
+        slug = slug.replace(',', '')       # Remove commas
+        slug = slug.replace(' illinois', '') # Remove state suffix
+        slug = slug.replace(' il', '')     # Remove abbreviated state
+        slug = slug.strip('-')            # Clean up trailing hyphens
+        return slug
 
     # PART 2 - Continue from Part 1
 
@@ -461,8 +464,8 @@ class WebsiteGenerator:
                 f"                <p><strong>Phone:</strong> {display_phone}</p>\n"
             )
 
-        if contact.address:
-            footer_content += f'                <p><strong>Address:</strong> {contact.address}</p>\n'
+        if contact.address.street:
+            footer_content += f'                <p><strong>Address:</strong> {contact.address.to_single_line()}</p>\n'
         if contact.email:
             footer_content += (
                 f'                <p><strong>Email:</strong> {contact.email}</p>\n'

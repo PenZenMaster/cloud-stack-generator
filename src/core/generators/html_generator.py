@@ -85,7 +85,7 @@ class HTMLGenerator:
                 "page_description": f"Get in touch with {config.business.business_name} for professional {config.business.industry.lower()} services",
                 "page_type": "contact",
                 "contact_form": True,
-                "google_maps_embed": self._generate_maps_embed(config.contact.address),
+                "google_maps_embed": self._generate_maps_embed(config.contact.address.to_single_line()),
                 "business_hours": self._get_business_hours(config),
             }
         )
@@ -318,12 +318,8 @@ class HTMLGenerator:
             "description": f"Professional {config.business.industry} services",
         }
 
-        if config.contact.address:
-            schema["address"] = (
-                config.contact.address.split(",")[0]
-                if "," in config.contact.address
-                else config.contact.address
-            )
+        if config.contact.address.street:
+            schema["address"] = config.contact.address.street
 
         if config.contact.phone:
             schema["telephone"] = config.contact.phone
@@ -477,7 +473,7 @@ class HTMLGenerator:
             <h1>Contact Us</h1>
             {f'<p><strong>Phone:</strong> {contact.phone}</p>' if contact and contact.phone else ''}
             {f'<p><strong>Email:</strong> {contact.email}</p>' if contact and contact.email else ''}
-            {f'<p><strong>Address:</strong> {contact.address}</p>' if contact and contact.address else ''}
+            {f'<p><strong>Address:</strong> {contact.address.to_single_line()}</p>' if contact and contact.address.street else ''}
             """
         else:
             return f"<h1>{data.get('page_title', 'Page')}</h1><p>Content for this page is being generated.</p>"

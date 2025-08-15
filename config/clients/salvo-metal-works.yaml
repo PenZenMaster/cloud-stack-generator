@@ -8,22 +8,22 @@ client:
     range of chimney shrouds, cupolas, dormers, finials, leader boxes, roof vents,
     snow guards, and more.
   contact:
-    name: ''
-    phone: ''
+    name: Salvo Metal Works
+    phone: (866) 713-3396
     address:
       street: 566 W 5th Ave
       city: Naperville
       state: IL
       zip_code: '60563'
       country: United States
-    email: ''
+    email: info@salvometalworks.com
   branding:
-    primary_color: '#007bff'
-    secondary_color: '#6c757d'
+    primary_color: '#bf062f'
+    secondary_color: '#fe9e1f'
     font_family: Arial, sans-serif
-    logo_url: ''
+    logo_url: https://salvometalworks.com/wp-content/uploads/2024/10/Salvo_RGB_FullColor_Logo-2048x742.png
   social_media:
-    facebook: https://www.facebook.com/SalvoMetalWorks
+    facebook: 'https://www.facebook.com/SalvoMetalWorks '
     linkedin: https://www.linkedin.com/company/salvometalworks/
     instagram: https://www.instagram.com/salvometalworks/
     youtube: https://www.youtube.com/@salvometalworks

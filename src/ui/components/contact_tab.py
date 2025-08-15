@@ -346,7 +346,17 @@ class ContactTab(BaseTab):
         else:
             # Validate phone format
             phone = contact.get("phone", "")
-            if not re.match(r'^\+?1?\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$', phone):
+            # Accept both normalized format (+1-XXX-XXX-XXXX) and common formats
+            valid_patterns = [
+                r'^\+1-\d{3}-\d{3}-\d{4}$',  # Normalized format: +1-866-713-3396
+                r'^\(\d{3}\)\s\d{3}-\d{4}$',  # Common format: (866) 713-3396
+                r'^\d{3}-\d{3}-\d{4}$',       # Simple format: 866-713-3396
+                r'^\d{3}\.\d{3}\.\d{4}$',     # Dot format: 866.713.3396
+                r'^\d{10}$',                  # Raw digits: 8667133396
+            ]
+            
+            is_valid = any(re.match(pattern, phone) for pattern in valid_patterns)
+            if not is_valid:
                 result.add_error("Phone number format is invalid", "phone")
         
         if not contact.get("email", "").strip():

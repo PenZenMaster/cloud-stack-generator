@@ -14,12 +14,61 @@ from datetime import datetime
 
 
 @dataclass
+class AddressConfig:
+    """Address configuration with separate fields"""
+    
+    street: str = ""
+    city: str = ""
+    state: str = ""
+    zip_code: str = ""
+    country: str = "United States"
+    
+    def to_single_line(self) -> str:
+        """Convert to single line address string for display purposes"""
+        parts = []
+        if self.street:
+            parts.append(self.street)
+        if self.city:
+            parts.append(self.city)
+        if self.state:
+            parts.append(self.state)
+        if self.zip_code:
+            parts.append(self.zip_code)
+        if self.country and self.country != "United States":
+            parts.append(self.country)
+        return ", ".join(parts)
+    
+    @classmethod
+    def from_single_line(cls, address_line: str) -> 'AddressConfig':
+        """Create AddressConfig from single line address (for migration)"""
+        if not address_line:
+            return cls()
+        
+        # Simple parsing - split by comma and try to identify components
+        parts = [part.strip() for part in address_line.split(",")]
+        
+        street = parts[0] if len(parts) > 0 else ""
+        city = parts[1] if len(parts) > 1 else ""
+        state = parts[2] if len(parts) > 2 else ""
+        zip_code = parts[3] if len(parts) > 3 else ""
+        country = parts[4] if len(parts) > 4 else "United States"
+        
+        return cls(
+            street=street,
+            city=city,
+            state=state,
+            zip_code=zip_code,
+            country=country
+        )
+
+
+@dataclass
 class ContactConfig:
     """Contact information configuration"""
 
     name: str = ""
     phone: str = ""
-    address: str = ""
+    address: AddressConfig = field(default_factory=AddressConfig)
     email: str = ""
 
     def __post_init__(self):
