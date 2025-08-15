@@ -108,6 +108,7 @@ class ConfigParser:
         # Parse cities data
         target_cities = client_data.get("target_cities", [])
         seo_content = client_data.get("seo_content", {})
+        api_keys = client_data.get("api_keys", {})
 
         # Build complete configuration
         config = ClientConfig(
@@ -123,6 +124,7 @@ class ConfigParser:
             faq=faq,
             target_cities=target_cities,
             seo_content=seo_content,
+            api_keys=api_keys,
         )
 
         self.current_config = config
@@ -366,6 +368,9 @@ class ConfigParser:
             
         if config.seo_content:
             yaml_data["client"]["seo_content"] = config.seo_content
+            
+        if config.api_keys:
+            yaml_data["client"]["api_keys"] = config.api_keys
 
         return yaml_data
 

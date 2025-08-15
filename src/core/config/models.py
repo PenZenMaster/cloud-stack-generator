@@ -237,6 +237,9 @@ class ClientConfig:
     # Cities and local SEO data
     target_cities: List[str] = field(default_factory=list)
     seo_content: Dict[str, str] = field(default_factory=dict)
+    
+    # API keys for integrations
+    api_keys: Dict[str, str] = field(default_factory=dict)
 
     # Metadata
     created_date: datetime = field(default_factory=datetime.now)
@@ -362,6 +365,7 @@ class ClientConfig:
                 ),
                 "target_cities": self.target_cities,
                 "seo_content": self.seo_content,
+                "api_keys": self.api_keys,
                 "pages": pages_list,
                 "offerings": offerings,
                 "faq": faq_list,

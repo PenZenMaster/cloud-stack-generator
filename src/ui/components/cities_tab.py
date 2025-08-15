@@ -29,9 +29,16 @@ from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from .base_tab import BaseTab, ValidationResult
 from ..dialogs.city_embed_dialog import CityEmbedDialog
+from ..dialogs.enhanced_city_embed_dialog import EnhancedCityEmbedDialog
 
 # Import error logging
 from ...utils import log_validation_error
+
+# Import Wikipedia API
+try:
+    from ...core.utils.wikipedia_api import WikipediaAPI
+except ImportError:
+    WikipediaAPI = None
 
 
 class CitiesTab(BaseTab):
@@ -57,7 +64,9 @@ class CitiesTab(BaseTab):
 
         # Create main sections
         self._create_target_cities_section(main_layout)
+        self._create_api_config_section(main_layout)
         self._create_city_maps_section(main_layout)
+        self._create_wikipedia_section(main_layout)
         self._create_seo_content_section(main_layout)
         self._create_validation_section(main_layout)
 
@@ -110,6 +119,66 @@ class CitiesTab(BaseTab):
 
         cities_group.setLayout(cities_layout)
         parent_layout.addWidget(cities_group)
+
+    def _create_api_config_section(self, parent_layout: QVBoxLayout):
+        """Create API configuration section"""
+        # Section header
+        header_label = self._create_section_header("🔑 API Configuration")
+        parent_layout.addWidget(header_label)
+        
+        # API config group
+        api_group = QGroupBox()
+        api_layout = QVBoxLayout()
+        api_layout.setSpacing(10)
+        
+        # Instructions
+        instructions = QLabel(
+            "Configure your Google Maps API key to enable automatic embed generation. "
+            "This allows you to generate maps without manually copying embed codes."
+        )
+        instructions.setFont(QFont("Arial", 12))
+        instructions.setWordWrap(True)
+        instructions.setStyleSheet("color: #666; font-style: italic; margin-bottom: 10px;")
+        api_layout.addWidget(instructions)
+        
+        # API key input
+        api_key_layout = QHBoxLayout()
+        api_key_label = QLabel("Google Maps API Key:")
+        api_key_label.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        api_key_layout.addWidget(api_key_label)
+        
+        self.api_key_input = QLineEdit()
+        self.api_key_input.setFont(QFont("Arial", 12))
+        self.api_key_input.setPlaceholderText("Enter your Google Maps API key here...")
+        self.api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.api_key_input.textChanged.connect(self._on_api_key_changed)
+        api_key_layout.addWidget(self.api_key_input)
+        
+        # Show/hide API key button
+        self.show_api_key_btn = QPushButton("👁️")
+        self.show_api_key_btn.setMaximumWidth(30)
+        self.show_api_key_btn.setToolTip("Show/Hide API Key")
+        self.show_api_key_btn.clicked.connect(self._toggle_api_key_visibility)
+        api_key_layout.addWidget(self.show_api_key_btn)
+        
+        api_layout.addLayout(api_key_layout)
+        
+        # API key status
+        self.api_status_label = QLabel("⚠️ No API key configured")
+        self.api_status_label.setStyleSheet("color: orange; font-weight: bold;")
+        api_layout.addWidget(self.api_status_label)
+        
+        # Help link
+        help_label = QLabel(
+            '<a href="https://developers.google.com/maps/documentation/embed/get-api-key">'
+            'How to get a Google Maps API key</a>'
+        )
+        help_label.setOpenExternalLinks(True)
+        help_label.setStyleSheet("color: #0066cc;")
+        api_layout.addWidget(help_label)
+        
+        api_group.setLayout(api_layout)
+        parent_layout.addWidget(api_group)
 
     def _create_city_maps_section(self, parent_layout: QVBoxLayout):
         """Create Google Maps integration section"""
@@ -187,6 +256,87 @@ class CitiesTab(BaseTab):
 
         maps_group.setLayout(maps_layout)
         parent_layout.addWidget(maps_group)
+
+    def _create_wikipedia_section(self, parent_layout: QVBoxLayout):
+        """Create Wikipedia image preview section"""
+        # Section header
+        header_label = self._create_section_header("📷 Wikipedia Images Preview")
+        parent_layout.addWidget(header_label)
+        
+        # Wikipedia group
+        wiki_group = QGroupBox()
+        wiki_layout = QVBoxLayout()
+        wiki_layout.setSpacing(15)
+        
+        # Instructions
+        instructions = QLabel(
+            "Preview Wikipedia images for your target cities. These images can be automatically "
+            "included in generated city pages with proper attribution."
+        )
+        instructions.setFont(QFont("Arial", 12))
+        instructions.setWordWrap(True)
+        instructions.setStyleSheet("color: #666; font-style: italic; margin-bottom: 10px;")
+        wiki_layout.addWidget(instructions)
+        
+        # Wikipedia status
+        wiki_status = QLabel("✅ Wikipedia integration available" if WikipediaAPI else "❌ Wikipedia integration not available")
+        wiki_status.setStyleSheet(f"color: {'green' if WikipediaAPI else 'red'}; font-weight: bold;")
+        wiki_layout.addWidget(wiki_status)
+        
+        if WikipediaAPI:
+            # City selector for Wikipedia preview
+            selector_layout = QHBoxLayout()
+            
+            city_label = QLabel("Select City for Preview:")
+            city_label.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+            selector_layout.addWidget(city_label)
+            
+            self.wiki_city_selector = QComboBox()
+            self.wiki_city_selector.setFont(QFont("Arial", 14))
+            self.wiki_city_selector.setMinimumHeight(35)
+            self.wiki_city_selector.addItem("Select a city...")
+            selector_layout.addWidget(self.wiki_city_selector)
+            
+            # Preview button
+            self.preview_wiki_btn = QPushButton("🔍 Preview Wikipedia Info")
+            self.preview_wiki_btn.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+            self.preview_wiki_btn.setMinimumHeight(35)
+            self.preview_wiki_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #17a2b8;
+                    color: white;
+                    font-weight: bold;
+                    font-size: 14px;
+                    border: none;
+                    border-radius: 5px;
+                    padding: 8px 16px;
+                }
+                QPushButton:hover {
+                    background-color: #138496;
+                }
+                QPushButton:disabled {
+                    background-color: #6c757d;
+                }
+            """)
+            self.preview_wiki_btn.clicked.connect(self._preview_wikipedia_info)
+            self.preview_wiki_btn.setEnabled(False)
+            selector_layout.addWidget(self.preview_wiki_btn)
+            
+            wiki_layout.addLayout(selector_layout)
+            
+            # Preview display area
+            self.wiki_preview_area = QTextEdit()
+            self.wiki_preview_area.setFont(QFont("Arial", 12))
+            self.wiki_preview_area.setMaximumHeight(200)
+            self.wiki_preview_area.setReadOnly(True)
+            self.wiki_preview_area.setPlaceholderText("Wikipedia information will appear here...")
+            wiki_layout.addWidget(self.wiki_preview_area)
+            
+            # Connect signals
+            self.wiki_city_selector.currentTextChanged.connect(self._on_wiki_city_selector_changed)
+            
+        wiki_group.setLayout(wiki_layout)
+        parent_layout.addWidget(wiki_group)
 
     def _create_seo_content_section(self, parent_layout: QVBoxLayout):
         """Create SEO content fields for CloudStack SOP compliance"""
@@ -332,7 +482,7 @@ class CitiesTab(BaseTab):
         cities_text = self.city_inputs["target_cities"].toPlainText()
         cities = [city.strip() for city in cities_text.split("\n") if city.strip()]
 
-        # Clear and repopulate selector
+        # Clear and repopulate Maps selector
         self.city_selector.clear()
         self.city_selector.addItem("Select a city...")
 
@@ -340,6 +490,14 @@ class CitiesTab(BaseTab):
             # Check if this city already has a map (using exact location key match)
             if city not in self.city_data.keys():
                 self.city_selector.addItem(city)
+                
+        # Update Wikipedia selector if available
+        if WikipediaAPI and hasattr(self, 'wiki_city_selector'):
+            self.wiki_city_selector.clear()
+            self.wiki_city_selector.addItem("Select a city...")
+            
+            for city in cities:
+                self.wiki_city_selector.addItem(city)
 
     def _on_city_selector_changed(self, city_name: str):
         """Handle city selector change"""
@@ -347,17 +505,96 @@ class CitiesTab(BaseTab):
             city_name != "Select a city..." and city_name != ""
         )
 
+    def _on_api_key_changed(self):
+        """Handle API key input changes"""
+        api_key = self.api_key_input.text().strip()
+        if api_key:
+            self.api_status_label.setText("✅ API key configured")
+            self.api_status_label.setStyleSheet("color: green; font-weight: bold;")
+        else:
+            self.api_status_label.setText("⚠️ No API key configured")
+            self.api_status_label.setStyleSheet("color: orange; font-weight: bold;")
+        self._emit_config_changed()
+
+    def _toggle_api_key_visibility(self):
+        """Toggle API key visibility"""
+        if self.api_key_input.echoMode() == QLineEdit.EchoMode.Password:
+            self.api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.show_api_key_btn.setText("🙈")
+        else:
+            self.api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self.show_api_key_btn.setText("👁️")
+
+    def _get_api_key(self) -> str:
+        """Get the current API key"""
+        return self.api_key_input.text().strip()
+
+    def _on_wiki_city_selector_changed(self, city_name: str):
+        """Handle Wikipedia city selector change"""
+        if WikipediaAPI and hasattr(self, 'preview_wiki_btn'):
+            self.preview_wiki_btn.setEnabled(
+                city_name != "Select a city..." and city_name != ""
+            )
+
+    def _preview_wikipedia_info(self):
+        """Preview Wikipedia information for selected city"""
+        if not WikipediaAPI:
+            return
+            
+        selected_city = self.wiki_city_selector.currentText()
+        if selected_city and selected_city != "Select a city...":
+            try:
+                # Create Wikipedia API instance
+                wiki_api = WikipediaAPI()
+                
+                # Get city information
+                city_info = wiki_api.get_city_image_info(selected_city)
+                
+                # Format the preview text
+                preview_text = f"""🏙️ City: {city_info['city_name']}
+🔗 Wikipedia URL: {city_info['wikipedia_page'] or 'Not found'}
+📷 Image URL: {city_info['image_url']}
+📝 Description: {city_info['description'] or 'No description available'}
+📄 Attribution: {city_info['attribution']}
+
+🖼️ HTML Preview:
+{wiki_api.generate_image_html(selected_city, width="100%", height="300px")}"""
+                
+                self.wiki_preview_area.setPlainText(preview_text)
+                
+            except Exception as e:
+                self.wiki_preview_area.setPlainText(f"Error retrieving Wikipedia info: {str(e)}")
+
     def _add_city_map(self):
         """Add Google Map for selected city"""
         selected_city = self.city_selector.currentText()
         if selected_city and selected_city != "Select a city...":
-            dialog = CityEmbedDialog(self)
+            # Get API key for enhanced dialog
+            api_key = self._get_api_key()
+            
+            # Use enhanced dialog if API key is available, otherwise fall back to basic dialog
+            if api_key:
+                dialog = EnhancedCityEmbedDialog(self, api_key=api_key)
+            else:
+                dialog = CityEmbedDialog(self)
+            
             dialog.city_input.setText(selected_city)
 
             if dialog.exec():
                 city_data = dialog.get_data()
                 location_key = city_data["location"]
-                self.city_data[location_key] = {"embed_code": city_data["embed_code"]}
+                
+                # Store additional data for API-generated embeds
+                embed_data = {
+                    "embed_code": city_data["embed_code"],
+                    "generation_method": city_data.get("generation_method", "manual")
+                }
+                
+                # Store API options if available
+                if city_data.get("api_options"):
+                    embed_data["api_options"] = city_data["api_options"]
+                
+                self.city_data[location_key] = embed_data
                 self._refresh_city_list()
                 self._update_city_selector()  # Refresh selector
                 self._emit_config_changed()
@@ -497,10 +734,17 @@ class CitiesTab(BaseTab):
         # Google Maps data
         google_maps = {"cities": self.city_data} if self.city_data else {}
 
+        # API keys
+        api_keys = {}
+        api_key = self._get_api_key()
+        if api_key:
+            api_keys["google_maps"] = api_key
+
         return {
             "target_cities": target_cities,
             "seo_content": seo_content,
             "google_maps": google_maps,
+            "api_keys": api_keys,
         }
 
     def set_config_data(self, data: Dict[str, Any]):
@@ -522,6 +766,12 @@ class CitiesTab(BaseTab):
         self._refresh_city_list()
         self._update_city_selector()
 
+        # Set API keys
+        api_keys = data.get("api_keys", {})
+        google_maps_api_key = api_keys.get("google_maps", "")
+        self.api_key_input.setText(google_maps_api_key)
+        self._on_api_key_changed()  # Update status
+
         # Clear any existing errors
         for field_name in self.error_labels:
             self._hide_field_error(field_name)
@@ -542,6 +792,10 @@ class CitiesTab(BaseTab):
         self.city_data.clear()
         self._refresh_city_list()
         self._update_city_selector()
+
+        # Clear API key
+        self.api_key_input.clear()
+        self._on_api_key_changed()
 
         # Clear errors
         for field_name in self.error_labels:

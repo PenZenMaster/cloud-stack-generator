@@ -8,6 +8,7 @@ from .html_generator import HTMLGenerator
 from .css_generator import CSSGenerator
 from .page_generator import PageGenerator, GenerationResult
 from .generator_manager import GeneratorManager
+from .city_page_generator import CityPageGenerator
 
 __all__ = [
     "HTMLGenerator",
@@ -15,4 +16,5 @@ __all__ = [
     "PageGenerator",
     "GenerationResult",
     "GeneratorManager",
+    "CityPageGenerator",
 ]

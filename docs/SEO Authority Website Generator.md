@@ -1,20 +1,24 @@
 # Cloud Stack Generator Specification
 ## SEO Authority Website Generator
-**Version 2.0** - Production Ready Release  
-**Last Updated**: August 13, 2025  
-**Status**: ✅ **PRODUCTION READY** - All Critical Systems Operational
+**Version 2.1** - Location Page Generator Integration  
+**Last Updated**: August 15, 2025  
+**Status**: ✅ **ENHANCED PRODUCTION READY** - Location Page Generator Integration Complete
 
 ### 1. Project Overview
 
 **Purpose**: Generate multi-page, SEO-optimized static websites deployed to Amazon S3 for the purpose of passing authority to client websites and improving keyword rankings.
 
-**Current Status**: **PRODUCTION READY** 🚀  
+**Current Status**: **ENHANCED PRODUCTION READY** 🚀  
 - ✅ All 5 critical bugs resolved and deployed  
 - ✅ Complete modular architecture implemented  
 - ✅ Professional PyQt6 desktop application operational  
 - ✅ CSV import system fully functional  
 - ✅ Configuration management system working  
 - ✅ Enhanced branding and live preview capabilities
+- ✅ **NEW**: Location Page Generator integration with API automation
+- ✅ **NEW**: Google Maps API integration for automated embeds
+- ✅ **NEW**: Wikipedia integration for automatic city imagery
+- ✅ **NEW**: Bulk city page generation with CSV processing
 
 **Primary Goals**:
 - Create SEO-optimized static websites
@@ -39,24 +43,30 @@
 - **AWS Integration**: Boto3 for S3 deployment
 - **Development Environment**: Windows PC with potential web access
 
-#### 2.2 Implemented Application Structure ✅ **COMPLETE**
+#### 2.2 Implemented Application Structure ✅ **ENHANCED COMPLETE**
 ```
 cloud-stack-generator/
 ├── src/
 │   ├── core/                           # ✅ Core business logic
 │   │   ├── config/
 │   │   │   ├── __init__.py            # Configuration management
-│   │   │   ├── models.py              # Data models & validation
-│   │   │   └── parser.py              # YAML configuration parsing
+│   │   │   ├── models.py              # ✅ Data models & validation (API keys support)
+│   │   │   └── parser.py              # ✅ YAML configuration parsing (API keys)
 │   │   ├── data/
 │   │   │   ├── __init__.py            # Data management  
 │   │   │   └── csv_manager.py         # CSV import/export functionality
-│   │   └── generators/
-│   │       ├── __init__.py            # Website generation system
-│   │       ├── website_generator.py   # Main generation orchestrator
-│   │       ├── html_generator.py      # HTML page generation
-│   │       ├── css_generator.py       # Dynamic CSS generation
-│   │       └── seo_generator.py       # SEO optimization
+│   │   ├── generators/
+│   │   │   ├── __init__.py            # Website generation system
+│   │   │   ├── website_generator.py   # Main generation orchestrator
+│   │   │   ├── html_generator.py      # HTML page generation
+│   │   │   ├── css_generator.py       # Dynamic CSS generation
+│   │   │   ├── seo_generator.py       # SEO optimization
+│   │   │   └── city_page_generator.py # ✅ NEW: City-specific page generation
+│   │   └── utils/                     # ✅ NEW: API Integration utilities
+│   │       ├── __init__.py            # Utilities package
+│   │       ├── google_maps_api.py     # ✅ NEW: Google Maps API integration
+│   │       ├── wikipedia_api.py       # ✅ NEW: Wikipedia image fetching
+│   │       └── csv_bulk_processor.py  # ✅ NEW: Bulk city processing
 │   ├── ui/                            # ✅ Complete PyQt6 Interface
 │   │   ├── __init__.py
 │   │   ├── enhanced_main_window.py    # Main application window
@@ -65,15 +75,21 @@ cloud-stack-generator/
 │   │   │   ├── base_tab.py           # Base tab functionality
 │   │   │   ├── business_tab.py       # Business configuration
 │   │   │   ├── contact_tab.py        # Contact information
-│   │   │   └── branding_tab.py       # ✅ Enhanced branding w/ live preview
-│   │   └── content_tabs/             # ✅ Content Management
+│   │   │   ├── branding_tab.py       # ✅ Enhanced branding w/ live preview
+│   │   │   └── cities_tab.py         # ✅ NEW: Enhanced cities with API integration
+│   │   ├── content_tabs/             # ✅ Content Management
+│   │   │   ├── __init__.py
+│   │   │   ├── products_tab.py       # ✅ Product management w/ CSV import
+│   │   │   └── services_tab.py       # ✅ Service & FAQ management
+│   │   └── dialogs/                  # ✅ NEW: Enhanced dialogs
 │   │       ├── __init__.py
-│   │       ├── products_tab.py       # ✅ Product management w/ CSV import
-│   │       └── services_tab.py       # ✅ Service & FAQ management
+│   │       ├── city_embed_dialog.py  # Basic city embed dialog
+│   │       └── enhanced_city_embed_dialog.py # ✅ NEW: API-powered embed dialog
 │   └── templates/                     # ✅ Website templates
 │       ├── base.html
 │       ├── components/
 │       └── pages/
+│           └── city_page.html        # ✅ NEW: SEO-optimized city page template
 ├── config/                           # ✅ Configuration files
 │   └── client_config.yaml
 ├── output/                           # ✅ Generated websites
@@ -95,6 +111,45 @@ cloud-stack-generator/
 - ✅ **Scalable Structure**: Easy to extend and maintain
 - ✅ **Production Ready**: All components tested and operational
 - ✅ **Windows Compatible**: Resolved Unicode encoding issues for Windows deployment
+- ✅ **NEW**: **API Integration**: Google Maps and Wikipedia automation
+- ✅ **NEW**: **Bulk Processing**: CSV-driven city page generation
+- ✅ **NEW**: **Template Engine**: Jinja2-based city page templates
+
+#### 2.3 Location Page Generator Integration ✅ **NEW MAJOR FEATURE**
+
+The system now includes comprehensive Location Page Generator integration, providing enterprise-level automation for city-specific page generation.
+
+**🚀 Key Features**:
+- **Google Maps API Integration**: Automated embed generation with API key management
+- **Wikipedia Integration**: Automatic city imagery with proper attribution
+- **City Page Generator**: SEO-optimized templates with schema markup
+- **Bulk Processing**: CSV-driven batch generation for multiple cities
+- **Enhanced UI**: Professional Cities tab with real-time previews
+
+**🔧 Technical Components**:
+```python
+# Google Maps API Integration
+google_maps_api.py          # Automated embed generation
+enhanced_city_embed_dialog  # Dual-mode (API/Manual) interface
+
+# Wikipedia Integration  
+wikipedia_api.py            # Image fetching with attribution
+cities_tab.py              # Real-time preview functionality
+
+# City Page Generation
+city_page_generator.py      # Template-based page generation
+city_page.html             # SEO-optimized responsive template
+
+# Bulk Processing
+csv_bulk_processor.py       # Batch processing with reporting
+```
+
+**🎯 Business Value**:
+- **Time Savings**: Eliminates manual embed copying and image searching
+- **Content Quality**: Professional images and maps enhance page authority
+- **Scalability**: Bulk processing enables large-scale city campaigns
+- **SEO Optimization**: Schema markup and structured data improve rankings
+- **Automation**: API-driven workflow reduces manual intervention
 
 ### 3. Input Configuration (YAML)
 
@@ -122,6 +177,24 @@ client:
   google_maps:
     place_id: "ChIJ..."
     embed_url: "https://maps.google.com/embed?..."
+    
+  # ✅ NEW: API Keys for automation
+  api_keys:
+    google_maps: "YOUR_GOOGLE_MAPS_API_KEY"
+    
+  # ✅ NEW: Target Cities for location pages
+  target_cities:
+    - "Chicago, IL"
+    - "Detroit, MI"
+    - "Milwaukee, WI"
+    
+  # ✅ NEW: SEO content for city pages
+  seo_content:
+    neighborhoods: "Downtown, Midtown, Historic District"
+    pain_points: "Weather challenges, seasonal considerations"
+    case_studies: "Recent downtown renovation project"
+    testimonial: "Excellent service, professional results - John D."
+    directions: "Serving the greater metro area with 24/7 response"
     
   # Branding
   branding:
