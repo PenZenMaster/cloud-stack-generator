@@ -97,7 +97,7 @@ class CityPageGenerator:
     <header>
         <div class="header-content">
             <img src="{self.config.branding.logo_url}" alt="{business_name} Logo" class="logo">
-            {self._build_navigation()}
+            {self._build_navigation(city_name)}
         </div>
     </header>
     
@@ -142,6 +142,58 @@ class CityPageGenerator:
             <p>&copy; 2025 {business_name}. All rights reserved.</p>
         </div>
     </footer>
+    
+    <script>
+        // Enhanced dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {{
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownContent = document.querySelector('.dropdown-content');
+            let timeoutId;
+            
+            if (dropdown && dropdownContent) {{
+                // Show dropdown on hover
+                dropdown.addEventListener('mouseenter', function() {{
+                    clearTimeout(timeoutId);
+                    dropdownContent.style.display = 'block';
+                }});
+                
+                // Hide dropdown with delay on mouse leave
+                dropdown.addEventListener('mouseleave', function() {{
+                    timeoutId = setTimeout(function() {{
+                        dropdownContent.style.display = 'none';
+                    }}, 300);
+                }});
+                
+                // Prevent dropdown from closing when hovering over content
+                dropdownContent.addEventListener('mouseenter', function() {{
+                    clearTimeout(timeoutId);
+                }});
+                
+                dropdownContent.addEventListener('mouseleave', function() {{
+                    timeoutId = setTimeout(function() {{
+                        dropdownContent.style.display = 'none';
+                    }}, 300);
+                }});
+                
+                // Click to toggle dropdown (mobile friendly)
+                const dropdownTrigger = dropdown.querySelector('.dropdown-trigger');
+                if (dropdownTrigger) {{
+                    dropdownTrigger.addEventListener('click', function(e) {{
+                        e.preventDefault();
+                        const isVisible = dropdownContent.style.display === 'block';
+                        dropdownContent.style.display = isVisible ? 'none' : 'block';
+                    }});
+                }}
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {{
+                    if (!dropdown.contains(e.target)) {{
+                        dropdownContent.style.display = 'none';
+                    }}
+                }});
+            }}
+        }});
+    </script>
 </body>
 </html>"""
         
@@ -276,18 +328,37 @@ class CityPageGenerator:
         
         return ""
     
-    def _build_navigation(self) -> str:
-        """Build navigation menu (reuse from website_generator)"""
-        nav_links = '<a href="index.html">Home</a>'
+    def _build_navigation(self, current_city: str = "") -> str:
+        """Build navigation menu with Service Area dropdown"""
+        nav_html = '''<nav>
+            <a href="index.html">Home</a>
+            <span class="nav-divider">|</span>
+            <a href="products.html">Products</a>
+            <span class="nav-divider">|</span>
+            <div class="dropdown">
+                <a href="#" class="dropdown-trigger">Service Area <span class="dropdown-arrow">▼</span></a>
+                <div class="dropdown-content">
+                    <div class="cities-grid">
+        '''
         
-        # Add city pages dynamically from target_cities
+        # Add cities in 4-column grid format
         if hasattr(self.config, 'target_cities') and self.config.target_cities:
             for city in self.config.target_cities:
                 city_slug = self._generate_city_slug(city)
                 city_display = city.split(',')[0].strip()
-                nav_links += f' | <a href="{city_slug}.html">{city_display}</a>'
+                
+                # Highlight current city if on a city page
+                active_class = ' class="active-city"' if city_display.lower() == current_city.lower() else ''
+                nav_html += f'                        <a href="{city_slug}.html"{active_class}>{city_display}</a>\n'
         
-        return f'<nav>{nav_links}</nav>'
+        nav_html += '''                    </div>
+                </div>
+            </div>
+            <span class="nav-divider">|</span>
+            <a href="contact.html">Contact Us</a>
+        </nav>'''
+        
+        return nav_html
     
     def _build_google_map_embed(self, location: str) -> str:
         """Build Google Maps embed URL"""

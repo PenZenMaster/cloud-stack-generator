@@ -141,7 +141,7 @@ class WebsiteGenerator:
                     break
 
         # Build navigation with proper page titles
-        nav_links = self._build_navigation(config)
+        nav_links = self._build_navigation(config, city)
 
         # Page-specific content
         if is_home:
@@ -181,24 +181,90 @@ class WebsiteGenerator:
     <footer>
         {footer_content}
     </footer>
+    
+    <script>
+        // Enhanced dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {{
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownContent = document.querySelector('.dropdown-content');
+            let timeoutId;
+            
+            if (dropdown && dropdownContent) {{
+                // Show dropdown on hover
+                dropdown.addEventListener('mouseenter', function() {{
+                    clearTimeout(timeoutId);
+                    dropdownContent.style.display = 'block';
+                }});
+                
+                // Hide dropdown with delay on mouse leave
+                dropdown.addEventListener('mouseleave', function() {{
+                    timeoutId = setTimeout(function() {{
+                        dropdownContent.style.display = 'none';
+                    }}, 300);
+                }});
+                
+                // Prevent dropdown from closing when hovering over content
+                dropdownContent.addEventListener('mouseenter', function() {{
+                    clearTimeout(timeoutId);
+                }});
+                
+                dropdownContent.addEventListener('mouseleave', function() {{
+                    timeoutId = setTimeout(function() {{
+                        dropdownContent.style.display = 'none';
+                    }}, 300);
+                }});
+                
+                // Click to toggle dropdown (mobile friendly)
+                const dropdownTrigger = dropdown.querySelector('.dropdown-trigger');
+                dropdownTrigger.addEventListener('click', function(e) {{
+                    e.preventDefault();
+                    const isVisible = dropdownContent.style.display === 'block';
+                    dropdownContent.style.display = isVisible ? 'none' : 'block';
+                }});
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {{
+                    if (!dropdown.contains(e.target)) {{
+                        dropdownContent.style.display = 'none';
+                    }}
+                }});
+            }}
+        }});
+    </script>
 </body>
 </html>"""
 
-    def _build_navigation(self, config: ClientConfig) -> str:
-        """Build proper navigation menu dynamically from target cities"""
-        # Start with Home
-        nav_links = '<a href="index.html">Home</a>'
+    def _build_navigation(self, config: ClientConfig, current_city: str = "") -> str:
+        """Build navigation menu with Service Area dropdown"""
+        nav_html = '''
+            <a href="index.html">Home</a>
+            <span class="nav-divider">|</span>
+            <a href="products.html">Products</a>
+            <span class="nav-divider">|</span>
+            <div class="dropdown">
+                <a href="#" class="dropdown-trigger">Service Area <span class="dropdown-arrow">▼</span></a>
+                <div class="dropdown-content">
+                    <div class="cities-grid">
+        '''
         
-        # Add city pages dynamically from target_cities
+        # Add cities in 4-column grid format
         if hasattr(config, 'target_cities') and config.target_cities:
             for city in config.target_cities:
-                # Generate slug using same pattern as location_page_generator
                 city_slug = self._generate_city_slug(city)
-                # Clean city name for display (remove state suffix)
                 city_display = city.split(',')[0].strip()
-                nav_links += f' | <a href="{city_slug}.html">{city_display}</a>'
+                
+                # Highlight current city if on a city page
+                active_class = ' class="active-city"' if city_display.lower() == current_city.lower() else ''
+                nav_html += f'                        <a href="{city_slug}.html"{active_class}>{city_display}</a>\n'
         
-        return nav_links
+        nav_html += '''                    </div>
+                </div>
+            </div>
+            <span class="nav-divider">|</span>
+            <a href="contact.html">Contact Us</a>
+        '''
+        
+        return nav_html
     
     def _generate_city_slug(self, city_name: str) -> str:
         """Generate URL slug from city name (matches location_page_generator pattern)"""
@@ -616,6 +682,7 @@ header h1 {{
 nav {{
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 1rem;
 }}
 
@@ -630,6 +697,95 @@ nav a {{
 
 nav a:hover {{
     background-color: rgba(255,255,255,0.2);
+}}
+
+/* Navigation dividers */
+.nav-divider {{
+    color: white;
+    margin: 0 0.5rem;
+}}
+
+/* Dropdown Menu Styles */
+.dropdown {{
+    position: relative;
+    display: inline-block;
+}}
+
+.dropdown-trigger {{
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}}
+
+.dropdown-trigger:hover {{
+    background-color: rgba(255,255,255,0.2);
+}}
+
+.dropdown-arrow {{
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}}
+
+.dropdown:hover .dropdown-arrow {{
+    transform: rotate(180deg);
+}}
+
+.dropdown-content {{
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    min-width: 800px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}}
+
+.dropdown:hover .dropdown-content {{
+    display: block;
+}}
+
+/* Cities Grid - 4 columns as shown in mockup */
+.cities-grid {{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}}
+
+.cities-grid a {{
+    color: #333;
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    text-align: center;
+    font-weight: 500;
+}}
+
+.cities-grid a:hover {{
+    background-color: #f0f0f0;
+}}
+
+/* Active city highlighting - yellow as shown in mockup */
+.cities-grid a.active-city {{
+    background-color: #FFD700;
+    color: #333;
+    font-weight: bold;
+}}
+
+.cities-grid a.active-city:hover {{
+    background-color: #FFD700;
 }}
 
 main {{
@@ -850,6 +1006,22 @@ footer {{
     
     nav {{
         justify-content: center;
+        flex-direction: column;
+        gap: 0.5rem;
+    }}
+    
+    .nav-divider {{
+        display: none;
+    }}
+    
+    .dropdown-content {{
+        min-width: 300px;
+        left: 0;
+        transform: none;
+    }}
+    
+    .cities-grid {{
+        grid-template-columns: repeat(2, 1fr);
     }}
     
     .hero {{

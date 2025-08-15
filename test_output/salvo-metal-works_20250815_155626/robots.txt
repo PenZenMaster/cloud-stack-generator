@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://salvometalworks.com/sitemap.xml
+
+# Disallow admin areas (if any)
+Disallow: /admin/
+Disallow: /private/
+
+# Allow search engines to crawl CSS and JS
+Allow: /css/
+Allow: /js/
+Allow: /images/

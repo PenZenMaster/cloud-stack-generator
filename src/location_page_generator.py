@@ -22,13 +22,23 @@ Comments:
 
 import os
 import csv
-from slugify import slugify
-from jinja2 import Template
 import urllib.parse
-from dotenv import load_dotenv
+# from slugify import slugify  # Optional external dependency
+# from jinja2 import Template  # Optional external dependency  
+# from dotenv import load_dotenv  # Optional external dependency
+
+# Simple slugify replacement
+def slugify(text):
+    """Simple slugify function"""
+    text = text.lower()
+    text = text.replace(' ', '-')
+    text = text.replace(',', '')
+    text = text.replace(' illinois', '')
+    text = text.replace(' il', '')
+    return text.strip('-')
 
 # Load environment variables from .env
-load_dotenv()
+# load_dotenv()  # Optional external dependency
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 HTML_TEMPLATE = """

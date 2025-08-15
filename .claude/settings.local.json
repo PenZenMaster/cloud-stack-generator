@@ -8,10 +8,19 @@
       "Bash(git add:*)",
       "Bash(git rm:*)",
       "Bash(mkdir:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(grep:*)",
+      "Bash(for file in *.html)",
+      "Bash(do if [ \"$file\" != \"index.html\" ])",
+      "Bash(then echo \"$file%.html\")",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": [],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "E:\\e\\projects"
+    ]
   }
 }
