@@ -575,7 +575,7 @@ client:
   faq: []
   google_maps:
     cities:
-      Chicago, IL:
+      Chicago:
         embed_code: <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d190255.50232237772!2d-87.89668235996223!3d41.833848581311905!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e2c3cd0f4cbed%3A0xafe0a6ad09c0c000!2sChicago%2C%20IL!5e0!3m2!1sen!2sus!4v1755201864770!5m2!1sen!2sus"
           width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"></iframe>
