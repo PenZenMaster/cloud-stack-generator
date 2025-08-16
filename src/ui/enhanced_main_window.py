@@ -22,16 +22,18 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QIcon, QAction
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import yaml
+import json
 
 # Import all modular components
 from .components.business_tab import BusinessTab
 from .components.contact_tab import ContactTab
 from .components.branding_tab import BrandingTab
-from .components.cities_tab import CitiesTab
+from .components.api_keys_tab import APIKeysTab
 from .content_tabs.products_tab import ProductsTab
 from .content_tabs.services_tab import ServicesTab
+from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
 
 # Import core functionality
 from ..core.config.models import ClientConfig
@@ -56,6 +58,9 @@ class EnhancedMainWindow(QMainWindow):
         self.config_parser = ConfigParser()
         self.current_config_file = None
         self.unsaved_changes = False
+        
+        # Load application-wide API keys
+        self.app_api_keys = self.load_app_api_keys()
 
         # Initialize UI
         self.setup_window()
@@ -68,6 +73,9 @@ class EnhancedMainWindow(QMainWindow):
 
         # Set initial state
         self.update_window_title()
+        
+        # Set API keys in the API Keys tab after UI is initialized
+        QTimer.singleShot(100, self.set_api_keys_in_tab)
 
     def setup_window(self):
         """Configure main window properties"""
@@ -198,7 +206,8 @@ class EnhancedMainWindow(QMainWindow):
         self.business_tab = BusinessTab()
         self.contact_tab = ContactTab()
         self.branding_tab = BrandingTab()
-        self.cities_tab = CitiesTab()
+        self.api_keys_tab = APIKeysTab()
+        self.enhanced_cities_tab = EnhancedCitiesTab()
         self.products_tab = ProductsTab()
         self.services_tab = ServicesTab()
 
@@ -206,9 +215,10 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.business_tab, "📊 Business Info")
         self.main_tabs.addTab(self.contact_tab, "📞 Contact Details")
         self.main_tabs.addTab(self.branding_tab, "🎨 Branding & Style")
-        self.main_tabs.addTab(self.cities_tab, "🏙️ Cities & Locations")
+        self.main_tabs.addTab(self.enhanced_cities_tab, "🌆 Cities")
         self.main_tabs.addTab(self.products_tab, "📦 Products")
         self.main_tabs.addTab(self.services_tab, "⚙️ Services & FAQ")
+        self.main_tabs.addTab(self.api_keys_tab, "🔑 API Keys")
 
         layout.addWidget(self.main_tabs)
 
@@ -279,16 +289,17 @@ class EnhancedMainWindow(QMainWindow):
         self.business_tab.config_changed.connect(self.on_config_changed)
         self.contact_tab.config_changed.connect(self.on_config_changed)
         self.branding_tab.config_changed.connect(self.on_config_changed)
-        # Cities tab uses manual save only (no auto-save)
-        self.cities_tab.config_changed.connect(self.on_cities_config_changed)
+        self.enhanced_cities_tab.config_changed.connect(self.on_config_changed)
         self.products_tab.config_changed.connect(self.on_config_changed)
         self.services_tab.config_changed.connect(self.on_config_changed)
+        self.api_keys_tab.config_changed.connect(self.on_config_changed)
 
         # Connect validation signals
         self.business_tab.validation_requested.connect(self.validate_all_tabs)
         self.contact_tab.validation_requested.connect(self.validate_all_tabs)
         self.branding_tab.validation_requested.connect(self.validate_all_tabs)
-        self.cities_tab.validation_requested.connect(self.validate_all_tabs)
+        self.enhanced_cities_tab.validation_requested.connect(self.validate_all_tabs)
+        self.api_keys_tab.validation_requested.connect(self.validate_all_tabs)
 
         # Tab change signal
         self.main_tabs.currentChanged.connect(self.on_tab_changed)
@@ -299,11 +310,6 @@ class EnhancedMainWindow(QMainWindow):
         self.update_window_title()
         self.status_label.setText("Configuration modified - use Save Configuration to save changes")
 
-    def on_cities_config_changed(self):
-        """Handle Cities tab configuration changes (manual save only)"""
-        self.unsaved_changes = True
-        self.update_window_title()
-        self.status_label.setText("Cities configuration modified - use Save Configuration to save changes")
 
     def on_tab_changed(self, index):
         """Handle tab change events"""
@@ -316,6 +322,37 @@ class EnhancedMainWindow(QMainWindow):
         ]
         if 0 <= index < len(tab_names):
             self.status_label.setText(f"Editing: {tab_names[index]}")
+
+    def load_app_api_keys(self) -> Dict[str, str]:
+        """Load application-wide API keys from config/api_keys.json"""
+        try:
+            api_keys_file = Path("config/api_keys.json")
+            if api_keys_file.exists():
+                with open(api_keys_file, 'r') as f:
+                    return json.load(f)
+            return {}
+        except Exception as e:
+            print(f"Error loading app API keys: {e}")
+            return {}
+    
+    def save_app_api_keys(self, api_keys: Dict[str, str]):
+        """Save application-wide API keys to config/api_keys.json"""
+        try:
+            api_keys_file = Path("config/api_keys.json")
+            api_keys_file.parent.mkdir(exist_ok=True)
+            with open(api_keys_file, 'w') as f:
+                json.dump(api_keys, f, indent=2)
+            self.app_api_keys = api_keys
+        except Exception as e:
+            print(f"Error saving app API keys: {e}")
+    
+    def set_api_keys_in_tab(self):
+        """Set the loaded API keys in the API Keys tab"""
+        if hasattr(self, 'api_keys_tab') and self.app_api_keys:
+            google_maps_key = self.app_api_keys.get('google_maps_api_key', '')
+            if google_maps_key:
+                # Set the key directly in the field
+                self.api_keys_tab.maps_api_key.setText(google_maps_key)
 
     def update_window_title(self):
         """Update window title with current state"""
@@ -509,9 +546,10 @@ class EnhancedMainWindow(QMainWindow):
             "business": self.business_tab.get_config_data(),
             "contact": self.contact_tab.get_config_data(),
             "branding": self.branding_tab.get_config_data(),
-            "cities": self.cities_tab.get_config_data(),
+            "enhanced_cities": self.enhanced_cities_tab.get_config_data(),
             "products": self.products_tab.get_config_data(),
             "services": self.services_tab.get_config_data(),
+            # API keys are application-level, not saved in client configs
         }
 
     def create_client_config(self, config_data: Dict[str, Any]) -> ClientConfig:
@@ -614,9 +652,12 @@ class EnhancedMainWindow(QMainWindow):
         # Import GoogleMapsConfig for cities data
         from ..core.config.models import GoogleMapsConfig
         
-        # Create Google Maps config with cities data
+        # Create Google Maps config with cities data and API key
         cities_data = config_data.get("cities", {})
+        api_keys_data = config_data.get("api_keys", {})
         google_maps = GoogleMapsConfig()
+        
+        # API keys are stored separately, not in main config
         
         # Add cities from the cities tab
         google_maps_cities = cities_data.get("google_maps", {}).get("cities", {})
@@ -694,13 +735,50 @@ class EnhancedMainWindow(QMainWindow):
         }
         self.branding_tab.set_config_data(branding_data)
 
-        # Load cities data from config
-        cities_data = {
-            "target_cities": config.target_cities,
-            "seo_content": config.seo_content,
-            "google_maps": {"cities": config.google_maps.cities},
+        # API keys are application-level, not client-specific - don't reload them
+
+        # Load enhanced cities data from config
+        enhanced_cities_data = {
+            "city_pages": []
         }
-        self.cities_tab.set_config_data(cities_data)
+        if hasattr(config, 'city_pages') and config.city_pages:
+            enhanced_cities_data["city_pages"] = [
+                {
+                    "city_name": cp.city_name,
+                    "state": cp.state,
+                    "slug": cp.slug,
+                    "title": cp.title,
+                    "meta_description": cp.meta_description,
+                    "primary_keyword": cp.primary_keyword,
+                    "secondary_keywords": cp.secondary_keywords,
+                    "hero_title": cp.hero_title,
+                    "breadcrumbs": cp.breadcrumbs,
+                    "about_city": cp.about_city,
+                    "city_image": {
+                        "image_url": cp.city_image.image_url,
+                        "alt_text": cp.city_image.alt_text,
+                        "caption": cp.city_image.caption,
+                        "credit": cp.city_image.credit,
+                        "source": cp.city_image.source,
+                    },
+                    "seo_content_title": cp.seo_content_title,
+                    "seo_content_body": cp.seo_content_body,
+                    "places_of_interest": [
+                        {"name": poi.name, "embed_url": poi.embed_url}
+                        for poi in cp.places_of_interest
+                    ],
+                    "city_faq": [
+                        {"question": faq.question, "answer": faq.answer}
+                        for faq in cp.city_faq
+                    ],
+                    "featured_products": cp.featured_products,
+                    "city_map_embed": cp.city_map_embed,
+                    "service_area_note": cp.service_area_note,
+                }
+                for cp in config.city_pages
+            ]
+        self.enhanced_cities_tab.set_config_data(enhanced_cities_data)
+
 
         # Load products data
         products_data = {
@@ -738,9 +816,10 @@ class EnhancedMainWindow(QMainWindow):
             "Business Info": self.business_tab,
             "Contact Details": self.contact_tab,
             "Branding & Style": self.branding_tab,
-            "Cities & Locations": self.cities_tab,
+            "Cities": self.enhanced_cities_tab,
             "Products": self.products_tab,
             "Services & FAQ": self.services_tab,
+            # API Keys tab excluded - it's application-level, not client-specific
         }
 
         for tab_name, tab in tabs.items():
@@ -770,9 +849,10 @@ class EnhancedMainWindow(QMainWindow):
             "Business Info": self.business_tab,
             "Contact Details": self.contact_tab,
             "Branding & Style": self.branding_tab,
-            "Cities & Locations": self.cities_tab,
+            "Cities": self.enhanced_cities_tab,
             "Products": self.products_tab,
             "Services & FAQ": self.services_tab,
+            # API Keys tab excluded - it's application-level, not client-specific
         }
 
         for tab_name, tab in tabs.items():
@@ -846,6 +926,7 @@ class EnhancedMainWindow(QMainWindow):
 
             QMessageBox.warning(self, "Validation Errors", error_text)
             self.status_label.setText("Validation failed - Please fix errors")
+
 
     def generate_website(self):
         """Generate website from current configuration"""

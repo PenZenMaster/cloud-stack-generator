@@ -23,6 +23,10 @@ from .models import (
     SocialMediaConfig,
     GoogleMapsConfig,
     PageConfig,
+    CityPageConfig,
+    CityImageConfig,
+    PlaceOfInterest,
+    CityFAQItem,
 )
 
 
@@ -110,6 +114,9 @@ class ConfigParser:
         target_cities = client_data.get("target_cities", [])
         seo_content = client_data.get("seo_content", {})
         api_keys = client_data.get("api_keys", {})
+        
+        # Parse enhanced city pages
+        city_pages = self._parse_city_pages_config(client_data)
 
         # Build complete configuration
         config = ClientConfig(
@@ -123,6 +130,7 @@ class ConfigParser:
             products=products,
             services=services,
             faq=faq,
+            city_pages=city_pages,
             target_cities=target_cities,
             seo_content=seo_content,
             api_keys=api_keys,
@@ -305,6 +313,81 @@ class ConfigParser:
                         continue
 
         return faq_items
+
+    def _parse_city_pages_config(self, client_data: Dict[str, Any]) -> List[CityPageConfig]:
+        """Parse enhanced city pages configuration section"""
+        city_pages_data = client_data.get("city_pages", [])
+        if not isinstance(city_pages_data, list):
+            return []
+
+        city_pages = []
+        for cp_data in city_pages_data:
+            if not isinstance(cp_data, dict):
+                continue
+
+            try:
+                # Parse city image
+                image_data = cp_data.get("city_image", {})
+                city_image = CityImageConfig(
+                    image_url=image_data.get("image_url", ""),
+                    alt_text=image_data.get("alt_text", ""),
+                    caption=image_data.get("caption", ""),
+                    credit=image_data.get("credit", ""),
+                    source=image_data.get("source", "Wikipedia"),
+                )
+
+                # Parse places of interest
+                places_of_interest = []
+                for poi_data in cp_data.get("places_of_interest", []):
+                    if isinstance(poi_data, dict) and poi_data.get("name"):
+                        places_of_interest.append(
+                            PlaceOfInterest(
+                                name=poi_data.get("name", ""),
+                                embed_url=poi_data.get("embed_url", "")
+                            )
+                        )
+
+                # Parse city FAQ
+                city_faq = []
+                for faq_data in cp_data.get("city_faq", []):
+                    if isinstance(faq_data, dict) and faq_data.get("question") and faq_data.get("answer"):
+                        city_faq.append(
+                            CityFAQItem(
+                                question=faq_data.get("question", ""),
+                                answer=faq_data.get("answer", "")
+                            )
+                        )
+
+                # Create city page config
+                city_page = CityPageConfig(
+                    city_name=cp_data.get("city_name", ""),
+                    state=cp_data.get("state", ""),
+                    slug=cp_data.get("slug", ""),
+                    title=cp_data.get("title", ""),
+                    meta_description=cp_data.get("meta_description", ""),
+                    primary_keyword=cp_data.get("primary_keyword", ""),
+                    secondary_keywords=cp_data.get("secondary_keywords", []),
+                    hero_title=cp_data.get("hero_title", ""),
+                    breadcrumbs=cp_data.get("breadcrumbs", []),
+                    about_city=cp_data.get("about_city", ""),
+                    city_image=city_image,
+                    seo_content_title=cp_data.get("seo_content_title", ""),
+                    seo_content_body=cp_data.get("seo_content_body", ""),
+                    places_of_interest=places_of_interest,
+                    city_faq=city_faq,
+                    featured_products=cp_data.get("featured_products", []),
+                    city_map_embed=cp_data.get("city_map_embed", ""),
+                    service_area_note=cp_data.get("service_area_note", ""),
+                )
+
+                city_pages.append(city_page)
+
+            except Exception as e:
+                # Skip invalid city page entries
+                print(f"Warning: Skipping invalid city page entry: {e}")
+                continue
+
+        return city_pages
 
     def generate_yaml_dict(self, config: ClientConfig) -> Dict[str, Any]:
         """

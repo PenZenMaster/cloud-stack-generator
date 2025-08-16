@@ -64,6 +64,12 @@ output/
 logs/
 *.log
 
+# Security - API keys and sensitive data
+config/api_keys.json
+config/api_keys.*.json
+*.key
+*.secret
+
 # Temporary files
 *.tmp
 *.bak

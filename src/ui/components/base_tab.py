@@ -283,17 +283,33 @@ class BaseTab(QWidget):
     def _perform_validation(self):
         """Perform validation and update UI"""
         result = self.validate_data()
+        
+        # Debug logging to identify the source of tuple returns
+        if isinstance(result, tuple):
+            print(f"WARNING: {self.__class__.__name__}.validate_data() returned tuple instead of ValidationResult: {result}")
+        
         self._update_validation_ui(result)
 
-    def _update_validation_ui(self, result: ValidationResult):
+    def _update_validation_ui(self, result):
         """Update UI based on validation result"""
         # Hide all field errors first
         for field_name in self._error_widgets:
             self._hide_field_error(field_name)
 
-        # Show field-specific errors
-        for field_name, error_message in result.field_errors.items():
-            self._show_field_error(field_name, error_message)
+        # Handle both ValidationResult objects and legacy tuple format
+        if hasattr(result, 'field_errors'):
+            # Show field-specific errors
+            for field_name, error_message in result.field_errors.items():
+                self._show_field_error(field_name, error_message)
+        elif isinstance(result, tuple) and len(result) >= 2:
+            # Handle legacy tuple format (bool, List[str])
+            is_valid, errors = result
+            # For tuples, we can't map errors to specific fields
+            # Just log the error for debugging
+            if not is_valid and errors:
+                print(f"Validation errors (legacy format): {errors}")
+        else:
+            print(f"Unexpected validation result format: {type(result)}")
 
     def _update_ui_state(self):
         """Update UI state based on current tab state"""

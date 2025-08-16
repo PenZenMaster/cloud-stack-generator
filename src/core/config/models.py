@@ -203,6 +203,109 @@ class BrandingConfig:
 
 
 @dataclass
+class CityImageConfig:
+    """City image configuration with attribution"""
+    
+    image_url: str = ""
+    alt_text: str = ""
+    caption: str = ""
+    credit: str = ""
+    source: str = "Wikipedia"
+
+
+@dataclass
+class PlaceOfInterest:
+    """Places of interest with Google Maps embeds"""
+    
+    name: str
+    embed_url: str = ""
+    
+    def __post_init__(self):
+        if not self.name:
+            raise ValueError("Place of interest name is required")
+
+
+@dataclass
+class CityFAQItem:
+    """City-specific FAQ item"""
+    
+    question: str
+    answer: str
+    
+    def __post_init__(self):
+        if not self.question:
+            raise ValueError("FAQ question is required")
+        if not self.answer:
+            raise ValueError("FAQ answer is required")
+
+
+@dataclass
+class CityPageConfig:
+    """Enhanced city page configuration with rich content"""
+    
+    # Basic page info
+    city_name: str
+    state: str = ""
+    slug: str = ""
+    
+    # SEO and meta
+    title: str = ""
+    meta_description: str = ""
+    primary_keyword: str = ""
+    secondary_keywords: List[str] = field(default_factory=list)
+    
+    # Hero section
+    hero_title: str = ""
+    breadcrumbs: List[str] = field(default_factory=list)
+    
+    # City information section
+    about_city: str = ""  # Wikipedia-style description
+    city_image: CityImageConfig = field(default_factory=CityImageConfig)
+    
+    # Main SEO content (800+ words)
+    seo_content_title: str = ""
+    seo_content_body: str = ""  # Main content block
+    
+    # Places of interest
+    places_of_interest: List[PlaceOfInterest] = field(default_factory=list)
+    
+    # City-specific FAQ
+    city_faq: List[CityFAQItem] = field(default_factory=list)
+    
+    # Internal links and products
+    featured_products: List[str] = field(default_factory=list)  # Product slugs
+    
+    # Map configuration
+    city_map_embed: str = ""
+    
+    # Business contact for this city
+    service_area_note: str = ""
+    
+    def __post_init__(self):
+        """Generate defaults and validate"""
+        if not self.slug and self.city_name:
+            import re
+            self.slug = re.sub(r'[^a-zA-Z0-9\s]', '', self.city_name.lower())
+            self.slug = re.sub(r'\s+', '-', self.slug.strip())
+        
+        if not self.title and self.city_name:
+            self.title = f"{self.city_name} — Custom Architectural Metal"
+        
+        if not self.hero_title and self.city_name:
+            self.hero_title = f"{self.city_name} — Custom Architectural Metal Fabrication"
+        
+        if not self.breadcrumbs:
+            self.breadcrumbs = ["Home", "Locations", self.city_name]
+    
+    @property
+    def full_city_name(self) -> str:
+        """Get full city name with state"""
+        if self.state:
+            return f"{self.city_name}, {self.state}"
+        return self.city_name
+
+
+@dataclass
 class PageConfig:
     """Individual page configuration"""
 
@@ -254,6 +357,7 @@ class SocialMediaConfig:
 class GoogleMapsConfig:
     """Google Maps integration configuration"""
 
+    api_key: str = ""
     embed_code: str = ""
     cities: Dict[str, Dict[str, str]] = field(default_factory=dict)
 
@@ -278,12 +382,15 @@ class ClientConfig:
     pages: List[PageConfig] = field(default_factory=list)
     faq: List[FAQItem] = field(default_factory=list)
 
+    # Enhanced city pages
+    city_pages: List[CityPageConfig] = field(default_factory=list)
+
     # Social and maps
     social_media: SocialMediaConfig = field(default_factory=SocialMediaConfig)
     google_maps: GoogleMapsConfig = field(default_factory=GoogleMapsConfig)
     google_business_profile: Dict[str, str] = field(default_factory=dict)
     
-    # Cities and local SEO data
+    # Cities and local SEO data (legacy support)
     target_cities: List[str] = field(default_factory=list)
     seo_content: Dict[str, str] = field(default_factory=dict)
     
@@ -293,7 +400,7 @@ class ClientConfig:
     # Metadata
     created_date: datetime = field(default_factory=datetime.now)
     last_modified: datetime = field(default_factory=datetime.now)
-    version: str = "2.2.0"
+    version: str = "2.3.0"
 
     def __post_init__(self):
         """Post-initialization validation and setup"""
@@ -332,6 +439,31 @@ class ClientConfig:
 
         self.services.append(service)
         self.last_modified = datetime.now()
+
+    def add_city_page(self, city_page: CityPageConfig):
+        """Add a city page to the configuration"""
+        # Check for duplicate city
+        if any(cp.city_name == city_page.city_name for cp in self.city_pages):
+            raise ValueError(f"City page for '{city_page.city_name}' already exists")
+
+        self.city_pages.append(city_page)
+        self.last_modified = datetime.now()
+
+    def get_city_page(self, city_name: str) -> Optional[CityPageConfig]:
+        """Get city page configuration by name"""
+        for city_page in self.city_pages:
+            if city_page.city_name.lower() == city_name.lower():
+                return city_page
+        return None
+
+    def remove_city_page(self, city_name: str) -> bool:
+        """Remove city page by name"""
+        for i, city_page in enumerate(self.city_pages):
+            if city_page.city_name.lower() == city_name.lower():
+                del self.city_pages[i]
+                self.last_modified = datetime.now()
+                return True
+        return False
 
     def get_target_cities(self) -> List[str]:
         """Get list of target cities from pages"""
@@ -388,6 +520,43 @@ class ClientConfig:
             {"question": item.question, "answer": item.answer} for item in self.faq
         ]
 
+        # Build city pages list
+        city_pages_list = []
+        for city_page in self.city_pages:
+            city_dict = {
+                "city_name": city_page.city_name,
+                "state": city_page.state,
+                "slug": city_page.slug,
+                "title": city_page.title,
+                "meta_description": city_page.meta_description,
+                "primary_keyword": city_page.primary_keyword,
+                "secondary_keywords": city_page.secondary_keywords,
+                "hero_title": city_page.hero_title,
+                "breadcrumbs": city_page.breadcrumbs,
+                "about_city": city_page.about_city,
+                "city_image": {
+                    "image_url": city_page.city_image.image_url,
+                    "alt_text": city_page.city_image.alt_text,
+                    "caption": city_page.city_image.caption,
+                    "credit": city_page.city_image.credit,
+                    "source": city_page.city_image.source,
+                },
+                "seo_content_title": city_page.seo_content_title,
+                "seo_content_body": city_page.seo_content_body,
+                "places_of_interest": [
+                    {"name": poi.name, "embed_url": poi.embed_url}
+                    for poi in city_page.places_of_interest
+                ],
+                "city_faq": [
+                    {"question": faq.question, "answer": faq.answer}
+                    for faq in city_page.city_faq
+                ],
+                "featured_products": city_page.featured_products,
+                "city_map_embed": city_page.city_map_embed,
+                "service_area_note": city_page.service_area_note,
+            }
+            city_pages_list.append(city_dict)
+
         return {
             "client": {
                 "business_name": self.business.business_name,
@@ -407,17 +576,18 @@ class ClientConfig:
                 },
                 "social_media": self.social_media.get_valid_links(),
                 "google_business_profile": self.google_business_profile,
-                "google_maps": (
-                    {"cities": self.google_maps.cities}
-                    if self.google_maps.cities
-                    else {}
-                ),
+                "google_maps": {
+                    "api_key": self.google_maps.api_key,
+                    "embed_code": self.google_maps.embed_code,
+                    "cities": self.google_maps.cities
+                },
                 "target_cities": self.target_cities,
                 "seo_content": self.seo_content,
                 "api_keys": self.api_keys,
                 "pages": pages_list,
                 "offerings": offerings,
                 "faq": faq_list,
+                "city_pages": city_pages_list,
             }
         }
 

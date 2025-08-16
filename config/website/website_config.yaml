@@ -1,13 +1,18 @@
 client:
-  business_name: test
-  domain: https://test.com
-  industry: Industry
+  business_name: ''
+  domain: ''
+  industry: ''
   description: ''
   contact:
-    name: test
-    phone: +1-999-555-1212
-    address: ''
-    email: me@mail,com
+    name: ''
+    phone: ''
+    address:
+      street: ''
+      city: ''
+      state: ''
+      zip_code: ''
+      country: ''
+    email: ''
   branding:
     primary_color: '#007bff'
     secondary_color: '#6c757d'
@@ -18,9 +23,9 @@ client:
   pages:
   - title: Home
     slug: index
-    primary_keyword: industry
+    primary_keyword: services
     secondary_keywords:
-    - test
+    - ''
     - local business
   offerings: []
   faq: []
