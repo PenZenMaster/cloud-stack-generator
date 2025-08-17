@@ -578,13 +578,22 @@ class EnhancedMainWindow(QMainWindow):
             SocialMediaConfig,
         )
 
-        # Create business config
+        # Create business config with enhanced fields
         business_data = config_data.get("business", {})
         business = BusinessConfig(
             business_name=business_data.get("business_name", ""),
             domain=business_data.get("domain", ""),
             industry=business_data.get("industry", ""),
             description=business_data.get("description", ""),
+            # Enhanced business fields
+            tagline=business_data.get("tagline", ""),
+            years_in_business=business_data.get("years_in_business", ""),
+            company_overview=business_data.get("company_overview", ""),
+            mission_statement=business_data.get("mission_statement", ""),
+            service_guarantee=business_data.get("service_guarantee", ""),
+            service_area_description=business_data.get("service_area_description", ""),
+            why_choose_us=business_data.get("why_choose_us", []),
+            company_stats=business_data.get("company_stats", {}),
         )
 
         # Create contact config
@@ -606,11 +615,35 @@ class EnhancedMainWindow(QMainWindow):
             # Handle legacy single address string
             address_config = AddressConfig.from_single_line(str(address_data) if address_data else "")
         
+        # Extract contact fields - handle both nested and flat structures
+        contact_fields = contact_data.get("contact", {}) if "contact" in contact_data else contact_data
+        
+        # Parse additional locations
+        additional_locations = []
+        for loc_data in contact_fields.get("additional_locations", []):
+            if isinstance(loc_data, dict):
+                additional_locations.append(AddressConfig(
+                    street=loc_data.get("street", ""),
+                    city=loc_data.get("city", ""),
+                    state=loc_data.get("state", ""),
+                    zip_code=loc_data.get("zip_code", ""),
+                    country=loc_data.get("country", "United States")
+                ))
+        
         contact = ContactConfig(
-            name=contact_data.get("contact", {}).get("name", "") if "contact" in contact_data else contact_data.get("name", ""),
-            phone=contact_data.get("contact", {}).get("phone", "") if "contact" in contact_data else contact_data.get("phone", ""),
+            name=contact_fields.get("name", ""),
+            phone=contact_fields.get("phone", ""),
             address=address_config,
-            email=contact_data.get("contact", {}).get("email", "") if "contact" in contact_data else contact_data.get("email", ""),
+            email=contact_fields.get("email", ""),
+            # Enhanced contact fields
+            business_hours=contact_fields.get("business_hours", {}),
+            emergency_phone=contact_fields.get("emergency_phone", ""),
+            office_phone=contact_fields.get("office_phone", ""),
+            mobile_phone=contact_fields.get("mobile_phone", ""),
+            fax_number=contact_fields.get("fax_number", ""),
+            response_time_promise=contact_fields.get("response_time_promise", ""),
+            contact_preference=contact_fields.get("contact_preference", ""),
+            additional_locations=additional_locations,
         )
         
         # Create social media config
@@ -750,12 +783,21 @@ class EnhancedMainWindow(QMainWindow):
 
     def load_config_into_tabs(self, config: ClientConfig):
         """Load ClientConfig data into tabs"""
-        # Load business data
+        # Load business data including enhanced fields
         business_data = {
             "business_name": config.business.business_name,
             "domain": config.business.domain,
             "industry": config.business.industry,
             "description": config.business.description,
+            # Enhanced business fields
+            "tagline": config.business.tagline,
+            "years_in_business": config.business.years_in_business,
+            "company_overview": config.business.company_overview,
+            "mission_statement": config.business.mission_statement,
+            "service_guarantee": config.business.service_guarantee,
+            "service_area_description": config.business.service_area_description,
+            "why_choose_us": config.business.why_choose_us,
+            "company_stats": config.business.company_stats,
         }
         self.business_tab.set_config_data(business_data)
 
@@ -766,6 +808,23 @@ class EnhancedMainWindow(QMainWindow):
                 "name": config.contact.name,
                 "phone": config.contact.phone,
                 "email": config.contact.email,
+                # Enhanced contact fields
+                "business_hours": config.contact.business_hours,
+                "emergency_phone": config.contact.emergency_phone,
+                "office_phone": config.contact.office_phone,
+                "mobile_phone": config.contact.mobile_phone,
+                "fax_number": config.contact.fax_number,
+                "response_time_promise": config.contact.response_time_promise,
+                "contact_preference": config.contact.contact_preference,
+                "additional_locations": [
+                    {
+                        "street": loc.street,
+                        "city": loc.city,
+                        "state": loc.state,
+                        "zip_code": loc.zip_code,
+                        "country": loc.country,
+                    } for loc in config.contact.additional_locations
+                ],
             },
             "address": {
                 "street": config.contact.address.street,
