@@ -141,11 +141,31 @@ class ConfigParser:
 
     def _parse_business_config(self, client_data: Dict[str, Any]) -> BusinessConfig:
         """Parse business configuration section"""
+        # Parse enhanced business fields
+        why_choose_us = client_data.get("why_choose_us", [])
+        if isinstance(why_choose_us, str):
+            # Convert single string to list
+            why_choose_us = [why_choose_us]
+        elif not isinstance(why_choose_us, list):
+            why_choose_us = []
+        
+        company_stats = client_data.get("company_stats", {})
+        if not isinstance(company_stats, dict):
+            company_stats = {}
+            
         return BusinessConfig(
             business_name=client_data.get("business_name", ""),
             domain=client_data.get("domain", ""),
             industry=client_data.get("industry", ""),
             description=client_data.get("description", ""),
+            tagline=client_data.get("tagline", ""),
+            years_in_business=client_data.get("years_in_business", ""),
+            company_overview=client_data.get("company_overview", ""),
+            mission_statement=client_data.get("mission_statement", ""),
+            service_guarantee=client_data.get("service_guarantee", ""),
+            service_area_description=client_data.get("service_area_description", ""),
+            why_choose_us=why_choose_us,
+            company_stats=company_stats,
         )
 
     def _parse_contact_config(self, client_data: Dict[str, Any]) -> ContactConfig:
@@ -169,11 +189,36 @@ class ConfigParser:
             # Legacy string format - convert to structured
             address_config = AddressConfig.from_single_line(str(address_data) if address_data else "")
 
+        # Parse enhanced contact fields
+        business_hours = contact_data.get("business_hours", {})
+        if not isinstance(business_hours, dict):
+            business_hours = {}
+            
+        # Parse additional locations
+        additional_locations = []
+        for loc_data in contact_data.get("additional_locations", []):
+            if isinstance(loc_data, dict):
+                additional_locations.append(AddressConfig(
+                    street=loc_data.get("street", ""),
+                    city=loc_data.get("city", ""),
+                    state=loc_data.get("state", ""),
+                    zip_code=loc_data.get("zip_code", ""),
+                    country=loc_data.get("country", "United States")
+                ))
+
         return ContactConfig(
             name=contact_data.get("name", ""),
             phone=contact_data.get("phone", ""),
             address=address_config,
             email=contact_data.get("email", ""),
+            business_hours=business_hours,
+            emergency_phone=contact_data.get("emergency_phone", ""),
+            office_phone=contact_data.get("office_phone", ""),
+            mobile_phone=contact_data.get("mobile_phone", ""),
+            fax_number=contact_data.get("fax_number", ""),
+            response_time_promise=contact_data.get("response_time_promise", ""),
+            contact_preference=contact_data.get("contact_preference", ""),
+            additional_locations=additional_locations,
         )
 
     def _parse_branding_config(self, client_data: Dict[str, Any]) -> BrandingConfig:
@@ -437,6 +482,15 @@ class ConfigParser:
                 "domain": config.business.domain,
                 "industry": config.business.industry,
                 "description": config.business.description,
+                # Enhanced business fields
+                "tagline": config.business.tagline,
+                "years_in_business": config.business.years_in_business,
+                "company_overview": config.business.company_overview,
+                "mission_statement": config.business.mission_statement,
+                "service_guarantee": config.business.service_guarantee,
+                "service_area_description": config.business.service_area_description,
+                "why_choose_us": config.business.why_choose_us,
+                "company_stats": config.business.company_stats,
                 "contact": {
                     "name": config.contact.name,
                     "phone": config.contact.phone,
@@ -448,6 +502,23 @@ class ConfigParser:
                         "country": config.contact.address.country,
                     },
                     "email": config.contact.email,
+                    # Enhanced contact fields
+                    "business_hours": config.contact.business_hours,
+                    "emergency_phone": config.contact.emergency_phone,
+                    "office_phone": config.contact.office_phone,
+                    "mobile_phone": config.contact.mobile_phone,
+                    "fax_number": config.contact.fax_number,
+                    "response_time_promise": config.contact.response_time_promise,
+                    "contact_preference": config.contact.contact_preference,
+                    "additional_locations": [
+                        {
+                            "street": loc.street,
+                            "city": loc.city,
+                            "state": loc.state,
+                            "zip_code": loc.zip_code,
+                            "country": loc.country,
+                        } for loc in config.contact.additional_locations
+                    ],
                 },
                 "branding": {
                     "primary_color": config.branding.primary_color,

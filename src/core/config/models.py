@@ -66,15 +66,44 @@ class AddressConfig:
 class ContactConfig:
     """Contact information configuration"""
 
+    # Basic contact information
     name: str = ""
     phone: str = ""
     address: AddressConfig = field(default_factory=AddressConfig)
     email: str = ""
+    
+    # Enhanced fields for professional templates
+    business_hours: Dict[str, str] = field(default_factory=dict)  # {"monday": "8AM-6PM"}
+    emergency_phone: str = ""  # After-hours contact
+    office_phone: str = ""  # Main office line
+    mobile_phone: str = ""  # Mobile contact
+    fax_number: str = ""  # Fax if applicable
+    response_time_promise: str = ""  # "We respond within 24 hours"
+    contact_preference: str = ""  # "Phone", "Email", "Online Form"
+    additional_locations: List[AddressConfig] = field(default_factory=list)
 
     def __post_init__(self):
         """Validate contact data after initialization"""
         if self.phone:
             self.phone = self._normalize_phone(self.phone)
+        if self.office_phone:
+            self.office_phone = self._normalize_phone(self.office_phone)
+        if self.mobile_phone:
+            self.mobile_phone = self._normalize_phone(self.mobile_phone)
+        if self.emergency_phone:
+            self.emergency_phone = self._normalize_phone(self.emergency_phone)
+        
+        # Set default business hours if none provided
+        if not self.business_hours:
+            self.business_hours = {
+                "monday": "8:00 AM - 6:00 PM",
+                "tuesday": "8:00 AM - 6:00 PM", 
+                "wednesday": "8:00 AM - 6:00 PM",
+                "thursday": "8:00 AM - 6:00 PM",
+                "friday": "8:00 AM - 6:00 PM",
+                "saturday": "9:00 AM - 4:00 PM",
+                "sunday": "Closed"
+            }
 
     def _normalize_phone(self, phone: str) -> str:
         """Normalize phone number format"""
@@ -95,6 +124,27 @@ class ContactConfig:
             return f"+1-{digits[1:4]}-{digits[4:7]}-{digits[7:]}"
 
         return phone  # Return original if can't parse
+    
+    def get_primary_phone(self) -> str:
+        """Get the primary phone number for display"""
+        return self.phone or self.office_phone or self.mobile_phone
+    
+    def get_formatted_hours(self) -> str:
+        """Get formatted business hours for display"""
+        if not self.business_hours:
+            return ""
+        
+        # Group consecutive days with same hours
+        formatted = []
+        for day, hours in self.business_hours.items():
+            formatted.append(f"{day.title()}: {hours}")
+        
+        return "\n".join(formatted)
+    
+    def has_multiple_contacts(self) -> bool:
+        """Check if multiple contact methods are available"""
+        contacts = [self.phone, self.office_phone, self.mobile_phone, self.emergency_phone]
+        return len([c for c in contacts if c.strip()]) > 1
 
 
 @dataclass
@@ -171,15 +221,47 @@ class ServiceConfig:
 class BusinessConfig:
     """Business information configuration"""
 
+    # Basic business information
     business_name: str = ""
     domain: str = ""
     industry: str = ""
     description: str = ""
+    
+    # Enhanced fields for professional templates
+    tagline: str = ""  # Value proposition for hero section
+    years_in_business: str = ""  # "Since 1995" or "15+ Years"
+    company_overview: str = ""  # Rich description for About section
+    mission_statement: str = ""  # Company mission
+    service_guarantee: str = ""  # Warranty/guarantee text
+    service_area_description: str = ""  # Custom service territory text
+    why_choose_us: List[str] = field(default_factory=list)  # Key differentiators
+    company_stats: Dict[str, str] = field(default_factory=dict)  # {"projects": "500+", "years": "15+"}
 
     def __post_init__(self):
-        """Clean up domain format"""
+        """Clean up domain format and set defaults"""
         if self.domain and not self.domain.startswith(("http://", "https://")):
             self.domain = f"https://{self.domain}"
+        
+        # Set default tagline if not provided
+        if not self.tagline and self.business_name:
+            self.tagline = f"Professional {self.industry.lower()} services you can trust"
+    
+    def get_hero_tagline(self) -> str:
+        """Get tagline for hero section"""
+        return self.tagline or f"Professional {self.industry.lower()} services you can trust"
+    
+    def get_years_display(self) -> str:
+        """Get formatted years in business for display"""
+        if self.years_in_business:
+            if self.years_in_business.isdigit():
+                return f"{self.years_in_business}+ Years of Experience"
+            return self.years_in_business
+        return ""
+    
+    def has_enhanced_content(self) -> bool:
+        """Check if enhanced content fields are populated"""
+        return bool(self.company_overview or self.mission_statement or 
+                   self.why_choose_us or self.company_stats)
 
 
 @dataclass

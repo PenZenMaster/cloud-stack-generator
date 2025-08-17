@@ -66,6 +66,16 @@ class BusinessTab(BaseTab):
         self.industry_input: QComboBox
         self.description_input: QTextEdit
         self.char_counter_label: QLabel
+        
+        # Enhanced content widgets
+        self.tagline_input: QLineEdit
+        self.years_in_business_input: QLineEdit
+        self.company_overview_input: QTextEdit
+        self.mission_statement_input: QTextEdit
+        self.service_guarantee_input: QTextEdit
+        self.service_area_description_input: QTextEdit
+        self.why_choose_us_input: QTextEdit
+        self.company_stats_input: QTextEdit
 
         super().__init__(parent)
 
@@ -89,6 +99,10 @@ class BusinessTab(BaseTab):
         # Business Description Section
         description_group = self._create_description_section()
         content_layout.addWidget(description_group)
+        
+        # Enhanced Business Content Section
+        enhanced_group = self._create_enhanced_content_section()
+        content_layout.addWidget(enhanced_group)
 
         # Help Section
         help_group = self._create_help_section()
@@ -233,6 +247,76 @@ class BusinessTab(BaseTab):
         group.setLayout(layout)
         return group
 
+    def _create_enhanced_content_section(self) -> QGroupBox:
+        """Create enhanced business content section for professional templates"""
+        group = QGroupBox("Enhanced Business Content (Optional)")
+        layout = QVBoxLayout()
+        layout.setSpacing(15)
+        
+        # Company Value Proposition
+        tagline_label = QLabel("Company Tagline/Value Proposition:")
+        tagline_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(tagline_label)
+        
+        self.tagline_input = QLineEdit()
+        self.tagline_input.setFont(QFont("Arial", 10))
+        self.tagline_input.setPlaceholderText("Professional metal fabrication services you can trust")
+        self.tagline_input.setMinimumHeight(30)
+        layout.addWidget(self.tagline_input)
+        
+        # Years in Business
+        years_label = QLabel("Years in Business:")
+        years_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(years_label)
+        
+        self.years_in_business_input = QLineEdit()
+        self.years_in_business_input.setFont(QFont("Arial", 10))
+        self.years_in_business_input.setPlaceholderText("25+ Years" or "Since 1995")
+        self.years_in_business_input.setMinimumHeight(30)
+        layout.addWidget(self.years_in_business_input)
+        
+        # Company Overview
+        overview_label = QLabel("Company Overview (for About section):")
+        overview_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(overview_label)
+        
+        self.company_overview_input = QTextEdit()
+        self.company_overview_input.setFont(QFont("Arial", 10))
+        self.company_overview_input.setPlaceholderText(
+            "Detailed description of your company, history, and what sets you apart..."
+        )
+        self.company_overview_input.setMaximumHeight(80)
+        layout.addWidget(self.company_overview_input)
+        
+        # Why Choose Us
+        why_choose_label = QLabel("Why Choose Us (one per line):")
+        why_choose_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(why_choose_label)
+        
+        self.why_choose_us_input = QTextEdit()
+        self.why_choose_us_input.setFont(QFont("Arial", 10))
+        self.why_choose_us_input.setPlaceholderText(
+            "Expert craftsmanship\n15+ years experience\nCustom solutions\nFast turnaround times"
+        )
+        self.why_choose_us_input.setMaximumHeight(80)
+        layout.addWidget(self.why_choose_us_input)
+        
+        # Company Statistics (JSON format helper)
+        stats_label = QLabel("Company Statistics (format: projects: 500+, years: 15+):")
+        stats_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(stats_label)
+        
+        self.company_stats_input = QTextEdit()
+        self.company_stats_input.setFont(QFont("Arial", 10))
+        self.company_stats_input.setPlaceholderText(
+            "projects: 500+\nyears: 15+\nlocations: 3\ncertifications: 5"
+        )
+        self.company_stats_input.setMaximumHeight(60)
+        layout.addWidget(self.company_stats_input)
+        
+        group.setLayout(layout)
+        return group
+
     def connect_signals(self):
         """Connect input widgets to config_changed signal"""
         # Connect all widget signals after they're created
@@ -241,6 +325,13 @@ class BusinessTab(BaseTab):
         self.industry_input.currentTextChanged.connect(self._emit_config_changed)
         self.description_input.textChanged.connect(self._emit_config_changed)
         self.description_input.textChanged.connect(self._update_char_counter)
+        
+        # Connect enhanced content widgets
+        self.tagline_input.textChanged.connect(self._emit_config_changed)
+        self.years_in_business_input.textChanged.connect(self._emit_config_changed)
+        self.company_overview_input.textChanged.connect(self._emit_config_changed)
+        self.why_choose_us_input.textChanged.connect(self._emit_config_changed)
+        self.company_stats_input.textChanged.connect(self._emit_config_changed)
 
         # Auto-format domain URL
         self.domain_input.editingFinished.connect(self._format_domain_url)
@@ -339,11 +430,29 @@ class BusinessTab(BaseTab):
 
     def get_config_data(self) -> Dict[str, Any]:
         """Get business configuration data"""
+        # Parse why_choose_us from text area (one per line)
+        why_choose_us_text = self.why_choose_us_input.toPlainText().strip()
+        why_choose_us = [line.strip() for line in why_choose_us_text.split('\n') if line.strip()] if why_choose_us_text else []
+        
+        # Parse company_stats from text area (key: value format)
+        company_stats = {}
+        stats_text = self.company_stats_input.toPlainText().strip()
+        if stats_text:
+            for line in stats_text.split('\n'):
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    company_stats[key.strip()] = value.strip()
+        
         return {
             "business_name": self.business_name_input.text().strip(),
             "domain": self.domain_input.text().strip(),
             "industry": self.industry_input.currentText().strip(),
             "description": self.description_input.toPlainText().strip(),
+            "tagline": self.tagline_input.text().strip(),
+            "years_in_business": self.years_in_business_input.text().strip(),
+            "company_overview": self.company_overview_input.toPlainText().strip(),
+            "why_choose_us": why_choose_us,
+            "company_stats": company_stats,
         }
 
     def set_config_data(self, data: Dict[str, Any]):
@@ -371,6 +480,26 @@ class BusinessTab(BaseTab):
 
             # Set description
             self.description_input.setPlainText(data.get("description", ""))
+            
+            # Set enhanced content fields
+            self.tagline_input.setText(data.get("tagline", ""))
+            self.years_in_business_input.setText(data.get("years_in_business", ""))
+            self.company_overview_input.setPlainText(data.get("company_overview", ""))
+            
+            # Set why_choose_us (convert list to text)
+            why_choose_us = data.get("why_choose_us", [])
+            if isinstance(why_choose_us, list):
+                self.why_choose_us_input.setPlainText('\n'.join(why_choose_us))
+            else:
+                self.why_choose_us_input.setPlainText(str(why_choose_us))
+            
+            # Set company_stats (convert dict to text)
+            company_stats = data.get("company_stats", {})
+            if isinstance(company_stats, dict):
+                stats_text = '\n'.join([f"{k}: {v}" for k, v in company_stats.items()])
+                self.company_stats_input.setPlainText(stats_text)
+            else:
+                self.company_stats_input.setPlainText(str(company_stats))
 
             # Update character counter
             self._update_char_counter()
@@ -387,6 +516,14 @@ class BusinessTab(BaseTab):
             self.domain_input.clear()
             self.industry_input.setCurrentIndex(0)
             self.description_input.clear()
+            
+            # Clear enhanced content fields
+            self.tagline_input.clear()
+            self.years_in_business_input.clear()
+            self.company_overview_input.clear()
+            self.why_choose_us_input.clear()
+            self.company_stats_input.clear()
+            
             self._update_char_counter()
         
         finally:

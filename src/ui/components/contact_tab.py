@@ -40,6 +40,8 @@ class ContactTab(BaseTab):
 
     def __init__(self, parent=None):
         self.contact_inputs = {}
+        self.enhanced_contact_inputs = {}
+        self.business_hours_inputs = {}
         self.social_media_inputs = {}
         self.google_business_inputs = {}
         self.error_labels = {}
@@ -62,6 +64,8 @@ class ContactTab(BaseTab):
         # Create sections
         self._create_contact_section(content_widget)
         self._create_address_section(content_widget)  
+        self._create_enhanced_contact_section(content_widget)
+        self._create_business_hours_section(content_widget)
         self._create_social_media_section(content_widget)
         self._create_google_business_section(content_widget)
         
@@ -265,6 +269,98 @@ class ContactTab(BaseTab):
         gbp_group.setLayout(gbp_layout)
         parent_layout.addWidget(gbp_group)
 
+    def _create_enhanced_contact_section(self, parent_layout: QVBoxLayout):
+        """Create enhanced contact information section"""
+        # Section header
+        header = QLabel("Additional Contact Methods (Optional)")
+        header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
+        parent_layout.addWidget(header)
+
+        # Enhanced contact form in a group box
+        enhanced_group = QGroupBox()
+        enhanced_group.setMaximumHeight(200)
+        enhanced_layout = QGridLayout()
+        enhanced_layout.setSpacing(10)
+        
+        # Enhanced contact fields
+        fields = [
+            ("Office Phone", "office_phone", "Main office line"),
+            ("Mobile Phone", "mobile_phone", "Mobile contact number"),
+            ("Emergency Phone", "emergency_phone", "After-hours contact"),
+            ("Fax Number", "fax_number", "Fax number if applicable"),
+            ("Response Time Promise", "response_time_promise", "We respond within 24 hours"),
+            ("Contact Preference", "contact_preference", "Phone, Email, or Online Form"),
+        ]
+
+        for row, (label_text, field_key, placeholder) in enumerate(fields):
+            # Label
+            label = QLabel(label_text)
+            label.setFont(QFont("Arial", 10))
+            enhanced_layout.addWidget(label, row, 0)
+
+            # Input
+            input_field = QLineEdit()
+            input_field.setFont(QFont("Arial", 10))
+            input_field.setPlaceholderText(placeholder)
+            input_field.setMinimumHeight(30)
+            input_field.textChanged.connect(self._emit_config_changed)
+            enhanced_layout.addWidget(input_field, row, 1)
+
+            self.enhanced_contact_inputs[field_key] = input_field
+
+        enhanced_group.setLayout(enhanced_layout)
+        parent_layout.addWidget(enhanced_group)
+
+    def _create_business_hours_section(self, parent_layout: QVBoxLayout):
+        """Create business hours section"""
+        # Section header
+        header = QLabel("Business Hours (Optional)")
+        header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
+        parent_layout.addWidget(header)
+
+        # Business hours form in a group box
+        hours_group = QGroupBox()
+        hours_group.setMaximumHeight(250)
+        hours_layout = QGridLayout()
+        hours_layout.setSpacing(10)
+        
+        # Days of the week
+        days = [
+            ("Monday", "monday"),
+            ("Tuesday", "tuesday"),
+            ("Wednesday", "wednesday"),
+            ("Thursday", "thursday"),
+            ("Friday", "friday"),
+            ("Saturday", "saturday"),
+            ("Sunday", "sunday"),
+        ]
+
+        for row, (day_label, day_key) in enumerate(days):
+            # Day label
+            label = QLabel(day_label)
+            label.setFont(QFont("Arial", 10))
+            hours_layout.addWidget(label, row, 0)
+
+            # Hours input
+            input_field = QLineEdit()
+            input_field.setFont(QFont("Arial", 10))
+            if day_key in ["saturday"]:
+                input_field.setPlaceholderText("9:00 AM - 4:00 PM")
+            elif day_key in ["sunday"]:
+                input_field.setPlaceholderText("Closed")
+            else:
+                input_field.setPlaceholderText("8:00 AM - 6:00 PM")
+            input_field.setMinimumHeight(30)
+            input_field.textChanged.connect(self._emit_config_changed)
+            hours_layout.addWidget(input_field, row, 1)
+
+            self.business_hours_inputs[day_key] = input_field
+
+        hours_group.setLayout(hours_layout)
+        parent_layout.addWidget(hours_group)
+
     def _create_error_label(self, field_name: str) -> QLabel:
         """Create error label for field validation"""
         error_label = QLabel()
@@ -288,6 +384,16 @@ class ContactTab(BaseTab):
         # Handle QTextEdit for Google Business embed
         if "embed_code" in self.google_business_inputs:
             google_data["embed_code"] = self.google_business_inputs["embed_code"].toPlainText()
+            
+        # Get enhanced contact data
+        enhanced_contact_data = {key: widget.text() for key, widget in self.enhanced_contact_inputs.items()}
+        
+        # Get business hours data
+        business_hours_data = {key: widget.text() for key, widget in self.business_hours_inputs.items()}
+        
+        # Merge enhanced data into contact
+        contact_data.update(enhanced_contact_data)
+        contact_data["business_hours"] = business_hours_data
         
         return {
             "contact": contact_data,
@@ -306,6 +412,13 @@ class ContactTab(BaseTab):
                 for field_name, value in data["contact"].items():
                     if field_name in self.contact_inputs:
                         self.contact_inputs[field_name].setText(str(value))
+                    elif field_name in self.enhanced_contact_inputs:
+                        self.enhanced_contact_inputs[field_name].setText(str(value))
+                    elif field_name == "business_hours" and isinstance(value, dict):
+                        # Set business hours
+                        for day, hours in value.items():
+                            if day in self.business_hours_inputs:
+                                self.business_hours_inputs[day].setText(str(hours))
             
             # Set address data  
             if "address" in data:
