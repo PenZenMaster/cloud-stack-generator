@@ -307,7 +307,11 @@ class WebsiteGenerator:
 
         # Page-specific content
         if is_home:
-            page_content = self._create_home_content(config)
+            # Use enhanced home content if enhanced data is available
+            if config.business.has_enhanced_content():
+                page_content = self._create_enhanced_home_content(config)
+            else:
+                page_content = self._create_home_content(config)
         else:
             page_content = self._create_city_content(config, city)
 
@@ -553,6 +557,243 @@ class WebsiteGenerator:
             content += "            </ul>"
 
         content += "        </section>"
+        return content
+
+    def _create_enhanced_home_content(self, config: ClientConfig) -> str:
+        """Create enhanced professional home page content using enhanced business data"""
+        business = config.business
+        contact = config.contact
+        business_name = business.business_name
+        industry = business.industry
+
+        # Get hero image for home page
+        hero_image = ""
+        if config.pages:
+            for page in config.pages:
+                if page.slug == "index":
+                    hero_image = page.hero_image
+                    break
+
+        # Hero section with enhanced tagline and CTA
+        hero_style = ""
+        if hero_image:
+            hero_style = f" style=\"background-image: url('{hero_image}'); background-size: cover; background-position: center;\""
+
+        # Use enhanced tagline or fall back to default
+        tagline = business.get_hero_tagline()
+        years_display = business.get_years_display()
+
+        content = f"""
+        <section class="hero"{hero_style}>
+            <div class="hero-overlay">
+                <div class="hero-content">
+                    <h1>Welcome to {business_name}</h1>
+                    <p class="hero-tagline">{tagline}</p>"""
+        
+        if years_display:
+            content += f"""
+                    <p class="years-experience">{years_display}</p>"""
+        
+        content += f"""
+                    <div class="hero-cta">
+                        <a href="#{'' if not contact.get_primary_phone() else 'contact'}" class="cta-button primary">Get Free Quote</a>
+                        <a href="tel:{contact.get_primary_phone()}" class="cta-button secondary">Call Now: {contact.get_primary_phone()}</a>
+                    </div>
+                </div>
+            </div>
+        </section>"""
+
+        # About section with company overview
+        if business.company_overview:
+            content += f"""
+        <section class="about-section">
+            <div class="container">
+                <h2>About Our {industry}</h2>
+                <p class="company-overview">{business.company_overview}</p>
+            </div>
+        </section>"""
+        else:
+            content += f"""
+        <section class="about-section">
+            <div class="container">
+                <h2>About Our {industry}</h2>
+                <p>Welcome to {business_name}, your trusted provider of {industry.lower()} services. We are committed to delivering exceptional results and outstanding customer service.</p>
+            </div>
+        </section>"""
+
+        # Why Choose Us section
+        if business.why_choose_us:
+            content += """
+        <section class="why-choose-us">
+            <div class="container">
+                <h2>Why Choose Us?</h2>
+                <div class="reasons-grid">"""
+            
+            for reason in business.why_choose_us:
+                content += f"""
+                    <div class="reason-item">
+                        <h3>{reason}</h3>
+                    </div>"""
+            
+            content += """
+                </div>
+            </div>
+        </section>"""
+
+        # Company Statistics section
+        if business.company_stats:
+            content += """
+        <section class="company-stats">
+            <div class="container">
+                <div class="stats-grid">"""
+            
+            for stat_key, stat_value in business.company_stats.items():
+                content += f"""
+                    <div class="stat-item">
+                        <div class="stat-number">{stat_value}</div>
+                        <div class="stat-label">{stat_key.title()}</div>
+                    </div>"""
+            
+            content += """
+                </div>
+            </div>
+        </section>"""
+
+        # Products section with enhanced layout
+        content += """
+        <section class="products-section">
+            <div class="container">"""
+        
+        if config.products:
+            content += """
+                <h2>Our Products</h2>
+                <div class="products-grid">"""
+
+            for product in config.products:
+                product_name = product.name
+                product_desc = product.description or f"High-quality {product_name.lower()}"
+                content += f"""
+                    <div class="product-item">
+                        <h3>{product_name}</h3>
+                        <p>{product_desc}</p>
+                    </div>"""
+
+            content += "</div>"
+        else:
+            content += f"""
+                <h2>Our Services</h2>
+                <div class="services-grid">
+                    <div class="service-item">
+                        <h3>Professional {industry} Consultation</h3>
+                        <p>Expert guidance and planning for your projects</p>
+                    </div>
+                    <div class="service-item">
+                        <h3>Custom {industry} Solutions</h3>
+                        <p>Tailored solutions to meet your specific needs</p>
+                    </div>
+                    <div class="service-item">
+                        <h3>Quality {industry} Services</h3>
+                        <p>High-quality workmanship and reliable service</p>
+                    </div>
+                </div>"""
+
+        content += """
+            </div>
+        </section>"""
+
+        # Service guarantee section
+        if business.service_guarantee:
+            content += f"""
+        <section class="service-guarantee">
+            <div class="container">
+                <h2>Our Guarantee</h2>
+                <p class="guarantee-text">{business.service_guarantee}</p>
+            </div>
+        </section>"""
+
+        # Enhanced contact section with business hours
+        if contact.has_multiple_contacts() or contact.business_hours:
+            content += """
+        <section class="enhanced-contact">
+            <div class="container">
+                <h2>Contact Us</h2>
+                <div class="contact-grid">"""
+            
+            # Contact methods
+            content += """
+                    <div class="contact-methods">
+                        <h3>Get In Touch</h3>"""
+            
+            if contact.get_primary_phone():
+                content += f"""
+                        <p><strong>Phone:</strong> <a href="tel:{contact.get_primary_phone()}">{contact.get_primary_phone()}</a></p>"""
+            
+            if contact.office_phone and contact.office_phone != contact.phone:
+                content += f"""
+                        <p><strong>Office:</strong> <a href="tel:{contact.office_phone}">{contact.office_phone}</a></p>"""
+            
+            if contact.email:
+                content += f"""
+                        <p><strong>Email:</strong> <a href="mailto:{contact.email}">{contact.email}</a></p>"""
+            
+            if contact.response_time_promise:
+                content += f"""
+                        <p class="response-time">{contact.response_time_promise}</p>"""
+            
+            content += """
+                    </div>"""
+            
+            # Business hours
+            if contact.business_hours:
+                content += """
+                    <div class="business-hours">
+                        <h3>Business Hours</h3>"""
+                
+                for day, hours in contact.business_hours.items():
+                    if hours.strip():
+                        content += f"""
+                        <p><strong>{day.title()}:</strong> {hours}</p>"""
+                
+                content += """
+                    </div>"""
+            
+            content += """
+                </div>
+            </div>
+        </section>"""
+
+        # Service area section
+        if business.service_area_description:
+            content += f"""
+        <section class="service-area">
+            <div class="container">
+                <h2>Service Area</h2>
+                <p>{business.service_area_description}</p>
+            </div>
+        </section>"""
+
+        # Add FAQ section if available
+        if config.faq:
+            content += """
+        <section class="faq-section">
+            <div class="container">
+                <h2>Frequently Asked Questions</h2>
+                <div class="faq-items">"""
+
+            for faq_item in config.faq:
+                question = faq_item.question if hasattr(faq_item, 'question') else faq_item.get("question", "")
+                answer = faq_item.answer if hasattr(faq_item, 'answer') else faq_item.get("answer", "")
+                content += f"""
+                <div class="faq-item">
+                    <h3>{question}</h3>
+                    <p>{answer}</p>
+                </div>"""
+
+            content += """
+                </div>
+            </div>
+        </section>"""
+
         return content
 
     def _create_city_content(self, config: ClientConfig, city: str) -> str:
@@ -1227,6 +1468,273 @@ footer {{
     nav a {{
         padding: 0.25rem 0.5rem;
         font-size: 0.9rem;
+    }}
+}}
+
+/* Enhanced Professional Template Styles */
+.container {{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}}
+
+/* Enhanced Hero Section */
+.hero-content {{
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}}
+
+.hero-tagline {{
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    font-weight: 300;
+}}
+
+.years-experience {{
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    opacity: 0.9;
+}}
+
+.hero-cta {{
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}}
+
+.cta-button {{
+    display: inline-block;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}}
+
+.cta-button.primary {{
+    background-color: {primary_color};
+    color: white;
+}}
+
+.cta-button.secondary {{
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+}}
+
+.cta-button:hover {{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}}
+
+/* About Section */
+.about-section {{
+    padding: 4rem 0;
+    background-color: white;
+}}
+
+.company-overview {{
+    font-size: 1.1rem;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}}
+
+/* Why Choose Us Section */
+.why-choose-us {{
+    padding: 4rem 0;
+    background-color: #f8f9fa;
+}}
+
+.reasons-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}}
+
+.reason-item {{
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}}
+
+.reason-item:hover {{
+    transform: translateY(-5px);
+}}
+
+/* Company Statistics */
+.company-stats {{
+    padding: 4rem 0;
+    background-color: {primary_color};
+    color: white;
+}}
+
+.stats-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    text-align: center;
+}}
+
+.stat-item {{
+    padding: 1rem;
+}}
+
+.stat-number {{
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}}
+
+.stat-label {{
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}}
+
+/* Products Section Enhancement */
+.products-section {{
+    padding: 4rem 0;
+    background-color: white;
+}}
+
+.products-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}}
+
+.product-item {{
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 8px;
+    border-left: 4px solid {primary_color};
+    transition: transform 0.3s ease;
+}}
+
+.product-item:hover {{
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}}
+
+/* Service Guarantee */
+.service-guarantee {{
+    padding: 4rem 0;
+    background-color: #f8f9fa;
+    text-align: center;
+}}
+
+.guarantee-text {{
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    font-style: italic;
+}}
+
+/* Enhanced Contact Section */
+.enhanced-contact {{
+    padding: 4rem 0;
+    background-color: white;
+}}
+
+.contact-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 3rem;
+    margin-top: 2rem;
+}}
+
+.contact-methods a {{
+    color: {primary_color};
+    text-decoration: none;
+}}
+
+.contact-methods a:hover {{
+    text-decoration: underline;
+}}
+
+.response-time {{
+    font-style: italic;
+    color: {secondary_color};
+    margin-top: 1rem;
+}}
+
+.business-hours p {{
+    margin: 0.5rem 0;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #eee;
+}}
+
+/* Service Area */
+.service-area {{
+    padding: 4rem 0;
+    background-color: #f8f9fa;
+    text-align: center;
+}}
+
+/* FAQ Section Enhancement */
+.faq-section {{
+    padding: 4rem 0;
+    background-color: white;
+}}
+
+.faq-items {{
+    max-width: 800px;
+    margin: 2rem auto 0;
+}}
+
+.faq-item {{
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid {primary_color};
+}}
+
+.faq-item h3 {{
+    margin-bottom: 1rem;
+    color: {primary_color};
+}}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {{
+    .hero-cta {{
+        flex-direction: column;
+        align-items: center;
+    }}
+    
+    .stats-grid {{
+        grid-template-columns: repeat(2, 1fr);
+    }}
+    
+    .stat-number {{
+        font-size: 2rem;
+    }}
+    
+    .contact-grid {{
+        grid-template-columns: 1fr;
+    }}
+}}
+
+@media (max-width: 480px) {{
+    .stats-grid {{
+        grid-template-columns: 1fr;
+    }}
+    
+    .reasons-grid {{
+        grid-template-columns: 1fr;
+    }}
+    
+    .products-grid {{
+        grid-template-columns: 1fr;
     }}
 }}
 """
