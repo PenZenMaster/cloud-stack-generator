@@ -7,13 +7,32 @@ client:
     to customize all of our products to fit any project's needs. We offer a comprehensive
     range of chimney shrouds, cupolas, dormers, finials, leader boxes, roof vents,
     snow guards, and more.
-  tagline: Professional metal fabrication services you can trust
+  tagline: Forging Dunction with Metal Mastery
   years_in_business: ''
-  company_overview: ''
+  company_overview: 'Located in the heart of Naperville, Illinois, Salvo Metal Works
+    proudly serves residential and commercial clients throughout the Chicago metropolitan
+    area and beyond. Our central location allows us to efficiently serve clients across
+    the region while maintaining the personal touch that comes with being a local
+    business.
+
+
+    Whether you''re a homeowner looking to add distinctive copper elements to your
+    residence, an architect specifying custom metalwork for a commercial project,
+    or a contractor seeking a reliable fabrication partner, Salvo Metal Works has
+    the expertise and capacity to meet your needs.
+
+
+    Ready to transform your building with custom copper architectural elements? Contact
+    us today to discuss your project and discover how Salvo Metal Works can bring
+    your vision to life with exceptional craftsmanship and attention to detail.'
   mission_statement: ''
   service_guarantee: ''
   service_area_description: ''
-  why_choose_us: []
+  why_choose_us:
+  - Unmatched Expertise in Copper Fabrication
+  - Custom Design and Engineering
+  - Quality Materials and Craftsmanship
+  - Comprehensive Service
   company_stats: {}
   contact:
     name: Customer Service
@@ -26,11 +45,11 @@ client:
       country: United States
     email: info@salvometalworks.com
     business_hours:
-      monday: 8:00 AM - 6:00 PM
-      tuesday: 8:00 AM - 6:00 PM
-      wednesday: 8:00 AM - 6:00 PM
-      thursday: 8:00 AM - 6:00 PM
-      friday: 8:00 AM - 6:00 PM
+      monday: 7:30 AM - 4:30 PM
+      tuesday: 7:30 AM - 4:30 PM
+      wednesday: 7:30 AM - 4:30 PM
+      thursday: 7:30 AM - 4:30 PM
+      friday: 7:30 AM - 4:30 PM
       saturday: 9:00 AM - 4:00 PM
       sunday: Closed
     emergency_phone: ''
