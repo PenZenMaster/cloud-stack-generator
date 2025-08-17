@@ -726,8 +726,11 @@ class EnhancedMainWindow(QMainWindow):
             )
             city_pages.append(city_page)
         
-        # Also create target_cities list for backward compatibility
-        target_cities = [cp.city_name for cp in city_pages if cp.city_name]
+        # Get target_cities from cities tab (includes proper format with state)
+        target_cities = cities_data.get("target_cities", [])
+        # Fallback: create from city_pages if not provided
+        if not target_cities:
+            target_cities = [cp.city_name for cp in city_pages if cp.city_name]
         seo_content = cities_data.get("seo_content", {})
 
         # Create complete config

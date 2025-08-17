@@ -720,43 +720,55 @@ class EnhancedCitiesTab(BaseTab):
                 self._emit_config_changed()
     
     def get_config_data(self) -> Dict[str, Any]:
-        """Get city pages configuration data"""
+        """Get city pages configuration data - BOTH FORMATS for compatibility"""
+        # Generate city_pages data (enhanced format)
+        city_pages_data = [
+            {
+                "city_name": cp.city_name,
+                "state": cp.state,
+                "slug": cp.slug,
+                "title": cp.title,
+                "meta_description": cp.meta_description,
+                "primary_keyword": cp.primary_keyword,
+                "secondary_keywords": cp.secondary_keywords,
+                "hero_title": cp.hero_title,
+                "breadcrumbs": cp.breadcrumbs,
+                "about_city": cp.about_city,
+                "city_image": {
+                    "image_url": cp.city_image.image_url,
+                    "alt_text": cp.city_image.alt_text,
+                    "caption": cp.city_image.caption,
+                    "credit": cp.city_image.credit,
+                    "source": cp.city_image.source,
+                },
+                "seo_content_title": cp.seo_content_title,
+                "seo_content_body": cp.seo_content_body,
+                "places_of_interest": [
+                    {"name": poi.name, "embed_url": poi.embed_url}
+                    for poi in cp.places_of_interest
+                ],
+                "city_faq": [
+                    {"question": faq.question, "answer": faq.answer}
+                    for faq in cp.city_faq
+                ],
+                "featured_products": cp.featured_products,
+                "city_map_embed": cp.city_map_embed,
+                "service_area_note": cp.service_area_note,
+            }
+            for cp in self.city_pages
+        ]
+        
+        # Generate target_cities data (legacy format for backward compatibility)
+        target_cities = []
+        for cp in self.city_pages:
+            if cp.state:
+                target_cities.append(f"{cp.city_name}, {cp.state}")
+            else:
+                target_cities.append(cp.city_name)
+        
         return {
-            "city_pages": [
-                {
-                    "city_name": cp.city_name,
-                    "state": cp.state,
-                    "slug": cp.slug,
-                    "title": cp.title,
-                    "meta_description": cp.meta_description,
-                    "primary_keyword": cp.primary_keyword,
-                    "secondary_keywords": cp.secondary_keywords,
-                    "hero_title": cp.hero_title,
-                    "breadcrumbs": cp.breadcrumbs,
-                    "about_city": cp.about_city,
-                    "city_image": {
-                        "image_url": cp.city_image.image_url,
-                        "alt_text": cp.city_image.alt_text,
-                        "caption": cp.city_image.caption,
-                        "credit": cp.city_image.credit,
-                        "source": cp.city_image.source,
-                    },
-                    "seo_content_title": cp.seo_content_title,
-                    "seo_content_body": cp.seo_content_body,
-                    "places_of_interest": [
-                        {"name": poi.name, "embed_url": poi.embed_url}
-                        for poi in cp.places_of_interest
-                    ],
-                    "city_faq": [
-                        {"question": faq.question, "answer": faq.answer}
-                        for faq in cp.city_faq
-                    ],
-                    "featured_products": cp.featured_products,
-                    "city_map_embed": cp.city_map_embed,
-                    "service_area_note": cp.service_area_note,
-                }
-                for cp in self.city_pages
-            ]
+            "city_pages": city_pages_data,    # Enhanced format for Sprint 2.5+
+            "target_cities": target_cities,   # Legacy format for backward compatibility
         }
     
     def set_config_data(self, data: Dict[str, Any]):
