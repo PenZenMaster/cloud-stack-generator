@@ -827,7 +827,6 @@ class EnhancedMainWindow(QMainWindow):
                         "caption": cp.city_image.caption,
                         "credit": cp.city_image.credit,
                         "source": cp.city_image.source,
-                        "license": cp.city_image.license,
                     },
                     "places_of_interest": [
                         {
