@@ -52,8 +52,14 @@ class WebsiteGenerator:
             index_path = self._generate_index_page(config)
             generated_files.append(index_path)
 
-            # Generate city pages from target_cities using new CityPageGenerator
-            if hasattr(config, 'target_cities') and config.target_cities:
+            # Generate city pages from enhanced city_pages first, then fallback to target_cities
+            if hasattr(config, 'city_pages') and config.city_pages:
+                # Use enhanced city pages data
+                for city_page in config.city_pages:
+                    city_file = self._generate_enhanced_city_page(city_page, config)
+                    generated_files.append(city_file)
+            elif hasattr(config, 'target_cities') and config.target_cities:
+                # Fallback to legacy target_cities using CityPageGenerator
                 from .generators.city_page_generator import CityPageGenerator
                 city_generator = CityPageGenerator(config)
                 city_files = city_generator.generate_all_city_pages(output_dir)
@@ -99,6 +105,162 @@ class WebsiteGenerator:
             f.write(html_content)
 
         return file_path
+
+    def _generate_enhanced_city_page(self, city_page, config: ClientConfig) -> str:
+        """Generate enhanced city page from CityPageConfig object"""
+        if not self.output_dir:
+            raise GenerationError("Output directory not set")
+
+        # Create city-specific HTML content using the rich city page data
+        html_content = self._create_enhanced_city_html(city_page, config)
+
+        # Generate filename from city slug
+        slug = city_page.slug or self._create_slug(city_page.city_name)
+        file_path = os.path.join(self.output_dir, f"{slug}.html")
+        
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(html_content)
+
+        return file_path
+
+    def _create_slug(self, city_name: str) -> str:
+        """Create URL-friendly slug from city name"""
+        import re
+        slug = re.sub(r'[^a-zA-Z0-9\s]', '', city_name.lower())
+        slug = re.sub(r'\s+', '-', slug.strip())
+        return slug
+
+    def _create_enhanced_city_html(self, city_page, config: ClientConfig) -> str:
+        """Create complete HTML for enhanced city page"""
+        business_name = config.business.business_name
+        title = city_page.title or f"{city_page.city_name} - {business_name}"
+        
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <meta name="description" content="{city_page.meta_description or f'Professional services in {city_page.city_name}'}">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>{business_name}</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>{city_page.hero_title or f'{city_page.city_name} Services'}</h1>
+                <p>Professional {config.business.industry} services in {city_page.city_name}</p>
+            </div>
+        </section>
+
+        <section class="about-city">
+            <div class="container">
+                <h2>About {city_page.city_name}</h2>
+                <p>{city_page.about_city}</p>
+            </div>
+        </section>
+
+        <section class="seo-content">
+            <div class="container">
+                <h2>{city_page.seo_content_title or f'Professional Services in {city_page.city_name}'}</h2>
+                <div class="content-body">
+                    {self._format_content_body(city_page.seo_content_body)}
+                </div>
+            </div>
+        </section>"""
+
+        # Add places of interest if available
+        if city_page.places_of_interest:
+            html += f"""
+        <section class="places-of-interest">
+            <div class="container">
+                <h2>Places of Interest in {city_page.city_name}</h2>
+                <div class="places-grid">"""
+            
+            for place in city_page.places_of_interest:
+                html += f"""
+                    <div class="place-item">
+                        <h3>{place.name}</h3>
+                        {f'<iframe src="{place.embed_url}" width="100%" height="200"></iframe>' if place.embed_url else ''}
+                    </div>"""
+            
+            html += """
+                </div>
+            </div>
+        </section>"""
+
+        # Add FAQ section if available
+        if city_page.city_faq:
+            html += f"""
+        <section class="city-faq">
+            <div class="container">
+                <h2>Frequently Asked Questions - {city_page.city_name}</h2>
+                <div class="faq-items">"""
+            
+            for faq in city_page.city_faq:
+                html += f"""
+                    <div class="faq-item">
+                        <h3>{faq.question}</h3>
+                        <p>{faq.answer}</p>
+                    </div>"""
+            
+            html += """
+                </div>
+            </div>
+        </section>"""
+
+        # Add contact section
+        html += f"""
+        <section class="contact">
+            <div class="container">
+                <h2>Contact Us for {city_page.city_name} Services</h2>
+                <p>{city_page.service_area_note or f'We proudly serve {city_page.city_name} and surrounding areas.'}</p>
+                <div class="contact-info">
+                    <p><strong>Phone:</strong> {config.contact.phone}</p>
+                    <p><strong>Email:</strong> {config.contact.email}</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 {business_name}. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>"""
+        
+        return html
+
+    def _format_content_body(self, content: str) -> str:
+        """Format content body text with basic HTML formatting"""
+        if not content:
+            return ""
+        
+        # Split into paragraphs and wrap in <p> tags
+        paragraphs = content.split('\n\n')
+        formatted_paragraphs = []
+        
+        for paragraph in paragraphs:
+            if paragraph.strip():
+                formatted_paragraphs.append(f"<p>{paragraph.strip()}</p>")
+        
+        return '\n'.join(formatted_paragraphs)
 
     def _generate_css_file(self, config: ClientConfig) -> str:
         """Generate basic CSS file"""

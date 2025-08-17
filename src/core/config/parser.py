@@ -476,6 +476,45 @@ class ConfigParser:
             
         if config.api_keys:
             yaml_data["client"]["api_keys"] = config.api_keys
+            
+        # Add enhanced city pages data
+        if config.city_pages:
+            city_pages_data = []
+            for cp in config.city_pages:
+                city_page_dict = {
+                    "city_name": cp.city_name,
+                    "state": cp.state,
+                    "slug": cp.slug,
+                    "title": cp.title,
+                    "meta_description": cp.meta_description,
+                    "primary_keyword": cp.primary_keyword,
+                    "secondary_keywords": cp.secondary_keywords,
+                    "hero_title": cp.hero_title,
+                    "breadcrumbs": cp.breadcrumbs,
+                    "about_city": cp.about_city,
+                    "city_image": {
+                        "image_url": cp.city_image.image_url,
+                        "alt_text": cp.city_image.alt_text,
+                        "caption": cp.city_image.caption,
+                        "credit": cp.city_image.credit,
+                        "source": cp.city_image.source,
+                    },
+                    "seo_content_title": cp.seo_content_title,
+                    "seo_content_body": cp.seo_content_body,
+                    "places_of_interest": [
+                        {"name": poi.name, "embed_url": poi.embed_url}
+                        for poi in cp.places_of_interest
+                    ],
+                    "city_faq": [
+                        {"question": faq.question, "answer": faq.answer}
+                        for faq in cp.city_faq
+                    ],
+                    "featured_products": cp.featured_products,
+                    "city_map_embed": cp.city_map_embed,
+                    "service_area_note": cp.service_area_note,
+                }
+                city_pages_data.append(city_page_dict)
+            yaml_data["client"]["city_pages"] = city_pages_data
 
         return yaml_data
 
