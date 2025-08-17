@@ -583,3 +583,5 @@ client:
     price: ''
     type: product
   faq: []
+  target_cities:
+  - rber

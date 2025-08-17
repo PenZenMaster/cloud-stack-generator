@@ -41,8 +41,7 @@ try:
 except ImportError:
     WikipediaAPI = None
 
-# Import secure API key storage
-from ...core.security import api_key_manager
+# Import secure API key storage (note: now using app-wide system instead)
 
 
 class CitiesTab(BaseTab):
@@ -59,6 +58,7 @@ class CitiesTab(BaseTab):
         self.seo_inputs = {}
         self.error_labels = {}
         self.has_changes = False
+        self.app_api_keys = {}  # Store reference to app-wide API keys
         super().__init__(parent)
 
     def setup_ui(self):
@@ -492,13 +492,20 @@ class CitiesTab(BaseTab):
         """Handle API key input changes"""
         api_key = self.api_key_input.text().strip()
         if api_key:
-            # Store API key securely
-            api_key_manager.set_api_key("google_maps", api_key)
+            # Store API key in app-wide system
+            self.app_api_keys['google_maps_api_key'] = api_key
+            # Notify parent to save API keys
+            if hasattr(self.parent(), 'save_app_api_keys'):
+                self.parent().save_app_api_keys(self.app_api_keys)
             self.api_status_label.setText("✅ API key configured and stored securely")
             self.api_status_label.setStyleSheet("color: green; font-weight: bold;")
         else:
-            # Remove API key from secure storage
-            api_key_manager.remove_api_key("google_maps")
+            # Remove API key from app-wide system
+            if 'google_maps_api_key' in self.app_api_keys:
+                del self.app_api_keys['google_maps_api_key']
+            # Notify parent to save API keys
+            if hasattr(self.parent(), 'save_app_api_keys'):
+                self.parent().save_app_api_keys(self.app_api_keys)
             self.api_status_label.setText("⚠️ No API key configured")
             self.api_status_label.setStyleSheet("color: orange; font-weight: bold;")
         self._emit_config_changed()
@@ -513,8 +520,8 @@ class CitiesTab(BaseTab):
             self.show_api_key_btn.setText("👁️")
 
     def _get_api_key(self) -> str:
-        """Get the current API key from secure storage"""
-        return api_key_manager.get_api_key("google_maps") or ""
+        """Get the current API key from app-wide storage"""
+        return self.app_api_keys.get("google_maps_api_key", "")
 
     def _on_wiki_city_selector_changed(self, city_name: str):
         """Handle Wikipedia city selector change"""
@@ -634,8 +641,8 @@ class CitiesTab(BaseTab):
             self._refresh_city_list()
             self._update_city_selector()
 
-            # Load API key from secure storage
-            stored_api_key = api_key_manager.get_api_key("google_maps") or ""
+            # Load API key from app-wide storage
+            stored_api_key = self.app_api_keys.get("google_maps_api_key", "")
             self.api_key_input.setText(stored_api_key)
             self._on_api_key_changed()  # Update status
 
@@ -700,6 +707,14 @@ class CitiesTab(BaseTab):
         """Get tab name for title display"""
         return "Cities & Locations"
 
+    def set_app_api_keys(self, api_keys: Dict[str, str]):
+        """Set the app-wide API keys reference"""
+        self.app_api_keys = api_keys.copy()
+        # Update the UI with the loaded API key
+        stored_api_key = self.app_api_keys.get("google_maps_api_key", "")
+        self.api_key_input.setText(stored_api_key)
+        self._on_api_key_changed()  # Update status
+    
     def connect_signals(self):
         """Connect UI signals to emit config_changed"""
         # Signals already connected in individual widgets

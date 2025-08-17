@@ -292,7 +292,7 @@ class EnhancedMainWindow(QMainWindow):
         self.enhanced_cities_tab.config_changed.connect(self.on_config_changed)
         self.products_tab.config_changed.connect(self.on_config_changed)
         self.services_tab.config_changed.connect(self.on_config_changed)
-        self.api_keys_tab.config_changed.connect(self.on_config_changed)
+        # Note: API Keys tab handles its own persistence and should not trigger unsaved changes
 
         # Connect validation signals
         self.business_tab.validation_requested.connect(self.validate_all_tabs)
@@ -407,8 +407,12 @@ class EnhancedMainWindow(QMainWindow):
                 if not self.save_configuration():
                     return
 
+        # Use /config/clients/ as default directory for opening files
+        default_dir = Path.cwd() / "config" / "clients"
+        default_dir.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+        
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "Open Configuration", "", "YAML Files (*.yaml *.yml);;All Files (*)"
+            self, "Open Configuration", str(default_dir), "YAML Files (*.yaml *.yml);;All Files (*)"
         )
 
         if not file_path:
@@ -446,28 +450,39 @@ class EnhancedMainWindow(QMainWindow):
     def save_configuration(self) -> bool:
         """Save current configuration"""
         if not self.current_config_file:
+            # No current file loaded - prompt for new file location
+            self.status_label.setText("No config file loaded - prompting for save location...")
             return self.save_configuration_as()
 
+        # Save to existing file location
+        filename = Path(self.current_config_file).name
+        self.status_label.setText(f"Saving to existing file: {filename}")
         return self.save_to_file(self.current_config_file)
 
     def save_configuration_as(self) -> bool:
         """Save configuration with new filename"""
-        # Create default filename with business name if available
-        default_filename = "website_config.yaml"
-        try:
-            business_data = self.business_tab.get_config_data()
-            business_name = business_data.get("business_name", "").strip()
-            if business_name:
-                # Create safe filename from business name
-                import re
-                safe_name = re.sub(r'[^\w\s-]', '', business_name.lower())
-                safe_name = re.sub(r'[-\s]+', '_', safe_name)
-                default_filename = f"{safe_name}_config.yaml"
-        except:
-            pass  # Use default if there's any error
+        # If we have a loaded config file, use its name as default
+        if self.current_config_file:
+            default_filename = Path(self.current_config_file).name
+        else:
+            # Create default filename based on business name (consistent with existing files)
+            default_filename = "website_config.yaml"
+            try:
+                business_data = self.business_tab.get_config_data()
+                business_name = business_data.get("business_name", "").strip()
+                if business_name:
+                    # Create safe filename from business name (matches existing pattern)
+                    import re
+                    safe_name = re.sub(r'[^\w\s-]', '', business_name.lower())
+                    safe_name = re.sub(r'[-\s]+', '_', safe_name)
+                    default_filename = f"{safe_name}_config.yaml"
+            except:
+                pass  # Use default if there's any error
             
-        # Use current working directory as default location
-        default_path = str(Path.cwd() / default_filename)
+        # Use /config/clients/ as default location
+        default_dir = Path.cwd() / "config" / "clients"
+        default_dir.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+        default_path = str(default_dir / default_filename)
         
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Save Configuration", default_path, "YAML Files (*.yaml);;All Files (*)"
@@ -546,7 +561,7 @@ class EnhancedMainWindow(QMainWindow):
             "business": self.business_tab.get_config_data(),
             "contact": self.contact_tab.get_config_data(),
             "branding": self.branding_tab.get_config_data(),
-            "enhanced_cities": self.enhanced_cities_tab.get_config_data(),
+            "cities": self.enhanced_cities_tab.get_config_data(),
             "products": self.products_tab.get_config_data(),
             "services": self.services_tab.get_config_data(),
             # API keys are application-level, not saved in client configs
@@ -663,8 +678,56 @@ class EnhancedMainWindow(QMainWindow):
         google_maps_cities = cities_data.get("google_maps", {}).get("cities", {})
         google_maps.cities = google_maps_cities
         
-        # Get target cities and SEO content
-        target_cities = cities_data.get("target_cities", [])
+        # Get city pages data from enhanced cities tab
+        city_pages_data = cities_data.get("city_pages", [])
+        
+        # Convert to CityPageConfig objects
+        from ..core.config.models import CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
+        city_pages = []
+        for cp_data in city_pages_data:
+            # Create CityImageConfig
+            image_data = cp_data.get("city_image", {})
+            city_image = CityImageConfig(
+                image_url=image_data.get("image_url", ""),
+                alt_text=image_data.get("alt_text", ""),
+                caption=image_data.get("caption", ""),
+                credit=image_data.get("credit", ""),
+                source=image_data.get("source", "Wikipedia")
+            )
+            
+            # Create PlaceOfInterest objects
+            places_data = cp_data.get("places_of_interest", [])
+            places = [PlaceOfInterest(name=p.get("name", ""), embed_url=p.get("embed_url", "")) for p in places_data]
+            
+            # Create CityFAQItem objects
+            faq_data = cp_data.get("city_faq", [])
+            city_faq = [CityFAQItem(question=f.get("question", ""), answer=f.get("answer", "")) for f in faq_data]
+            
+            # Create CityPageConfig
+            city_page = CityPageConfig(
+                city_name=cp_data.get("city_name", ""),
+                state=cp_data.get("state", ""),
+                slug=cp_data.get("slug", ""),
+                title=cp_data.get("title", ""),
+                meta_description=cp_data.get("meta_description", ""),
+                primary_keyword=cp_data.get("primary_keyword", ""),
+                secondary_keywords=cp_data.get("secondary_keywords", []),
+                hero_title=cp_data.get("hero_title", ""),
+                breadcrumbs=cp_data.get("breadcrumbs", []),
+                about_city=cp_data.get("about_city", ""),
+                city_image=city_image,
+                places_of_interest=places,
+                city_faq=city_faq,
+                seo_content_title=cp_data.get("seo_content_title", ""),
+                seo_content_body=cp_data.get("seo_content_body", ""),
+                city_map_embed=cp_data.get("city_map_embed", ""),
+                service_area_note=cp_data.get("service_area_note", ""),
+                featured_products=cp_data.get("featured_products", [])
+            )
+            city_pages.append(city_page)
+        
+        # Also create target_cities list for backward compatibility
+        target_cities = [cp.city_name for cp in city_pages if cp.city_name]
         seo_content = cities_data.get("seo_content", {})
 
         # Create complete config
@@ -677,7 +740,8 @@ class EnhancedMainWindow(QMainWindow):
             social_media=social_media,
             google_business_profile=google_business_profile,
             google_maps=google_maps,
-            target_cities=target_cities,
+            city_pages=city_pages,  # Save rich city page data
+            target_cities=target_cities,  # Keep for backward compatibility
             seo_content=seo_content,
         )
 
@@ -760,20 +824,28 @@ class EnhancedMainWindow(QMainWindow):
                         "caption": cp.city_image.caption,
                         "credit": cp.city_image.credit,
                         "source": cp.city_image.source,
+                        "license": cp.city_image.license,
                     },
-                    "seo_content_title": cp.seo_content_title,
-                    "seo_content_body": cp.seo_content_body,
                     "places_of_interest": [
-                        {"name": poi.name, "embed_url": poi.embed_url}
+                        {
+                            "name": poi.name,
+                            "embed_url": poi.embed_url,
+                        }
                         for poi in cp.places_of_interest
                     ],
                     "city_faq": [
-                        {"question": faq.question, "answer": faq.answer}
+                        {
+                            "question": faq.question,
+                            "answer": faq.answer,
+                        }
                         for faq in cp.city_faq
                     ],
-                    "featured_products": cp.featured_products,
+                    "seo_content_title": cp.seo_content_title,
+                    "seo_content_body": cp.seo_content_body,
                     "city_map_embed": cp.city_map_embed,
+                    "full_city_name": cp.full_city_name,
                     "service_area_note": cp.service_area_note,
+                    "featured_products": cp.featured_products,
                 }
                 for cp in config.city_pages
             ]

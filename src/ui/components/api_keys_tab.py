@@ -34,6 +34,10 @@ class APIKeysTab(BaseTab):
         
     def setup_ui(self):
         """Setup the API Keys tab UI"""
+        # Check if layout already exists to avoid conflicts
+        if self.layout() is not None:
+            return
+            
         # Use simple QVBoxLayout to avoid conflicts
         layout = QVBoxLayout()
         
