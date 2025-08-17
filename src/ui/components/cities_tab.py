@@ -596,8 +596,8 @@ class CitiesTab(BaseTab):
             self.city_list.addItem(item)
 
     def get_config_data(self) -> Dict[str, Any]:
-        """Get cities configuration data"""
-        # Target cities
+        """Get cities configuration data - UNIFIED FORMAT"""
+        # Target cities (legacy format)
         cities_text = self.city_inputs["target_cities"].toPlainText().strip()
         target_cities = [city.strip() for city in cities_text.split("\n") if city.strip()]
 
@@ -611,13 +611,62 @@ class CitiesTab(BaseTab):
         # Google Maps data
         google_maps = {"cities": self.city_data} if self.city_data else {}
 
+        # Enhanced city pages (NEW: convert target_cities to city_pages format for compatibility)
+        city_pages = []
+        for city_name in target_cities:
+            # Create basic CityPageConfig from legacy data
+            city_page_data = {
+                "city_name": city_name,
+                "state": "",  # Extract from city name if format is "City, State"
+                "slug": self._create_slug(city_name),
+                "title": f"{city_name} Services",
+                "meta_description": f"Professional services in {city_name}",
+                "primary_keyword": f"{city_name} services",
+                "secondary_keywords": [],
+                "hero_title": f"{city_name} — Professional Services",
+                "breadcrumbs": ["Home", "Service Areas", city_name],
+                "about_city": seo_content.get("city_description", f"Information about {city_name}"),
+                "city_image": {
+                    "image_url": "",
+                    "alt_text": f"{city_name} skyline",
+                    "caption": "",
+                    "credit": "",
+                    "source": "Wikipedia"
+                },
+                "seo_content_title": f"Professional Services in {city_name}",
+                "seo_content_body": seo_content.get("city_content", f"We provide professional services throughout {city_name} and surrounding areas."),
+                "places_of_interest": [],
+                "city_faq": [],
+                "featured_products": [],
+                "city_map_embed": self.city_data.get(city_name, {}).get("embed_code", ""),
+                "service_area_note": f"Serving {city_name} and surrounding areas"
+            }
+            
+            # Parse state from city name if format is "City, State"
+            if ", " in city_name:
+                city_part, state_part = city_name.split(", ", 1)
+                city_page_data["city_name"] = city_part
+                city_page_data["state"] = state_part
+            
+            city_pages.append(city_page_data)
+
         # NOTE: API keys are stored securely and not included in config files
 
         return {
-            "target_cities": target_cities,
+            "target_cities": target_cities,  # Legacy format for backward compatibility
+            "city_pages": city_pages,        # NEW: Enhanced format for Sprint 2.5+
             "seo_content": seo_content,
             "google_maps": google_maps,
         }
+        
+    def _create_slug(self, city_name: str) -> str:
+        """Create URL-friendly slug from city name"""
+        import re
+        # Remove state suffix if present
+        city_part = city_name.split(",")[0].strip()
+        slug = re.sub(r'[^a-zA-Z0-9\s]', '', city_part.lower())
+        slug = re.sub(r'\s+', '-', slug.strip())
+        return slug
 
     def set_config_data(self, data: Dict[str, Any]):
         """Set cities configuration data"""
