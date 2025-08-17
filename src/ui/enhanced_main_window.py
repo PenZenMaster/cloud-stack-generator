@@ -33,7 +33,7 @@ from .components.branding_tab import BrandingTab
 from .components.api_keys_tab import APIKeysTab
 from .content_tabs.products_tab import ProductsTab
 from .content_tabs.services_tab import ServicesTab
-from .components.cities_tab import CitiesTab
+from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
 
 # Import core functionality
 from ..core.config.models import ClientConfig
@@ -207,7 +207,7 @@ class EnhancedMainWindow(QMainWindow):
         self.contact_tab = ContactTab()
         self.branding_tab = BrandingTab()
         self.api_keys_tab = APIKeysTab()
-        self.cities_tab = CitiesTab()
+        self.enhanced_cities_tab = EnhancedCitiesTab()
         self.products_tab = ProductsTab()
         self.services_tab = ServicesTab()
 
@@ -215,7 +215,7 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.business_tab, "📊 Business Info")
         self.main_tabs.addTab(self.contact_tab, "📞 Contact Details")
         self.main_tabs.addTab(self.branding_tab, "🎨 Branding & Style")
-        self.main_tabs.addTab(self.cities_tab, "🌆 Cities")
+        self.main_tabs.addTab(self.enhanced_cities_tab, "🌆 Cities")
         self.main_tabs.addTab(self.products_tab, "📦 Products")
         self.main_tabs.addTab(self.services_tab, "⚙️ Services & FAQ")
         self.main_tabs.addTab(self.api_keys_tab, "🔑 API Keys")
@@ -289,7 +289,7 @@ class EnhancedMainWindow(QMainWindow):
         self.business_tab.config_changed.connect(self.on_config_changed)
         self.contact_tab.config_changed.connect(self.on_config_changed)
         self.branding_tab.config_changed.connect(self.on_config_changed)
-        self.cities_tab.config_changed.connect(self.on_config_changed)
+        self.enhanced_cities_tab.config_changed.connect(self.on_config_changed)
         self.products_tab.config_changed.connect(self.on_config_changed)
         self.services_tab.config_changed.connect(self.on_config_changed)
         # Note: API Keys tab handles its own persistence and should not trigger unsaved changes
@@ -298,7 +298,7 @@ class EnhancedMainWindow(QMainWindow):
         self.business_tab.validation_requested.connect(self.validate_all_tabs)
         self.contact_tab.validation_requested.connect(self.validate_all_tabs)
         self.branding_tab.validation_requested.connect(self.validate_all_tabs)
-        self.cities_tab.validation_requested.connect(self.validate_all_tabs)
+        self.enhanced_cities_tab.validation_requested.connect(self.validate_all_tabs)
         self.api_keys_tab.validation_requested.connect(self.validate_all_tabs)
 
         # Tab change signal
@@ -557,20 +557,11 @@ class EnhancedMainWindow(QMainWindow):
 
     def get_all_config_data(self) -> Dict[str, Any]:
         """Get configuration data from all tabs"""
-        cities_data = self.cities_tab.get_config_data()
-        
-        # Debug: Log cities data collection for Sprint 2.5 verification
-        if "city_pages" in cities_data:
-            city_count = len(cities_data["city_pages"])
-            print(f"DEBUG: Collecting {city_count} cities from CitiesTab")
-            if city_count == 0:
-                print("WARNING: No cities found in CitiesTab - configuration will not include city data")
-        
         return {
             "business": self.business_tab.get_config_data(),
             "contact": self.contact_tab.get_config_data(),
             "branding": self.branding_tab.get_config_data(),
-            "cities": cities_data,
+            "cities": self.enhanced_cities_tab.get_config_data(),
             "products": self.products_tab.get_config_data(),
             "services": self.services_tab.get_config_data(),
             # API keys are application-level, not saved in client configs
@@ -858,7 +849,7 @@ class EnhancedMainWindow(QMainWindow):
                 }
                 for cp in config.city_pages
             ]
-        self.cities_tab.set_config_data(enhanced_cities_data)
+        self.enhanced_cities_tab.set_config_data(enhanced_cities_data)
 
 
         # Load products data
@@ -897,7 +888,7 @@ class EnhancedMainWindow(QMainWindow):
             "Business Info": self.business_tab,
             "Contact Details": self.contact_tab,
             "Branding & Style": self.branding_tab,
-            "Cities": self.cities_tab,
+            "Cities": self.enhanced_cities_tab,
             "Products": self.products_tab,
             "Services & FAQ": self.services_tab,
             # API Keys tab excluded - it's application-level, not client-specific
@@ -930,7 +921,7 @@ class EnhancedMainWindow(QMainWindow):
             "Business Info": self.business_tab,
             "Contact Details": self.contact_tab,
             "Branding & Style": self.branding_tab,
-            "Cities": self.cities_tab,
+            "Cities": self.enhanced_cities_tab,
             "Products": self.products_tab,
             "Services & FAQ": self.services_tab,
             # API Keys tab excluded - it's application-level, not client-specific
