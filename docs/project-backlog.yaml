@@ -1,0 +1,138 @@
+metadata:
+  created: '2025-08-16'
+  last_updated: '2025-08-19'
+  version: '1.2'
+  next_id: 7
+items:
+- id: BACK-006
+  title: Fix test framework compatibility issues
+  description: Update test suite to work with current model structures and framework changes. Test failures are preventing CI/CD validation but core functionality is operational.
+  type: technical_debt
+  priority: high
+  status: todo
+  labels:
+  - testing
+  - framework
+  - pytest
+  - models
+  story_points: 2
+  acceptance_criteria:
+  - All unit tests pass with current model structures
+  - PyQt6 component tests properly configured
+  - Integration tests work with AddressConfig structure
+  - Test marks properly configured in pytest.ini
+  - Pre-commit test hooks operational
+  created_date: '2025-08-19'
+  assigned_to: ''
+  epic: 'Test Infrastructure'
+  dependencies: []
+  notes: 'Framework compatibility issues identified during Sprint 2.5 end. Core functionality confirmed working, tests need alignment with evolved models.'
+- id: BACK-005
+  title: 'RESOLVED: GBP Embed Missing from Generated HTML'
+  description: Google Business Profile embed code configured in YAML and visible in UI but not appearing in generated website footer. Critical blocking issue for Sprint 3 deployment.
+  type: bug
+  priority: critical
+  status: completed
+  labels:
+  - gbp
+  - embed
+  - footer
+  - website-generation
+  - blocking
+  - sprint-3-blocker
+  story_points: 3
+  acceptance_criteria:
+  - GBP embed code from config YAML appears in generated HTML footer
+  - GBP embed is positioned to the right of contact information in footer
+  - GBP embed renders correctly in browser
+  - Website regeneration preserves GBP embed placement
+  created_date: '2025-08-18'
+  assigned_to: ''
+  epic: 'Sprint 2.5 Website Generation'
+  dependencies: []
+  notes: 'CRITICAL: Footer structure was updated but GBP embed is not being included in generated HTML despite being configured in salvo_metal_works_config.yaml. Must be resolved before Sprint 3.'
+- id: BACK-001
+  title: Implement advanced search functionality
+  description: Add search capabilities across products and services with filtering
+    options
+  type: feature
+  priority: high
+  status: todo
+  labels:
+  - search
+  - ui
+  - performance
+  story_points: 5
+  acceptance_criteria:
+  - User can search products by name and category
+  - Search results are filtered and sorted
+  - Search is responsive and fast (<500ms)
+  created_date: '2025-08-16'
+  assigned_to: ''
+  epic: User Experience Improvements
+  dependencies: []
+  notes: ''
+- id: BACK-002
+  title: Fix city name validation bug
+  description: City names with special characters cause validation errors
+  type: bug
+  priority: medium
+  status: todo
+  labels:
+  - validation
+  - cities
+  - bug
+  story_points: 2
+  acceptance_criteria:
+  - Special characters in city names are properly handled
+  - Validation error messages are clear and helpful
+  created_date: '2025-08-16'
+  assigned_to: ''
+  epic: ''
+  dependencies: []
+  notes: ''
+- id: BACK-003
+  title: Refactor CSS generation module
+  description: Current CSS generation code has high complexity and poor test coverage
+  type: technical_debt
+  priority: high
+  status: todo
+  labels:
+  - css
+  - refactoring
+  - technical-debt
+  story_points: 8
+  acceptance_criteria:
+  - CSS generation module is split into smaller functions
+  - Test coverage increased to >80%
+  - Cyclomatic complexity reduced
+  created_date: '2025-08-16'
+  assigned_to: ''
+  epic: Code Quality Improvements
+  dependencies: 
+  - BACK-006
+  notes: 'Promoted to high priority for next sprint. Should be done after test framework fixes to ensure quality validation during refactoring.'
+- id: BACK-004
+  title: Create Cities Tab import/export mechanism
+  description: Implement functionality to allow users to import and export city data
+    from the Enhanced Cities Tab for backup, sharing, and bulk operations
+  type: feature
+  priority: low
+  status: todo
+  labels:
+  - cities
+  - import
+  - export
+  - data-management
+  story_points: 3
+  acceptance_criteria:
+  - User can export all city data to CSV/JSON format
+  - User can import city data from supported file formats
+  - Import validates data integrity and shows preview
+  - Export preserves all city page fields including images and FAQ
+  - Import/export accessible via Cities Tab UI buttons
+  created_date: '2025-08-16'
+  assigned_to: ''
+  epic: Data Management Features
+  dependencies: []
+  notes: ''
