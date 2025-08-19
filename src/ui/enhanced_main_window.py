@@ -419,8 +419,10 @@ class EnhancedMainWindow(QMainWindow):
             return
 
         try:
-            # Add your logic here
+            # Parse the YAML file and store the config
             config = self.config_parser.parse_yaml_file(file_path)
+            self.loaded_config = config  # Store for website generation
+            print(f"DEBUG: Stored loaded_config with GBP: {config.google_business_profile}")
         except Exception as e:
             error_msg = f"Failed to load configuration:\n{str(e)}"
             log_file_operation_error(
@@ -587,6 +589,7 @@ class EnhancedMainWindow(QMainWindow):
             description=business_data.get("description", ""),
             # Enhanced business fields
             tagline=business_data.get("tagline", ""),
+            hero_subtitle=business_data.get("hero_subtitle", ""),
             years_in_business=business_data.get("years_in_business", ""),
             company_overview=business_data.get("company_overview", ""),
             mission_statement=business_data.get("mission_statement", ""),
@@ -791,6 +794,7 @@ class EnhancedMainWindow(QMainWindow):
             "description": config.business.description,
             # Enhanced business fields
             "tagline": config.business.tagline,
+            "hero_subtitle": config.business.hero_subtitle,
             "years_in_business": config.business.years_in_business,
             "company_overview": config.business.company_overview,
             "mission_statement": config.business.mission_statement,
@@ -840,7 +844,7 @@ class EnhancedMainWindow(QMainWindow):
                 "instagram": getattr(config.social_media, 'instagram', ''),
                 "youtube": getattr(config.social_media, 'youtube', ''),
             },
-            "google_business": {
+            "google_business_profile": {
                 "embed_code": getattr(config, 'google_business_profile', {}).get('embed_code', '') if hasattr(config, 'google_business_profile') else ''
             },
         }
@@ -1074,9 +1078,19 @@ class EnhancedMainWindow(QMainWindow):
                 )
                 return
 
-            # Create ClientConfig from current UI data
+            # ALWAYS use current UI data for generation (WYSIWYG approach)
+            # This ensures users see exactly what they've configured in the UI
             config_data = self.get_all_config_data()
             config = self.create_client_config(config_data)
+            
+            # Preserve essential data from loaded config that isn't in UI
+            if hasattr(self, 'loaded_config') and self.loaded_config:
+                # Preserve Google Business Profile data
+                if hasattr(self.loaded_config, 'google_business_profile') and self.loaded_config.google_business_profile:
+                    config.google_business_profile = self.loaded_config.google_business_profile
+                    print(f"DEBUG: Preserved GBP data from loaded config: {config.google_business_profile}")
+            
+            print("DEBUG: Using current UI data for generation (WYSIWYG) with preserved loaded data")
             
             # Ask user for output directory
             output_dir = QFileDialog.getExistingDirectory(
@@ -1089,12 +1103,12 @@ class EnhancedMainWindow(QMainWindow):
                 return  # User cancelled
             
             # Create website generator
-            from ..core.website_generator import WebsiteGenerator
-            generator = WebsiteGenerator()
+            from ..core.generators.page_generator import PageGenerator
+            generator = PageGenerator(output_base_dir=output_dir)
             
             # Generate website
             self.status_label.setText("Generating website...")
-            result = generator.generate(config, output_dir)
+            result = generator.generate_complete_website(config)
             
             if result.success:
                 message = f"Website generated successfully!\n\nFiles created:\n"
@@ -1109,18 +1123,35 @@ class EnhancedMainWindow(QMainWindow):
                 )
                 self.status_label.setText(f"Website generated successfully in {output_dir}")
             else:
+                error_message = f"Failed to generate website:\n\n{result.errors}"
+                log_error_dialog(
+                    "Website Generation Failed",
+                    error_message,
+                    context="Website generation process failed",
+                    component="EnhancedMainWindow.generate_website",
+                    user_action="Attempting to generate website with PageGenerator"
+                )
                 QMessageBox.critical(
                     self,
                     "Website Generation Failed",
-                    f"Failed to generate website:\n\n{result.errors}"
+                    error_message
                 )
                 self.status_label.setText("Website generation failed")
                 
         except Exception as e:
+            error_message = f"An error occurred during website generation:\n\n{str(e)}"
+            log_error_dialog(
+                "Website Generation Error",
+                error_message,
+                context="Exception caught during website generation",
+                component="EnhancedMainWindow.generate_website",
+                exception=e,
+                user_action="Attempting to generate website"
+            )
             QMessageBox.critical(
                 self,
                 "Website Generation Error",
-                f"An error occurred during website generation:\n\n{str(e)}"
+                error_message
             )
             self.status_label.setText("Website generation error")
 

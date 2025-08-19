@@ -160,7 +160,7 @@ class ContactTab(BaseTab):
 
         # Address form in a group box
         address_group = QGroupBox()
-        address_group.setMaximumHeight(200)
+        address_group.setMaximumHeight(260)
         address_layout = QGridLayout()
         address_layout.setSpacing(10)
 
@@ -171,6 +171,8 @@ class ContactTab(BaseTab):
             ("* State/Province", "state", "Enter state or province"),
             ("* ZIP/Postal Code", "zip_code", "Enter ZIP or postal code"),
             ("Country", "country", "Enter country (default: United States)"),
+            ("Latitude (optional)", "latitude", "41.760615"),
+            ("Longitude (optional)", "longitude", "-88.344462"),
         ]
 
         for row, (label_text, field_key, placeholder) in enumerate(fields):
@@ -375,9 +377,11 @@ class ContactTab(BaseTab):
         # Separate contact info from address info
         contact_fields = ["name", "phone", "email"]
         address_fields = ["street", "city", "state", "zip_code", "country"]
+        geo_fields = ["latitude", "longitude"]
         
         contact_data = {key: self.contact_inputs[key].text() for key in contact_fields if key in self.contact_inputs}
         address_data = {key: self.contact_inputs[key].text() for key in address_fields if key in self.contact_inputs}
+        geo_data = {key: self.contact_inputs[key].text() for key in geo_fields if key in self.contact_inputs}
         social_data = {key: widget.text() for key, widget in self.social_media_inputs.items()}
         google_data = {}
         
@@ -398,8 +402,9 @@ class ContactTab(BaseTab):
         return {
             "contact": contact_data,
             "address": address_data,
+            "geo_coordinates": geo_data,
             "social_media": social_data,
-            "google_business": google_data
+            "google_business_profile": google_data
         }
 
     def set_config_data(self, data: Dict[str, Any]):
@@ -426,6 +431,12 @@ class ContactTab(BaseTab):
                     if field_name in self.contact_inputs:
                         self.contact_inputs[field_name].setText(str(value))
             
+            # Set geo coordinates data
+            if "geo_coordinates" in data:
+                for field_name, value in data["geo_coordinates"].items():
+                    if field_name in self.contact_inputs:
+                        self.contact_inputs[field_name].setText(str(value))
+            
             # Set social media data
             if "social_media" in data:
                 for field_name, value in data["social_media"].items():
@@ -433,8 +444,8 @@ class ContactTab(BaseTab):
                         self.social_media_inputs[field_name].setText(str(value))
             
             # Set Google Business data
-            if "google_business" in data:
-                embed_code = data["google_business"].get("embed_code", "")
+            if "google_business_profile" in data:
+                embed_code = data["google_business_profile"].get("embed_code", "")
                 if "embed_code" in self.google_business_inputs:
                     self.google_business_inputs["embed_code"].setPlainText(str(embed_code))
         

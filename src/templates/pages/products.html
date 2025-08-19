@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - {{ business.business_name }}</title>
+    <meta name="description" content="Explore {{ business.business_name }} {{ business.industry.lower() }} products and solutions">
+    <meta name="robots" content="index, follow">
+    
+    <link rel="canonical" href="{{ business.domain }}/products.html">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                {% if branding.logo_url %}
+                <img src="{{ branding.logo_url }}" alt="{{ business.business_name }} Logo" class="logo-image">
+                {% endif %}
+                <span class="company-name">{{ business.business_name }}</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    {% if services %}
+                    <li class="dropdown">
+                        <a href="services.html">Services</a>
+                        <div class="dropdown-content">
+                            {% for service in services[:7] %}
+                            <a href="services/{{ service.name|slugify }}.html">{{ service.name if service.name else service }}</a>
+                            {% endfor %}
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% if products %}
+                    <li class="dropdown">
+                        <a href="products.html" class="active">Products</a>
+                        <div class="dropdown-content">
+                            {% for product in products[:7] %}
+                            <a href="products/{{ product.name|slugify }}.html">{{ product.name if product.name else product }}</a>
+                            {% endfor %}
+                        </div>
+                    </li>
+                    {% endif %}
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li class="dropdown">
+                        <a href="about.html">About</a>
+                        <div class="dropdown-content">
+                            <a href="privacy-policy.html">Privacy Policy</a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="content-section">
+            <div class="container">
+                <h1>Our Products</h1>
+                
+                <p>Discover our comprehensive range of {{ business.industry.lower() }} products designed to meet your specific needs.</p>
+                
+                {% if products %}
+                <div class="products-grid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name if product.name else product }}">
+                        {% else %}
+                        <img src="https://via.placeholder.com/400x300?text={{ (product.name if product.name else product)|urlencode }}" alt="{{ product.name if product.name else product }}">
+                        {% endif %}
+                        <div class="product-card-content">
+                            <h3>{{ product.name if product.name else product }}</h3>
+                            <p>{% if product.description %}{{ product.description }}{% else %}Professional {{ (product.name if product.name else product).lower() }} solution designed for excellence.{% endif %}</p>
+                            {% if product.category %}
+                            <p class="product-category"><strong>Category:</strong> {{ product.category|title }}</p>
+                            {% endif %}
+                            <a href="products/{{ (product.name if product.name else product)|slugify }}.html" class="product-link">Learn More →</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>We offer a variety of high-quality {{ business.industry.lower() }} products. Contact us to learn more about our available solutions.</p>
+                {% endif %}
+                
+                <div class="contact-cta">
+                    <p>Need a custom solution? <a href="contact.html">Contact us</a> to discuss your specific requirements!</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Contact Information</h3>
+                    <p><strong>{{ business.business_name }}</strong></p>
+                    {% if contact.address.street %}
+                    <p>{{ contact.address.street }}{% if contact.address.city %}<br>{{ contact.address.city }}{% if contact.address.state %}, {{ contact.address.state }}{% endif %}{% if contact.address.zip_code %} {{ contact.address.zip_code }}{% endif %}{% endif %}</p>
+                    {% endif %}
+                    {% if contact.phone %}
+                    <p>Phone: <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+                    {% endif %}
+                    {% if contact.mobile_phone %}
+                    <p>Mobile: <a href="tel:{{ contact.mobile_phone }}">{{ contact.mobile_phone }}</a></p>
+                    {% endif %}
+                    {% if contact.email %}
+                    <p>Email: <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+                    {% endif %}
+                </div>
+                
+                {% if services %}
+                <div class="footer-section">
+                    <h3>Our Services</h3>
+                    {% for service in services[:7] %}
+                    <a href="services/{{ (service.name if service.name else service)|slugify }}.html">{{ service.name if service.name else service }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if social_media %}
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        {% if social_media.facebook %}<a href="{{ social_media.facebook }}" target="_blank" rel="noopener" title="Facebook">f</a>{% endif %}
+                        {% if social_media.instagram %}<a href="{{ social_media.instagram }}" target="_blank" rel="noopener" title="Instagram">i</a>{% endif %}
+                        {% if social_media.linkedin %}<a href="{{ social_media.linkedin }}" target="_blank" rel="noopener" title="LinkedIn">in</a>{% endif %}
+                        {% if social_media.twitter %}<a href="{{ social_media.twitter }}" target="_blank" rel="noopener" title="Twitter">t</a>{% endif %}
+                        {% if social_media.youtube %}<a href="{{ social_media.youtube }}" target="_blank" rel="noopener" title="YouTube">y</a>{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if google_business and google_business.embed_code %}
+                <div class="footer-section">
+                    <h3>Visit Our Location</h3>
+                    <div class="map-container">
+                        {{ google_business.embed_code|safe }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; {{ current_year }} {{ business.business_name }}. All rights reserved. | <a href="privacy-policy.html">Privacy Policy</a></p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -57,27 +57,59 @@ body {
     def __init__(self):
         self.base_styles = self._get_base_styles()
         
-def generate_main_css(self, config: ClientConfig) -> str:
-    """Generate main CSS file with branding and responsive design"""
-    if not config or not hasattr(config, 'branding'):
-        # Return an empty string or a default CSS if config is invalid
-        return ""
-    branding = config.branding
+    def generate_css(self, config: ClientConfig) -> str:
+        """Generate CSS file with branding and responsive design (alias for generate_main_css)"""
+        return self.generate_main_css(config)
+        
+    def generate_main_css(self, config: ClientConfig) -> str:
+        """Generate main CSS file with branding and responsive design"""
+        if not config or not hasattr(config, 'branding'):
+            # Return an empty string or a default CSS if config is invalid
+            return ""
+        branding = config.branding
 
-    css_parts = [
-        self._generate_css_variables(branding),
-        self._get_reset_styles(),
-        self.base_styles,
-        self._generate_typography_styles(branding),
-        self._generate_color_scheme_styles(branding),
-        self._generate_layout_styles(),
-        self._generate_component_styles(branding),
-        self._generate_responsive_styles(),
-        self._generate_utility_styles(branding)
-    ]
+        css_parts = [
+            self._generate_css_variables(branding),
+            self._get_reset_styles(),
+            self.base_styles,
+            self._generate_typography_styles(branding),
+            self._generate_color_scheme_styles(branding),
+            self._generate_layout_styles(),
+            self._generate_component_styles(branding),
+            self._generate_responsive_styles(),
+            self._generate_utility_styles(branding)
+        ]
 
-    return '\n\n'.join(css_parts)
+        return '\n\n'.join(css_parts)
     
+    def _lighten_color(self, color: str, amount: float) -> str:
+        """Lighten a hex color by the specified amount (0.0-1.0)"""
+        if not color.startswith('#'):
+            return color
+        try:
+            # Remove # and convert to RGB
+            hex_color = color.lstrip('#')
+            rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            # Lighten each component
+            lightened = tuple(min(255, int(c + (255 - c) * amount)) for c in rgb)
+            return f"#{lightened[0]:02x}{lightened[1]:02x}{lightened[2]:02x}"
+        except:
+            return color
+
+    def _darken_color(self, color: str, amount: float) -> str:
+        """Darken a hex color by the specified amount (0.0-1.0)"""
+        if not color.startswith('#'):
+            return color
+        try:
+            # Remove # and convert to RGB
+            hex_color = color.lstrip('#')
+            rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            # Darken each component
+            darkened = tuple(max(0, int(c * (1 - amount))) for c in rgb)
+            return f"#{darkened[0]:02x}{darkened[1]:02x}{darkened[2]:02x}"
+        except:
+            return color
+
     def _generate_css_variables(self, branding: BrandingConfig) -> str:
         """Generate CSS custom properties for consistent theming"""
         # Calculate additional colors based on primary/secondary
@@ -312,4 +344,376 @@ body {{
     background-color: var(--info);
     color: var(--white);
 }}
+"""
+
+    def _generate_layout_styles(self) -> str:
+        """Generate layout and grid styles"""
+        return """/* Layout Styles */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.grid {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+.flex {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.flex-center { justify-content: center; align-items: center; }
+.flex-between { justify-content: space-between; align-items: center; }
+"""
+
+    def _generate_component_styles(self, branding: BrandingConfig) -> str:
+        """Generate component-specific styles"""
+        return f"""/* Component Styles */
+
+/* Header Styles */
+header {{
+    background: var(--primary-color);
+    color: white;
+    padding: var(--spacing-lg) 0;
+}}
+
+.header-content {{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}}
+
+.logo-container {{
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}}
+
+.logo-image {{
+    height: 60px;
+    width: auto;
+}}
+
+.company-name {{
+    font-size: var(--font-size-xl);
+    font-weight: bold;
+}}
+
+/* Navigation Styles */
+nav ul {{
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--spacing-lg);
+}}
+
+nav a {{
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s;
+}}
+
+nav a:hover {{
+    background-color: rgba(255, 255, 255, 0.1);
+}}
+
+.dropdown {{
+    position: relative;
+}}
+
+.dropdown-content {{
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 200px;
+    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius);
+    z-index: 1000;
+    top: 100%;
+    left: 0;
+}}
+
+.dropdown-content a {{
+    color: var(--gray-800);
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: block;
+    border-bottom: 1px solid var(--gray-200);
+}}
+
+.dropdown-content a:hover {{
+    background-color: var(--gray-100);
+}}
+
+/* Hero Section */
+.hero {{
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: var(--spacing-3xl) 0;
+    text-align: center;
+}}
+
+.hero-content {{
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}}
+
+.hero h1 {{
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--spacing-lg);
+    font-weight: bold;
+}}
+
+.hero-subtitle {{
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-xl);
+    opacity: 0.9;
+}}
+
+.cta-button {{
+    display: inline-block;
+    background: white;
+    color: var(--primary-color);
+    padding: var(--spacing-md) var(--spacing-xl);
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: bold;
+    transition: transform 0.2s;
+}}
+
+.cta-button:hover {{
+    transform: translateY(-2px);
+}}
+
+/* Footer Styles */
+footer {{
+    background: var(--gray-800);
+    color: white;
+    padding: var(--spacing-xl) 0;
+    margin-top: auto;
+}}
+
+.footer-container {{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}}
+
+.footer-content {{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}}
+
+.footer-section h3 {{
+    margin-bottom: var(--spacing-md);
+    color: var(--secondary-color);
+}}
+
+.footer-section a {{
+    color: white;
+    text-decoration: none;
+    display: block;
+    margin-bottom: var(--spacing-sm);
+}}
+
+.footer-section a:hover {{
+    color: var(--secondary-color);
+}}
+
+.social-links {{
+    display: flex;
+    gap: var(--spacing-md);
+}}
+
+.social-links a {{
+    display: inline-block !important;
+    background: var(--primary-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    margin-bottom: 0 !important;
+}}
+
+.map-container {{
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}}
+
+.map-container iframe {{
+    width: 100%;
+    height: 300px;
+    border: 0;
+}}
+
+.footer-bottom {{
+    border-top: 1px solid var(--gray-600);
+    padding-top: var(--spacing-lg);
+    text-align: center;
+}}
+
+/* Content Sections */
+.content-section {{
+    padding: var(--spacing-xl) 0;
+}}
+
+.content-section .container {{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}}
+
+.content-section h2 {{
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-lg);
+}}
+
+.why-choose-item {{
+    margin-bottom: var(--spacing-lg);
+}}
+
+.why-choose-item h3 {{
+    color: var(--secondary-color);
+    margin-bottom: var(--spacing-sm);
+}}
+
+/* Legacy component styles for compatibility */
+.card {{
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--gray-200);
+}}
+"""
+
+    def _generate_responsive_styles(self) -> str:
+        """Generate responsive design styles"""
+        return """/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+    
+    .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .flex {
+        flex-direction: column;
+    }
+    
+    /* Header responsive */
+    .header-content {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        text-align: center;
+    }
+    
+    nav ul {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        width: 100%;
+    }
+    
+    /* Hero responsive */
+    .hero h1 {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: var(--font-size-base);
+    }
+    
+    /* Footer responsive */
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+        text-align: center;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 var(--spacing-sm);
+    }
+    
+    .logo-image {
+        height: 40px;
+    }
+    
+    .company-name {
+        font-size: var(--font-size-lg);
+    }
+    
+    .hero h1 {
+        font-size: 1.75rem;
+    }
+    
+    .cta-button {
+        padding: var(--spacing-sm) var(--spacing-lg);
+    }
+    
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.25rem; }
+}
+"""
+
+    def _generate_utility_styles(self, branding: BrandingConfig) -> str:
+        """Generate utility classes"""
+        return """/* Utility Classes */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+.mt-xl { margin-top: var(--spacing-xl); }
+
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+.mb-xl { margin-bottom: var(--spacing-xl); }
+
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+.p-xl { padding: var(--spacing-xl); }
+
+.hidden { display: none; }
+.block { display: block; }
+.inline { display: inline; }
+.inline-block { display: inline-block; }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+.rounded { border-radius: var(--border-radius); }
+.shadow { box-shadow: var(--box-shadow); }
 """

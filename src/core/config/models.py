@@ -228,7 +228,8 @@ class BusinessConfig:
     description: str = ""
     
     # Enhanced fields for professional templates
-    tagline: str = ""  # Value proposition for hero section
+    tagline: str = ""  # Value proposition for hero section H1
+    hero_subtitle: str = ""  # Subtitle text below hero H1
     years_in_business: str = ""  # "Since 1995" or "15+ Years"
     company_overview: str = ""  # Rich description for About section
     mission_statement: str = ""  # Company mission
@@ -644,6 +645,16 @@ class ClientConfig:
                 "business_name": self.business.business_name,
                 "domain": self.business.domain,
                 "industry": self.business.industry,
+                "description": self.business.description,
+                "tagline": self.business.tagline,
+                "hero_subtitle": self.business.hero_subtitle,
+                "years_in_business": self.business.years_in_business,
+                "company_overview": self.business.company_overview,
+                "mission_statement": self.business.mission_statement,
+                "service_guarantee": self.business.service_guarantee,
+                "service_area_description": self.business.service_area_description,
+                "why_choose_us": self.business.why_choose_us,
+                "company_stats": self.business.company_stats,
                 "contact": {
                     "name": self.contact.name,
                     "phone": self.contact.phone,

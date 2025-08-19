@@ -69,17 +69,24 @@ class WebsiteGenerator:
             css_path = self._generate_css_file(config)
             generated_files.append(css_path)
 
+            # Create js directory (for future JavaScript files)
+            js_dir = os.path.join(output_dir, "js")
+            os.makedirs(js_dir, exist_ok=True)
+
             return GenerationResult(success=True, generated_files=generated_files)
 
         except Exception as e:
             return GenerationResult(success=False, generated_files=[], errors=str(e))
 
     def _generate_index_page(self, config: ClientConfig) -> str:
-        """Generate the main index.html page"""
+        """Generate the main index.html page using the enhanced template"""
         if not self.output_dir:
             raise GenerationError("Output directory not set")
 
-        html_content = self._create_html_template(config, "Home", is_home=True)
+        # Use the new HTML generator with enhanced template
+        from .generators.html_generator import HTMLGenerator
+        html_generator = HTMLGenerator()
+        html_content = html_generator.generate_homepage(config)
 
         file_path = os.path.join(self.output_dir, "index.html")
         with open(file_path, "w", encoding="utf-8") as f:
@@ -263,13 +270,17 @@ class WebsiteGenerator:
         return '\n'.join(formatted_paragraphs)
 
     def _generate_css_file(self, config: ClientConfig) -> str:
-        """Generate basic CSS file"""
+        """Generate CSS file in proper directory structure"""
         if not self.output_dir:
             raise GenerationError("Output directory not set")
 
+        # Create css directory
+        css_dir = os.path.join(self.output_dir, "css")
+        os.makedirs(css_dir, exist_ok=True)
+
         css_content = self._create_css_template(config)
 
-        file_path = os.path.join(self.output_dir, "styles.css")
+        file_path = os.path.join(css_dir, "style.css")
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(css_content)
 
@@ -922,42 +933,51 @@ class WebsiteGenerator:
 
         footer_content = """
         <div class="footer-container">
-            <div class="footer-section contact-info">
-                <h4>Contact Information</h4>"""
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Contact Information</h3>
+                    <p><strong>{business_name}</strong></p>""".format(business_name=business_name)
 
-        # Fix phone display - get original phone format, not normalized
+        # Add address
+        if contact.address.street:
+            footer_content += f'                    <p>{contact.address.street}<br>{contact.address.city}, {contact.address.state} {contact.address.zip_code}</p>\n'
+        
+        # Add phone with proper formatting for link
         if phone := contact.phone:
             # Display the phone as originally entered, not the normalized version
             display_phone = self._get_display_phone(phone)
-            footer_content += (
-                f"                <p><strong>Phone:</strong> {display_phone}</p>\n"
-            )
+            # Create tel link with normalized phone
+            normalized_phone = self._normalize_phone(phone)
+            footer_content += f'                    <p>Phone: <a href="tel:{normalized_phone}">{display_phone}</a></p>\n'
 
-        if contact.address.street:
-            footer_content += f'                <p><strong>Address:</strong> {contact.address.to_single_line()}</p>\n'
         if contact.email:
-            footer_content += (
-                f'                <p><strong>Email:</strong> {contact.email}</p>\n'
-            )
+            footer_content += f'                    <p>Email: <a href="mailto:{contact.email}">{contact.email}</a></p>\n'
 
-        footer_content += "            </div>\n"
+        footer_content += "                </div>\n                \n"
 
-        # Add social media links if available
+        # Add social media links if available in middle section
         social_links = config.social_media.get_valid_links()
         if social_links:
-            footer_content += """
-            <div class="footer-section social-media">
-                <h4>Follow Us</h4>
-                <div class="social-links">"""
+            footer_content += """                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">"""
             
             for platform, url in social_links.items():
-                platform_name = platform.title()
-                if platform == "twitter":
-                    platform_name = "Twitter/X"
-                footer_content += f'                    <a href="{url}" target="_blank" rel="noopener noreferrer">{platform_name}</a>\n'
+                # Create single letter abbreviations for social platforms
+                platform_letter = platform[0].lower()
+                if platform == "youtube":
+                    platform_letter = "y"
+                elif platform == "instagram":
+                    platform_letter = "i"
+                elif platform == "linkedin":
+                    platform_letter = "in"
+                    
+                footer_content += f'<a href="{url}" target="_blank" rel="noopener" title="{platform.title()}">{platform_letter}</a>'
             
-            footer_content += """                </div>
-            </div>"""
+            footer_content += """                    </div>
+                </div>
+                
+"""
 
         # Add Google Business Profile map for home page
         if (
@@ -966,13 +986,12 @@ class WebsiteGenerator:
         ):
             gbp_embed = config.google_business_profile.get("embed_code", "")
             if gbp_embed:
-                # Modify the iframe to be 480x480
-                modified_embed = self._modify_iframe_size(gbp_embed, 480, 480)
-                footer_content += f"""
-            <div class="footer-section gbp-map">
-                <h4>Find Us</h4>
-                {modified_embed}
-            </div>"""
+                footer_content += f"""                <div class="footer-section">
+                    <h3>Visit Our Location</h3>
+                    <div class="map-container">
+                        {gbp_embed}
+                    </div>
+                </div>"""
 
         # Add city-specific Google Map
         elif city and hasattr(config, "google_maps") and config.google_maps:
@@ -981,20 +1000,20 @@ class WebsiteGenerator:
                 if city.lower() in city_key.lower():
                     city_embed = city_data.get("embed_code", "")
                     if city_embed:
-                        modified_embed = self._modify_iframe_size(city_embed, 480, 480)
-                        footer_content += f"""
-            <div class="footer-section city-map">
-                <h4>{city} Location</h4>
-                {modified_embed}
-            </div>"""
+                        footer_content += f"""                <div class="footer-section">
+                    <h3>{city} Location</h3>
+                    <div class="map-container">
+                        {city_embed}
+                    </div>
+                </div>"""
                     break
 
-
-        footer_content += f"""
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 {business_name}. All rights reserved.</p>
-        </div>"""
+        footer_content += """            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 {business_name}. All rights reserved. | <a href="privacy-policy.html">Privacy Policy</a></p>
+            </div>
+        </div>""".format(business_name=business_name)
 
         return footer_content
 
@@ -1070,11 +1089,25 @@ header {{
     flex-wrap: wrap;
 }}
 
-.logo {{
-    max-height: 60px;
-    max-width: 200px;
+.logo-container {{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}}
+
+.logo-image {{
+    max-height: 50px;
     height: auto;
     width: auto;
+    max-width: 120px;
+}}
+
+.company-name {{
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    white-space: nowrap;
 }}
 
 header h1 {{
@@ -1086,7 +1119,19 @@ nav {{
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+}}
+
+nav ul {{
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
     gap: 1rem;
+    align-items: center;
+}}
+
+nav li {{
+    position: relative;
 }}
 
 nav a {{
@@ -1096,6 +1141,7 @@ nav a {{
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: background-color 0.3s;
+    display: block;
 }}
 
 nav a:hover {{
@@ -1272,6 +1318,44 @@ main {{
     margin-bottom: 0.5rem;
 }}
 
+/* Enhanced Content Section Styles */
+.content-section {{
+    background-color: white;
+    padding: 3rem 2rem;
+    margin: 2rem auto;
+    max-width: 1200px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}}
+
+.content-section h2 {{
+    color: {primary_color};
+    margin-bottom: 2rem;
+    font-size: 2rem;
+    text-align: center;
+}}
+
+.content-section h3 {{
+    color: {secondary_color};
+    margin: 2rem 0 1rem 0;
+    font-size: 1.5rem;
+}}
+
+.content-section p {{
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+}}
+
+.content-section .highlight {{
+    color: {primary_color};
+    font-weight: bold;
+    text-decoration: none;
+}}
+
+.content-section .highlight:hover {{
+    text-decoration: underline;
+}}
+
 /* Services Grid */
 .services-grid {{
     display: grid;
@@ -1324,6 +1408,53 @@ main {{
     margin-bottom: 0.5rem;
 }}
 
+/* Enhanced Product Card Styles */
+.product-card {{
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+}}
+
+.product-card:hover {{
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}}
+
+.product-card img {{
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}}
+
+.product-card-content {{
+    padding: 1.5rem;
+}}
+
+.product-card-content h3 {{
+    color: {primary_color};
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}}
+
+.product-card-content p {{
+    color: #666;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}}
+
+.product-link {{
+    color: {secondary_color};
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}}
+
+.product-link:hover {{
+    color: {primary_color};
+}}
+
 /* FAQ Styles */
 .faq-section {{
     margin-top: 1rem;
@@ -1353,14 +1484,28 @@ footer {{
 .footer-container {{
     max-width: 1200px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
     padding: 0 2rem;
 }}
 
+.footer-content {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}}
+
 .footer-section {{
-    text-align: center;
+    text-align: left;
+}}
+
+.footer-section:first-child {{
+    text-align: left;
+}}
+
+.footer-section h3 {{
+    margin-bottom: 1rem;
+    color: {primary_color};
+    font-size: 1.2rem;
 }}
 
 .footer-section h4 {{
@@ -1445,7 +1590,7 @@ footer {{
         grid-template-columns: 1fr;
     }}
     
-    .footer-container {{
+    .footer-content {{
         grid-template-columns: 1fr;
         gap: 1rem;
     }}

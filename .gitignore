@@ -62,6 +62,8 @@ Thumbs.db
 docs/
 output/
 logs/
+tests/
+test_output/
 *.log
 
 # Security - API keys and sensitive data

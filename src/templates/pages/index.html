@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% else %} - {{ business.industry }}{% endif %}</title>
+    <meta name="description" content="{{ business.description or (business.business_name + ' specializes in ' + business.industry.lower() + ' services. Contact us today for professional solutions.') }}">
+    <meta name="keywords" content="{{ business.industry.lower() }}, {{ business.business_name.lower() }}, {{ contact.address.city.lower() if contact.address.city else '' }}, professional services">
+    <meta name="author" content="{{ business.business_name }}">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
+    <meta property="og:description" content="{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ business.domain }}">
+    {% if branding.logo_url %}<meta property="og:image" content="{{ branding.logo_url }}">{% endif %}
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
+    <meta name="twitter:description" content="{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}">
+    
+    <link rel="canonical" href="{{ business.domain }}">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "{{ business.business_name }}",
+        "description": "{{ business.description or (business.industry + ' services specializing in quality and professional solutions.') }}",
+        "url": "{{ business.domain }}",
+        {% if contact.phone %}"telephone": "{{ contact.phone }}",{% endif %}
+        {% if contact.email %}"email": "{{ contact.email }}",{% endif %}
+        {% if contact.address.street %}
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ contact.address.street }}",
+            "addressLocality": "{{ contact.address.city }}",
+            "addressRegion": "{{ contact.address.state }}",
+            "postalCode": "{{ contact.address.zip_code }}",
+            "addressCountry": "{{ contact.address.country or 'US' }}"
+        },
+        {% endif %}
+        {% if contact.address.city and contact.address.state %}
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "{{ geo_coordinates.latitude if geo_coordinates else '' }}",
+            "longitude": "{{ geo_coordinates.longitude if geo_coordinates else '' }}"
+        },
+        {% endif %}
+        {% if business_hours %}
+        "openingHours": [
+            {% for day, hours in business_hours.items() %}
+            {% if hours and hours.lower() != 'closed' %}"{{ day[:2] }} {{ hours }}"{% if not loop.last %},{% endif %}{% endif %}
+            {% endfor %}
+        ],
+        {% endif %}
+        {% if social_media %}
+        "sameAs": [
+            {% for platform, url in social_media.get_valid_links().items() %}
+            {% if url %}"{{ url }}"{% if not loop.last %},{% endif %}{% endif %}
+            {% endfor %}
+        ],
+        {% endif %}
+        {% if services %}
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "{{ business.industry }} Services",
+            "itemListElement": [
+                {% for service in services %}
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "{{ service.name if service.name else service }}"
+                    }
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ]
+        }
+        {% endif %}
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                {% if branding.logo_url %}
+                <img src="{{ branding.logo_url }}" alt="{{ business.business_name }} Logo" class="logo-image">
+                {% endif %}
+                <span class="company-name">{{ business.business_name }}</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    {% if services %}
+                    <li class="dropdown">
+                        <a href="services.html">Services</a>
+                        <div class="dropdown-content">
+                            {% for service in services[:7] %}
+                            <a href="services/{{ service.name|slugify }}.html">{{ service.name if service.name else service }}</a>
+                            {% endfor %}
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% if products %}
+                    <li class="dropdown">
+                        <a href="products.html">Products</a>
+                        <div class="dropdown-content">
+                            {% for product in products[:7] %}
+                            <a href="products/{{ product.name|slugify }}.html">{{ product.name if product.name else product }}</a>
+                            {% endfor %}
+                        </div>
+                    </li>
+                    {% endif %}
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li class="dropdown">
+                        <a href="about.html">About</a>
+                        <div class="dropdown-content">
+                            <a href="privacy-policy.html">Privacy Policy</a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>{% if business.tagline %}{{ business.tagline }}{% else %}Expert {{ business.industry }} Services{% endif %}</h1>
+                <p class="hero-subtitle">{% if business.hero_subtitle %}{{ business.hero_subtitle }}{% elif business.company_overview %}{{ business.company_overview[:200] }}{% if business.company_overview|length > 200 %}...{% endif %}{% else %}Transform your {{ business.industry.lower() }} needs with premium services. We combine excellence, reliability, and professional expertise to deliver exceptional results.{% endif %}</p>
+                <a href="contact.html" class="cta-button">Get Your Custom Quote Today</a>
+            </div>
+        </section>
+
+        <!-- Welcome Section -->
+        <section class="content-section">
+            <div class="container">
+                <h2>Welcome to {{ business.business_name }}</h2>
+                {% if business.company_overview %}
+                <p>{{ business.company_overview }}</p>
+                {% else %}
+                <p>{% if business.years_in_business %}For {{ business.years_in_business }}, {% endif %}{{ business.business_name }} has been {% if contact.address.city %}the premier destination for {{ business.industry.lower() }} in {{ contact.address.city }}, {{ contact.address.state }}, and the surrounding areas{% else %}a leading provider of {{ business.industry.lower() }} services{% endif %}. We specialize in delivering exceptional solutions that enhance both functionality and quality for our clients.</p>
+                {% endif %}
+                
+                {% if business.description %}
+                <p>{{ business.description }}</p>
+                {% endif %}
+                
+                <p>What sets {{ business.business_name }} apart is our commitment to quality and attention to detail. We work closely with our clients to bring their vision to life, ensuring that every project not only meets but exceeds expectations. Our team combines traditional expertise with modern methods to deliver solutions that are both effective and reliable.</p>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        {% if services %}
+        <section class="content-section">
+            <div class="container">
+                <h2>Our {{ business.industry }} Services</h2>
+                <div class="products-grid">
+                    {% for service in services[:7] %}
+                    <div class="product-card">
+                        {% if service.image_url %}
+                        <img src="{{ service.image_url }}" alt="{{ service.name if service.name else service }}">
+                        {% else %}
+                        <img src="https://via.placeholder.com/400x300?text={{ (service.name if service.name else service)|urlencode }}" alt="{{ service.name if service.name else service }}">
+                        {% endif %}
+                        <div class="product-card-content">
+                            <h3>{{ service.name if service.name else service }}</h3>
+                            <p>{% if service.description %}{{ service.description }}{% else %}Professional {{ (service.name if service.name else service).lower() }} services tailored to your specific needs.{% endif %}</p>
+                            <a href="services/{{ (service.name if service.name else service)|slugify }}.html" class="product-link">Learn More →</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Why Choose Us Section - Dynamic Content -->
+        <section class="content-section">
+            <div class="container">
+                <h2>Why Choose {{ business.business_name }}?</h2>
+                
+                {% if business.why_choose_us %}
+                    {% for reason in business.why_choose_us %}
+                    <div class="why-choose-item">
+                        <h3>{{ reason.title if reason.title is defined else reason }}</h3>
+                        <p>{{ reason.description if reason.description is defined else 'Our commitment to excellence in ' + business.industry.lower() + ' ensures outstanding results for every project.' }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="why-choose-grid">
+                    <div class="why-choose-item">
+                        <h3>Unmatched Expertise</h3>
+                        <p>Our team brings years of experience in {{ business.industry.lower() }}, understanding the unique challenges and opportunities in our field. We stay current with the latest techniques while honoring proven methods that deliver reliable results.</p>
+                    </div>
+                    
+                    <div class="why-choose-item">
+                        <h3>Custom Solutions</h3>
+                        <p>Every project is unique, and we approach each one with fresh perspective and creative problem-solving. Our team works closely with clients to understand their vision and translate it into practical, effective solutions.</p>
+                    </div>
+                    
+                    <div class="why-choose-item">
+                        <h3>Quality Materials and Craftsmanship</h3>
+                        <p>We use only the finest materials and maintain the highest standards of workmanship. Our commitment to quality ensures that every project meets our exacting standards and exceeds client expectations.</p>
+                    </div>
+                    
+                    <div class="why-choose-item">
+                        <h3>Comprehensive Service</h3>
+                        <p>From initial consultation and planning through completion and follow-up, we provide comprehensive service that makes the process smooth and stress-free for our clients.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        {% if business.service_guarantee %}
+        <section class="content-section">
+            <h2>Our Service Guarantee</h2>
+            <p>{{ business.service_guarantee }}</p>
+        </section>
+        {% endif %}
+
+        {% if business.service_area_description %}
+        <section class="content-section">
+            <h2>Our Service Area</h2>
+            <p>{{ business.service_area_description }}</p>
+        </section>
+        {% elif contact.address.city %}
+        <section class="content-section">
+            <div class="container">
+                <h2>Serving {{ contact.address.city }} and Beyond</h2>
+                <p>Located in {% if contact.address.city and contact.address.state %}{{ contact.address.city }}, {{ contact.address.state }}{% else %}your local area{% endif %}, {{ business.business_name }} proudly serves residential and commercial clients throughout the region. Our central location allows us to efficiently serve clients across the area while maintaining the personal touch that comes with being a local business.</p>
+                
+                <p>Whether you're a homeowner looking to enhance your property, a business owner seeking professional solutions, or a contractor needing a reliable partner, {{ business.business_name }} has the expertise and capacity to meet your needs.</p>
+                
+                <p>Ready to get started? <a href="contact.html" class="highlight">Contact us today</a> to discuss your project and discover how {{ business.business_name }} can bring your vision to life with exceptional craftsmanship and attention to detail.</p>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if business.company_stats %}
+        <section class="content-section">
+            <h2>Our Track Record</h2>
+            <div class="stats-grid">
+                {% for stat, value in business.company_stats.items() %}
+                <div class="stat-item">
+                    <h3>{{ value }}</h3>
+                    <p>{{ stat|title }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Contact Information</h3>
+                    <p><strong>{{ business.business_name }}</strong></p>
+                    {% if contact.address.street %}
+                    <p>{{ contact.address.street }}{% if contact.address.city %}<br>{{ contact.address.city }}{% if contact.address.state %}, {{ contact.address.state }}{% endif %}{% if contact.address.zip_code %} {{ contact.address.zip_code }}{% endif %}{% endif %}</p>
+                    {% endif %}
+                    {% if contact.phone %}
+                    <p>Phone: <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+                    {% endif %}
+                    {% if contact.mobile_phone %}
+                    <p>Mobile: <a href="tel:{{ contact.mobile_phone }}">{{ contact.mobile_phone }}</a></p>
+                    {% endif %}
+                    {% if contact.email %}
+                    <p>Email: <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+                    {% endif %}
+                </div>
+                
+                {% if services %}
+                <div class="footer-section">
+                    <h3>Our Services</h3>
+                    {% for service in services[:7] %}
+                    <a href="services/{{ (service.name if service.name else service)|slugify }}.html">{{ service.name if service.name else service }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if social_media %}
+                <div class="footer-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        {% if social_media.facebook %}<a href="{{ social_media.facebook }}" target="_blank" rel="noopener" title="Facebook">f</a>{% endif %}
+                        {% if social_media.instagram %}<a href="{{ social_media.instagram }}" target="_blank" rel="noopener" title="Instagram">i</a>{% endif %}
+                        {% if social_media.linkedin %}<a href="{{ social_media.linkedin }}" target="_blank" rel="noopener" title="LinkedIn">in</a>{% endif %}
+                        {% if social_media.twitter %}<a href="{{ social_media.twitter }}" target="_blank" rel="noopener" title="Twitter">t</a>{% endif %}
+                        {% if social_media.youtube %}<a href="{{ social_media.youtube }}" target="_blank" rel="noopener" title="YouTube">y</a>{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if google_business and google_business.embed_code %}
+                <div class="footer-section">
+                    <h3>Visit Our Location</h3>
+                    <div class="map-container">
+                        {{ google_business.embed_code|safe }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; {{ current_year }} {{ business.business_name }}. All rights reserved. | <a href="privacy-policy.html">Privacy Policy</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Enhanced dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownContent = document.querySelector('.dropdown-content');
+            let timeoutId;
+            
+            if (dropdown && dropdownContent) {
+                // Show dropdown on hover
+                dropdown.addEventListener('mouseenter', function() {
+                    clearTimeout(timeoutId);
+                    dropdownContent.style.display = 'block';
+                });
+                
+                // Hide dropdown with delay on mouse leave
+                dropdown.addEventListener('mouseleave', function() {
+                    timeoutId = setTimeout(function() {
+                        dropdownContent.style.display = 'none';
+                    }, 300);
+                });
+                
+                // Prevent dropdown from closing when hovering over content
+                dropdownContent.addEventListener('mouseenter', function() {
+                    clearTimeout(timeoutId);
+                });
+                
+                dropdownContent.addEventListener('mouseleave', function() {
+                    timeoutId = setTimeout(function() {
+                        dropdownContent.style.display = 'none';
+                    }, 300);
+                });
+                
+                // Click to toggle dropdown (mobile friendly)
+                const dropdownTrigger = dropdown.querySelector('a');
+                if (dropdownTrigger) {
+                    dropdownTrigger.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const isVisible = dropdownContent.style.display === 'block';
+                        dropdownContent.style.display = isVisible ? 'none' : 'block';
+                    });
+                }
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!dropdown.contains(e.target)) {
+                        dropdownContent.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

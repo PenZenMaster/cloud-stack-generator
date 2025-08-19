@@ -132,10 +132,8 @@ class PageGenerator:
 
     def _create_output_directory(self, config: ClientConfig) -> Path:
         """Create output directory for the website"""
-        # Use business name for directory, sanitized
-        dir_name = self._sanitize_filename(config.business.business_name) or "website"
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_dir = self.output_base_dir / f"{dir_name}_{timestamp}"
+        # Use the exact directory selected by the user
+        output_dir = self.output_base_dir
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -175,7 +173,7 @@ class PageGenerator:
         try:
             # Main stylesheet
             main_css = self.css_generator.generate_css(config)
-            css_file = output_dir / "css" / "main.css"
+            css_file = output_dir / "css" / "style.css"
 
             with open(css_file, "w", encoding="utf-8") as f:
                 f.write(main_css)
@@ -197,7 +195,7 @@ class PageGenerator:
         try:
             # Main stylesheet
             main_css = self.css_generator.generate_css(config)
-            css_file = output_dir / "css" / "main.css"
+            css_file = output_dir / "css" / "style.css"
 
             with open(css_file, "w", encoding="utf-8") as f:
                 f.write(main_css)
@@ -223,7 +221,7 @@ class PageGenerator:
         try:
             # Main stylesheet
             main_css = self.css_generator.generate_css(config)
-            css_file = output_dir / "css" / "main.css"
+            css_file = output_dir / "css" / "style.css"
 
             with open(css_file, "w", encoding="utf-8") as f:
                 f.write(main_css)

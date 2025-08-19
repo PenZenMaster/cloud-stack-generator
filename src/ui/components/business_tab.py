@@ -24,12 +24,48 @@ from PyQt6.QtWidgets import (
     QScrollArea,
     QFrame,
     QMessageBox,
+    QTableWidget,
+    QHeaderView,
+    QAbstractItemView,
+    QTableWidgetItem,
 )
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QFont, QDesktopServices
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from .base_tab import BaseTab, ValidationResult
 import re
+
+
+class WhyChooseUsItem:
+    """Why Choose Us data model"""
+
+    def __init__(self, title: str = "", description: str = ""):
+        self.title = title
+        self.description = description
+
+    def to_dict(self) -> Dict[str, str]:
+        """Convert to dictionary"""
+        return {
+            "title": self.title,
+            "description": self.description,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, str]) -> "WhyChooseUsItem":
+        """Create from dictionary"""
+        return cls(
+            title=data.get("title", ""),
+            description=data.get("description", ""),
+        )
+
+    def is_valid(self) -> Tuple[bool, List[str]]:
+        """Validate item data"""
+        errors = []
+        if not self.title.strip():
+            errors.append("Title is required")
+        if not self.description.strip():
+            errors.append("Description is required")
+        return len(errors) == 0, errors
 
 
 class BusinessTab(BaseTab):
@@ -69,15 +105,23 @@ class BusinessTab(BaseTab):
         
         # Enhanced content widgets
         self.tagline_input: QLineEdit
+        self.hero_subtitle_input: QLineEdit
         self.years_in_business_input: QLineEdit
         self.company_overview_input: QTextEdit
         self.mission_statement_input: QTextEdit
         self.service_guarantee_input: QTextEdit
         self.service_area_description_input: QTextEdit
-        self.why_choose_us_input: QTextEdit
+        # Why Choose Us table components
+        self.why_choose_us_table: QTableWidget
+        self.why_choose_us_items: List[WhyChooseUsItem]
+        self.why_choose_us_title_input: QLineEdit
+        self.why_choose_us_description_input: QTextEdit
         self.company_stats_input: QTextEdit
 
         super().__init__(parent)
+        
+        # Initialize why choose us items
+        self.why_choose_us_items = []
 
     def setup_ui(self):
         """Setup business information UI with working layout"""
@@ -253,16 +297,27 @@ class BusinessTab(BaseTab):
         layout = QVBoxLayout()
         layout.setSpacing(15)
         
-        # Company Value Proposition
-        tagline_label = QLabel("Company Tagline/Value Proposition:")
+        # Company Tag Line - Hero H1
+        tagline_label = QLabel("Company Tag Line - Hero H1:")
         tagline_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         layout.addWidget(tagline_label)
         
         self.tagline_input = QLineEdit()
         self.tagline_input.setFont(QFont("Arial", 10))
-        self.tagline_input.setPlaceholderText("Professional metal fabrication services you can trust")
+        self.tagline_input.setPlaceholderText("Forging Function with Metal Mastery")
         self.tagline_input.setMinimumHeight(30)
         layout.addWidget(self.tagline_input)
+        
+        # Hero Subtitle
+        hero_subtitle_label = QLabel("Hero Subtitle:")
+        hero_subtitle_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(hero_subtitle_label)
+        
+        self.hero_subtitle_input = QLineEdit()
+        self.hero_subtitle_input.setFont(QFont("Arial", 10))
+        self.hero_subtitle_input.setPlaceholderText("Professional metal fabrication services you can trust")
+        self.hero_subtitle_input.setMinimumHeight(30)
+        layout.addWidget(self.hero_subtitle_input)
         
         # Years in Business
         years_label = QLabel("Years in Business:")
@@ -288,18 +343,90 @@ class BusinessTab(BaseTab):
         self.company_overview_input.setMaximumHeight(80)
         layout.addWidget(self.company_overview_input)
         
-        # Why Choose Us
-        why_choose_label = QLabel("Why Choose Us (one per line):")
+        # Mission Statement
+        mission_label = QLabel("Mission Statement (optional):")
+        mission_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(mission_label)
+        
+        self.mission_statement_input = QTextEdit()
+        self.mission_statement_input.setFont(QFont("Arial", 10))
+        self.mission_statement_input.setPlaceholderText(
+            "Our mission is to provide exceptional service and quality results..."
+        )
+        self.mission_statement_input.setMaximumHeight(60)
+        layout.addWidget(self.mission_statement_input)
+        
+        # Service Guarantee
+        guarantee_label = QLabel("Service Guarantee (optional):")
+        guarantee_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(guarantee_label)
+        
+        self.service_guarantee_input = QTextEdit()
+        self.service_guarantee_input.setFont(QFont("Arial", 10))
+        self.service_guarantee_input.setPlaceholderText(
+            "We guarantee quality workmanship and customer satisfaction..."
+        )
+        self.service_guarantee_input.setMaximumHeight(60)
+        layout.addWidget(self.service_guarantee_input)
+        
+        # Service Area Description
+        service_area_label = QLabel("Service Area Description (optional):")
+        service_area_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        layout.addWidget(service_area_label)
+        
+        self.service_area_description_input = QTextEdit()
+        self.service_area_description_input.setFont(QFont("Arial", 10))
+        self.service_area_description_input.setPlaceholderText(
+            "We proudly serve Chicago, suburbs, and surrounding areas within 50 miles..."
+        )
+        self.service_area_description_input.setMaximumHeight(60)
+        layout.addWidget(self.service_area_description_input)
+        
+        # Why Choose Us (Table-based like FAQ)
+        why_choose_label = QLabel("Why Choose Us (Title & Description pairs):")
         why_choose_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         layout.addWidget(why_choose_label)
         
-        self.why_choose_us_input = QTextEdit()
-        self.why_choose_us_input.setFont(QFont("Arial", 10))
-        self.why_choose_us_input.setPlaceholderText(
-            "Expert craftsmanship\n15+ years experience\nCustom solutions\nFast turnaround times"
-        )
-        self.why_choose_us_input.setMaximumHeight(80)
-        layout.addWidget(self.why_choose_us_input)
+        # Create Why Choose Us table
+        self.why_choose_us_table = QTableWidget()
+        self.why_choose_us_table.setColumnCount(3)  # Title, Description, Actions
+        self.why_choose_us_table.setHorizontalHeaderLabels(["Title", "Description", "Actions"])
+        self.why_choose_us_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.why_choose_us_table.setAlternatingRowColors(True)
+        self.why_choose_us_table.setMaximumHeight(200)
+        
+        # Set column widths
+        header = self.why_choose_us_table.horizontalHeader()
+        if header is not None:
+            header.setStretchLastSection(False)
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)  # Title
+            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Description
+            header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)  # Actions
+        
+        self.why_choose_us_table.setColumnWidth(0, 150)  # Title
+        self.why_choose_us_table.setColumnWidth(2, 80)   # Actions
+        
+        layout.addWidget(self.why_choose_us_table)
+        
+        # Input section for new Why Choose Us items
+        entry_layout = QHBoxLayout()
+        
+        self.why_choose_us_title_input = QLineEdit()
+        self.why_choose_us_title_input.setPlaceholderText("Enter title (e.g., Expert Craftsmanship)")
+        entry_layout.addWidget(QLabel("Title:"))
+        entry_layout.addWidget(self.why_choose_us_title_input)
+        
+        self.why_choose_us_description_input = QTextEdit()
+        self.why_choose_us_description_input.setPlaceholderText("Enter description...")
+        self.why_choose_us_description_input.setMaximumHeight(60)
+        entry_layout.addWidget(QLabel("Description:"))
+        entry_layout.addWidget(self.why_choose_us_description_input)
+        
+        add_button = QPushButton("Add")
+        add_button.clicked.connect(self._add_why_choose_us_item)
+        entry_layout.addWidget(add_button)
+        
+        layout.addLayout(entry_layout)
         
         # Company Statistics (JSON format helper)
         stats_label = QLabel("Company Statistics (format: projects: 500+, years: 15+):")
@@ -328,9 +455,15 @@ class BusinessTab(BaseTab):
         
         # Connect enhanced content widgets
         self.tagline_input.textChanged.connect(self._emit_config_changed)
+        self.hero_subtitle_input.textChanged.connect(self._emit_config_changed)
         self.years_in_business_input.textChanged.connect(self._emit_config_changed)
         self.company_overview_input.textChanged.connect(self._emit_config_changed)
-        self.why_choose_us_input.textChanged.connect(self._emit_config_changed)
+        self.mission_statement_input.textChanged.connect(self._emit_config_changed)
+        self.service_guarantee_input.textChanged.connect(self._emit_config_changed)
+        self.service_area_description_input.textChanged.connect(self._emit_config_changed)
+        # Why Choose Us input connections
+        self.why_choose_us_title_input.textChanged.connect(self._emit_config_changed)
+        self.why_choose_us_description_input.textChanged.connect(self._emit_config_changed)
         self.company_stats_input.textChanged.connect(self._emit_config_changed)
 
         # Auto-format domain URL
@@ -430,9 +563,8 @@ class BusinessTab(BaseTab):
 
     def get_config_data(self) -> Dict[str, Any]:
         """Get business configuration data"""
-        # Parse why_choose_us from text area (one per line)
-        why_choose_us_text = self.why_choose_us_input.toPlainText().strip()
-        why_choose_us = [line.strip() for line in why_choose_us_text.split('\n') if line.strip()] if why_choose_us_text else []
+        # Get why_choose_us from table items
+        why_choose_us = [item.to_dict() for item in self.why_choose_us_items]
         
         # Parse company_stats from text area (key: value format)
         company_stats = {}
@@ -449,8 +581,12 @@ class BusinessTab(BaseTab):
             "industry": self.industry_input.currentText().strip(),
             "description": self.description_input.toPlainText().strip(),
             "tagline": self.tagline_input.text().strip(),
+            "hero_subtitle": self.hero_subtitle_input.text().strip(),
             "years_in_business": self.years_in_business_input.text().strip(),
             "company_overview": self.company_overview_input.toPlainText().strip(),
+            "mission_statement": self.mission_statement_input.toPlainText().strip(),
+            "service_guarantee": self.service_guarantee_input.toPlainText().strip(),
+            "service_area_description": self.service_area_description_input.toPlainText().strip(),
             "why_choose_us": why_choose_us,
             "company_stats": company_stats,
         }
@@ -483,15 +619,28 @@ class BusinessTab(BaseTab):
             
             # Set enhanced content fields
             self.tagline_input.setText(data.get("tagline", ""))
+            self.hero_subtitle_input.setText(data.get("hero_subtitle", ""))
             self.years_in_business_input.setText(data.get("years_in_business", ""))
             self.company_overview_input.setPlainText(data.get("company_overview", ""))
+            self.mission_statement_input.setPlainText(data.get("mission_statement", ""))
+            self.service_guarantee_input.setPlainText(data.get("service_guarantee", ""))
+            self.service_area_description_input.setPlainText(data.get("service_area_description", ""))
             
-            # Set why_choose_us (convert list to text)
+            # Set why_choose_us (load into table)
             why_choose_us = data.get("why_choose_us", [])
+            self.why_choose_us_items = []
             if isinstance(why_choose_us, list):
-                self.why_choose_us_input.setPlainText('\n'.join(why_choose_us))
-            else:
-                self.why_choose_us_input.setPlainText(str(why_choose_us))
+                for item in why_choose_us:
+                    if isinstance(item, dict):
+                        # New format: dict with title and description
+                        self.why_choose_us_items.append(WhyChooseUsItem.from_dict(item))
+                    else:
+                        # Old format: convert string to title-only item
+                        self.why_choose_us_items.append(WhyChooseUsItem(
+                            title=str(item),
+                            description=f"Our commitment to excellence in {data.get('industry', 'service').lower()} ensures outstanding results for every project."
+                        ))
+            self._refresh_why_choose_us_table()
             
             # Set company_stats (convert dict to text)
             company_stats = data.get("company_stats", {})
@@ -519,9 +668,17 @@ class BusinessTab(BaseTab):
             
             # Clear enhanced content fields
             self.tagline_input.clear()
+            self.hero_subtitle_input.clear()
             self.years_in_business_input.clear()
             self.company_overview_input.clear()
-            self.why_choose_us_input.clear()
+            self.mission_statement_input.clear()
+            self.service_guarantee_input.clear()
+            self.service_area_description_input.clear()
+            # Clear why choose us components
+            self.why_choose_us_title_input.clear()
+            self.why_choose_us_description_input.clear()
+            self.why_choose_us_items = []
+            self._refresh_why_choose_us_table()
             self.company_stats_input.clear()
             
             self._update_char_counter()
@@ -566,6 +723,56 @@ class BusinessTab(BaseTab):
         else:
             self.char_counter_label.setStyleSheet("color: #666;")  # Normal gray
     
+    def _add_why_choose_us_item(self):
+        """Add new Why Choose Us item to the table"""
+        title = self.why_choose_us_title_input.text().strip()
+        description = self.why_choose_us_description_input.toPlainText().strip()
+        
+        if not title or not description:
+            QMessageBox.warning(
+                self,
+                "Missing Information", 
+                "Please enter both title and description."
+            )
+            return
+        
+        # Create new item
+        item = WhyChooseUsItem(title, description)
+        self.why_choose_us_items.append(item)
+        
+        # Clear inputs
+        self.why_choose_us_title_input.clear()
+        self.why_choose_us_description_input.clear()
+        
+        # Refresh table
+        self._refresh_why_choose_us_table()
+        self._emit_config_changed()
+    
+    def _remove_why_choose_us_item(self, index: int):
+        """Remove Why Choose Us item"""
+        if 0 <= index < len(self.why_choose_us_items):
+            self.why_choose_us_items.pop(index)
+            self._refresh_why_choose_us_table()
+            self._emit_config_changed()
+    
+    def _refresh_why_choose_us_table(self):
+        """Refresh the Why Choose Us table"""
+        self.why_choose_us_table.setRowCount(len(self.why_choose_us_items))
+        
+        for row, item in enumerate(self.why_choose_us_items):
+            # Title
+            title_item = QTableWidgetItem(item.title)
+            self.why_choose_us_table.setItem(row, 0, title_item)
+            
+            # Description
+            desc_item = QTableWidgetItem(item.description)
+            self.why_choose_us_table.setItem(row, 1, desc_item)
+            
+            # Remove button
+            remove_button = QPushButton("Remove")
+            remove_button.clicked.connect(lambda checked, r=row: self._remove_why_choose_us_item(r))
+            self.why_choose_us_table.setCellWidget(row, 2, remove_button)
+
     def get_tab_name(self) -> str:
         """Get tab name for title display"""
         return "Business Information"

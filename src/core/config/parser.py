@@ -100,6 +100,7 @@ class ConfigParser:
 
         # Parse Google Business Profile
         google_business_profile = client_data.get("google_business_profile", {})
+        print(f"DEBUG PARSER: google_business_profile from YAML: {google_business_profile}")
 
         # Parse pages
         pages = self._parse_pages_config(client_data)
@@ -135,6 +136,7 @@ class ConfigParser:
             seo_content=seo_content,
             api_keys=api_keys,
         )
+        print(f"DEBUG PARSER: Created config.google_business_profile: {config.google_business_profile}")
 
         self.current_config = config
         return config
@@ -159,6 +161,7 @@ class ConfigParser:
             industry=client_data.get("industry", ""),
             description=client_data.get("description", ""),
             tagline=client_data.get("tagline", ""),
+            hero_subtitle=client_data.get("hero_subtitle", ""),
             years_in_business=client_data.get("years_in_business", ""),
             company_overview=client_data.get("company_overview", ""),
             mission_statement=client_data.get("mission_statement", ""),
@@ -484,6 +487,7 @@ class ConfigParser:
                 "description": config.business.description,
                 # Enhanced business fields
                 "tagline": config.business.tagline,
+                "hero_subtitle": config.business.hero_subtitle,
                 "years_in_business": config.business.years_in_business,
                 "company_overview": config.business.company_overview,
                 "mission_statement": config.business.mission_statement,

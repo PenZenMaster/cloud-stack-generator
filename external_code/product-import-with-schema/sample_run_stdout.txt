@@ -1,0 +1,3 @@
+Import complete with no validation errors.
+Wrote: /mnt/data/schema_out/all-products.json
+Wrote: /mnt/data/schema_out/all-products.html
