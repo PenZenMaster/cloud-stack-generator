@@ -27,7 +27,15 @@ client:
     Ready to transform your building with custom copper architectural elements? Contact
     us today to discuss your project and discover how Salvo Metal Works can bring
     your vision to life with exceptional craftsmanship and attention to detail.'
-  mission_statement: ''
+  mission_statement: "Salvo Metal Works exists to forge function with metal mastery\u2014\
+    designing and crafting bespoke architectural metal that elevates beauty, improves\
+    \ performance, and lasts for generations. We partner with architects, builders,\
+    \ and discerning homeowners to deliver precision-engineered cupolas, finials,\
+    \ dormers, roof vents, chimney shrouds, leader boxes, and snow guards that blend\
+    \ old-world craftsmanship with modern fabrication. Our mission is to protect and\
+    \ enhance the built environment through meticulous design, premium materials,\
+    \ and relentless attention to detail\u2014delivered on time, to spec, and built\
+    \ to outlast the roof beneath it."
   service_guarantee: ''
   service_area_description: ''
   why_choose_us:
@@ -47,7 +55,8 @@ client:
     description: From initial consultation and planning through completion and follow-up,
       we provide comprehensive service that makes the process smooth and stress-free
       for our clients.
-  company_stats: {}
+  company_stats:
+    RoofingDirect snapshot: 4.7/5
   contact:
     name: Customer Service
     phone: +1-866-713-3396
@@ -98,6 +107,7 @@ client:
   faq: []
   target_cities:
   - Chicago
+  - Bellwood, Illinois
   city_pages:
   - city_name: Chicago
     state: ''
@@ -232,6 +242,32 @@ client:
         proper drainage paths, smart attachment systems, and expansion allowances\u2014\
         then finishes with the kind of patina and proportion that makes elevations\
         \ sing."
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Bellwood, Illinois
+    state: ''
+    slug: bellwood-illinois
+    title: "Bellwood, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Bellwood, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Bellwood, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
     featured_products: []
     city_map_embed: ''
     service_area_note: ''
