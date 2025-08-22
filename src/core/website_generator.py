@@ -1322,10 +1322,22 @@ main {{
 .content-section {{
     background-color: white;
     padding: 3rem 2rem;
-    margin: 2rem auto;
+    margin: 0 auto 2rem auto;
     max-width: 1200px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    position: relative;
+}}
+
+.content-section:first-of-type {{
+    margin-top: 2rem;
+}}
+
+.content-section .container {{
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
 }}
 
 .content-section h2 {{
@@ -1521,6 +1533,22 @@ footer {{
 .footer-section iframe {{
     border-radius: 8px;
     max-width: 100%;
+    height: 250px;
+    border: none;
+}}
+
+/* Map Container for Google Business Profile */
+.map-container {{
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}}
+
+.map-container iframe {{
+    width: 100%;
+    height: 250px;
+    border: none;
 }}
 
 .social-links a {{
@@ -1692,6 +1720,40 @@ footer {{
 .why-choose-us {{
     padding: 4rem 0;
     background-color: #f8f9fa;
+}}
+
+.why-choose-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}}
+
+.why-choose-item {{
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: left;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    border-left: 4px solid {primary_color};
+}}
+
+.why-choose-item:hover {{
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}}
+
+.why-choose-item h3 {{
+    color: {primary_color};
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}}
+
+.why-choose-item p {{
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
 }}
 
 .reasons-grid {{

@@ -188,13 +188,15 @@
             <div class="container">
                 <h2>Why Choose {{ business.business_name }}?</h2>
                 
-                {% if business.why_choose_us %}
+                {% if business.why_choose_us and business.why_choose_us|length > 0 %}
+                <div class="why-choose-grid">
                     {% for reason in business.why_choose_us %}
                     <div class="why-choose-item">
-                        <h3>{{ reason.title if reason.title is defined else reason }}</h3>
-                        <p>{{ reason.description if reason.description is defined else 'Our commitment to excellence in ' + business.industry.lower() + ' ensures outstanding results for every project.' }}</p>
+                        <h3>{{ reason.title if reason.title else (reason if reason is string else 'Professional Excellence') }}</h3>
+                        <p>{{ reason.description if reason.description else 'Our commitment to excellence in ' + business.industry.lower() + ' ensures outstanding results for every project.' }}</p>
                     </div>
                     {% endfor %}
+                </div>
                 {% else %}
                 <div class="why-choose-grid">
                     <div class="why-choose-item">
@@ -303,11 +305,15 @@
                 </div>
                 {% endif %}
                 
-                {% if google_business and google_business.embed_code %}
+                {% if (google_business and google_business.embed_code) or (contact.google_business and contact.google_business.embed_code) %}
                 <div class="footer-section">
                     <h3>Visit Our Location</h3>
                     <div class="map-container">
-                        {{ google_business.embed_code|safe }}
+                        {% if google_business and google_business.embed_code %}
+                            {{ google_business.embed_code|safe }}
+                        {% elif contact.google_business and contact.google_business.embed_code %}
+                            {{ contact.google_business.embed_code|safe }}
+                        {% endif %}
                     </div>
                 </div>
                 {% endif %}
