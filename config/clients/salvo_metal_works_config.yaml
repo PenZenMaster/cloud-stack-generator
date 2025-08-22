@@ -37,7 +37,8 @@ client:
     \ and relentless attention to detail\u2014delivered on time, to spec, and built\
     \ to outlast the roof beneath it."
   service_guarantee: ''
-  service_area_description: ''
+  service_area_description: Serving the greater Chicagoland area and beyond with bespoke
+    architectural metal fabrication
   why_choose_us:
   - title: Unmatched Expertise
     description: Our team brings years of experience in metal fabrication, understanding
@@ -73,7 +74,7 @@ client:
       wednesday: 7:30 AM - 4:30 PM
       thursday: 7:30 AM - 4:30 PM
       friday: 7:30 AM - 4:30 PM
-      saturday: 9:00 AM - 4:00 PM
+      saturday: Closed
       sunday: Closed
     emergency_phone: ''
     office_phone: ''
