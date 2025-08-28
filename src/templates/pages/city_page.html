@@ -185,7 +185,10 @@
         <div class="container">
             
             <!-- City Image Section -->
-            {% if wikipedia_image %}
+            {% if wikipedia_embed_code %}
+            {{ wikipedia_embed_code|safe }}
+            {% elif wikipedia_image %}
+            <!-- Fallback for legacy format -->
             <section class="city-image">
                 <a title="{{ wikipedia_image.attribution }}" href="{{ wikipedia_image.source_url }}" target="_blank" rel="noopener">
                     <img src="{{ wikipedia_image.image_url }}" alt="{{ page_title }}" loading="lazy">

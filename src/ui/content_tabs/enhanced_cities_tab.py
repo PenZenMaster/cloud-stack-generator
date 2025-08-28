@@ -421,8 +421,65 @@ class EnhancedCitiesTab(BaseTab):
         return widget
     
     def create_image_tab(self, city_page: CityPageConfig) -> QWidget:
-        """Create image tab"""
+        """Create image tab with Wikipedia embed generation"""
         widget = QWidget()
+        main_layout = QVBoxLayout()
+        
+        # Wikipedia Embed Generation Section
+        wiki_group = QGroupBox("Wikipedia Image Generation")
+        wiki_layout = QVBoxLayout()
+        
+        # Instructions
+        instructions = QLabel(
+            "Generate complete Wikipedia image embed code for this city. "
+            "This will automatically populate the image fields below."
+        )
+        instructions.setFont(QFont("Arial", 10))
+        instructions.setWordWrap(True)
+        instructions.setStyleSheet("color: #666; font-style: italic; margin-bottom: 10px;")
+        wiki_layout.addWidget(instructions)
+        
+        # Generate button
+        generate_btn_layout = QHBoxLayout()
+        self.generate_wiki_btn = QPushButton("🌐 Generate Wikipedia Embed")
+        self.generate_wiki_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.generate_wiki_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                font-weight: bold;
+                border: none;
+                border-radius: 5px;
+                padding: 10px 20px;
+                margin: 5px;
+            }
+            QPushButton:hover {
+                background-color: #218838;
+            }
+        """)
+        self.generate_wiki_btn.clicked.connect(self._generate_wikipedia_embed_for_city)
+        generate_btn_layout.addWidget(self.generate_wiki_btn)
+        generate_btn_layout.addStretch()
+        wiki_layout.addLayout(generate_btn_layout)
+        
+        # Embed code preview
+        embed_label = QLabel("Generated Embed Code:")
+        embed_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        wiki_layout.addWidget(embed_label)
+        
+        self.embed_preview = QTextEdit()
+        self.embed_preview.setFont(QFont("Courier", 9))
+        self.embed_preview.setMaximumHeight(100)
+        self.embed_preview.setMinimumHeight(100)
+        self.embed_preview.setReadOnly(True)
+        self.embed_preview.setPlaceholderText("Generated embed code will appear here...")
+        wiki_layout.addWidget(self.embed_preview)
+        
+        wiki_group.setLayout(wiki_layout)
+        main_layout.addWidget(wiki_group)
+        
+        # Traditional Image Fields Section
+        fields_group = QGroupBox("Image Details")
         layout = QFormLayout()
         
         self.image_url_edit = QLineEdit(city_page.city_image.image_url)
@@ -440,8 +497,66 @@ class EnhancedCitiesTab(BaseTab):
         self.image_source_edit = QLineEdit(city_page.city_image.source)
         layout.addRow("Source:", self.image_source_edit)
         
-        widget.setLayout(layout)
+        # Add embed code field
+        self.embed_code_edit = QTextEdit()
+        self.embed_code_edit.setFont(QFont("Courier", 9))
+        self.embed_code_edit.setMaximumHeight(120)
+        self.embed_code_edit.setPlaceholderText("Complete HTML embed code...")
+        # Load existing embed code if available
+        if hasattr(city_page.city_image, 'embed_code'):
+            self.embed_code_edit.setPlainText(city_page.city_image.embed_code)
+        layout.addRow("Embed Code:", self.embed_code_edit)
+        
+        fields_group.setLayout(layout)
+        main_layout.addWidget(fields_group)
+        
+        widget.setLayout(main_layout)
         return widget
+    
+    def _generate_wikipedia_embed_for_city(self):
+        """Generate Wikipedia embed code for current city"""
+        if not self.current_city_page:
+            QMessageBox.warning(self, "No City Selected", "Please select a city to generate Wikipedia embed.")
+            return
+            
+        city_name = self.current_city_page.city_name
+        if not city_name:
+            QMessageBox.warning(self, "No City Name", "City name is required to generate Wikipedia embed.")
+            return
+            
+        try:
+            # Import Wikipedia API
+            from ...core.utils.wikipedia_api import WikipediaAPI
+            
+            # Generate embed code
+            wiki_api = WikipediaAPI()
+            city_info = wiki_api.get_city_image_info(city_name)
+            
+            # Update the embed code preview
+            self.embed_preview.setPlainText(city_info["embed_code"])
+            
+            # Auto-populate the traditional fields
+            self.image_url_edit.setText(city_info["image_url"])
+            self.image_alt_edit.setText(city_info["alt_text"])
+            self.image_caption_edit.setText(city_info["attribution"])
+            self.image_credit_edit.setText(city_info["attribution"])
+            self.image_source_edit.setText(city_info["source_url"])
+            
+            # Set the full embed code
+            if hasattr(self, 'embed_code_edit'):
+                self.embed_code_edit.setPlainText(city_info["embed_code"])
+            
+            QMessageBox.information(
+                self, "Wikipedia Embed Generated", 
+                f"Successfully generated Wikipedia embed for {city_name}.\n\n"
+                f"The embed code has been generated and the image fields have been populated automatically."
+            )
+            
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Generation Error", 
+                f"Failed to generate Wikipedia embed for {city_name}:\n\n{str(e)}"
+            )
     
     def update_word_count(self):
         """Update word count for SEO content"""
@@ -590,6 +705,11 @@ class EnhancedCitiesTab(BaseTab):
             self.current_city_page.city_image.caption = self.image_caption_edit.text().strip()
             self.current_city_page.city_image.credit = self.image_credit_edit.text().strip()
             self.current_city_page.city_image.source = self.image_source_edit.text().strip()
+            
+            # Store embed code if available
+            if hasattr(self, 'embed_code_edit'):
+                embed_code = self.embed_code_edit.toPlainText().strip()
+                self.current_city_page.city_image.embed_code = embed_code
             
             # Refresh the list display
             self.refresh_city_list()
@@ -740,6 +860,7 @@ class EnhancedCitiesTab(BaseTab):
                     "caption": cp.city_image.caption,
                     "credit": cp.city_image.credit,
                     "source": cp.city_image.source,
+                    "embed_code": getattr(cp.city_image, 'embed_code', ''),
                 },
                 "seo_content_title": cp.seo_content_title,
                 "seo_content_body": cp.seo_content_body,
@@ -803,6 +924,7 @@ class EnhancedCitiesTab(BaseTab):
                 caption=image_data.get("caption", ""),
                 credit=image_data.get("credit", ""),
                 source=image_data.get("source", "Wikipedia"),
+                embed_code=image_data.get("embed_code", ""),
             )
             
             # Load places of interest

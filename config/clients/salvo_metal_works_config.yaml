@@ -104,7 +104,88 @@ client:
     secondary_keywords:
     - salvo metal works
     - local business
-  offerings: []
+  offerings:
+  - sku: SMW-CUPOLAS
+    name: Custom Copper Cupolas
+    image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-cupola-300x300.jpg
+    description: "Cupolas are elegant roof features that add style and utility. Set\
+      \ at the roof\u2019s peak, they introduce a timeless accent and can be square,\
+      \ round, or octagonal. We build them in copper, lead-coated or freedom gray\
+      \ copper, zinc, or aluminum that patina beautifully. Cupolas vent hot air to\
+      \ reduce moisture, and many include windows or louvers. Custom sizing and detailing\
+      \ let them fit rustic or modern homes while bringing light, airflow, and a refined\
+      \ focal point."
+    category: '1000'
+    price: ''
+    type: product
+  - sku: SMW-FINIALS
+    name: Custom Copper Finials
+    image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-finial-309.jpg
+    description: "Elevate your architecture with Salvo Metal Works\u2019 finials\u2014\
+      beauty meeting function. Designed for turrets, ridgelines, towers, and gables,\
+      \ they come in many shapes and sizes to suit any style. First used to curb water\
+      \ seepage on round roofs, finials evolved into striking accents across Gothic,\
+      \ Renaissance, and modern designs, giving rooflines a polished, memorable finish."
+    category: '3000'
+    price: ''
+    type: product
+  - sku: SMW-DORMERS
+    name: Custom Copper Dormer
+    image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-dormer.png
+    description: Dormers rise from a sloped roof to add space, light, and ventilation,
+      typically housing a window or vent. Clad in copper or other durable metals,
+      they increase usable area on upper levels while brightening attics or top-floor
+      rooms. Copper dormers stand out for long life, low maintenance, and a rich patina
+      that deepens over time, pairing practical benefits with distinctive curb appeal.
+    category: '4000'
+    price: ''
+    type: product
+  - sku: SMW-ROOF-VENTS
+    name: Custom Copper Roof Vents
+    image_url: https://salvometalworks.com/wp-content/uploads/2025/04/Roof-vent.png
+    description: Roof vents manage airflow by bringing in cool air and exhausting
+      warm, moist air. Intakes are commonly placed in the soffit or near the eave;
+      exhaust vents sit high on the roof, often integrated along the ridge. Available
+      in multiple shapes and sizes, a balanced system improves energy efficiency,
+      extends roof life, and helps prevent condensation, ice dams, and heat buildup.
+    category: '5000'
+    price: ''
+    type: product
+  - sku: SMW-CHIMNEY-SHROUDS
+    name: Custom Chimney Shrouds
+    image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-chimney-shrouds.webp
+    description: "Chimney Shrouds, also called chimney caps, chimney pots, chimney\
+      \ covers, can be used as a decorative or functional top for a chimney. Not only\
+      \ do these caps serve the purpose of protecting the top of a chimney, it also\
+      \ can add a beautiful aesthetic to a home\u2019s roof line. All Salvo Metal\
+      \ Works chimney shrouds are made to order by our in-house fabricators. Expertly\
+      \ crafted from high-quality materials."
+    category: '6000'
+    price: ''
+    type: product
+  - sku: SMW-LEADER-BOXES
+    name: Custom Copper Leader Box
+    image_url: https://salvometalworks.com/wp-content/uploads/2025/04/custom-copper-leaderbox.jpg
+    description: "Chimney shrouds\u2014also called caps, pots, or covers\u2014protect\
+      \ the flue and elevate curb appeal. Made to order by Salvo Metal Works, each\
+      \ is crafted from high-quality materials to block debris, shed water, and improve\
+      \ draft. Choose from tailored designs and finishes that match your architecture.\
+      \ Our custom fabrication delivers lasting durability and refined style for any\
+      \ home."
+    category: '2000'
+    price: ''
+    type: product
+  - sku: SMW-SNOW-GUARDS
+    name: Custom Copper Snow Guards
+    image_url: https://salvometalworks.com/wp-content/uploads/2024/12/snow-guard-6.jpeg
+    description: Custom Copper Snow Guards stop dangerous roof-snow slides, protecting
+      people, gutters, and landscaping. Crafted from premium copper, they resist corrosion,
+      develop a rich patina, and suit slate or metal roofs. Each system is custom-sized
+      and spaced to your roof for dependable retention, long life, and refined curb
+      appeal.
+    category: '1500'
+    price: ''
+    type: product
   faq: []
   target_cities:
   - Chicago

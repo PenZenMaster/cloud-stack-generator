@@ -287,21 +287,21 @@ class CitiesTab(BaseTab):
         parent_layout.addWidget(maps_group)
 
     def _create_wikipedia_section(self, parent_layout: QVBoxLayout):
-        """Create Wikipedia image preview section"""
+        """Create Wikipedia embed code management section"""
         # Section header
-        header = QLabel("Wikipedia Images Preview")
+        header = QLabel("Wikipedia Image Embed Codes")
         header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
         parent_layout.addWidget(header)
         
         # Wikipedia group
         wiki_group = QGroupBox()
-        wiki_group.setMaximumHeight(200)
+        wiki_group.setMaximumHeight(350)
         wiki_layout = QVBoxLayout()
         wiki_layout.setSpacing(10)
         
         # Instructions
-        instructions = QLabel("Preview Wikipedia images for your target cities with proper attribution.")
+        instructions = QLabel("Generate and store complete Wikipedia image embed codes for your target cities. These will be inserted directly into city page templates.")
         instructions.setFont(QFont("Arial", 10))
         instructions.setWordWrap(True)
         instructions.setStyleSheet("color: #666; font-style: italic;")
@@ -313,10 +313,10 @@ class CitiesTab(BaseTab):
         wiki_layout.addWidget(wiki_status)
         
         if WikipediaAPI:
-            # City selector for Wikipedia preview
+            # City selector for Wikipedia embed generation
             selector_layout = QHBoxLayout()
             
-            city_label = QLabel("Select City for Preview:")
+            city_label = QLabel("Select City:")
             city_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
             selector_layout.addWidget(city_label)
             
@@ -326,11 +326,11 @@ class CitiesTab(BaseTab):
             self.wiki_city_selector.addItem("Select a city...")
             selector_layout.addWidget(self.wiki_city_selector)
             
-            # Preview button
-            self.preview_wiki_btn = QPushButton("Preview Wikipedia Info")
-            self.preview_wiki_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-            self.preview_wiki_btn.setMinimumHeight(30)
-            self.preview_wiki_btn.setStyleSheet("""
+            # Generate embed button
+            self.generate_embed_btn = QPushButton("Generate Embed Code")
+            self.generate_embed_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+            self.generate_embed_btn.setMinimumHeight(30)
+            self.generate_embed_btn.setStyleSheet("""
                 QPushButton {
                     background-color: #17a2b8;
                     color: white;
@@ -346,20 +346,27 @@ class CitiesTab(BaseTab):
                     background-color: #6c757d;
                 }
             """)
-            self.preview_wiki_btn.clicked.connect(self._preview_wikipedia_info)
-            self.preview_wiki_btn.setEnabled(False)
-            selector_layout.addWidget(self.preview_wiki_btn)
+            self.generate_embed_btn.clicked.connect(self._generate_wikipedia_embed)
+            self.generate_embed_btn.setEnabled(False)
+            selector_layout.addWidget(self.generate_embed_btn)
             
             wiki_layout.addLayout(selector_layout)
             
-            # Preview display area
-            self.wiki_preview_area = QTextEdit()
-            self.wiki_preview_area.setFont(QFont("Arial", 9))
-            self.wiki_preview_area.setMaximumHeight(80)
-            self.wiki_preview_area.setMinimumHeight(80)
-            self.wiki_preview_area.setReadOnly(True)
-            self.wiki_preview_area.setPlaceholderText("Wikipedia information will appear here...")
-            wiki_layout.addWidget(self.wiki_preview_area)
+            # Embed code display area
+            embed_label = QLabel("Generated Embed Code (copy to clipboard):")
+            embed_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+            wiki_layout.addWidget(embed_label)
+            
+            self.wiki_embed_area = QTextEdit()
+            self.wiki_embed_area.setFont(QFont("Courier", 9))
+            self.wiki_embed_area.setMaximumHeight(120)
+            self.wiki_embed_area.setMinimumHeight(120)
+            self.wiki_embed_area.setReadOnly(True)
+            self.wiki_embed_area.setPlaceholderText("Generated Wikipedia embed code will appear here...")
+            wiki_layout.addWidget(self.wiki_embed_area)
+            
+            # Storage for embed codes
+            self.city_wikipedia_embeds = {}
             
             # Connect signals
             self.wiki_city_selector.currentTextChanged.connect(self._on_wiki_city_selector_changed)
@@ -525,13 +532,19 @@ class CitiesTab(BaseTab):
 
     def _on_wiki_city_selector_changed(self, city_name: str):
         """Handle Wikipedia city selector change"""
-        if WikipediaAPI and hasattr(self, 'preview_wiki_btn'):
-            self.preview_wiki_btn.setEnabled(
+        if WikipediaAPI and hasattr(self, 'generate_embed_btn'):
+            self.generate_embed_btn.setEnabled(
                 city_name != "Select a city..." and city_name != ""
             )
+            
+            # If we already have an embed for this city, show it
+            if city_name in self.city_wikipedia_embeds:
+                self.wiki_embed_area.setPlainText(self.city_wikipedia_embeds[city_name]["embed_code"])
+            else:
+                self.wiki_embed_area.clear()
 
-    def _preview_wikipedia_info(self):
-        """Preview Wikipedia information for selected city"""
+    def _generate_wikipedia_embed(self):
+        """Generate Wikipedia embed code for selected city"""
         if not WikipediaAPI:
             return
             
@@ -541,16 +554,36 @@ class CitiesTab(BaseTab):
                 # Create Wikipedia API instance
                 wiki_api = WikipediaAPI()
                 
-                # Get city information
+                # Get city information with embed code
                 city_info = wiki_api.get_city_image_info(selected_city)
                 
-                # Format the preview text
-                preview_text = f"City: {city_info['city_name']}\nWikipedia: {city_info['wikipedia_page'] or 'Not found'}\nImage: {city_info['image_url']}\nDescription: {city_info['description'] or 'No description available'}"
+                # Store the embed code for this city
+                self.city_wikipedia_embeds[selected_city] = {
+                    "embed_code": city_info["embed_code"],
+                    "image_url": city_info["image_url"],
+                    "attribution": city_info["attribution"],
+                    "source_url": city_info["source_url"],
+                    "alt_text": city_info["alt_text"]
+                }
                 
-                self.wiki_preview_area.setPlainText(preview_text)
+                # Display the embed code
+                self.wiki_embed_area.setPlainText(city_info["embed_code"])
+                
+                # Emit config changed
+                self._emit_config_changed()
+                
+                QMessageBox.information(
+                    self, "Embed Generated", 
+                    f"Wikipedia embed code generated for {selected_city}. "
+                    f"The embed code has been stored and will be included in the city page template."
+                )
                 
             except Exception as e:
-                self.wiki_preview_area.setPlainText(f"Error retrieving Wikipedia info: {str(e)}")
+                QMessageBox.warning(
+                    self, "Generation Error", 
+                    f"Error generating Wikipedia embed for {selected_city}: {str(e)}"
+                )
+                self.wiki_embed_area.setPlainText(f"Error: {str(e)}")
 
     def _add_city_map(self):
         """Add Google Map for selected city"""
@@ -611,12 +644,16 @@ class CitiesTab(BaseTab):
         # Google Maps data
         google_maps = {"cities": self.city_data} if self.city_data else {}
 
+        # Wikipedia embed codes
+        wikipedia_embeds = self.city_wikipedia_embeds if hasattr(self, 'city_wikipedia_embeds') else {}
+
         # NOTE: API keys are stored securely and not included in config files
 
         return {
             "target_cities": target_cities,
             "seo_content": seo_content,
             "google_maps": google_maps,
+            "wikipedia_embeds": wikipedia_embeds,
         }
 
     def set_config_data(self, data: Dict[str, Any]):
@@ -640,6 +677,9 @@ class CitiesTab(BaseTab):
             self.city_data = google_maps.get("cities", {})
             self._refresh_city_list()
             self._update_city_selector()
+
+            # Set Wikipedia embed codes
+            self.city_wikipedia_embeds = data.get("wikipedia_embeds", {})
 
             # Load API key from app-wide storage
             stored_api_key = self.app_api_keys.get("google_maps_api_key", "")

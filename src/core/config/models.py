@@ -287,13 +287,14 @@ class BrandingConfig:
 
 @dataclass
 class CityImageConfig:
-    """City image configuration with attribution"""
+    """City image configuration with attribution and embed code support"""
     
     image_url: str = ""
     alt_text: str = ""
     caption: str = ""
     credit: str = ""
     source: str = "Wikipedia"
+    embed_code: str = ""  # Full HTML embed code for Wikipedia images
 
 
 @dataclass

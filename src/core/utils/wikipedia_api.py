@@ -118,13 +118,13 @@ class WikipediaAPI:
     
     def get_city_image_info(self, city_name: str) -> Dict[str, Any]:
         """
-        Get comprehensive city image information
+        Get comprehensive city image information with embed code
         
         Args:
             city_name: City name to get image info for
             
         Returns:
-            Dictionary with image URLs, attribution, and metadata
+            Dictionary with image URLs, attribution, metadata, and complete embed code
         """
         # Get basic Wikipedia page info
         page_info = self.search_wikipedia_page(city_name)
@@ -157,18 +157,21 @@ class WikipediaAPI:
                     result["source_url"] = page_info.get("page_url", result["source_url"])
                     result["attribution"] = f"Wikipedia - {page_info.get('title', city_name)}"
         
+        # Generate complete embed code
+        result["embed_code"] = self.generate_image_embed_code(city_name)
+        
         return result
     
-    def generate_image_html(self, city_name: str, **options) -> str:
+    def generate_image_embed_code(self, city_name: str, **options) -> str:
         """
-        Generate HTML for city image with proper attribution
+        Generate complete Wikipedia image embed code with attribution
         
         Args:
             city_name: City name
-            **options: HTML options (width, height, style, etc.)
+            **options: HTML options (width, height, style, class, etc.)
             
         Returns:
-            Complete HTML for image with attribution
+            Complete HTML embed code ready for template insertion
         """
         image_info = self.get_city_image_info(city_name)
         
@@ -176,12 +179,22 @@ class WikipediaAPI:
         width = options.get("width", "100%")
         height = options.get("height", "auto")
         style = options.get("style", "margin: 20px 0;")
+        css_class = options.get("class", "city-image")
+        lazy_loading = options.get("lazy", True)
         
-        html = f'''<a title="{image_info['attribution']}" href="{image_info['source_url']}" target="_blank" rel="noopener">
-  <img width="{width}" style="height:{height}; {style}" src="{image_info['image_url']}" alt="{image_info['alt_text']}">
-</a>'''
+        # Build complete embed with section wrapper
+        embed_code = f'''<section class="{css_class}">
+    <a title="{image_info['attribution']}" href="{image_info['source_url']}" target="_blank" rel="noopener">
+        <img src="{image_info['image_url']}" 
+             alt="{image_info['alt_text']}"
+             width="{width}" 
+             style="height: {height}; {style}"
+             {'loading="lazy"' if lazy_loading else ''}>
+    </a>
+    <p class="image-caption">{image_info['attribution']}</p>
+</section>'''
         
-        return html
+        return embed_code
     
     def get_multiple_cities_info(self, city_list: list) -> Dict[str, Dict[str, Any]]:
         """
@@ -202,7 +215,7 @@ class WikipediaAPI:
         return results
 
 
-# Convenience functions for backward compatibility with Location Page Generator
+# Convenience functions for backward compatibility and new embed code approach
 def build_wikipedia_image_embed(city: str) -> Tuple[str, str, str]:
     """
     Build Wikipedia image embed (Location Page Generator compatibility)
@@ -219,13 +232,28 @@ def build_wikipedia_image_embed(city: str) -> Tuple[str, str, str]:
 
 def get_city_wikipedia_info(city_name: str) -> Dict[str, Any]:
     """
-    Get Wikipedia information for a city
+    Get Wikipedia information for a city with embed code
     
     Args:
         city_name: City name to lookup
         
     Returns:
-        Dictionary with Wikipedia page and image information
+        Dictionary with Wikipedia page, image information, and complete embed code
     """
     api = WikipediaAPI()
     return api.get_city_image_info(city_name)
+
+
+def get_wikipedia_embed_code(city_name: str, **options) -> str:
+    """
+    Get complete Wikipedia image embed code for a city
+    
+    Args:
+        city_name: City name to get embed for
+        **options: HTML options (width, height, style, class, etc.)
+        
+    Returns:
+        Complete HTML embed code ready for template insertion
+    """
+    api = WikipediaAPI()
+    return api.generate_image_embed_code(city_name, **options)
