@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QLabel, QGroupBox, QScrollArea, QFrame, QTabWidget, QComboBox,
     QMessageBox, QDialog, QDialogButtonBox, QSplitter, QHeaderView
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject
 from PyQt6.QtGui import QFont
 
 from ..components.base_tab import BaseTab
@@ -147,12 +147,35 @@ class CityFAQDialog(QDialog):
         )
 
 
+class WikipediaWorker(QObject):
+    """Worker thread for Wikipedia API calls"""
+    
+    finished = pyqtSignal(dict)  # Signal emitted when work is done
+    error = pyqtSignal(str)      # Signal emitted when error occurs
+    
+    def __init__(self, city_name: str):
+        super().__init__()
+        self.city_name = city_name
+    
+    def run(self):
+        """Run the Wikipedia API call in background thread"""
+        try:
+            from ...core.utils.wikipedia_api import WikipediaAPI
+            wiki_api = WikipediaAPI()
+            city_info = wiki_api.get_city_image_info(self.city_name)
+            self.finished.emit(city_info)
+        except Exception as e:
+            self.error.emit(str(e))
+
+
 class EnhancedCitiesTab(BaseTab):
     """Enhanced cities tab for managing rich city page content"""
     
     def __init__(self, parent=None):
         self.city_pages: List[CityPageConfig] = []
         self.current_city_page: Optional[CityPageConfig] = None
+        self.worker_thread = None
+        self.wikipedia_worker = None
         super().__init__(parent)
     
     def setup_ui(self):
@@ -441,7 +464,7 @@ class EnhancedCitiesTab(BaseTab):
         
         # Generate button
         generate_btn_layout = QHBoxLayout()
-        self.generate_wiki_btn = QPushButton("🌐 Generate Wikipedia Embed")
+        self.generate_wiki_btn = QPushButton("Generate Wikipedia Embed")
         self.generate_wiki_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         self.generate_wiki_btn.setStyleSheet("""
             QPushButton {
@@ -514,7 +537,7 @@ class EnhancedCitiesTab(BaseTab):
         return widget
     
     def _generate_wikipedia_embed_for_city(self):
-        """Generate Wikipedia embed code for current city"""
+        """Generate Wikipedia embed code for current city using background thread"""
         if not self.current_city_page:
             QMessageBox.warning(self, "No City Selected", "Please select a city to generate Wikipedia embed.")
             return
@@ -523,15 +546,34 @@ class EnhancedCitiesTab(BaseTab):
         if not city_name:
             QMessageBox.warning(self, "No City Name", "City name is required to generate Wikipedia embed.")
             return
-            
+        
+        # Disable button and show loading state
+        self.generate_wiki_btn.setEnabled(False)
+        self.generate_wiki_btn.setText("Generating...")
+        self.embed_preview.setPlainText("Loading Wikipedia data...")
+        
+        # Clean up any existing worker thread
+        self._cleanup_worker_thread()
+        
+        # Create new worker thread
+        self.worker_thread = QThread()
+        self.wikipedia_worker = WikipediaWorker(city_name)
+        self.wikipedia_worker.moveToThread(self.worker_thread)
+        
+        # Connect signals
+        self.worker_thread.started.connect(self.wikipedia_worker.run)
+        self.wikipedia_worker.finished.connect(self._on_wikipedia_success)
+        self.wikipedia_worker.error.connect(self._on_wikipedia_error)
+        self.wikipedia_worker.finished.connect(self.worker_thread.quit)
+        self.wikipedia_worker.error.connect(self.worker_thread.quit)
+        self.worker_thread.finished.connect(self._cleanup_worker_thread)
+        
+        # Start the worker thread
+        self.worker_thread.start()
+    
+    def _on_wikipedia_success(self, city_info: dict):
+        """Handle successful Wikipedia API response"""
         try:
-            # Import Wikipedia API
-            from ...core.utils.wikipedia_api import WikipediaAPI
-            
-            # Generate embed code
-            wiki_api = WikipediaAPI()
-            city_info = wiki_api.get_city_image_info(city_name)
-            
             # Update the embed code preview
             self.embed_preview.setPlainText(city_info["embed_code"])
             
@@ -548,15 +590,45 @@ class EnhancedCitiesTab(BaseTab):
             
             QMessageBox.information(
                 self, "Wikipedia Embed Generated", 
-                f"Successfully generated Wikipedia embed for {city_name}.\n\n"
+                f"Successfully generated Wikipedia embed for {city_info['city_name']}.\n\n"
                 f"The embed code has been generated and the image fields have been populated automatically."
             )
             
         except Exception as e:
             QMessageBox.critical(
-                self, "Generation Error", 
-                f"Failed to generate Wikipedia embed for {city_name}:\n\n{str(e)}"
+                self, "Processing Error", 
+                f"Error processing Wikipedia data: {str(e)}"
             )
+        finally:
+            self._reset_generate_button()
+    
+    def _on_wikipedia_error(self, error_message: str):
+        """Handle Wikipedia API error"""
+        self.embed_preview.setPlainText("Failed to load Wikipedia data.")
+        QMessageBox.critical(
+            self, "Wikipedia Error", 
+            f"Failed to generate Wikipedia embed:\n\n{error_message}"
+        )
+        self._reset_generate_button()
+    
+    def _reset_generate_button(self):
+        """Reset the generate button to normal state"""
+        self.generate_wiki_btn.setEnabled(True)
+        self.generate_wiki_btn.setText("Generate Wikipedia Embed")
+    
+    def _cleanup_worker_thread(self):
+        """Clean up worker thread and worker object"""
+        if self.worker_thread and self.worker_thread.isRunning():
+            self.worker_thread.quit()
+            self.worker_thread.wait()
+        
+        if self.wikipedia_worker:
+            self.wikipedia_worker.deleteLater()
+            self.wikipedia_worker = None
+        
+        if self.worker_thread:
+            self.worker_thread.deleteLater()
+            self.worker_thread = None
     
     def update_word_count(self):
         """Update word count for SEO content"""
@@ -969,3 +1041,7 @@ class EnhancedCitiesTab(BaseTab):
         self.city_pages.clear()
         self.refresh_city_list()
         self.clear_editor()
+    
+    def __del__(self):
+        """Cleanup when tab is destroyed"""
+        self._cleanup_worker_thread()

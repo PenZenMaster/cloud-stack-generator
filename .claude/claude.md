@@ -19,6 +19,7 @@ When asked for changes in this repo:
 * Production‑ready diffs only (no placeholders or TODO litter in committed code).
 * Preserve headers/license blocks; bump versions per project rules.
 * No secrets in code; use `.env`/secure config.
+* No emojis or other Unicode in soure code
 
 ---
 

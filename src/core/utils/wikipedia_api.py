@@ -157,24 +157,22 @@ class WikipediaAPI:
                     result["source_url"] = page_info.get("page_url", result["source_url"])
                     result["attribution"] = f"Wikipedia - {page_info.get('title', city_name)}"
         
-        # Generate complete embed code
-        result["embed_code"] = self.generate_image_embed_code(city_name)
+        # Generate complete embed code using the current result data
+        result["embed_code"] = self._build_embed_code_from_info(result, **{})
         
         return result
     
-    def generate_image_embed_code(self, city_name: str, **options) -> str:
+    def _build_embed_code_from_info(self, image_info: Dict[str, Any], **options) -> str:
         """
-        Generate complete Wikipedia image embed code with attribution
+        Build embed code from existing image info dictionary
         
         Args:
-            city_name: City name
+            image_info: Dictionary with image information
             **options: HTML options (width, height, style, class, etc.)
             
         Returns:
             Complete HTML embed code ready for template insertion
         """
-        image_info = self.get_city_image_info(city_name)
-        
         # Default options
         width = options.get("width", "100%")
         height = options.get("height", "auto")
@@ -195,6 +193,50 @@ class WikipediaAPI:
 </section>'''
         
         return embed_code
+    
+    def generate_image_embed_code(self, city_name: str, **options) -> str:
+        """
+        Generate complete Wikipedia image embed code with attribution
+        
+        Args:
+            city_name: City name
+            **options: HTML options (width, height, style, class, etc.)
+            
+        Returns:
+            Complete HTML embed code ready for template insertion
+        """
+        # Get basic Wikipedia page info
+        page_info = self.search_wikipedia_page(city_name)
+        
+        # Get image embed info (using Location Page Generator method)
+        image_url, source_url, attribution = self.build_wikipedia_image_embed(city_name)
+        
+        result = {
+            "city_name": city_name,
+            "normalized_name": self.normalize_city_name(city_name),
+            "image_url": image_url,
+            "source_url": source_url,
+            "attribution": attribution,
+            "alt_text": f"View of {city_name.split(',')[0].strip()}",
+            "wikipedia_page": page_info.get("page_url", "") if page_info else "",
+            "description": page_info.get("extract", "")[:200] + "..." if page_info and page_info.get("extract") else ""
+        }
+        
+        # If we have a Wikipedia thumbnail, prefer that
+        if page_info and page_info.get("thumbnail", {}).get("source"):
+            thumbnail = page_info["thumbnail"]
+            # Use larger version if available
+            if thumbnail.get("source"):
+                # Try to get a larger version
+                thumb_url = thumbnail["source"]
+                if "/thumb/" in thumb_url and thumb_url.endswith(".jpg"):
+                    # Increase size to 800px width
+                    larger_url = thumb_url.replace("/320px-", "/800px-").replace("/220px-", "/800px-")
+                    result["image_url"] = larger_url
+                    result["source_url"] = page_info.get("page_url", result["source_url"])
+                    result["attribution"] = f"Wikipedia - {page_info.get('title', city_name)}"
+        
+        return self._build_embed_code_from_info(result, **options)
     
     def get_multiple_cities_info(self, city_list: list) -> Dict[str, Dict[str, Any]]:
         """
