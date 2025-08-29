@@ -9,16 +9,13 @@
 			"Bash(git rm:*)",
 			"Bash(mkdir:*)",
 			"Bash(mv:*)",
-			"Bash(grep:*)",
-			"Bash(for file in *.html)",
-			"Bash(do if [ \"$file\" != \"index.html\" ])",
-			"Bash(then echo \"$file%.html\")",
-			"Bash(fi)",
-			"Bash(done)"
+			"Bash(grep:*)"
 		],
 		"deny": [],
 		"ask": [],
 		"defaultMode": "acceptEdits",
+		"editInPlace": true,
+		"noFileRenaming": true,
 		"additionalDirectories": [
 			"E:\\projects"
 		]

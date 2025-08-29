@@ -191,6 +191,29 @@ client:
   - Chicago
   - Bellwood, Illinois
   - Oak Park Illinois
+  - Berwyn, Illinois
+  - Bridgeview, Illinois
+  - Brookfield, Illinois
+  - Burbank, Illinois
+  - Cicero, Illinois
+  - Elmwood Park, Illinois
+  - Evanston, Illinois
+  - Forest Park, Illinois
+  - Franklin Park, Illinois
+  - Harwood Heights, Illinois
+  - Lincolnwood, Illinois
+  - Lyons, Illinois
+  - Maywood, Illinois
+  - Melrose Park, Illinois
+  - Norridge, Illinois
+  - Oak Lawn, Illinois
+  - Oak Park, Illinois
+  - Park Ridge, Illinois
+  - River Forest, Illinois
+  - River Grove, Illinois
+  - Riverside, Illinois
+  - Skokie, Illinois
+  - Summit, Illinois
   city_pages:
   - city_name: Chicago
     state: ''
@@ -366,6 +389,604 @@ client:
     - Home
     - Locations
     - Oak Park Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Berwyn, Illinois
+    state: ''
+    slug: berwyn-illinois
+    title: "Berwyn, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Berwyn, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Berwyn, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Bridgeview, Illinois
+    state: ''
+    slug: bridgeview-illinois
+    title: "Bridgeview, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Bridgeview, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Bridgeview, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Brookfield, Illinois
+    state: ''
+    slug: brookfield-illinois
+    title: "Brookfield, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Brookfield, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Brookfield, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Burbank, Illinois
+    state: ''
+    slug: burbank-illinois
+    title: "Burbank, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Burbank, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Burbank, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Cicero, Illinois
+    state: ''
+    slug: cicero-illinois
+    title: "Cicero, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Cicero, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Cicero, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Elmwood Park, Illinois
+    state: ''
+    slug: elmwood-park-illinois
+    title: "Elmwood Park, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Elmwood Park, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Elmwood Park, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Evanston, Illinois
+    state: ''
+    slug: evanston-illinois
+    title: "Evanston, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Evanston, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Evanston, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Forest Park, Illinois
+    state: ''
+    slug: forest-park-illinois
+    title: "Forest Park, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Forest Park, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Forest Park, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Franklin Park, Illinois
+    state: ''
+    slug: franklin-park-illinois
+    title: "Franklin Park, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Franklin Park, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Franklin Park, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Harwood Heights, Illinois
+    state: ''
+    slug: harwood-heights-illinois
+    title: "Harwood Heights, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Harwood Heights, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Harwood Heights, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Lincolnwood, Illinois
+    state: ''
+    slug: lincolnwood-illinois
+    title: "Lincolnwood, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Lincolnwood, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Lincolnwood, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Lyons, Illinois
+    state: ''
+    slug: lyons-illinois
+    title: "Lyons, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Lyons, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Lyons, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Maywood, Illinois
+    state: ''
+    slug: maywood-illinois
+    title: "Maywood, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Maywood, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Maywood, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Melrose Park, Illinois
+    state: ''
+    slug: melrose-park-illinois
+    title: "Melrose Park, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Melrose Park, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Melrose Park, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Norridge, Illinois
+    state: ''
+    slug: norridge-illinois
+    title: "Norridge, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Norridge, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Norridge, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Oak Lawn, Illinois
+    state: ''
+    slug: oak-lawn-illinois
+    title: "Oak Lawn, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Oak Lawn, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Oak Lawn, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Oak Park, Illinois
+    state: ''
+    slug: oak-park-illinois
+    title: "Oak Park, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Oak Park, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Oak Park, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Park Ridge, Illinois
+    state: ''
+    slug: park-ridge-illinois
+    title: "Park Ridge, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Park Ridge, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Park Ridge, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: River Forest, Illinois
+    state: ''
+    slug: river-forest-illinois
+    title: "River Forest, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "River Forest, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - River Forest, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: River Grove, Illinois
+    state: ''
+    slug: river-grove-illinois
+    title: "River Grove, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "River Grove, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - River Grove, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Riverside, Illinois
+    state: ''
+    slug: riverside-illinois
+    title: "Riverside, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Riverside, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Riverside, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Skokie, Illinois
+    state: ''
+    slug: skokie-illinois
+    title: "Skokie, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Skokie, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Skokie, Illinois
+    about_city: ''
+    city_image:
+      image_url: ''
+      alt_text: ''
+      caption: ''
+      credit: ''
+      source: Wikipedia
+    seo_content_title: ''
+    seo_content_body: ''
+    places_of_interest: []
+    city_faq: []
+    featured_products: []
+    city_map_embed: ''
+    service_area_note: ''
+  - city_name: Summit, Illinois
+    state: ''
+    slug: summit-illinois
+    title: "Summit, Illinois \u2014 Custom Architectural Metal"
+    meta_description: ''
+    primary_keyword: ''
+    secondary_keywords: []
+    hero_title: "Summit, Illinois \u2014 Custom Architectural Metal Fabrication"
+    breadcrumbs:
+    - Home
+    - Locations
+    - Summit, Illinois
     about_city: ''
     city_image:
       image_url: ''

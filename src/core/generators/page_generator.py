@@ -391,13 +391,13 @@ class PageGenerator:
         """Generate individual city pages"""
         locations_dir = output_dir / "locations"
 
-        # Import the enhanced city page generator
-        from .enhanced_city_page_generator import EnhancedCityPageGenerator
-        city_generator = EnhancedCityPageGenerator(config)
+        # Import the unified city page generator
+        from .city_page_generator import CityPageGenerator
+        city_generator = CityPageGenerator(config)
 
         for city_page in config.city_pages:
             try:
-                # Generate city page using the enhanced generator
+                # Generate city page using the unified generator
                 city_file_path = city_generator.generate_city_page(city_page, str(locations_dir))
                 
                 result.add_generated_file(city_file_path)

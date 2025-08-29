@@ -1,391 +1,338 @@
 """
-City Page Generator
-Generates SEO-optimized city-specific pages for local authority building
+City Page Generator - Unified Implementation
+Generates rich SEO-optimized city pages with consolidated functionality
 
-Based on location_page_generator.py but adapted for multiple business types
-and integrated with the Cloud Stack Generator architecture.
+Consolidated from both legacy implementation and enhanced features.
+Supports both enhanced city pages and legacy migration in a single unified API.
+
+Features:
+- Wikipedia-style city information
+- 800+ word SEO content sections  
+- Places of interest with maps
+- City-specific FAQ sections
+- Rich schema markup
+- Jinja2 templating with custom filters
+- Legacy migration support
 
 Author: Cloud Stack Generator Team
-Version: 2.0
+Version: 3.0.0
 """
 
 import os
+import re
 import urllib.parse
-from typing import List, Dict, Any
-from ..config.models import ClientConfig
+from typing import List, Dict, Any, Optional
+from pathlib import Path
+from jinja2 import Template, Environment, FileSystemLoader
+
+from ..config.models import ClientConfig, CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
 
 
 class CityPageGenerator:
-    """Generate SEO-optimized city pages for local authority building"""
+    """Generate unified SEO-optimized city pages with rich content"""
     
     def __init__(self, config: ClientConfig):
         self.config = config
-        self.google_maps_api_key = None  # Will be loaded from secure storage
+        self.template_dir = Path(__file__).parent.parent.parent / "templates"
+        self.jinja_env = Environment(
+            loader=FileSystemLoader(str(self.template_dir)),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
         
-    def generate_city_page(self, city: str, output_dir: str) -> str:
-        """Generate a single city page"""
-        # Generate slug using same pattern as location_page_generator
-        city_slug = self._generate_city_slug(city)
+        # Add custom filters
+        self.jinja_env.filters['markdown_basic'] = self._markdown_basic_filter
+        self.jinja_env.filters['slugify'] = self._slugify_filter
         
-        # Extract city name without state for content
-        city_name = city.split(',')[0].strip()
-        
-        # Generate SEO-optimized content
-        html_content = self._create_city_html(city, city_name)
-        
-        # Write to file
-        file_path = os.path.join(output_dir, f"{city_slug}.html")
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(html_content)
+    def generate_city_page(self, city_page: CityPageConfig, output_dir: str) -> str:
+        """Generate a single enhanced city page using Jinja2 templates"""
+        try:
+            # Load the SEO authority template
+            template = self.jinja_env.get_template('pages/seo_authority_city_page.html')
             
-        return file_path
+            # Prepare template context
+            context = self._build_template_context(city_page)
+            
+            # Render the template
+            html_content = template.render(**context)
+            
+            # Write to file
+            output_path = Path(output_dir) / f"{city_page.slug}.html"
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+                
+            return str(output_path)
+            
+        except Exception as e:
+            raise Exception(f"Error generating city page for {city_page.city_name}: {str(e)}")
+    
+    def generate_city_page_from_string(self, city: str, output_dir: str) -> str:
+        """Legacy method: Generate city page from string - creates enhanced city page"""
+        # Parse city string into components
+        parts = city.split(',')
+        city_name = parts[0].strip()
+        state = parts[1].strip() if len(parts) > 1 else ""
+        
+        # Create enhanced city page config
+        city_page = self.create_sample_city_page(city_name, state)
+        
+        # Generate using unified method
+        return self.generate_city_page(city_page, output_dir)
     
     def generate_all_city_pages(self, output_dir: str) -> List[str]:
-        """Generate all city pages from target_cities"""
+        """Generate all city pages - supports both enhanced city_pages and legacy target_cities"""
         generated_files = []
         
-        if not hasattr(self.config, 'target_cities') or not self.config.target_cities:
-            return generated_files
-            
-        for city in self.config.target_cities:
-            try:
-                file_path = self.generate_city_page(city, output_dir)
-                generated_files.append(file_path)
-            except Exception as e:
-                print(f"Error generating page for {city}: {e}")
-                
+        # Priority 1: Use enhanced city_pages if available
+        if hasattr(self.config, 'city_pages') and self.config.city_pages:
+            for city_page in self.config.city_pages:
+                try:
+                    file_path = self.generate_city_page(city_page, output_dir)
+                    generated_files.append(file_path)
+                    print(f"Generated enhanced city page: {city_page.city_name}")
+                except Exception as e:
+                    print(f"Error generating enhanced page for {city_page.city_name}: {e}")
+                    
+        # Fallback: Migrate legacy target_cities if no enhanced pages exist
+        elif hasattr(self.config, 'target_cities') and self.config.target_cities:
+            print("Migrating legacy target_cities to enhanced city pages...")
+            for city in self.config.target_cities:
+                try:
+                    file_path = self.generate_city_page_from_string(city, output_dir)
+                    generated_files.append(file_path)
+                    print(f"Generated city page from legacy config: {city}")
+                except Exception as e:
+                    print(f"Error generating page for {city}: {e}")
+        else:
+            print("No city pages or target cities configured for generation")
+                    
         return generated_files
     
-    def _generate_city_slug(self, city_name: str) -> str:
-        """Generate URL slug from city name (matches location_page_generator pattern)"""
-        slug = city_name.lower()
-        slug = slug.replace(' ', '-')      # Spaces to hyphens
-        slug = slug.replace(',', '')       # Remove commas
-        slug = slug.replace(' illinois', '') # Remove state suffix
-        slug = slug.replace(' il', '')     # Remove abbreviated state
-        slug = slug.strip('-')            # Clean up trailing hyphens
-        return slug
+    def create_sample_city_page(self, city_name: str, state: str = "") -> CityPageConfig:
+        """Create a sample city page configuration for testing or migration"""
+        return CityPageConfig(
+            city_name=city_name,
+            state=state,
+            meta_description=f"{self.config.business.business_name} serves {city_name} with custom {self.config.business.industry.lower()} services. Professional craftsmanship and local expertise.",
+            primary_keyword=f"custom {self.config.business.industry.lower()}",
+            secondary_keywords=[city_name.lower(), f"{self.config.business.industry.lower()} services", "local business"],
+            about_city=f"{city_name} is a vibrant community known for its architectural diversity and rich heritage. " +
+                      f"The city presents unique opportunities and challenges for {self.config.business.industry.lower()} projects, " +
+                      f"requiring specialized knowledge of local building codes, climate considerations, and architectural styles. " +
+                      f"Our team at {self.config.business.business_name} understands these local nuances and delivers solutions " +
+                      f"that complement {city_name}'s distinctive character while meeting the highest standards of quality and durability.",
+            city_image=CityImageConfig(
+                image_url="images/placeholder-city.jpg",
+                alt_text=f"{city_name} skyline and landmarks",
+                caption=f"Caption: {city_name} cityscape highlighting local architecture.",
+                credit="Image credit to be added when actual image is sourced",
+                source="Wikipedia"
+            ),
+            seo_content_title=f"Professional {self.config.business.industry} Services for {city_name}",
+            seo_content_body=self._generate_sample_seo_content(city_name),
+            places_of_interest=[
+                PlaceOfInterest(
+                    name=f"{city_name} Downtown",
+                    embed_url=f"https://www.google.com/maps?q={city_name}+Downtown&output=embed"
+                ),
+                PlaceOfInterest(
+                    name=f"{city_name} Historic District", 
+                    embed_url=f"https://www.google.com/maps?q={city_name}+Historic+District&output=embed"
+                ),
+                PlaceOfInterest(
+                    name=f"{city_name} Main Street",
+                    embed_url=f"https://www.google.com/maps?q={city_name}+Main+Street&output=embed"
+                ),
+                PlaceOfInterest(
+                    name=f"{city_name} City Hall",
+                    embed_url=f"https://www.google.com/maps?q={city_name}+City+Hall&output=embed"
+                )
+            ],
+            city_faq=[
+                CityFAQItem(
+                    question=f"Do you provide {self.config.business.industry.lower()} services in {city_name}?",
+                    answer=f"Yes, {self.config.business.business_name} proudly serves {city_name} and surrounding areas with professional {self.config.business.industry.lower()} services."
+                ),
+                CityFAQItem(
+                    question=f"What makes your {self.config.business.industry.lower()} services ideal for {city_name}?",
+                    answer=f"Our team understands {city_name}'s unique architectural styles, local building requirements, and climate considerations, ensuring our {self.config.business.industry.lower()} solutions are perfectly suited to the area."
+                ),
+                CityFAQItem(
+                    question=f"How quickly can you respond to {city_name} service requests?",
+                    answer=f"We strive to respond to all {city_name} service requests within 24 hours. For urgent projects, we offer expedited scheduling when possible."
+                ),
+                CityFAQItem(
+                    question=f"Do you offer consultations for {city_name} projects?",
+                    answer=f"Absolutely! We provide free consultations for all {city_name} projects, including site visits, project assessments, and detailed quotes."
+                ),
+                CityFAQItem(
+                    question=f"What areas around {city_name} do you serve?",
+                    answer=f"In addition to {city_name}, we serve the entire metropolitan area and surrounding communities. Contact us to confirm service availability for your specific location."
+                )
+            ],
+            featured_products=[service.slug for service in self.config.services[:7]] if self.config.services else [],
+            city_map_embed=f"https://www.google.com/maps?q={city_name},{state}&output=embed",
+            service_area_note=f"Service Area: {city_name} and surrounding communities."
+        )
     
-    def _create_city_html(self, full_city: str, city_name: str) -> str:
-        """Create complete HTML for city page"""
+    def migrate_legacy_cities(self) -> List[CityPageConfig]:
+        """Migrate legacy target_cities to enhanced city pages"""
+        migrated_pages = []
+        
+        if not hasattr(self.config, 'target_cities') or not self.config.target_cities:
+            return migrated_pages
+            
+        for city_str in self.config.target_cities:
+            # Parse city and state from string
+            parts = city_str.split(',')
+            city_name = parts[0].strip()
+            state = parts[1].strip() if len(parts) > 1 else ""
+            
+            # Check if already exists in city_pages
+            existing_cities = []
+            if hasattr(self.config, 'city_pages') and self.config.city_pages:
+                existing_cities = [cp.city_name.lower() for cp in self.config.city_pages]
+            
+            if city_name.lower() not in existing_cities:
+                city_page = self.create_sample_city_page(city_name, state)
+                migrated_pages.append(city_page)
+                
+        return migrated_pages
+    
+    def _build_template_context(self, city_page: CityPageConfig) -> Dict[str, Any]:
+        """Build template context with all necessary data"""
+        # Get other cities for strategic interlinking
+        other_cities = []
+        if hasattr(self.config, 'city_pages') and self.config.city_pages:
+            other_cities = [cp for cp in self.config.city_pages if cp.city_name != city_page.city_name]
+        
+        # Get current date for content freshness
+        from datetime import datetime
+        current_date = datetime.now().strftime("%B %Y")
+        
+        return {
+            # City page data
+            'city_page': city_page,
+            
+            # Business data
+            'business': self.config.business,
+            'contact': self.config.contact,
+            'branding': self.config.branding,
+            
+            # Content data
+            'services': self.config.services if hasattr(self.config, 'services') else [],
+            'products': self.config.products if hasattr(self.config, 'products') else [],
+            'social_media': getattr(self.config, 'social_media', None),
+            'google_business_profile': getattr(self.config, 'google_business_profile', None),
+            'google_business': getattr(self.config, 'google_business', None),
+            
+            # Strategic interlinking
+            'other_cities': other_cities,
+            'related_services': self._get_related_services(city_page),
+            
+            # Page metadata
+            'page_url': f"/{city_page.slug}/",
+            'current_year': 2025,
+            'current_date': current_date,
+            
+            # Template utilities
+            'css_file': '/css/main.css',
+            
+            # SEO and schema data
+            'schema_data': self._build_schema_data(city_page)
+        }
+    
+    def _build_schema_data(self, city_page: CityPageConfig) -> Dict[str, Any]:
+        """Build structured data for schema markup"""
+        return {
+            'business_name': self.config.business.business_name,
+            'business_url': self.config.business.domain,
+            'city_name': city_page.city_name,
+            'service_area': city_page.full_city_name,
+            'contact_phone': self.config.contact.phone,
+            'contact_email': self.config.contact.email,
+            'address': {
+                'street': getattr(self.config.contact.address, 'street', ''),
+                'city': getattr(self.config.contact.address, 'city', ''),
+                'state': getattr(self.config.contact.address, 'state', ''),
+                'zip': getattr(self.config.contact.address, 'zip_code', ''),
+                'country': getattr(self.config.contact.address, 'country', 'US')
+            }
+        }
+    
+    def _generate_sample_seo_content(self, city_name: str) -> str:
+        """Generate sample 800+ word SEO content for city pages"""
         business_name = self.config.business.business_name
-        industry = self.config.business.industry
-        contact = self.config.contact
+        industry = self.config.business.industry.lower()
         
-        # Generate page title and focus keyword
-        focus_keyword = f"{industry} in {city_name}"
-        page_title = f"{focus_keyword} - {business_name}"
+        # Get service names for content
+        service_list = "professional services"
+        if hasattr(self.config, 'services') and self.config.services:
+            service_list = ", ".join([service.name.lower() for service in self.config.services[:5]])
         
-        # Create content sections
-        intro_section = self._create_intro_section(city_name, focus_keyword, business_name)
-        why_us_section = self._create_why_us_section(city_name, focus_keyword, business_name)
-        services_section = self._create_services_section(city_name)
-        local_section = self._create_local_section(city_name)
-        contact_section = self._create_contact_section(city_name)
+        content = f"""<p>When {city_name} residents and businesses need professional {industry} services, they turn to {business_name}. Our experienced team provides comprehensive solutions tailored to the unique needs of the {city_name} area, combining industry expertise with local knowledge to deliver exceptional results.</p>
+
+<p>Our approach begins with understanding your specific requirements and the local context of {city_name}. We take into account factors such as local building codes, architectural styles, climate considerations, and community standards. This attention to detail ensures that our {industry} solutions not only meet your functional needs but also complement the character and aesthetics of {city_name}.</p>
+
+<p>The services we provide in {city_name} include {service_list}. Each project receives our full attention, with skilled craftspeople who understand the importance of quality workmanship and attention to detail. We're committed to using the finest materials and proven techniques to ensure lasting results that stand up to {city_name}'s climate and environmental conditions.</p>
+
+<p>What sets {business_name} apart in the {city_name} market is our commitment to customer satisfaction and our deep understanding of local needs. We've built our reputation by consistently delivering projects on time, within budget, and to the highest standards of quality. Our team takes pride in being responsive to our clients' needs and maintaining clear communication throughout every project.</p>
+
+<p>For {city_name} homeowners, we understand that your property is one of your most important investments. That's why we approach every residential project with the care and attention it deserves. From initial consultation through project completion, we work closely with you to ensure that the final result exceeds your expectations and adds value to your property.</p>
+
+<p>Commercial clients in {city_name} appreciate our professional approach and ability to work within their operational requirements. We understand that business continuity is crucial, and we plan our projects to minimize disruption while delivering superior results. Our experience with various commercial applications ensures that we can handle projects of any scale or complexity.</p>
+
+<p>The {city_name} area presents unique opportunities and challenges that require specialized knowledge and experience. Our team has extensive experience working in this region and understands the local factors that can impact {industry} projects. This expertise allows us to anticipate potential issues and implement solutions that ensure project success.</p>
+
+<p>Quality materials are essential to the longevity and performance of any {industry} project. We source our materials from trusted suppliers and manufacturers, ensuring that every component meets our high standards for durability and performance. In {city_name}'s climate, this attention to material quality is especially important for ensuring long-term satisfaction and value.</p>
+
+<p>Safety is always our top priority on every {city_name} project. Our team follows strict safety protocols and maintains current certifications and training. We carry comprehensive insurance coverage to protect our clients and our workers, providing peace of mind throughout the project process.</p>
+
+<p>Environmental responsibility is increasingly important to {city_name} residents and businesses. We're committed to sustainable practices and can help you choose options that minimize environmental impact while delivering superior performance. From material selection to waste management, we consider the environmental implications of every decision.</p>
+
+<p>Customer service excellence is at the heart of everything we do in {city_name}. We believe that clear communication, reliable scheduling, and attention to detail are just as important as technical expertise. Our goal is to make the entire experience positive and stress-free for our clients.</p>
+
+<p>Whether you're planning a small residential project or a large commercial installation in {city_name}, {business_name} has the experience, expertise, and commitment to excellence you need for success. We invite you to contact us today to discuss your project requirements and learn how we can help bring your vision to life.</p>
+
+<p>Ready to get started with your {industry} project in {city_name}? Contact {business_name} today for a free consultation and detailed quote. We look forward to the opportunity to serve you and demonstrate why we're the trusted choice for {city_name} area clients seeking professional {industry} services.</p>"""
         
-        # Build complete HTML
-        html_content = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{page_title}</title>
-    <meta name="description" content="{industry} services in {city_name} by {business_name}">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header>
-        <div class="header-content">
-            <img src="{self.config.branding.logo_url}" alt="{business_name} Logo" class="logo">
-            {self._build_navigation(city_name)}
-        </div>
-    </header>
+        return content
     
-    <main>
-        <section class="hero" style="background-image: url('https://salvometalworks.com/wp-content/uploads/2024/11/Homepage_Hero_Fallback.webp'); background-size: cover; background-position: center;">
-            <div class="hero-overlay">
-                <div class="hero-text">
-                    <h1>{focus_keyword}</h1>
-                    <p>Professional {industry.lower()} services serving {city_name} and surrounding areas</p>
-                </div>
-            </div>
-        </section>
-        
-        <section class="content">
-            {intro_section}
-            
-            {why_us_section}
-            
-            {services_section}
-            
-            {local_section}
-            
-            {self._create_maps_section(full_city)}
-            
-            {self._create_directions_section(full_city)}
-            
-            {contact_section}
-        </section>
-    </main>
+    def _get_related_services(self, city_page: CityPageConfig) -> List:
+        """Get services related to this city page for strategic interlinking"""
+        if hasattr(self.config, 'services') and self.config.services:
+            return self.config.services[:7]  # Limit to top 7 services for UI purposes
+        return []
     
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section contact-info">
-                <h4>Contact Information</h4>
-                <p><strong>Phone:</strong> {self._format_phone_for_display(contact.phone)}</p>
-                <p><strong>Address:</strong> {contact.address.to_single_line()}</p>
-                <p><strong>Email:</strong> {contact.email}</p>
-            </div>
-            {self._create_social_media_section()}
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 {business_name}. All rights reserved.</p>
-        </div>
-    </footer>
+    def _markdown_basic_filter(self, text: str) -> str:
+        """Basic markdown processing for simple formatting"""
+        if not text:
+            return text
+        
+        # Convert **Ready to talk details?** to <h2> (special case - do this FIRST)
+        text = re.sub(r'\*\*Ready to talk details\?\*\*', r'<h2>Ready to talk details?</h2>', text)
+        
+        # Convert **bold** to <strong>
+        text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
+        
+        # Convert *italic* to <em>
+        text = re.sub(r'\*(.*?)\*', r'<em>\1</em>', text)
+        
+        # Convert [text](url) to <a href="url">text</a>
+        text = re.sub(r'\[([^\]]*)\]\(([^)]*)\)', r'<a href="\2">\1</a>', text)
+        
+        return text
     
-    <script>
-        // Enhanced dropdown functionality
-        document.addEventListener('DOMContentLoaded', function() {{
-            const dropdown = document.querySelector('.dropdown');
-            const dropdownContent = document.querySelector('.dropdown-content');
-            let timeoutId;
-            
-            if (dropdown && dropdownContent) {{
-                // Show dropdown on hover
-                dropdown.addEventListener('mouseenter', function() {{
-                    clearTimeout(timeoutId);
-                    dropdownContent.style.display = 'block';
-                }});
-                
-                // Hide dropdown with delay on mouse leave
-                dropdown.addEventListener('mouseleave', function() {{
-                    timeoutId = setTimeout(function() {{
-                        dropdownContent.style.display = 'none';
-                    }}, 300);
-                }});
-                
-                // Prevent dropdown from closing when hovering over content
-                dropdownContent.addEventListener('mouseenter', function() {{
-                    clearTimeout(timeoutId);
-                }});
-                
-                dropdownContent.addEventListener('mouseleave', function() {{
-                    timeoutId = setTimeout(function() {{
-                        dropdownContent.style.display = 'none';
-                    }}, 300);
-                }});
-                
-                // Click to toggle dropdown (mobile friendly)
-                const dropdownTrigger = dropdown.querySelector('.dropdown-trigger');
-                if (dropdownTrigger) {{
-                    dropdownTrigger.addEventListener('click', function(e) {{
-                        e.preventDefault();
-                        const isVisible = dropdownContent.style.display === 'block';
-                        dropdownContent.style.display = isVisible ? 'none' : 'block';
-                    }});
-                }}
-                
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {{
-                    if (!dropdown.contains(e.target)) {{
-                        dropdownContent.style.display = 'none';
-                    }}
-                }});
-            }}
-        }});
-    </script>
-</body>
-</html>"""
+    def _slugify_filter(self, text: str) -> str:
+        """Simple slugify function for URL-friendly strings"""
+        if not text:
+            return text
         
-        return html_content
-    
-    def _create_intro_section(self, city_name: str, focus_keyword: str, business_name: str) -> str:
-        """Create introduction section"""
-        return f"""
-            <h2>Local {self.config.business.industry} Experts in {city_name}</h2>
-            <p>{business_name} is proud to serve {city_name} with professional {self.config.business.industry.lower()} services. Our local expertise and commitment to excellence make us the preferred choice for {city_name} residents and businesses.</p>
-        """
-    
-    def _create_why_us_section(self, city_name: str, focus_keyword: str, business_name: str) -> str:
-        """Create why choose us section"""
-        return f"""
-            <h2>Why Choose Us in {city_name}</h2>
-            <ul>
-                <li>Local {city_name} expertise and knowledge</li>
-                <li>Proven track record in the {city_name} area</li>
-                <li>Personalized {self.config.business.industry.lower()} solutions</li>
-                <li>Committed to the {city_name} community</li>
-            </ul>
-        """
-    
-    def _create_services_section(self, city_name: str) -> str:
-        """Create services section"""
-        services_html = f"""
-            <h2>Our {self.config.business.industry} Services in {city_name}</h2>
-            <div class="services-grid">
-        """
-        
-        # Add services from config
-        for service in self.config.services:
-            services_html += f"""
-                <div class="service-item">
-                    <h4>{service.name} in {city_name}</h4>
-                    <p>Professional {service.name.lower()} services</p>
-                </div>
-            """
-        
-        # If no services configured, add default content
-        if not self.config.services:
-            services_html += f"""
-                <div class="service-item">
-                    <h4>Professional {self.config.business.industry} in {city_name}</h4>
-                    <p>Comprehensive {self.config.business.industry.lower()} solutions for {city_name} businesses and residents</p>
-                </div>
-            """
-        
-        services_html += """
-            </div>
-        """
-        
-        return services_html
-    
-    def _create_local_section(self, city_name: str) -> str:
-        """Create local area section"""
-        return f"""
-            <h2>Serving the {city_name} Community</h2>
-            <p>As a trusted provider in the {city_name} area, we understand the unique needs of local businesses and residents. Our team is committed to delivering exceptional results while supporting the {city_name} community.</p>
-        """
-    
-    def _create_maps_section(self, full_city: str) -> str:
-        """Create Google Maps embed section"""
-        if self.google_maps_api_key:
-            # Use API if available
-            map_embed_url = self._build_google_map_embed(full_city)
-            return f"""
-                <h2>Explore {full_city.split(',')[0].strip()}</h2>
-                <iframe src="{map_embed_url}" width="100%" height="400" style="border:0;" allowfullscreen loading="lazy"></iframe>
-            """
-        else:
-            # Fallback without API
-            return f"""
-                <h2>Serving {full_city.split(',')[0].strip()}</h2>
-                <p>We proudly serve the {full_city} area with professional {self.config.business.industry.lower()} services.</p>
-            """
-    
-    def _create_directions_section(self, full_city: str) -> str:
-        """Create driving directions section"""
-        city_name = full_city.split(',')[0].strip()
-        hq_address = self.config.contact.address.to_single_line()
-        
-        if self.google_maps_api_key:
-            # Use API if available
-            directions_embed_url = self._build_google_directions_embed(full_city, hq_address)
-            return f"""
-                <h2>Driving Directions to Our Office from {city_name}</h2>
-                <p>We're located at {hq_address}.</p>
-                <iframe src="{directions_embed_url}" width="100%" height="400" style="border:0;" allowfullscreen loading="lazy"></iframe>
-            """
-        else:
-            # Fallback without API
-            return f"""
-                <h2>Contact Our {city_name} Team</h2>
-                <p>Ready to discuss your {self.config.business.industry.lower()} project in {city_name}? Contact our team today for a consultation.</p>
-            """
-    
-    def _create_contact_section(self, city_name: str) -> str:
-        """Create contact/CTA section"""
-        return f"""
-            <h2>Get Your Free Quote Today</h2>
-            <p>Looking for reliable {self.config.business.industry.lower()} services in {city_name}? Contact {self.config.business.business_name} today for a free consultation and quote.</p>
-        """
-    
-    def _create_social_media_section(self) -> str:
-        """Create social media section"""
-        if not hasattr(self.config, 'social_media'):
-            return ""
-            
-        social_links = []
-        social_media = self.config.social_media
-        
-        if hasattr(social_media, 'facebook') and social_media.facebook:
-            social_links.append(f'<a href="{social_media.facebook}" target="_blank" rel="noopener noreferrer">Facebook</a>')
-        if hasattr(social_media, 'linkedin') and social_media.linkedin:
-            social_links.append(f'<a href="{social_media.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a>')
-        if hasattr(social_media, 'instagram') and social_media.instagram:
-            social_links.append(f'<a href="{social_media.instagram}" target="_blank" rel="noopener noreferrer">Instagram</a>')
-        if hasattr(social_media, 'youtube') and social_media.youtube:
-            social_links.append(f'<a href="{social_media.youtube}" target="_blank" rel="noopener noreferrer">YouTube</a>')
-        
-        if social_links:
-            return f"""
-            <div class="footer-section social-media">
-                <h4>Follow Us</h4>
-                <div class="social-links">
-                    {' | '.join(social_links)}
-                </div>
-            </div>
-            """
-        
-        return ""
-    
-    def _build_navigation(self, current_city: str = "") -> str:
-        """Build navigation menu with Service Area dropdown"""
-        nav_html = '''<nav>
-            <a href="index.html">Home</a>
-            <span class="nav-divider">|</span>
-            <a href="products.html">Products</a>
-            <span class="nav-divider">|</span>
-            <div class="dropdown">
-                <a href="#" class="dropdown-trigger">Service Area <span class="dropdown-arrow">▼</span></a>
-                <div class="dropdown-content">
-                    <div class="cities-grid">
-        '''
-        
-        # Add cities in 4-column grid format
-        if hasattr(self.config, 'target_cities') and self.config.target_cities:
-            for city in self.config.target_cities:
-                city_slug = self._generate_city_slug(city)
-                city_display = city.split(',')[0].strip()
-                
-                # Highlight current city if on a city page
-                active_class = ' class="active-city"' if city_display.lower() == current_city.lower() else ''
-                nav_html += f'                        <a href="{city_slug}.html"{active_class}>{city_display}</a>\n'
-        
-        nav_html += '''                    </div>
-                </div>
-            </div>
-            <span class="nav-divider">|</span>
-            <a href="contact.html">Contact Us</a>
-        </nav>'''
-        
-        return nav_html
-    
-    def _build_google_map_embed(self, location: str) -> str:
-        """Build Google Maps embed URL"""
-        if not self.google_maps_api_key:
-            return ""
-        q = urllib.parse.quote(location)
-        return f"https://www.google.com/maps/embed/v1/place?key={self.google_maps_api_key}&q={q}"
-    
-    def _build_google_directions_embed(self, start: str, end: str) -> str:
-        """Build Google Directions embed URL"""
-        if not self.google_maps_api_key:
-            return ""
-        origin = urllib.parse.quote(start)
-        destination = urllib.parse.quote(end)
-        return f"https://www.google.com/maps/embed/v1/directions?key={self.google_maps_api_key}&origin={origin}&destination={destination}"
-    
-    def _format_phone_for_display(self, phone: str) -> str:
-        """Format phone number for display"""
-        if not phone:
-            return ""
-        
-        # Extract digits and format for display
-        digits = "".join(filter(str.isdigit, phone))
-        
-        if len(digits) == 10:
-            return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
-        elif len(digits) == 11 and digits.startswith("1"):
-            return f"({digits[1:4]}) {digits[4:7]}-{digits[7:]}"
-        
-        return phone  # Return original if can't parse
+        text = text.lower()
+        text = text.replace(' ', '-')
+        text = text.replace(',', '')
+        text = text.replace(' illinois', '')
+        text = text.replace(' il', '')
+        return text.strip('-')
