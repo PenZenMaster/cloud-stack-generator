@@ -42,6 +42,16 @@
                         </div>
                     </li>
                     {% endif %}
+                    {% if city_pages %}
+                    <li class="dropdown">
+                        <a href="#locations">Locations</a>
+                        <div class="dropdown-content">
+                            {% for city_page in city_pages[:10] %}
+                            <a href="locations/{{ city_page.slug }}.html">{{ city_page.city_name }}</a>
+                            {% endfor %}
+                        </div>
+                    </li>
+                    {% endif %}
                     <li><a href="faq.html">FAQ</a></li>
                     <li><a href="contact.html">Contact</a></li>
                     <li class="dropdown">
@@ -150,5 +160,65 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // Enhanced dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdowns = document.querySelectorAll('.dropdown');
+            
+            dropdowns.forEach(function(dropdown) {
+                const dropdownContent = dropdown.querySelector('.dropdown-content');
+                let timeoutId;
+                
+                if (dropdownContent) {
+                    // Show dropdown on hover
+                    dropdown.addEventListener('mouseenter', function() {
+                        clearTimeout(timeoutId);
+                        dropdownContent.style.display = 'block';
+                    });
+                    
+                    // Hide dropdown with delay on mouse leave
+                    dropdown.addEventListener('mouseleave', function() {
+                        timeoutId = setTimeout(function() {
+                            dropdownContent.style.display = 'none';
+                        }, 300);
+                    });
+                    
+                    // Prevent dropdown from closing when hovering over content
+                    dropdownContent.addEventListener('mouseenter', function() {
+                        clearTimeout(timeoutId);
+                    });
+                    
+                    dropdownContent.addEventListener('mouseleave', function() {
+                        timeoutId = setTimeout(function() {
+                            dropdownContent.style.display = 'none';
+                        }, 300);
+                    });
+                    
+                    // Click to toggle dropdown (mobile friendly)
+                    const dropdownTrigger = dropdown.querySelector('a');
+                    if (dropdownTrigger) {
+                        dropdownTrigger.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const isVisible = dropdownContent.style.display === 'block';
+                            dropdownContent.style.display = isVisible ? 'none' : 'block';
+                        });
+                    }
+                }
+            });
+            
+            // Close all dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    dropdowns.forEach(function(dropdown) {
+                        const dropdownContent = dropdown.querySelector('.dropdown-content');
+                        if (dropdownContent) {
+                            dropdownContent.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

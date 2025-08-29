@@ -14,6 +14,7 @@ Version: 2.3.0
 """
 
 import os
+import re
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from jinja2 import Template, Environment, FileSystemLoader
@@ -33,11 +34,15 @@ class EnhancedCityPageGenerator:
             lstrip_blocks=True
         )
         
+        # Add custom filters
+        self.jinja_env.filters['markdown_basic'] = self._markdown_basic_filter
+        self.jinja_env.filters['slugify'] = self._slugify_filter
+        
     def generate_city_page(self, city_page: CityPageConfig, output_dir: str) -> str:
         """Generate a single enhanced city page"""
         try:
-            # Load the enhanced template
-            template = self.jinja_env.get_template('pages/enhanced_city_page.html')
+            # Load the SEO authority template
+            template = self.jinja_env.get_template('pages/seo_authority_city_page.html')
             
             # Prepare template context
             context = self._build_template_context(city_page)
@@ -144,6 +149,13 @@ class EnhancedCityPageGenerator:
     
     def _build_template_context(self, city_page: CityPageConfig) -> Dict[str, Any]:
         """Build template context with all necessary data"""
+        # Get other cities for strategic interlinking
+        other_cities = [cp for cp in self.config.city_pages if cp.city_name != city_page.city_name]
+        
+        # Get current date for content freshness
+        from datetime import datetime
+        current_date = datetime.now().strftime("%B %Y")
+        
         return {
             # City page data
             'city_page': city_page,
@@ -157,10 +169,20 @@ class EnhancedCityPageGenerator:
             'services': self.config.services,
             'products': self.config.products,
             'social_media': self.config.social_media,
+            'google_business_profile': getattr(self.config, 'google_business_profile', None),
+            'google_business': getattr(self.config, 'google_business', None),
+            
+            # Strategic interlinking
+            'other_cities': other_cities,
+            'related_services': self._get_related_services(city_page),
             
             # Page metadata
             'page_url': f"/{city_page.slug}/",
             'current_year': 2025,
+            'current_date': current_date,
+            
+            # Template utilities
+            'css_file': '/css/main.css',
             
             # SEO and schema data
             'schema_data': self._build_schema_data(city_page)
@@ -239,3 +261,39 @@ class EnhancedCityPageGenerator:
                 migrated_pages.append(city_page)
                 
         return migrated_pages
+    
+    def _get_related_services(self, city_page: CityPageConfig) -> List:
+        """Get services related to this city page for strategic interlinking"""
+        # Return all services for now, can be enhanced with relevance scoring
+        return self.config.services[:7]  # Limit to top 7 services for UI purposes
+    
+    def _markdown_basic_filter(self, text: str) -> str:
+        """Basic markdown processing for simple formatting"""
+        if not text:
+            return text
+        
+        # Convert **Ready to talk details?** to <h2> (special case - do this FIRST)
+        text = re.sub(r'\*\*Ready to talk details\?\*\*', r'<h2>Ready to talk details?</h2>', text)
+        
+        # Convert **bold** to <strong>
+        text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
+        
+        # Convert *italic* to <em>
+        text = re.sub(r'\*(.*?)\*', r'<em>\1</em>', text)
+        
+        # Convert [text](url) to <a href="url">text</a>
+        text = re.sub(r'\[([^\]]*)\]\(([^)]*)\)', r'<a href="\2">\1</a>', text)
+        
+        return text
+    
+    def _slugify_filter(self, text: str) -> str:
+        """Simple slugify function for URL-friendly strings"""
+        if not text:
+            return text
+        
+        text = text.lower()
+        text = text.replace(' ', '-')
+        text = text.replace(',', '')
+        text = text.replace(' illinois', '')
+        text = text.replace(' il', '')
+        return text.strip('-')

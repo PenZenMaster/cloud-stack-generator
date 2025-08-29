@@ -244,6 +244,7 @@ class HTMLGenerator:
             "footer_links": self._generate_footer_links(config),
             "social_links": self._get_social_links(config),
             "schema_organization": self._generate_organization_schema(config),
+            "city_pages": getattr(config, 'city_pages', []),
         }
         
         # Add enhanced data if available
@@ -292,6 +293,23 @@ class HTMLGenerator:
             nav_items.append(
                 {"name": "Products", "url": "/products.html", "slug": "products"}
             )
+
+        # Add city pages navigation
+        if hasattr(config, 'city_pages') and config.city_pages:
+            city_nav_items = []
+            for city_page in config.city_pages:
+                city_nav_items.append({
+                    "name": city_page.city_name,
+                    "url": f"/locations/{city_page.slug}.html",
+                    "slug": city_page.slug
+                })
+            
+            nav_items.append({
+                "name": "Locations", 
+                "url": "#", 
+                "slug": "locations",
+                "dropdown": city_nav_items
+            })
 
         nav_items.extend(
             [

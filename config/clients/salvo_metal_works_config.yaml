@@ -342,11 +342,11 @@ client:
     - Bellwood, Illinois
     about_city: ''
     city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Bellwood.jpg/1280px-Bellwood.jpg
+      alt_text: View of Bellwood
+      caption: Wikimedia Commons, Bellwood.jpg
+      credit: Wikimedia Commons, Bellwood.jpg
+      source: https://commons.wikimedia.org/wiki/File:Bellwood.jpg
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest: []

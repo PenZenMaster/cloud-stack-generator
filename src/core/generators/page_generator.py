@@ -98,6 +98,12 @@ class PageGenerator:
                     config, output_dir, result, progress_callback
                 )
 
+            # Generate city pages
+            if config.city_pages:
+                self._generate_city_pages(
+                    config, output_dir, result, progress_callback
+                )
+
             # Generate additional files
             self._generate_additional_files(config, output_dir, result)
 
@@ -148,6 +154,9 @@ class PageGenerator:
         if config.services:
             (output_dir / "services").mkdir(exist_ok=True)
 
+        if config.city_pages:
+            (output_dir / "locations").mkdir(exist_ok=True)
+
         return output_dir
 
     def _calculate_total_pages(self, config: ClientConfig) -> int:
@@ -162,6 +171,10 @@ class PageGenerator:
         # Products overview page + individual product pages
         if config.products:
             total += 1 + len(config.products)
+
+        # City pages
+        if config.city_pages:
+            total += len(config.city_pages)
 
         return total
 
@@ -366,6 +379,40 @@ class PageGenerator:
             except Exception as e:
                 result.add_error(
                     f"Error generating service page for {service.name}: {str(e)}"
+                )
+
+    def _generate_city_pages(
+        self,
+        config: ClientConfig,
+        output_dir: Path,
+        result: GenerationResult,
+        progress_callback: Optional[Callable] = None,
+    ):
+        """Generate individual city pages"""
+        locations_dir = output_dir / "locations"
+
+        # Import the enhanced city page generator
+        from .enhanced_city_page_generator import EnhancedCityPageGenerator
+        city_generator = EnhancedCityPageGenerator(config)
+
+        for city_page in config.city_pages:
+            try:
+                # Generate city page using the enhanced generator
+                city_file_path = city_generator.generate_city_page(city_page, str(locations_dir))
+                
+                result.add_generated_file(city_file_path)
+                result.pages_generated += 1
+
+                if progress_callback:
+                    progress_callback(
+                        result.pages_generated,
+                        result.total_pages,
+                        f"Generated city page: {city_page.city_name}",
+                    )
+
+            except Exception as e:
+                result.add_error(
+                    f"Error generating city page for {city_page.city_name}: {str(e)}"
                 )
 
     def _generate_additional_files(

@@ -19,7 +19,7 @@ When asked for changes in this repo:
 * Production‑ready diffs only (no placeholders or TODO litter in committed code).
 * Preserve headers/license blocks; bump versions per project rules.
 * No secrets in code; use `.env`/secure config.
-* No emojis or other Unicode in soure code
+* No emojis or other Unicode in source code or test output
 
 ---
 
@@ -62,8 +62,9 @@ When asked for changes in this repo:
 
    * Append any **Design Variations & Rationale** to `docs/AWG-Project-Plan.md`.
    * Update `docs/projectStatus.md` (Completed / In‑Progress / Deferred + Next items).
-4. `git add -A && git commit -m "chore(checkpoint): YYYY-MM-DD_HHMM – <short summary>" && git push`
-5. Reply in chat with a 1‑paragraph summary + a checklist of next steps.
+4. **WAIT for user QA testing confirmation before commits** - Only proceed with git operations after user confirms QA results
+5. `git add -A && git commit -m "chore(checkpoint): YYYY-MM-DD_HHMM – <short summary>" && git push` (only after QA confirmation)
+6. Reply in chat with a 1‑paragraph summary + a checklist of next steps.
 
 > **Trigger words**: “checkpoint now”, “prepare for rollover”, “juice check”, “save state” → run **AWG checkpoint** immediately.
 
