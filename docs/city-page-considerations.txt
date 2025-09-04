@@ -1,0 +1,27 @@
+Design Considerations:
+Currently for Cities tab, City Pages we have
+1. Basic Info
+	City Name **
+	State
+	URL Slug: (sysem generated)
+	Page Title: Primary Keyword + City Name
+	Meta Description: (system generated)
+	Primary Keyword: **
+	Hero Title: (system generated)
+	Service Area Note
+2. Content
+	About City: Summary of Wikipedia Article about city, History, Geography and Demographics
+	SEO Content Title (system generated)
+	SEO Content (system generated)
+3. Places of Interest
+	1. Able to generate POI Embed by searching Google Maps within 5 miles of City/Location Center
+	2. Optionally accepts list of POIs in the following format to generate POI embed:
+Name,Address,Latitude,Longitude
+"Chicago Metal Supply & Fabrication Inc,4940 W Grand Ave Chicago IL 60639 USA,41.915939699999996 , -87.75079319999999"
+"Illinois Custom Copper Corp.,300 Vine St #995 New Lenox IL 60451 USA,41.5143628 , -87.9746215"
+"Custom Copper Creations LLC,4438 Robertson Rd Madison WI 53714 USA,43.0922355 , -89.3079432"
+	
+4. FAQ
+5 Questions based on Google People Also Ask for the primary keyword and a unique answer to the question
+Items above with ** after them should be required to be provided by the User
+Provide feedback on proposed enhancement and suggest optional approaches if needed.

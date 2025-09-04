@@ -1,0 +1,4 @@
+Review docs/AWG-Project-Plan.md to refresh your awarness of the project architecture and goals.
+Review the latest CheckPoint document.
+Provide a brief summary of the major accomplishments from the last session. 
+Identify what work needs to be done to complete the current sprint.

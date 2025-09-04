@@ -1,0 +1,330 @@
+"""
+Issue #2: Website Generation Button Fix
+
+Problem: Website generation button appears unresponsive despite validated information
+Solution: Add comprehensive logging and error handling to identify the root cause
+"""
+
+# Updated generate_website method with enhanced debugging and error handling
+
+
+def generate_website(self):
+    """Generate website from current configuration with enhanced debugging."""
+    try:
+        print("🔍 DEBUG: Generate website button clicked")
+        logger.info("Generate website button clicked")
+        self.status_bar.showMessage("🔄 Starting website generation...")
+
+        # Add immediate visual feedback
+        self.generate_btn.setText("⏳ Generating...")
+        self.generate_btn.setEnabled(False)
+
+        print("🔍 DEBUG: Starting validation check")
+
+        # First validate all data with detailed logging
+        try:
+            is_valid, errors = self.validate_all_tabs()
+            print(
+                f"🔍 DEBUG: Validation result - Valid: {is_valid}, Errors: {len(errors)}"
+            )
+
+            if not is_valid:
+                print(f"🔍 DEBUG: Validation failed with errors: {errors}")
+                error_msg = (
+                    f"Please fix the following errors before generating:\n\n"
+                    + "\n".join(errors)
+                )
+                QMessageBox.warning(self, "⚠️ Validation Required", error_msg)
+
+                # Reset button state
+                self.generate_btn.setText("🚀 Generate Website")
+                self.generate_btn.setEnabled(True)
+                return
+
+        except Exception as validation_error:
+            print(f"🔍 DEBUG: Validation error: {validation_error}")
+            logger.error(f"Validation error: {validation_error}")
+            QMessageBox.critical(
+                self,
+                "🚨 Validation Error",
+                f"Error during validation:\n\n{str(validation_error)}",
+            )
+            self.generate_btn.setText("🚀 Generate Website")
+            self.generate_btn.setEnabled(True)
+            return
+
+        print("🔍 DEBUG: Creating client configuration")
+
+        # Create configuration with error handling
+        try:
+            config = self.create_client_config()
+            print(f"🔍 DEBUG: Configuration created successfully")
+            print(
+                f"🔍 DEBUG: Business name: {config.business_info.business_name if config.business_info else 'None'}"
+            )
+
+        except Exception as config_error:
+            print(f"🔍 DEBUG: Configuration creation error: {config_error}")
+            logger.error(f"Configuration creation error: {config_error}")
+            QMessageBox.critical(
+                self,
+                "🚨 Configuration Error",
+                f"Error creating configuration:\n\n{str(config_error)}",
+            )
+            self.generate_btn.setText("🚀 Generate Website")
+            self.generate_btn.setEnabled(True)
+            return
+
+        print("🔍 DEBUG: Choosing output directory")
+
+        # Choose output directory with better default
+        try:
+            default_dir = str(Path.home() / "Desktop" / "Generated_Websites")
+            print(f"🔍 DEBUG: Default directory: {default_dir}")
+
+            output_dir = QFileDialog.getExistingDirectory(
+                self, "Choose Website Output Directory", default_dir
+            )
+
+            print(f"🔍 DEBUG: Selected output directory: {output_dir}")
+
+            if not output_dir:
+                print("🔍 DEBUG: User cancelled directory selection")
+                self.status_bar.showMessage("❌ Website generation cancelled")
+                self.generate_btn.setText("🚀 Generate Website")
+                self.generate_btn.setEnabled(True)
+                return
+
+        except Exception as dir_error:
+            print(f"🔍 DEBUG: Directory selection error: {dir_error}")
+            logger.error(f"Directory selection error: {dir_error}")
+            QMessageBox.critical(
+                self,
+                "🚨 Directory Error",
+                f"Error selecting output directory:\n\n{str(dir_error)}",
+            )
+            self.generate_btn.setText("🚀 Generate Website")
+            self.generate_btn.setEnabled(True)
+            return
+
+        print("🔍 DEBUG: Setting up progress UI")
+
+        # Show progress UI
+        self.progress_bar.setVisible(True)
+        self.progress_bar.setRange(0, 0)  # Indeterminate progress
+
+        print("🔍 DEBUG: Checking GeneratorManager import")
+
+        # Check if GeneratorManager can be imported
+        try:
+            from src.core.generators import GeneratorManager
+
+            print("🔍 DEBUG: GeneratorManager imported successfully")
+
+        except Exception as import_error:
+            print(f"🔍 DEBUG: GeneratorManager import error: {import_error}")
+            logger.error(f"GeneratorManager import error: {import_error}")
+            QMessageBox.critical(
+                self,
+                "🚨 Import Error",
+                f"Could not import website generator:\n\n{str(import_error)}\n\nPlease check that all generator modules are available.",
+            )
+            self.reset_generation_ui()
+            return
+
+        print("🔍 DEBUG: Creating worker thread")
+
+        # Create and start worker thread with error handling
+        try:
+            self.generation_worker = WebsiteGenerationWorker(config, output_dir)
+
+            # Connect signals with error handling
+            self.generation_worker.progress_updated.connect(
+                lambda msg: self.update_generation_progress(msg)
+            )
+            self.generation_worker.generation_completed.connect(
+                lambda result: self.on_generation_completed(result)
+            )
+            self.generation_worker.generation_failed.connect(
+                lambda error: self.on_generation_failed(error)
+            )
+
+            print("🔍 DEBUG: Starting worker thread")
+            self.generation_worker.start()
+
+            print("🔍 DEBUG: Worker thread started successfully")
+            self.status_bar.showMessage("🔄 Website generation in progress...")
+
+        except Exception as worker_error:
+            print(f"🔍 DEBUG: Worker thread error: {worker_error}")
+            logger.error(f"Worker thread error: {worker_error}")
+            QMessageBox.critical(
+                self,
+                "🚨 Generation Error",
+                f"Error starting website generation:\n\n{str(worker_error)}",
+            )
+            self.reset_generation_ui()
+
+    except Exception as e:
+        print(f"🔍 DEBUG: Unexpected error in generate_website: {e}")
+        logger.error(f"Unexpected error in generate_website: {e}")
+        import traceback
+
+        traceback.print_exc()
+
+        QMessageBox.critical(
+            self,
+            "🚨 Unexpected Error",
+            f"An unexpected error occurred:\n\n{str(e)}\n\nPlease check the console for detailed error information.",
+        )
+        self.reset_generation_ui()
+
+
+def reset_generation_ui(self):
+    """Reset UI after generation completion or failure with logging."""
+    print("🔍 DEBUG: Resetting generation UI")
+    self.generate_btn.setText("🚀 Generate Website")
+    self.generate_btn.setEnabled(True)
+    self.progress_bar.setVisible(False)
+    print("🔍 DEBUG: UI reset complete")
+
+
+# Enhanced WebsiteGenerationWorker with better error handling
+
+
+class WebsiteGenerationWorkerFixed(QThread):
+    """Enhanced worker thread with comprehensive error handling and logging."""
+
+    progress_updated = pyqtSignal(str)  # Progress message
+    generation_completed = pyqtSignal(dict)  # Generation results
+    generation_failed = pyqtSignal(str)  # Error message
+
+    def __init__(self, config: ClientConfig, output_dir: str):
+        super().__init__()
+        self.config = config
+        self.output_dir = output_dir
+
+    def run(self):
+        """Run website generation with comprehensive error handling."""
+        try:
+            print(f"🔍 DEBUG: Worker thread started, output dir: {self.output_dir}")
+            self.progress_updated.emit("Initializing website generation...")
+
+            # Verify output directory
+            output_path = Path(self.output_dir)
+            if not output_path.exists():
+                print(f"🔍 DEBUG: Creating output directory: {output_path}")
+                output_path.mkdir(parents=True, exist_ok=True)
+
+            print("🔍 DEBUG: Creating generator manager")
+
+            # Import and create generator manager
+            try:
+                from src.core.generators import GeneratorManager
+
+                generator = GeneratorManager()
+                print("🔍 DEBUG: Generator manager created successfully")
+
+            except Exception as import_error:
+                print(f"🔍 DEBUG: Generator import error in worker: {import_error}")
+                self.generation_failed.emit(
+                    f"Could not import generator: {str(import_error)}"
+                )
+                return
+
+            # Connect progress signals if available
+            if hasattr(generator, "progress_updated"):
+                generator.progress_updated.connect(self.progress_updated.emit)
+                print("🔍 DEBUG: Progress signals connected")
+
+            print("🔍 DEBUG: Starting website generation")
+            self.progress_updated.emit("Generating website files...")
+
+            # Generate website
+            result = generator.generate_website(self.config, self.output_dir)
+            print(f"🔍 DEBUG: Generation result: {result}")
+
+            if result and result.get("success", False):
+                print("🔍 DEBUG: Generation successful")
+                self.generation_completed.emit(result)
+            else:
+                error_msg = (
+                    result.get("error", "Unknown error occurred")
+                    if result
+                    else "No result returned"
+                )
+                print(f"🔍 DEBUG: Generation failed: {error_msg}")
+                self.generation_failed.emit(error_msg)
+
+        except Exception as e:
+            print(f"🔍 DEBUG: Worker thread exception: {e}")
+            import traceback
+
+            traceback.print_exc()
+            logger.error(f"Website generation worker error: {e}")
+            self.generation_failed.emit(f"Generation failed: {str(e)}")
+
+
+# Test function to verify generator availability
+def test_generator_import():
+    """Test function to verify generator components are available."""
+    try:
+        print("🔍 Testing generator imports...")
+
+        # Test core imports
+        from src.core.generators import GeneratorManager
+
+        print("✅ GeneratorManager import successful")
+
+        from src.core.config import ClientConfig, ConfigParser
+
+        print("✅ Config classes import successful")
+
+        # Test generator creation
+        manager = GeneratorManager()
+        print("✅ GeneratorManager creation successful")
+
+        return True, "All generator components available"
+
+    except Exception as e:
+        print(f"❌ Generator test failed: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return False, str(e)
+
+
+# Additional diagnostic method for the main window
+def diagnose_generation_issues(self):
+    """Diagnostic method to check for generation issues."""
+    print("🔍 DEBUG: Running generation diagnostics...")
+
+    # Test 1: Check imports
+    success, message = test_generator_import()
+    if not success:
+        print(f"❌ Import test failed: {message}")
+        return False, f"Import error: {message}"
+
+    # Test 2: Check configuration creation
+    try:
+        config = self.create_client_config()
+        print(f"✅ Configuration creation successful")
+        print(
+            f"   Business name: {config.business_info.business_name if config.business_info else 'None'}"
+        )
+    except Exception as e:
+        print(f"❌ Configuration creation failed: {e}")
+        return False, f"Configuration error: {e}"
+
+    # Test 3: Check validation
+    try:
+        is_valid, errors = self.validate_all_tabs()
+        print(
+            f"✅ Validation check successful - Valid: {is_valid}, Errors: {len(errors)}"
+        )
+    except Exception as e:
+        print(f"❌ Validation check failed: {e}")
+        return False, f"Validation error: {e}"
+
+    print("✅ All diagnostic tests passed")
+    return True, "Ready for generation"
