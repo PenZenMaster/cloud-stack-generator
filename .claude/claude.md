@@ -19,7 +19,9 @@ When asked for changes in this repo:
 * Production‑ready diffs only (no placeholders or TODO litter in committed code).
 * Preserve headers/license blocks; bump versions per project rules.
 * No secrets in code; use `.env`/secure config.
-* No emojis or other Unicode in source code or test output
+* No emojis or other Unicode in source code or test output that would fail in a Windows environment.
+* Use ASCII alternatives: PASS/FAIL instead of ✅/❌, [INFO] instead of 🔵, etc.
+* All print statements must use ASCII-safe characters only.
 
 ---
 

@@ -94,46 +94,46 @@
                 {% endif %}
                 <span class="company-name">{{ business.business_name }}</span>
             </div>
-            <nav>
-                <ul>
+            <nav class="main-nav" role="navigation">
+                <ul class="menu">
                     <li><a href="index.html">Home</a></li>
                     {% if services %}
-                    <li class="dropdown">
-                        <a href="services.html">Services</a>
-                        <div class="dropdown-content">
+                    <li class="has-dropdown">
+                        <a href="services.html" aria-haspopup="true" aria-expanded="false">Services ▾</a>
+                        <ul class="dropdown">
                             {% for service in services[:7] %}
-                            <a href="services/{{ service.name|slugify }}.html">{{ service.name if service.name else service }}</a>
+                            <li><a href="services/{{ service.name|slugify }}.html">{{ service.name if service.name else service }}</a></li>
                             {% endfor %}
-                        </div>
+                        </ul>
                     </li>
                     {% endif %}
                     {% if products %}
-                    <li class="dropdown">
-                        <a href="products.html">Products</a>
-                        <div class="dropdown-content">
+                    <li class="has-dropdown">
+                        <a href="products.html" aria-haspopup="true" aria-expanded="false">Products ▾</a>
+                        <ul class="dropdown grid-layout">
                             {% for product in products[:7] %}
-                            <a href="products/{{ product.name|slugify }}.html">{{ product.name if product.name else product }}</a>
+                            <li><a href="products/{{ product.name|slugify }}.html">{{ product.name if product.name else product }}</a></li>
                             {% endfor %}
-                        </div>
+                        </ul>
                     </li>
                     {% endif %}
                     {% if city_pages %}
-                    <li class="dropdown">
-                        <a href="#locations">Locations</a>
-                        <div class="dropdown-content">
-                            {% for city_page in city_pages[:10] %}
-                            <a href="locations/{{ city_page.slug }}.html">{{ city_page.city_name }}</a>
+                    <li class="has-dropdown">
+                        <a href="#locations" aria-haspopup="true" aria-expanded="false">Service Area ▾</a>
+                        <ul class="dropdown grid-layout">
+                            {% for city_page in city_pages %}
+                            <li><a href="locations/{{ city_page.slug }}.html">{{ city_page.city_name }}</a></li>
                             {% endfor %}
-                        </div>
+                        </ul>
                     </li>
                     {% endif %}
                     <li><a href="faq.html">FAQ</a></li>
                     <li><a href="contact.html">Contact</a></li>
-                    <li class="dropdown">
-                        <a href="about.html">About</a>
-                        <div class="dropdown-content">
-                            <a href="privacy-policy.html">Privacy Policy</a>
-                        </div>
+                    <li class="has-dropdown">
+                        <a href="about.html" aria-haspopup="true" aria-expanded="false">About ▾</a>
+                        <ul class="dropdown">
+                            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        </ul>
                     </li>
                 </ul>
             </nav>
@@ -336,61 +336,91 @@
     </footer>
 
     <script>
-        // Enhanced dropdown functionality
+        // Enhanced dropdown functionality - Following specification
         document.addEventListener('DOMContentLoaded', function() {
-            const dropdowns = document.querySelectorAll('.dropdown');
+            const dropdownItems = document.querySelectorAll('.has-dropdown');
             
-            dropdowns.forEach(function(dropdown) {
-                const dropdownContent = dropdown.querySelector('.dropdown-content');
+            dropdownItems.forEach(function(dropdownItem) {
+                const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                const dropdown = dropdownItem.querySelector('.dropdown');
                 let timeoutId;
                 
-                if (dropdownContent) {
-                    // Show dropdown on hover
-                    dropdown.addEventListener('mouseenter', function() {
+                if (trigger && dropdown) {
+                    // Desktop hover behavior
+                    dropdownItem.addEventListener('mouseenter', function() {
                         clearTimeout(timeoutId);
-                        dropdownContent.style.display = 'block';
+                        dropdown.style.display = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+                        trigger.setAttribute('aria-expanded', 'true');
                     });
                     
-                    // Hide dropdown with delay on mouse leave
-                    dropdown.addEventListener('mouseleave', function() {
+                    dropdownItem.addEventListener('mouseleave', function() {
                         timeoutId = setTimeout(function() {
-                            dropdownContent.style.display = 'none';
-                        }, 300);
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }, 200);
                     });
                     
-                    // Prevent dropdown from closing when hovering over content
-                    dropdownContent.addEventListener('mouseenter', function() {
-                        clearTimeout(timeoutId);
-                    });
-                    
-                    dropdownContent.addEventListener('mouseleave', function() {
-                        timeoutId = setTimeout(function() {
-                            dropdownContent.style.display = 'none';
-                        }, 300);
-                    });
-                    
-                    // Click to toggle dropdown (mobile friendly)
-                    const dropdownTrigger = dropdown.querySelector('a');
-                    if (dropdownTrigger) {
-                        dropdownTrigger.addEventListener('click', function(e) {
+                    // Mobile/touch click behavior
+                    trigger.addEventListener('click', function(e) {
+                        // On mobile, use click to toggle
+                        if (window.innerWidth <= 768) {
                             e.preventDefault();
-                            const isVisible = dropdownContent.style.display === 'block';
-                            dropdownContent.style.display = isVisible ? 'none' : 'block';
-                        });
-                    }
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            
+                            // Close all other dropdowns first
+                            dropdownItems.forEach(function(other) {
+                                if (other !== dropdownItem) {
+                                    const otherDropdown = other.querySelector('.dropdown');
+                                    const otherTrigger = other.querySelector('a[aria-haspopup="true"]');
+                                    if (otherDropdown) otherDropdown.style.display = 'none';
+                                    if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+                            
+                            // Toggle current dropdown
+                            dropdown.style.display = isVisible ? 'none' : 'flex';
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        }
+                    });
+                    
+                    // Keyboard navigation support
+                    trigger.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            dropdown.style.display = isVisible ? 'none' : (dropdown.classList.contains('grid-layout') ? 'grid' : 'flex');
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        } else if (e.key === 'Escape') {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                            trigger.focus();
+                        }
+                    });
                 }
             });
             
             // Close all dropdowns when clicking outside
             document.addEventListener('click', function(e) {
-                if (!e.target.closest('.dropdown')) {
-                    dropdowns.forEach(function(dropdown) {
-                        const dropdownContent = dropdown.querySelector('.dropdown-content');
-                        if (dropdownContent) {
-                            dropdownContent.style.display = 'none';
-                        }
+                if (!e.target.closest('.has-dropdown')) {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown) dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
                     });
                 }
+            });
+            
+            // Handle window resize for responsive behavior
+            window.addEventListener('resize', function() {
+                dropdownItems.forEach(function(dropdownItem) {
+                    const dropdown = dropdownItem.querySelector('.dropdown');
+                    const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                    if (dropdown && window.innerWidth > 768) {
+                        dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    }
+                });
             });
         });
     </script>

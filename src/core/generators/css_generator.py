@@ -431,31 +431,125 @@ nav a:hover {{
     background-color: rgba(255, 255, 255, 0.1);
 }}
 
-.dropdown {{
+/* Modern Dropdown Navigation Styles */
+.has-dropdown {{
     position: relative;
 }}
 
+.dropdown {{
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    border-radius: 0 0 6px 6px;
+    padding: 8px 0;
+    list-style: none;
+    margin: 0;
+}}
+
+.dropdown li {{
+    margin: 0;
+}}
+
+.dropdown a {{
+    display: block;
+    padding: 10px 16px;
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    border: none;
+    white-space: nowrap;
+}}
+
+.dropdown a:hover {{
+    background-color: #f8f9fa;
+}}
+
+.dropdown a.current-location {{
+    background-color: #fff3cd;
+    color: #856404;
+    font-weight: 600;
+}}
+
+.dropdown a.current-location:hover {{
+    background-color: #ffeaa7;
+}}
+
+/* Grid Layout for Dropdowns with 4+ Items */
+.dropdown.grid-layout {{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    max-width: 720px; /* 4 columns max */
+    min-width: 400px;
+    gap: 0;
+    padding: 0;
+}}
+
+.dropdown.grid-layout li {{
+    margin: 0;
+}}
+
+.dropdown.grid-layout a {{
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    border: 1px solid #dee2e6;
+    background-color: #fff3cd;
+    color: #856404;
+    margin: 0;
+}}
+
+.dropdown.grid-layout a:hover {{
+    background-color: #ffeaa7;
+}}
+
+.dropdown.grid-layout a.current-location {{
+    background-color: #f8d7da;
+    color: #721c24;
+}}
+
+/* Show dropdown on hover */
+.has-dropdown:hover .dropdown {{
+    display: flex;
+}}
+
+.has-dropdown:hover .dropdown.grid-layout {{
+    display: grid;
+}}
+
+/* Legacy dropdown support for backward compatibility */
 .dropdown-content {{
     display: none;
     position: absolute;
     background-color: white;
     min-width: 200px;
-    box-shadow: var(--box-shadow);
-    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 0 0 6px 6px;
     z-index: 1000;
     top: 100%;
     left: 0;
+    padding: 8px 0;
+    margin: 0;
 }}
 
 .dropdown-content a {{
-    color: var(--gray-800);
-    padding: var(--spacing-sm) var(--spacing-md);
+    color: #333;
+    padding: 10px 16px;
     display: block;
-    border-bottom: 1px solid var(--gray-200);
+    border: none;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
 }}
 
 .dropdown-content a:hover {{
-    background-color: var(--gray-100);
+    background-color: #f8f9fa;
 }}
 
 /* Hero Section */
@@ -656,6 +750,42 @@ footer {{
     h1 { font-size: 2rem; }
     h2 { font-size: 1.5rem; }
     h3 { font-size: 1.25rem; }
+    
+    /* Mobile responsive navigation */
+    .dropdown {{
+        position: static;
+        display: flex;
+        flex-direction: column;
+        box-shadow: none;
+        background-color: rgba(255, 255, 255, 0.1);
+        margin-top: 0;
+        border-radius: 0;
+        min-width: auto;
+    }}
+    
+    .dropdown.grid-layout {{
+        display: flex;
+        flex-direction: column;
+        grid-template-columns: none;
+        min-width: auto;
+        max-width: none;
+    }}
+    
+    .dropdown.grid-layout a {{
+        text-align: left;
+        border: none;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+    }}
+    
+    .dropdown.grid-layout a:hover,
+    .dropdown a:hover {{
+        background-color: rgba(255, 255, 255, 0.2);
+    }}
+    
+    .has-dropdown:hover .dropdown {{
+        display: flex;
+    }}
 }
 
 @media (max-width: 480px) {

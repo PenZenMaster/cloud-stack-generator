@@ -49,8 +49,27 @@ try:
     # Import the enhanced main window
     from src.ui.enhanced_main_window import EnhancedMainWindow
 
+    def qt_exception_hook(exc_type, exc_value, exc_traceback):
+        """Global Qt exception handler to catch and log Unicode errors"""
+        error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        
+        # Log to file
+        log_error_to_file(exc_type.__name__, str(exc_value), error_msg)
+        
+        # Special handling for Unicode errors
+        if "UnicodeEncodeError" in str(exc_type) or "charmap" in str(exc_value):
+            print(f"[ERROR] Unicode encoding error caught and logged: {exc_value}")
+        else:
+            print(f"[ERROR] Exception caught and logged: {exc_value}")
+        
+        # Continue with default behavior
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
     def setup_application():
         """Setup QApplication with proper configuration"""
+        # Install global exception handler
+        sys.excepthook = qt_exception_hook
+        
         app = QApplication(sys.argv)
 
         # Set application properties

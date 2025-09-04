@@ -132,21 +132,177 @@
             color: white;
         }
 
-        .nav-menu {
+        /* Navigation Styles - Following Dropdown Menu Specification */
+        .main-nav {
             display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
+            align-items: center;
         }
 
-        .nav-menu a {
+        .menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 0;
+        }
+
+        .menu > li {
+            position: relative;
+        }
+
+        .menu > li > a {
+            display: block;
+            padding: 12px 18px;
             color: white;
             text-decoration: none;
             font-weight: 500;
-            transition: opacity 0.3s ease;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
         }
 
-        .nav-menu a:hover {
-            opacity: 0.8;
+        .menu > li > a:hover,
+        .menu > li > a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Dropdown Styles - Semantic HTML Structure */
+        .has-dropdown {
+            position: relative;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            border-radius: 0 0 6px 6px;
+            padding: 8px 0;
+            list-style: none;
+            margin: 0;
+        }
+
+        .dropdown li {
+            margin: 0;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: 10px 16px;
+            color: #333;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+            border: none;
+        }
+
+        .dropdown a:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown a.current-location {
+            background-color: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .dropdown a.current-location:hover {
+            background-color: #ffeaa7;
+        }
+
+        /* Grid Layout for Dropdowns with 4+ Items */
+        .dropdown.grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            max-width: 720px; /* 4 columns max */
+            min-width: 400px;
+            gap: 0;
+            padding: 0;
+        }
+
+        .dropdown.grid-layout li {
+            margin: 0;
+        }
+
+        .dropdown.grid-layout a {
+            padding: 8px 12px;
+            text-align: center;
+            font-size: 0.85rem;
+            border: 1px solid #dee2e6;
+            background-color: #fff3cd;
+            color: #856404;
+            margin: 0;
+        }
+
+        .dropdown.grid-layout a:hover {
+            background-color: #ffeaa7;
+        }
+
+        .dropdown.grid-layout a.current-location {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Show dropdown on hover */
+        .has-dropdown:hover .dropdown {
+            display: flex;
+        }
+
+        .has-dropdown:hover .dropdown.grid-layout {
+            display: grid;
+        }
+
+        /* Accessible focus states */
+        .menu a:focus,
+        .dropdown a:focus {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        /* Mobile responsive navigation */
+        @media (max-width: 768px) {
+            .menu {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .dropdown {
+                position: static;
+                display: flex;
+                flex-direction: column;
+                box-shadow: none;
+                background-color: rgba(255, 255, 255, 0.1);
+                margin-top: 0;
+                border-radius: 0;
+                min-width: auto;
+            }
+            
+            .dropdown.grid-layout {
+                display: flex;
+                flex-direction: column;
+                grid-template-columns: none;
+                min-width: auto;
+                max-width: none;
+            }
+            
+            .dropdown.grid-layout a {
+                text-align: left;
+                border: none;
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+            
+            .dropdown.grid-layout a:hover,
+            .dropdown a:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+            
+            .has-dropdown:hover .dropdown {
+                display: flex;
+            }
         }
 
         /* Hero Section */
@@ -450,6 +606,35 @@
             color: white;
         }
 
+        .additional-cities {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .additional-cities h5 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .additional-cities p {
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .additional-cities a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .additional-cities a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
         /* Contact CTA */
         .contact-cta {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
@@ -599,8 +784,8 @@
                 align-items: center;
             }
             
-            .nav-menu {
-                gap: 1rem;
+            .menu {
+                gap: 0;
             }
         }
     </style>
@@ -611,12 +796,48 @@
         <div class="container">
             <div class="header-content">
                 <a href="/" class="logo">{{ business.business_name }}</a>
-                <nav class="nav-menu">
-                    <a href="/">Home</a>
-                    <a href="/services/">Services</a>
-                    <a href="/locations/">Locations</a>
-                    <a href="/about/">About</a>
-                    <a href="/contact/">Contact</a>
+                <nav class="main-nav" role="navigation">
+                    <ul class="menu">
+                        <li><a href="/">Home</a></li>
+                        {% if services %}
+                        <li class="has-dropdown">
+                            <a href="/services/" aria-haspopup="true" aria-expanded="false">Services ▾</a>
+                            <ul class="dropdown{% if services|length >= 4 %} grid-layout{% endif %}">
+                                {% for service in services[:12] %}
+                                <li><a href="/services/{{ service.slug | default(service.name.lower().replace(' ', '-')) }}/">{{ service.name if service.name else service }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        {% endif %}
+                        {% if products %}
+                        <li class="has-dropdown">
+                            <a href="/products/" aria-haspopup="true" aria-expanded="false">Products ▾</a>
+                            <ul class="dropdown{% if products|length >= 4 %} grid-layout{% endif %}">
+                                {% for product in products[:12] %}
+                                <li><a href="/products/{{ product.slug | default(product.name.lower().replace(' ', '-')) }}/">{{ product.name if product.name else product }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        {% endif %}
+                        {% if other_cities %}
+                        <li class="has-dropdown">
+                            <a href="/locations/" class="active" aria-haspopup="true" aria-expanded="false">Service Area ▾</a>
+                            <ul class="dropdown{% if (other_cities|length + 1) >= 4 %} grid-layout{% endif %}">
+                                {% for other_city in other_cities[:15] %}
+                                <li><a href="/{{ other_city.slug }}/">{{ other_city.city_name }}</a></li>
+                                {% endfor %}
+                                <li><a href="/{{ city_page.slug }}/" class="current-location">{{ city_page.city_name }}</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                        <li><a href="/contact/">Contact Us</a></li>
+                        <li class="has-dropdown">
+                            <a href="/about/" aria-haspopup="true" aria-expanded="false">About ▾</a>
+                            <ul class="dropdown">
+                                <li><a href="/privacy-policy/">Privacy Policy</a></li>
+                            </ul>
+                        </li>
+                    </ul>
                 </nav>
             </div>
             
@@ -730,6 +951,20 @@
                         <p>Contact us to confirm service availability in your specific {{ city_page.city_name }} location and discuss your project requirements with our local team.</p>
                     </section>
 
+                    <!-- Industry-Specific Expertise Section -->
+                    {% if industry_sections %}
+                    <section class="content-section">
+                        <h3>{{ industry_sections.expertise_title }}</h3>
+                        <p>{{ industry_sections.expertise_content }}</p>
+                    </section>
+                    
+                    <!-- Industry-Specific Specialization Section -->
+                    <section class="content-section">
+                        <h3>{{ industry_sections.specialization_title }}</h3>
+                        <p>{{ industry_sections.specialization_content }}</p>
+                    </section>
+                    {% endif %}
+
                     <!-- Why Choose Us Section (150-200 words) -->
                     <section class="content-section">
                         <h3>Why {{ city_page.city_name }} Chooses {{ business.business_name }}</h3>
@@ -840,17 +1075,37 @@
                 {% endif %}
             </section>
 
-            <!-- Internal Links Section -->
+            <!-- Strategic Internal Links Section -->
             <section class="internal-links">
                 <h4>Related {{ business.industry }} Resources</h4>
                 <div class="links-grid">
                     {% for service in services %}
                     <a href="/services/{{ service.slug | default(service.name.lower().replace(' ', '-')) }}/">{{ service.name }} Services</a>
                     {% endfor %}
+                    
+                    {% if other_cities %}
+                    <!-- Strategic City Interlinking -->
+                    {% for other_city in other_cities[:4] %}
+                    <a href="/{{ other_city.slug }}/">{{ business.industry }} in {{ other_city.city_name }}</a>
+                    {% endfor %}
+                    {% endif %}
+                    
                     <a href="/locations/">All Service Areas</a>
                     <a href="/about/">About {{ business.business_name }}</a>
                     <a href="/contact/">Contact Us</a>
                 </div>
+                
+                {% if other_cities and other_cities|length > 4 %}
+                <!-- Additional City Links -->
+                <div class="additional-cities">
+                    <h5>We Also Serve:</h5>
+                    <p>
+                        {% for other_city in other_cities[4:] %}
+                        <a href="/{{ other_city.slug }}/">{{ other_city.city_name }}</a>{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+                {% endif %}
             </section>
 
             <!-- Contact CTA -->
@@ -964,6 +1219,94 @@
                         block: 'start'
                     });
                 }
+            });
+        });
+
+        // Enhanced dropdown functionality - Following specification
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownItems = document.querySelectorAll('.has-dropdown');
+            
+            dropdownItems.forEach(function(dropdownItem) {
+                const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                const dropdown = dropdownItem.querySelector('.dropdown');
+                let timeoutId;
+                
+                if (trigger && dropdown) {
+                    // Desktop hover behavior
+                    dropdownItem.addEventListener('mouseenter', function() {
+                        clearTimeout(timeoutId);
+                        dropdown.style.display = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+                        trigger.setAttribute('aria-expanded', 'true');
+                    });
+                    
+                    dropdownItem.addEventListener('mouseleave', function() {
+                        timeoutId = setTimeout(function() {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }, 200);
+                    });
+                    
+                    // Mobile/touch click behavior
+                    trigger.addEventListener('click', function(e) {
+                        // On mobile, use click to toggle
+                        if (window.innerWidth <= 768) {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            
+                            // Close all other dropdowns first
+                            dropdownItems.forEach(function(other) {
+                                if (other !== dropdownItem) {
+                                    const otherDropdown = other.querySelector('.dropdown');
+                                    const otherTrigger = other.querySelector('a[aria-haspopup="true"]');
+                                    if (otherDropdown) otherDropdown.style.display = 'none';
+                                    if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+                            
+                            // Toggle current dropdown
+                            dropdown.style.display = isVisible ? 'none' : 'flex';
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        }
+                    });
+                    
+                    // Keyboard navigation support
+                    trigger.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            dropdown.style.display = isVisible ? 'none' : (dropdown.classList.contains('grid-layout') ? 'grid' : 'flex');
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        } else if (e.key === 'Escape') {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                            trigger.focus();
+                        }
+                    });
+                }
+            });
+            
+            // Close all dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.has-dropdown')) {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown) dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+            
+            // Handle window resize for responsive behavior
+            window.addEventListener('resize', function() {
+                dropdownItems.forEach(function(dropdownItem) {
+                    const dropdown = dropdownItem.querySelector('.dropdown');
+                    const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                    if (dropdown && window.innerWidth > 768) {
+                        dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    }
+                });
             });
         });
 

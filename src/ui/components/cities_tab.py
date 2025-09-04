@@ -680,6 +680,11 @@ class CitiesTab(BaseTab):
 
             # Set Wikipedia embed codes
             self.city_wikipedia_embeds = data.get("wikipedia_embeds", {})
+            
+            # Refresh Wikipedia embed display if city is selected
+            current_wiki_city = self.wiki_city_selector.currentText()
+            if current_wiki_city and current_wiki_city != "Select a city..." and current_wiki_city in self.city_wikipedia_embeds:
+                self.wiki_embed_area.setPlainText(self.city_wikipedia_embeds[current_wiki_city]["embed_code"])
 
             # Load API key from app-wide storage
             stored_api_key = self.app_api_keys.get("google_maps_api_key", "")

@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QStatusBar,
     QProgressBar,
+    QDialog,
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QFont, QIcon, QAction
@@ -150,9 +151,15 @@ class EnhancedMainWindow(QMainWindow):
 
         # Validate All
         validate_action = QAction("&Validate All Tabs", self)
-        validate_action.setShortcut("F5")
+        validate_action.setShortcut("F4")
         validate_action.triggered.connect(self.validate_all_tabs)
         tools_menu.addAction(validate_action)
+
+        # Website Preview
+        preview_action = QAction("Website &Preview", self)
+        preview_action.setShortcut("F5")
+        preview_action.triggered.connect(self.preview_website)
+        tools_menu.addAction(preview_action)
 
         # Generate Website
         generate_action = QAction("&Generate Website", self)
@@ -212,28 +219,49 @@ class EnhancedMainWindow(QMainWindow):
         self.services_tab = ServicesTab()
 
         # Add tabs to main widget
-        self.main_tabs.addTab(self.business_tab, "📊 Business Info")
-        self.main_tabs.addTab(self.contact_tab, "📞 Contact Details")
-        self.main_tabs.addTab(self.branding_tab, "🎨 Branding & Style")
-        self.main_tabs.addTab(self.enhanced_cities_tab, "🌆 Cities")
-        self.main_tabs.addTab(self.products_tab, "📦 Products")
-        self.main_tabs.addTab(self.services_tab, "⚙️ Services & FAQ")
-        self.main_tabs.addTab(self.api_keys_tab, "🔑 API Keys")
+        self.main_tabs.addTab(self.business_tab, "Business Info")
+        self.main_tabs.addTab(self.contact_tab, "Contact Details")
+        self.main_tabs.addTab(self.branding_tab, "Branding & Style")
+        self.main_tabs.addTab(self.enhanced_cities_tab, "Cities")
+        self.main_tabs.addTab(self.products_tab, "Products")
+        self.main_tabs.addTab(self.services_tab, "Services & FAQ")
+        self.main_tabs.addTab(self.api_keys_tab, "API Keys")
 
         layout.addWidget(self.main_tabs)
 
         # Action buttons
         button_layout = QHBoxLayout()
 
-        self.validate_btn = QPushButton("🔍 Validate All")
+        self.validate_btn = QPushButton("Validate All")
         self.validate_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         self.validate_btn.clicked.connect(self.validate_all_tabs)
 
-        self.save_btn = QPushButton("💾 Save Configuration")
+        self.save_btn = QPushButton("Save Configuration")
         self.save_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         self.save_btn.clicked.connect(self.save_configuration)
 
-        self.generate_btn = QPushButton("🚀 Generate Website")
+        self.preview_btn = QPushButton("Website Preview")
+        self.preview_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.preview_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #007bff;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+            QPushButton:pressed {
+                background-color: #004085;
+            }
+        """
+        )
+        self.preview_btn.clicked.connect(self.preview_website)
+
+        self.generate_btn = QPushButton("Generate Website")
         self.generate_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         self.generate_btn.setStyleSheet(
             """
@@ -257,6 +285,7 @@ class EnhancedMainWindow(QMainWindow):
         button_layout.addStretch()
         button_layout.addWidget(self.validate_btn)
         button_layout.addWidget(self.save_btn)
+        button_layout.addWidget(self.preview_btn)
         button_layout.addWidget(self.generate_btn)
 
         layout.addLayout(button_layout)
@@ -524,7 +553,7 @@ class EnhancedMainWindow(QMainWindow):
                 QMessageBox.information(
                     self,
                     "Configuration Saved",
-                    f"✅ Configuration successfully saved!\n\n"
+                    f"Configuration successfully saved!\n\n"
                     f"File: {Path(file_path).name}\n"
                     f"Full path: {Path(file_path).absolute()}\n\n"
                     f"You can find your configuration file at the above location."
@@ -1031,6 +1060,56 @@ class EnhancedMainWindow(QMainWindow):
 
         # Show validation results
         self.show_validation_results(validation_results, all_valid)
+        
+    def get_validation_results(self) -> tuple[Dict[str, Dict], bool]:
+        """Get validation results without showing dialog - for internal use"""
+        validation_results = {}
+        all_valid = True
+
+        # Validate each tab
+        tabs = {
+            "Business Info": self.business_tab,
+            "Contact Details": self.contact_tab,
+            "Branding & Style": self.branding_tab,
+            "Cities": self.enhanced_cities_tab,
+            "Products": self.products_tab,
+            "Services & FAQ": self.services_tab,
+        }
+
+        for tab_name, tab in tabs.items():
+            if hasattr(tab, "validate_data"):
+                try:
+                    # Handle different return types from validate_data()
+                    validation_result = tab.validate_data()
+                    if (
+                        isinstance(validation_result, tuple)
+                        and len(validation_result) == 2
+                    ):
+                        is_valid, errors = validation_result
+                    elif isinstance(validation_result, bool):
+                        is_valid = validation_result
+                        errors = [] if validation_result else ["Validation failed"]
+                    else:
+                        # Handle ValidationResult objects with attributes
+                        is_valid = getattr(validation_result, 'is_valid', False)
+                        errors = getattr(validation_result, 'errors', ["Unable to determine validation result"])
+
+                    validation_results[tab_name] = {
+                        "valid": is_valid,
+                        "errors": errors if errors else [],
+                    }
+                    
+                    if not is_valid:
+                        all_valid = False
+
+                except Exception as e:
+                    validation_results[tab_name] = {
+                        "valid": False,
+                        "errors": [f"Validation error: {str(e)}"],
+                    }
+                    all_valid = False
+
+        return validation_results, all_valid
 
     def show_validation_results(self, results: Dict[str, Dict], all_valid: bool):
         """Show validation results in a dialog"""
@@ -1038,11 +1117,11 @@ class EnhancedMainWindow(QMainWindow):
             QMessageBox.information(
                 self,
                 "Validation Results",
-                "✅ All tabs passed validation!\n\nYour configuration is ready for website generation.",
+                "All tabs passed validation!\n\nYour configuration is ready for website generation.",
             )
             self.status_label.setText("Validation passed - Ready to generate")
         else:
-            error_text = "❌ Validation found the following issues:\n\n"
+            error_text = "Validation found the following issues:\n\n"
             for tab_name, result in results.items():
                 if not result["valid"]:
                     error_text += f"**{tab_name}:**\n"
@@ -1064,17 +1143,68 @@ class EnhancedMainWindow(QMainWindow):
             QMessageBox.warning(self, "Validation Errors", error_text)
             self.status_label.setText("Validation failed - Please fix errors")
 
+    def preview_website(self):
+        """Preview website before generation for QA testing"""
+        try:
+            # Validate configuration first (get results without showing dialog)
+            validation_results, all_valid = self.get_validation_results()
+            
+            if not all_valid:
+                QMessageBox.warning(
+                    self,
+                    "Validation Required",
+                    "Please fix validation errors before previewing the website."
+                )
+                return
+            
+            # Get current configuration
+            config_data = self.get_all_config_data()
+            config = self.create_client_config(config_data)
+            
+            # Show preview dialog
+            from .dialogs.website_preview_dialog import WebsitePreviewDialog
+            preview_dialog = WebsitePreviewDialog(config, self)
+            
+            self.status_label.setText("Generating website preview...")
+            
+            result = preview_dialog.exec()
+            
+            if result == QDialog.DialogCode.Accepted:
+                # User approved preview - proceed with actual generation
+                self.status_label.setText("Preview approved - Ready to generate website")
+                QMessageBox.information(
+                    self,
+                    "Preview Approved",
+                    "Website preview has been approved. Click 'Generate Website' to create the final version."
+                )
+            else:
+                self.status_label.setText("Preview cancelled")
+                
+        except Exception as e:
+            error_message = f"Error during website preview:\n\n{str(e)}"
+            QMessageBox.critical(
+                self,
+                "Website Preview Error",
+                error_message
+            )
+            self.status_label.setText("Website preview error")
 
     def generate_website(self):
         """Generate website from current configuration"""
         try:
             # First validate
-            validation_errors = self.validate_all_tabs()
-            if validation_errors:
+            validation_results, all_valid = self.get_validation_results()
+            if not all_valid:
+                error_messages = []
+                for tab_name, result in validation_results.items():
+                    if not result["valid"]:
+                        for error in result["errors"]:
+                            error_messages.append(f"{tab_name}: {error}")
+                
                 QMessageBox.warning(
                     self,
                     "Validation Errors",
-                    f"Please fix the following errors before generating:\n\n" + "\n".join(validation_errors)
+                    f"Please fix the following errors before generating:\n\n" + "\n".join(error_messages)
                 )
                 return
 
@@ -1194,11 +1324,11 @@ class EnhancedMainWindow(QMainWindow):
             "<p>Sprint 2 Week 2 - Enhanced Modular Architecture</p>"
             "<p><b>Features:</b></p>"
             "<ul>"
-            "<li>✅ Business Information Management</li>"
-            "<li>✅ Contact Details with Validation</li>"
-            "<li>✅ Branding & Color Management</li>"
-            "<li>✅ Product Catalog with CSV Import</li>"
-            "<li>✅ Services & FAQ Management</li>"
+            "<li>Business Information Management</li>"
+            "<li>Contact Details with Validation</li>"
+            "<li>Branding & Color Management</li>"
+            "<li>Product Catalog with CSV Import</li>"
+            "<li>Services & FAQ Management</li>"
             "</ul>"
             "<p><b>Status:</b> Ready for Website Generation Integration</p>",
         )
