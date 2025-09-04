@@ -1,16 +1,1062 @@
 client:
+  branding:
+    font_family: Arial, sans-serif
+    logo_url: https://salvometalworks.com/wp-content/uploads/2024/10/Salvo_RGB_FullColor_Logo-2048x742.png
+    primary_color: '#bf062f'
+    secondary_color: '#fe9e1f'
   business_name: Salvo Metal Works
-  domain: https://salvometalworks.com
-  industry: Metal Fabrication
-  description: Bespoke architectural metal fabrication. Salvo Metal Works is a family-owned
-    and operated manufacturer of roofing products. We pride ourselves on our ability
-    to customize all of our products to fit any project's needs. We offer a comprehensive
-    range of chimney shrouds, cupolas, dormers, finials, leader boxes, roof vents,
-    snow guards, and more.
-  tagline: Forging Function with Metal Mastery
-  hero_subtitle: Professional metal fabrication services you can trust - serving Chicago
-    and beyond!
-  years_in_business: Over 40 years
+  city_pages:
+  - about_city: Chicago sits on the southwest shore of Lake Michigan and is known
+      worldwide for architecture, arts, and industry. Often called the birthplace
+      of the modern skyscraper, the city’s skyline mixes early steel-frame innovation
+      with contemporary supertalls, museums, parks, and miles of lakefront. The result
+      is a dynamic, design-forward metropolis where buildings matter—and details matter
+      even more. Neighborhoods give Chicago its character. The Loop and River North
+      hum with commerce and culture; the West Loop, Fulton Market, and South Loop
+      blend historic warehouses with new residential and hospitality; the Near North,
+      Old Town, and Lincoln Park bring classic streetscapes. Farther south and west,
+      places like Hyde Park, Bronzeville, Pilsen, and Bridgeport showcase deep history,
+      universities, and thriving arts scenes. Across all of it, thoughtful materials
+      and well-executed craftsmanship are part of the city’s DNA. Why architectural
+      metal matters here Four-season weather, lake-effect snow, wind, and freeze–thaw
+      cycles make performance non-negotiable. Copper, zinc, stainless, and powder-coated
+      steel excel when designed for proper drainage, expansion, and concealed attachment.
+      From cupolas and dormers to finials, leader boxes, roof vents, and snow guards,
+      well-detailed metal elements protect envelopes, manage water, and elevate sightlines—at
+      street level and from fifty stories up. Neighborhoods and districts we serve
+      * The Loop, River North, Streeterville * West Loop, Fulton Market, South Loop
+      * Gold Coast, Old Town, Lincoln Park, Lakeview * Wicker Park, Bucktown, Logan
+      Square * Hyde Park, Bronzeville, Bridgeport, Pilsen Planning a project in Chicago?
+      Specify premium details that look intentional and last. Partner with Salvo Metal
+      Works—your expert in architectural metal fabrication Chicago.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Chicago
+    city_faq:
+    - answer: 'When architects need bespoke metal that looks like sculpture and behaves
+        like building science, they call Salvo Metal Works. This team blends studio-grade
+        craftsmanship with jobsite pragmatism—think custom cupolas, dormers, finials,
+        leader boxes, roof vents, and snow guards engineered to live gracefully on
+        real roofs in real weather.
+
+
+        What sets Salvo apart isn’t just copper, zinc, or powder-coated steel; it’s
+        process. You’ll get clean shop drawings, clear tolerances, and submittals
+        that actually answer questions. Need a quick RFI turnaround, a field template,
+        or a tweak for tricky substrate transitions? Done. Salvo builds for performance
+        first—proper drainage paths, smart attachment systems, and expansion allowances—then
+        finishes with the kind of patina and proportion that makes elevations sing.'
+      question: Why Choose Salvo Metal Works for you next historical restoration project?
+    city_image:
+      alt_text: View of Chicago
+      caption: Wikipedia - Chicago
+      credit: Wikipedia - Chicago
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Chicago\"\
+        \ href=\"https://en.wikipedia.org/wiki/Chicago\" target=\"_blank\" rel=\"\
+        noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Chicago_River_ferry_b.jpg/330px-Chicago_River_ferry_b.jpg\"\
+        \ \n             alt=\"View of Chicago\"\n             width=\"100%\" \n \
+        \            style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Chicago</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Chicago_River_ferry_b.jpg/330px-Chicago_River_ferry_b.jpg
+      source: https://en.wikipedia.org/wiki/Chicago
+    city_map_embed: ''
+    city_name: Chicago
+    featured_products: []
+    hero_title: Chicago — Custom Architectural Metal Fabrication
+    meta_description: Salvo Metal Works serves Chicago with bespoke architectural
+      metal—custom cupolas, dormers, finials, roof vents & snow guards—built for beauty
+      & durability.
+    places_of_interest:
+    - embed_url: ''
+      name: Millenium Park
+    primary_keyword: architectural metal fabrication Chicago
+    secondary_keywords: []
+    seo_content_body: 'Chicago doesn’t just admire architecture—it lives and breathes
+      it. From lakefront wind to freeze–thaw cycles, this city demands details that
+      perform as well as they look. That’s where **Salvo Metal Works** earns its keep.
+      We blend studio-grade craft with jobsite pragmatism, delivering architectural
+      metal that slots cleanly into your drawings, coordinates smoothly in the field,
+      and holds its line for decades. If you’re searching for *architectural metal
+      fabrication Chicago*, you’re in the right shop. We start with process, because
+      process is what protects design intent. Expect precise shop drawings, responsive
+      RFIs, and submittals that answer questions instead of creating them. Our fabrications
+      consider drainage paths, expansion and contraction, load paths, and attachment
+      strategies from day one—so your elevations read intentional from five feet and
+      fifty. Copper, zinc, stainless, or powder-coated aluminum: we’ll recommend the
+      right alloy and thickness for the site, the façade, and the budget. Need a statement
+      piece that still behaves like building science? Our [custom cupolas](https://salvometalworks.com/product-category/custom-cupolas/)
+      bring proportion, shadow play, and ventilation together without telegraphing
+      fasteners or compromising the roof. We design for live loads, specify baffles
+      and screens where appropriate, and finish with patinas or coatings that complement
+      both historic districts and new-build glass. Whether it’s River North contemporary
+      or Gold Coast classic, a Salvo cupola looks born to the plan set. Water management
+      is a Chicago sport. Our [custom leader boxes](https://salvometalworks.com/product-category/custom-leader-boxes/)
+      turn downspouts into deliberate design moves, mitigating splash and icing while
+      keeping fascia lines crisp. Match profiles to adjacent trim, integrate leaf
+      control, and choose finishes that won’t flinch at lake-effect winters. Pair
+      them with roof-edge treatments and you get a system that reads like architecture,
+      not an afterthought. Up top, airflow matters as much as silhouette. Our [custom
+      roof vents](https://salvometalworks.com/product-category/custom-roof-vents/)
+      balance exhaust performance with elevation discipline—concealed fasteners, smart
+      flashing, and expansion allowances baked in. Need a family of vents that scale
+      across a mixed-use stack? We’ll prototype proportions so the composition stays
+      coherent from podium to penthouse. Nothing frames a skyline detail like the
+      right punctuation. Our [custom finials](https://salvometalworks.com/product-category/custom-finials/)
+      bring that quiet “of course” to steeples, ridges, and parapets. We tune height,
+      massing, and base geometry to your roof pitch and sightlines, then fabricate
+      for wind resistance and corrosion control. The result is a crown that feels
+      inevitable—as if the building always wanted it. Chicago winters call for pragmatism
+      you can’t Photoshop away. Our [custom snow guards](https://salvometalworks.com/product-category/custom-snow-guards/)
+      are engineered for the live loads and sliding snow common on metal and slate
+      roofs. We model spacing, specify the right attachment for the substrate, and
+      align patterns so they read as intentional texture rather than clutter. Safety,
+      envelope protection, and visual order in one move. Fireplaces deserve more than
+      a cap—they deserve a composition. Our [custom chimney shrouds](https://salvometalworks.com/product-category/custom-chimney-shrouds/)
+      solve for draft, animal intrusion, and water while elevating the roof profile.
+      We coordinate with liners and code, manage thermal expansion at the base, and
+      finish with seams that actually earn their keep. On heritage restorations or
+      contemporary builds, the shroud becomes a signature, not a band-aid. Dormers
+      can be fussy—unless they’re designed for the envelope they join. Our [custom
+      dormers](https://salvometalworks.com/product-category/custom-dormers/) integrate
+      with standing-seam and shingle assemblies, respect drainage planes, and maintain
+      trim reveals that make carpenters and inspectors happy. Inside, you get daylight
+      and ventilation; outside, you get cadence and rhythm that sharpen the façade.
+      The through-line: collaboration. We speak GC, coordinate with roofing subs,
+      and keep timelines honest. Need value engineering without aesthetic compromise?
+      We’ll present options—material swaps, gauge tweaks, joint strategies—that preserve
+      proportion and shadow while meeting the budget. Field templates, mockups, and
+      clear install notes mean fewer surprises on the lift and fewer callbacks in
+      January. Chicago is a city of neighborhoods, and we work them all: Loop and
+      River North commercial, West Loop adaptive reuse, Hyde Park institutional, and
+      residential fabric from Lincoln Park to Beverly. Each site brings its own constraints—historic
+      review, coastal winds, intricate sightlines—and we treat those as design inputs,
+      not obstacles. Your drawings stay your drawings; our job is to make them buildable,
+      durable, and beautiful. If you’re specifying in Chicago and want metal details
+      that carry their weight—literally and figuratively—bring Salvo in early. We’ll
+      help you protect the envelope, honor the line, and deliver a finish that holds
+      up to winter, time, and critical eyes. **Ready to talk details?** Let’s review
+      your set, align on materials and finish, and turn your concept into a submittal
+      that sails through approval—then a build that goes in cleanly, on schedule,
+      and exactly as drawn.'
+    seo_content_title: Architectural Metal Fabrication Chicago | Salvo Metal Works
+    service_area_note: ''
+    slug: chicago
+    state: ''
+    title: Chicago — Custom Architectural Metal
+  - about_city: Bellwood is a village in Proviso Township, Cook County, Illinois,
+      United States. Located 13 miles (21 km) west of Chicago's downtown Loop, the
+      Village of Bellwood is bounded by the Eisenhower Expressway (south), the Proviso
+      yards of the former Chicago & Northwestern, now Union Pacific Railroad (north),
+      and the suburbs of Maywood (east) and Hillside and Berkeley (west). The population
+      was 18,789 at the 2020 census.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Bellwood, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Bellwood
+      caption: Wikipedia - Bellwood, Illinois
+      credit: Wikipedia - Bellwood, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Bellwood,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Bellwood%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg/330px-Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg\"\
+        \ \n             alt=\"View of Bellwood\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Bellwood, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg/330px-Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg
+      source: https://en.wikipedia.org/wiki/Bellwood%2C_Illinois
+    city_map_embed: ''
+    city_name: Bellwood, Illinois
+    featured_products: []
+    hero_title: Bellwood, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: bellwood-illinois
+    state: ''
+    title: Bellwood, Illinois — Custom Architectural Metal
+  - about_city: Oak Park Illinois is a vibrant community known for its unique character
+      and local heritage. The area offers distinctive opportunities for architectural
+      and construction projects, with local building standards and community requirements
+      that demand specialized expertise and attention to detail.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Oak Park Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Oak Park Illinois
+      caption: No image available for Oak Park Illinois
+      credit: No image available for Oak Park Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"No image available\
+        \ for Oak Park Illinois\" href=\"https://en.wikipedia.org/wiki/Oak_Park_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/No-image-available.svg/1280px-No-image-available.svg.png\"\
+        \ \n             alt=\"View of Oak Park Illinois\"\n             width=\"\
+        100%\" \n             style=\"height: auto; margin: 20px 0;\"\n          \
+        \   loading=\"lazy\">\n    </a>\n    <p class=\"image-caption\">No image available\
+        \ for Oak Park Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/No-image-available.svg/1280px-No-image-available.svg.png
+      source: https://en.wikipedia.org/wiki/Oak_Park_Illinois
+    city_map_embed: ''
+    city_name: Oak Park Illinois
+    featured_products: []
+    hero_title: Oak Park Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: oak-park-illinois
+    state: ''
+    title: Oak Park Illinois — Custom Architectural Metal
+  - about_city: Berwyn is a suburban city in Cook County, Illinois, United States.
+      It is coterminous with Berwyn Township, which was formed in 1908 after breaking
+      off from Cicero Township. As of the 2020 census, the city had a total population
+      of 57,250. It is part of the Chicago metropolitan area.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Berwyn, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Berwyn
+      caption: Wikipedia - Berwyn, Illinois
+      credit: Wikipedia - Berwyn, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Berwyn,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Berwyn%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Berwyn_City_Hall.jpg/330px-Berwyn_City_Hall.jpg\"\
+        \ \n             alt=\"View of Berwyn\"\n             width=\"100%\" \n  \
+        \           style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Berwyn, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Berwyn_City_Hall.jpg/330px-Berwyn_City_Hall.jpg
+      source: https://en.wikipedia.org/wiki/Berwyn%2C_Illinois
+    city_map_embed: ''
+    city_name: Berwyn, Illinois
+    featured_products: []
+    hero_title: Berwyn, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: berwyn-illinois
+    state: ''
+    title: Berwyn, Illinois — Custom Architectural Metal
+  - about_city: Bridgeview is a village in Cook County, Illinois, United States. It
+      is located approximately 15 miles (24 km) southwest of the Chicago Loop. As
+      of the 2020 census, the village population was 17,027.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Bridgeview, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Bridgeview
+      caption: Wikipedia - Bridgeview, Illinois
+      credit: Wikipedia - Bridgeview, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Bridgeview,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Bridgeview%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bridgeview_City_Hall.jpg/330px-Bridgeview_City_Hall.jpg\"\
+        \ \n             alt=\"View of Bridgeview\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Bridgeview,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bridgeview_City_Hall.jpg/330px-Bridgeview_City_Hall.jpg
+      source: https://en.wikipedia.org/wiki/Bridgeview%2C_Illinois
+    city_map_embed: ''
+    city_name: Bridgeview, Illinois
+    featured_products: []
+    hero_title: Bridgeview, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: bridgeview-illinois
+    state: ''
+    title: Bridgeview, Illinois — Custom Architectural Metal
+  - about_city: Brookfield is a village in Cook County, Illinois, United States, located
+      13 miles (21 km) west of downtown Chicago. Per the 2020 census, the population
+      was 19,476. The city is home to the Brookfield Zoo.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Brookfield, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Brookfield
+      caption: Wikipedia - Brookfield, Illinois
+      credit: Wikipedia - Brookfield, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Brookfield,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Brookfield%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/La_Grange_Park_and_Brookfield%2C_Illinois.jpg/330px-La_Grange_Park_and_Brookfield%2C_Illinois.jpg\"\
+        \ \n             alt=\"View of Brookfield\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Brookfield,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/La_Grange_Park_and_Brookfield%2C_Illinois.jpg/330px-La_Grange_Park_and_Brookfield%2C_Illinois.jpg
+      source: https://en.wikipedia.org/wiki/Brookfield%2C_Illinois
+    city_map_embed: ''
+    city_name: Brookfield, Illinois
+    featured_products: []
+    hero_title: Brookfield, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: brookfield-illinois
+    state: ''
+    title: Brookfield, Illinois — Custom Architectural Metal
+  - about_city: Burbank is a city in Cook County, Illinois, United States. The population
+      was 29,439 at the 2020 census. It borders the southwest edge of the city of
+      Chicago; the Chicago city limit – specifically that of the Ashburn neighborhood
+      – is in common with Burbank's eastern city limit. Burbank shares a boundary
+      with Oak Lawn to its south, Bridgeview to its west, and Bedford Park to its
+      north; the city of Hometown is also adjacent to Burbank's southeast corner.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Burbank, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Burbank
+      caption: Wikipedia - Burbank, Illinois
+      credit: Wikipedia - Burbank, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Burbank,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Burbank%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Burbank%2C_Illinois_%2811004367403%29.jpg/330px-Burbank%2C_Illinois_%2811004367403%29.jpg\"\
+        \ \n             alt=\"View of Burbank\"\n             width=\"100%\" \n \
+        \            style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Burbank, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Burbank%2C_Illinois_%2811004367403%29.jpg/330px-Burbank%2C_Illinois_%2811004367403%29.jpg
+      source: https://en.wikipedia.org/wiki/Burbank%2C_Illinois
+    city_map_embed: ''
+    city_name: Burbank, Illinois
+    featured_products: []
+    hero_title: Burbank, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: burbank-illinois
+    state: ''
+    title: Burbank, Illinois — Custom Architectural Metal
+  - about_city: Cicero is a town in Cook County, Illinois, United States, and a suburb
+      of Chicago. As of the 2020 census, the population was 85,268, making it the
+      11th-most populous municipality in Illinois. The town is named after Marcus
+      Tullius Cicero, a Roman statesman and orator. With a population more than 89%
+      Hispanic, the town is the most Hispanic in the state of Illinois.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Cicero, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Cicero
+      caption: Wikipedia - Cicero, Illinois
+      credit: Wikipedia - Cicero, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Cicero,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Cicero%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/J._Sterling_Morton_High_School_East_Auditorium.jpg/330px-J._Sterling_Morton_High_School_East_Auditorium.jpg\"\
+        \ \n             alt=\"View of Cicero\"\n             width=\"100%\" \n  \
+        \           style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Cicero, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/J._Sterling_Morton_High_School_East_Auditorium.jpg/330px-J._Sterling_Morton_High_School_East_Auditorium.jpg
+      source: https://en.wikipedia.org/wiki/Cicero%2C_Illinois
+    city_map_embed: ''
+    city_name: Cicero, Illinois
+    featured_products: []
+    hero_title: Cicero, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: cicero-illinois
+    state: ''
+    title: Cicero, Illinois — Custom Architectural Metal
+  - about_city: Elmwood Park is a village in Cook County, Illinois, United States.
+      The population was 24,521 at the 2020 census. The community has long maintained
+      a large Italian American population, with a more recent influx of Hispanic and
+      Latino Americans.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Elmwood Park, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Elmwood Park
+      caption: Wikipedia - Elmwood Park, Illinois
+      credit: Wikipedia - Elmwood Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Elmwood\
+        \ Park, Illinois\" href=\"https://en.wikipedia.org/wiki/Elmwood_Park%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Chicago_vicinity%2C_Elmwood_Park%2C_Saint_Celestine_Catholic_Parish_-_summer_1981_%28ko%C5%9Bci%C3%B3%C5%82_parafialny_p.w._%C5%9Bw._Celestyna%29.jpg/330px-Chicago_vicinity%2C_Elmwood_Park%2C_Saint_Celestine_Catholic_Parish_-_summer_1981_%28ko%C5%9Bci%C3%B3%C5%82_parafialny_p.w._%C5%9Bw._Celestyna%29.jpg\"\
+        \ \n             alt=\"View of Elmwood Park\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Elmwood Park,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Chicago_vicinity%2C_Elmwood_Park%2C_Saint_Celestine_Catholic_Parish_-_summer_1981_%28ko%C5%9Bci%C3%B3%C5%82_parafialny_p.w._%C5%9Bw._Celestyna%29.jpg/330px-Chicago_vicinity%2C_Elmwood_Park%2C_Saint_Celestine_Catholic_Parish_-_summer_1981_%28ko%C5%9Bci%C3%B3%C5%82_parafialny_p.w._%C5%9Bw._Celestyna%29.jpg
+      source: https://en.wikipedia.org/wiki/Elmwood_Park%2C_Illinois
+    city_map_embed: ''
+    city_name: Elmwood Park, Illinois
+    featured_products: []
+    hero_title: Elmwood Park, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: elmwood-park-illinois
+    state: ''
+    title: Elmwood Park, Illinois — Custom Architectural Metal
+  - about_city: Evanston is a city in Cook County, Illinois, United States. The innermost
+      North Shore suburb of Chicago, Evanston lies on Lake Michigan 12 miles (19 km)
+      north of the Loop. It is bordered by Chicago to the south, Skokie to the west,
+      Wilmette to the north, and the lake to the east. Evanston had a population of
+      78,110 as of 2020.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Evanston, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Evanston
+      caption: Wikipedia - Evanston, Illinois
+      credit: Wikipedia - Evanston, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Evanston,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Evanston%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Fountain_Square_Evanston.jpg/330px-Fountain_Square_Evanston.jpg\"\
+        \ \n             alt=\"View of Evanston\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Evanston, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Fountain_Square_Evanston.jpg/330px-Fountain_Square_Evanston.jpg
+      source: https://en.wikipedia.org/wiki/Evanston%2C_Illinois
+    city_map_embed: ''
+    city_name: Evanston, Illinois
+    featured_products: []
+    hero_title: Evanston, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: evanston-illinois
+    state: ''
+    title: Evanston, Illinois — Custom Architectural Metal
+  - about_city: Forest Park is a village in Cook County, Illinois, United States,
+      and a suburb of Chicago. The population was 14,339 at the 2020 census. The Forest
+      Park terminal on the CTA Blue Line is the line's western terminus, located on
+      the Eisenhower Expressway at Des Plaines Avenue. This makes it one of just two
+      municipalities served by the Chicago "L" train network that does not directly
+      border Chicago.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Forest Park, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Forest Park
+      caption: Wikipedia - Forest Park, Illinois
+      credit: Wikipedia - Forest Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Forest\
+        \ Park, Illinois\" href=\"https://en.wikipedia.org/wiki/Forest_Park%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Madison_Street%2C_Forest_Park.jpg/330px-Madison_Street%2C_Forest_Park.jpg\"\
+        \ \n             alt=\"View of Forest Park\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Forest Park,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Madison_Street%2C_Forest_Park.jpg/330px-Madison_Street%2C_Forest_Park.jpg
+      source: https://en.wikipedia.org/wiki/Forest_Park%2C_Illinois
+    city_map_embed: ''
+    city_name: Forest Park, Illinois
+    featured_products: []
+    hero_title: Forest Park, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: forest-park-illinois
+    state: ''
+    title: Forest Park, Illinois — Custom Architectural Metal
+  - about_city: Franklin Park is a village in Cook County, Illinois, United States.
+      The population was 18,467 at the 2020 census, up from 18,333 at the 2010 census.
+      It was named for real estate broker Lesser Franklin who bought acres of the
+      area when it was a majority of farming fields.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Franklin Park, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Franklin Park
+      caption: Wikipedia - Franklin Park, Illinois
+      credit: Wikipedia - Franklin Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Franklin\
+        \ Park, Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n       \
+        \ <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/FPtrainhouse.JPG/330px-FPtrainhouse.JPG\"\
+        \ \n             alt=\"View of Franklin Park\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Franklin Park,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/FPtrainhouse.JPG/330px-FPtrainhouse.JPG
+      source: ''
+    city_map_embed: ''
+    city_name: Franklin Park, Illinois
+    featured_products: []
+    hero_title: Franklin Park, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: franklin-park-illinois
+    state: ''
+    title: Franklin Park, Illinois — Custom Architectural Metal
+  - about_city: Harwood Heights is a village in Cook County, Illinois, United States.
+      The population was 9,065 at the 2020 census. Harwood Heights and its neighbor
+      Norridge form an enclave surrounded by the city of Chicago.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Harwood Heights, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Harwood Heights
+      caption: Wikipedia - Harwood Heights, Illinois
+      credit: Wikipedia - Harwood Heights, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Harwood\
+        \ Heights, Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n    \
+        \    <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/The_Mont_Clare.JPG/330px-The_Mont_Clare.JPG\"\
+        \ \n             alt=\"View of Harwood Heights\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Harwood Heights,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/The_Mont_Clare.JPG/330px-The_Mont_Clare.JPG
+      source: ''
+    city_map_embed: ''
+    city_name: Harwood Heights, Illinois
+    featured_products: []
+    hero_title: Harwood Heights, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: harwood-heights-illinois
+    state: ''
+    title: Harwood Heights, Illinois — Custom Architectural Metal
+  - about_city: Lincolnwood is a village in Cook County, Illinois, United States.
+      Per the 2020 census, the population was 13,463. An inner suburb of Chicago,
+      it shares its southern, eastern, and a small section of its western boundary
+      with Chicago, also bordering Skokie to the north and west.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Lincolnwood, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Lincolnwood
+      caption: Wikipedia - Lincolnwood, Illinois
+      credit: Wikipedia - Lincolnwood, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Lincolnwood,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Lincolnwood%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Lincolnwood_Village_Hall%2C_Lincolnwood%2C_Illinois_%289181752202%29.jpg/330px-Lincolnwood_Village_Hall%2C_Lincolnwood%2C_Illinois_%289181752202%29.jpg\"\
+        \ \n             alt=\"View of Lincolnwood\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Lincolnwood,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Lincolnwood_Village_Hall%2C_Lincolnwood%2C_Illinois_%289181752202%29.jpg/330px-Lincolnwood_Village_Hall%2C_Lincolnwood%2C_Illinois_%289181752202%29.jpg
+      source: https://en.wikipedia.org/wiki/Lincolnwood%2C_Illinois
+    city_map_embed: ''
+    city_name: Lincolnwood, Illinois
+    featured_products: []
+    hero_title: Lincolnwood, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: lincolnwood-illinois
+    state: ''
+    title: Lincolnwood, Illinois — Custom Architectural Metal
+  - about_city: Lyons is a village in Cook County, Illinois, United States. Per the
+      2020 census, the population was 10,817. The Chicago Portage National Historic
+      Site is located in Lyons.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Lyons, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Lyons
+      caption: Wikipedia - Lyons, Illinois
+      credit: Wikipedia - Lyons, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Lyons,\
+        \ Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n        <img src=\"\
+        https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/HofmannTower.JPG/330px-HofmannTower.JPG\"\
+        \ \n             alt=\"View of Lyons\"\n             width=\"100%\" \n   \
+        \          style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Lyons, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/HofmannTower.JPG/330px-HofmannTower.JPG
+      source: ''
+    city_map_embed: ''
+    city_name: Lyons, Illinois
+    featured_products: []
+    hero_title: Lyons, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: lyons-illinois
+    state: ''
+    title: Lyons, Illinois — Custom Architectural Metal
+  - about_city: Maywood is a village in Cook County, Illinois, United States, in the
+      Chicago metropolitan area. It was founded on April 6, 1869, and organized October
+      22, 1881. The population was 23,512 at the 2020 census.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Maywood, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Maywood
+      caption: Wikipedia - Maywood, Illinois
+      credit: Wikipedia - Maywood, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Maywood,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Maywood%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/ImageMasonic_Temple.jpg/330px-ImageMasonic_Temple.jpg\"\
+        \ \n             alt=\"View of Maywood\"\n             width=\"100%\" \n \
+        \            style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Maywood, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/ImageMasonic_Temple.jpg/330px-ImageMasonic_Temple.jpg
+      source: https://en.wikipedia.org/wiki/Maywood%2C_Illinois
+    city_map_embed: ''
+    city_name: Maywood, Illinois
+    featured_products: []
+    hero_title: Maywood, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: maywood-illinois
+    state: ''
+    title: Maywood, Illinois — Custom Architectural Metal
+  - about_city: Melrose Park is a village in Leyden and Proviso Townships, Cook County,
+      Illinois, United States. It is a suburb of Chicago. As of the 2020 census it
+      had a population of 24,796.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Melrose Park, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Melrose Park
+      caption: Wikipedia - Melrose Park, Illinois
+      credit: Wikipedia - Melrose Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Melrose\
+        \ Park, Illinois\" href=\"https://en.wikipedia.org/wiki/Melrose_Park%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Downtown_Melrose_Park.jpg/330px-Downtown_Melrose_Park.jpg\"\
+        \ \n             alt=\"View of Melrose Park\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Melrose Park,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Downtown_Melrose_Park.jpg/330px-Downtown_Melrose_Park.jpg
+      source: https://en.wikipedia.org/wiki/Melrose_Park%2C_Illinois
+    city_map_embed: ''
+    city_name: Melrose Park, Illinois
+    featured_products: []
+    hero_title: Melrose Park, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: melrose-park-illinois
+    state: ''
+    title: Melrose Park, Illinois — Custom Architectural Metal
+  - about_city: Norridge is a village in Leyden Township, Cook County, Illinois, United
+      States. The village and its neighbor to the east, Harwood Heights, together
+      form an enclave within the city of Chicago. Norridge is sometimes referred to
+      as the "Island Within a City". The area that would eventually become Norridge
+      was settled by farmers in 1830.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Norridge, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Norridge
+      caption: Wikipedia - Norridge, Illinois
+      credit: Wikipedia - Norridge, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Norridge,\
+        \ Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n        <img src=\"\
+        https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Cook_County_Illinois_Incorporated_and_Unincorporated_areas_Norridge_Highlighted.svg/330px-Cook_County_Illinois_Incorporated_and_Unincorporated_areas_Norridge_Highlighted.svg.png\"\
+        \ \n             alt=\"View of Norridge\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Norridge, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Cook_County_Illinois_Incorporated_and_Unincorporated_areas_Norridge_Highlighted.svg/330px-Cook_County_Illinois_Incorporated_and_Unincorporated_areas_Norridge_Highlighted.svg.png
+      source: ''
+    city_map_embed: ''
+    city_name: Norridge, Illinois
+    featured_products: []
+    hero_title: Norridge, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: norridge-illinois
+    state: ''
+    title: Norridge, Illinois — Custom Architectural Metal
+  - about_city: Oak Lawn is a village in Cook County, Illinois, United States. The
+      population was 58,362 at the 2020 census. Oak Lawn is a suburb of Chicago, located
+      southwest of the city. It shares borders with the city in two areas but is surrounded
+      mostly by other suburbs.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Oak Lawn, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Oak Lawn
+      caption: Wikipedia - Oak Lawn, Illinois
+      credit: Wikipedia - Oak Lawn, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Oak\
+        \ Lawn, Illinois\" href=\"https://en.wikipedia.org/wiki/Oak_Lawn%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Oak_Lawn%2C_Illinois.jpg/330px-Oak_Lawn%2C_Illinois.jpg\"\
+        \ \n             alt=\"View of Oak Lawn\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Oak Lawn, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Oak_Lawn%2C_Illinois.jpg/330px-Oak_Lawn%2C_Illinois.jpg
+      source: https://en.wikipedia.org/wiki/Oak_Lawn%2C_Illinois
+    city_map_embed: ''
+    city_name: Oak Lawn, Illinois
+    featured_products: []
+    hero_title: Oak Lawn, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: oak-lawn-illinois
+    state: ''
+    title: Oak Lawn, Illinois — Custom Architectural Metal
+  - about_city: Oak Park is a village in Cook County, Illinois, United States, adjacent
+      to Chicago. It is the 26th-most populous municipality in Illinois, with a population
+      of 54,318 as of the 2020 census. Oak Park was first settled in 1835 and later
+      incorporated in 1902, when it separated from Cicero. It is closely tied to the
+      smaller town of River Forest sharing a chamber of commerce and a high school,
+      Oak Park and River Forest High School.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Oak Park, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Oak Park
+      caption: Wikipedia - Oak Park, Illinois
+      credit: Wikipedia - Oak Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Oak\
+        \ Park, Illinois\" href=\"https://en.wikipedia.org/wiki/Oak_Park%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Lake_Street_at_dusk%2C_Oak_Park.jpg/330px-Lake_Street_at_dusk%2C_Oak_Park.jpg\"\
+        \ \n             alt=\"View of Oak Park\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Oak Park, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Lake_Street_at_dusk%2C_Oak_Park.jpg/330px-Lake_Street_at_dusk%2C_Oak_Park.jpg
+      source: https://en.wikipedia.org/wiki/Oak_Park%2C_Illinois
+    city_map_embed: ''
+    city_name: Oak Park, Illinois
+    featured_products: []
+    hero_title: Oak Park, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: oak-park-illinois
+    state: ''
+    title: Oak Park, Illinois — Custom Architectural Metal
+  - about_city: Park Ridge is a city in Cook County, Illinois, United States, and
+      a suburb of Chicago. Per the 2020 census, the population was 39,656. It is located
+      15 miles (24 km) north of downtown Chicago. It is close to O'Hare International
+      Airport, major expressways, and rail transportation. It is a part of the Chicago
+      metropolitan area, bordering three official neighborhoods on Chicago's Far Northwest
+      Side.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Park Ridge, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Park Ridge
+      caption: Wikipedia - Park Ridge, Illinois
+      credit: Wikipedia - Park Ridge, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Park\
+        \ Ridge, Illinois\" href=\"https://en.wikipedia.org/wiki/Park_Ridge%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/ParkRidgePickwick.jpg/330px-ParkRidgePickwick.jpg\"\
+        \ \n             alt=\"View of Park Ridge\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Park Ridge,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/ParkRidgePickwick.jpg/330px-ParkRidgePickwick.jpg
+      source: https://en.wikipedia.org/wiki/Park_Ridge%2C_Illinois
+    city_map_embed: ''
+    city_name: Park Ridge, Illinois
+    featured_products: []
+    hero_title: Park Ridge, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: park-ridge-illinois
+    state: ''
+    title: Park Ridge, Illinois — Custom Architectural Metal
+  - about_city: River Forest is a suburban village adjacent to Chicago in Cook County,
+      Illinois, United States. Per the 2020 census, the population was 11,717. Two
+      universities make their home in River Forest, Dominican University and Concordia
+      University Chicago. The village is closely tied to the larger neighboring community
+      of Oak Park. There are significant architectural designs located in River Forest
+      such as the Winslow House by Frank Lloyd Wright.
+    breadcrumbs:
+    - Home
+    - Locations
+    - River Forest, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of River Forest
+      caption: Wikipedia - River Forest, Illinois
+      credit: Wikipedia - River Forest, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - River\
+        \ Forest, Illinois\" href=\"https://en.wikipedia.org/wiki/River_Forest%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/River_Forest_%28IL%29_Public_Library.jpg/330px-River_Forest_%28IL%29_Public_Library.jpg\"\
+        \ \n             alt=\"View of River Forest\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - River Forest,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/River_Forest_%28IL%29_Public_Library.jpg/330px-River_Forest_%28IL%29_Public_Library.jpg
+      source: https://en.wikipedia.org/wiki/River_Forest%2C_Illinois
+    city_map_embed: ''
+    city_name: River Forest, Illinois
+    featured_products: []
+    hero_title: River Forest, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: river-forest-illinois
+    state: ''
+    title: River Forest, Illinois — Custom Architectural Metal
+  - about_city: River Grove is a village in Leyden Township, Cook County, Illinois,
+      United States. The population was 10,612 at the 2020 census. It is part of the
+      Chicago metropolitan area.
+    breadcrumbs:
+    - Home
+    - Locations
+    - River Grove, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of River Grove
+      caption: Wikipedia - River Grove, Illinois
+      credit: Wikipedia - River Grove, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - River\
+        \ Grove, Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n      \
+        \  <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Dorhmann-Buckman_House_4.JPG/330px-Dorhmann-Buckman_House_4.JPG\"\
+        \ \n             alt=\"View of River Grove\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - River Grove,\
+        \ Illinois</p>\n</section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Dorhmann-Buckman_House_4.JPG/330px-Dorhmann-Buckman_House_4.JPG
+      source: ''
+    city_map_embed: ''
+    city_name: River Grove, Illinois
+    featured_products: []
+    hero_title: River Grove, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: river-grove-illinois
+    state: ''
+    title: River Grove, Illinois — Custom Architectural Metal
+  - about_city: Riverside is a suburban village in Cook County, Illinois, United States.
+      The population of the village was 9,298 at the 2020 census. It is a suburb of
+      Chicago, located roughly 9 miles (14 km) west of downtown Chicago and 2 miles
+      (3 km) outside city limits. A significant portion of the village is in the Riverside
+      Landscape Architecture District, designated a National Historic Landmark in
+      1970.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Riverside, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Riverside
+      caption: Wikipedia - Riverside, Illinois
+      credit: Wikipedia - Riverside, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Riverside,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Riverside%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Riverside%2C_Illinois.jpg/330px-Riverside%2C_Illinois.jpg\"\
+        \ \n             alt=\"View of Riverside\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Riverside, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Riverside%2C_Illinois.jpg/330px-Riverside%2C_Illinois.jpg
+      source: https://en.wikipedia.org/wiki/Riverside%2C_Illinois
+    city_map_embed: ''
+    city_name: Riverside, Illinois
+    featured_products: []
+    hero_title: Riverside, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: riverside-illinois
+    state: ''
+    title: Riverside, Illinois — Custom Architectural Metal
+  - about_city: Skokie is a village in Cook County, Illinois, United States. According
+      to the 2020 census, its population was 67,824. Skokie lies approximately 15
+      miles (24 km) north of Chicago's downtown Loop. The name Skokie comes from a
+      Potawatomi word for 'marsh'. For many years, Skokie promoted itself as "The
+      World's Largest Village".
+    breadcrumbs:
+    - Home
+    - Locations
+    - Skokie, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Skokie
+      caption: Wikipedia - Skokie, Illinois
+      credit: Wikipedia - Skokie, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Skokie,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Skokie%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Skokie%2C_Illinois_%289179544141%29.jpg/330px-Skokie%2C_Illinois_%289179544141%29.jpg\"\
+        \ \n             alt=\"View of Skokie\"\n             width=\"100%\" \n  \
+        \           style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Skokie, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Skokie%2C_Illinois_%289179544141%29.jpg/330px-Skokie%2C_Illinois_%289179544141%29.jpg
+      source: https://en.wikipedia.org/wiki/Skokie%2C_Illinois
+    city_map_embed: ''
+    city_name: Skokie, Illinois
+    featured_products: []
+    hero_title: Skokie, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: skokie-illinois
+    state: ''
+    title: Skokie, Illinois — Custom Architectural Metal
+  - about_city: Summit is a city in Cook County, Illinois, United States. The population
+      was 11,161 at the 2020 census. The name Summit, in use since 1836, refers to
+      the highest point on the Chicago Portage between the northeast-flowing Chicago
+      River and the southwest-flowing Des Plaines River located just north of the
+      city.
+    breadcrumbs:
+    - Home
+    - Locations
+    - Summit, Illinois
+    city_faq: []
+    city_image:
+      alt_text: View of Summit
+      caption: Wikipedia - Summit, Illinois
+      credit: Wikipedia - Summit, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Summit,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Summit%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Cement_silo_-_panoramio.jpg/330px-Cement_silo_-_panoramio.jpg\"\
+        \ \n             alt=\"View of Summit\"\n             width=\"100%\" \n  \
+        \           style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Summit, Illinois</p>\n\
+        </section>"
+      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Cement_silo_-_panoramio.jpg/330px-Cement_silo_-_panoramio.jpg
+      source: https://en.wikipedia.org/wiki/Summit%2C_Illinois
+    city_map_embed: ''
+    city_name: Summit, Illinois
+    featured_products: []
+    hero_title: Summit, Illinois — Custom Architectural Metal Fabrication
+    meta_description: ''
+    places_of_interest: []
+    primary_keyword: ''
+    secondary_keywords: []
+    seo_content_body: ''
+    seo_content_title: ''
+    service_area_note: ''
+    slug: summit-illinois
+    state: ''
+    title: Summit, Illinois — Custom Architectural Metal
   company_overview: 'Located in the heart of Naperville, Illinois, Salvo Metal Works
     proudly serves residential and commercial clients throughout the Chicago metropolitan
     area and beyond. Our central location allows us to efficiently serve clients across
@@ -27,166 +1073,151 @@ client:
     Ready to transform your building with custom copper architectural elements? Contact
     us today to discuss your project and discover how Salvo Metal Works can bring
     your vision to life with exceptional craftsmanship and attention to detail.'
-  mission_statement: "Salvo Metal Works exists to forge function with metal mastery\u2014\
-    designing and crafting bespoke architectural metal that elevates beauty, improves\
-    \ performance, and lasts for generations. We partner with architects, builders,\
-    \ and discerning homeowners to deliver precision-engineered cupolas, finials,\
-    \ dormers, roof vents, chimney shrouds, leader boxes, and snow guards that blend\
-    \ old-world craftsmanship with modern fabrication. Our mission is to protect and\
-    \ enhance the built environment through meticulous design, premium materials,\
-    \ and relentless attention to detail\u2014delivered on time, to spec, and built\
-    \ to outlast the roof beneath it."
-  service_guarantee: ''
-  service_area_description: Serving the greater Chicagoland area and beyond with bespoke
-    architectural metal fabrication
-  why_choose_us:
-  - title: Unmatched Expertise
-    description: Our team brings years of experience in metal fabrication, understanding
-      the unique challenges and opportunities in our field. We stay current with the
-      latest techniques while honoring proven methods that deliver reliable results.
-  - title: Custom Design and Engineering
-    description: Every project is unique, and we approach each one with fresh perspective
-      and creative problem-solving. Our team works closely with clients to understand
-      their vision and translate it into practical, effective solutions.
-  - title: Quality Materials and Craftsmanship
-    description: We use only the finest materials and maintain the highest standards
-      of workmanship. Our commitment to quality ensures that every project meets our
-      exacting standards and exceeds client expectations.
-  - title: Comprehensive Service
-    description: From initial consultation and planning through completion and follow-up,
-      we provide comprehensive service that makes the process smooth and stress-free
-      for our clients.
   company_stats:
     RoofingDirect snapshot: 4.7/5
   contact:
-    name: Customer Service
-    phone: +1-866-713-3396
+    additional_locations: []
     address:
-      street: 566 W 5th Ave
       city: Naperville
-      state: IL
-      zip_code: '60563'
       country: United States
-    email: info@salvometalworks.com
+      state: IL
+      street: 566 W 5th Ave
+      zip_code: '60563'
     business_hours:
-      monday: 7:30 AM - 4:30 PM
-      tuesday: 7:30 AM - 4:30 PM
-      wednesday: 7:30 AM - 4:30 PM
-      thursday: 7:30 AM - 4:30 PM
       friday: 7:30 AM - 4:30 PM
+      monday: 7:30 AM - 4:30 PM
       saturday: Closed
       sunday: Closed
-    emergency_phone: ''
-    office_phone: ''
-    mobile_phone: ''
-    fax_number: ''
-    response_time_promise: ''
+      thursday: 7:30 AM - 4:30 PM
+      tuesday: 7:30 AM - 4:30 PM
+      wednesday: 7:30 AM - 4:30 PM
     contact_preference: ''
-    additional_locations: []
-  branding:
-    primary_color: '#bf062f'
-    secondary_color: '#fe9e1f'
-    font_family: Arial, sans-serif
-    logo_url: https://salvometalworks.com/wp-content/uploads/2024/10/Salvo_RGB_FullColor_Logo-2048x742.png
-  social_media:
-    facebook: https://www.facebook.com/SalvoMetalWorks
-    linkedin: https://www.linkedin.com/company/salvometalworks/
-    instagram: https://www.instagram.com/salvometalworks/
-    youtube: https://www.youtube.com/@salvometalworks
+    email: info@salvometalworks.com
+    emergency_phone: ''
+    fax_number: ''
+    mobile_phone: ''
+    name: Customer Service
+    office_phone: ''
+    phone: +1-866-713-3396
+    response_time_promise: ''
+  description: Bespoke architectural metal fabrication. Salvo Metal Works is a family-owned
+    and operated manufacturer of roofing products. We pride ourselves on our ability
+    to customize all of our products to fit any project's needs. We offer a comprehensive
+    range of chimney shrouds, cupolas, dormers, finials, leader boxes, roof vents,
+    snow guards, and more.
+  domain: https://salvometalworks.com
+  faq: []
   google_business_profile:
     embed_code: <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d205664.07488490682!2d-88.3291328555474!3d41.77874305321832!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e57cdd45d0985%3A0x9f48999634f8ab20!2sSalvo%20Metal%20Works!5e0!3m2!1sen!2sus!4v1755562750597!5m2!1sen!2sus"
       width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
       referrerpolicy="no-referrer-when-downgrade"></iframe>
-  pages:
-  - title: Home
-    slug: index
-    primary_keyword: metal fabrication
-    secondary_keywords:
-    - salvo metal works
-    - local business
+  hero_subtitle: Professional metal fabrication services you can trust - serving Chicago
+    and beyond!
+  industry: Metal Fabrication
+  mission_statement: Salvo Metal Works exists to forge function with metal mastery—designing
+    and crafting bespoke architectural metal that elevates beauty, improves performance,
+    and lasts for generations. We partner with architects, builders, and discerning
+    homeowners to deliver precision-engineered cupolas, finials, dormers, roof vents,
+    chimney shrouds, leader boxes, and snow guards that blend old-world craftsmanship
+    with modern fabrication. Our mission is to protect and enhance the built environment
+    through meticulous design, premium materials, and relentless attention to detail—delivered
+    on time, to spec, and built to outlast the roof beneath it.
   offerings:
-  - sku: SMW-CUPOLAS
-    name: Custom Copper Cupolas
+  - category: '1000'
+    description: Cupolas are elegant roof features that add style and utility. Set
+      at the roof’s peak, they introduce a timeless accent and can be square, round,
+      or octagonal. We build them in copper, lead-coated or freedom gray copper, zinc,
+      or aluminum that patina beautifully. Cupolas vent hot air to reduce moisture,
+      and many include windows or louvers. Custom sizing and detailing let them fit
+      rustic or modern homes while bringing light, airflow, and a refined focal point.
     image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-cupola-300x300.jpg
-    description: "Cupolas are elegant roof features that add style and utility. Set\
-      \ at the roof\u2019s peak, they introduce a timeless accent and can be square,\
-      \ round, or octagonal. We build them in copper, lead-coated or freedom gray\
-      \ copper, zinc, or aluminum that patina beautifully. Cupolas vent hot air to\
-      \ reduce moisture, and many include windows or louvers. Custom sizing and detailing\
-      \ let them fit rustic or modern homes while bringing light, airflow, and a refined\
-      \ focal point."
-    category: '1000'
+    name: Custom Copper Cupolas
     price: ''
+    sku: SMW-CUPOLAS
     type: product
-  - sku: SMW-FINIALS
-    name: Custom Copper Finials
+  - category: '3000'
+    description: Elevate your architecture with Salvo Metal Works’ finials—beauty
+      meeting function. Designed for turrets, ridgelines, towers, and gables, they
+      come in many shapes and sizes to suit any style. First used to curb water seepage
+      on round roofs, finials evolved into striking accents across Gothic, Renaissance,
+      and modern designs, giving rooflines a polished, memorable finish.
     image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-finial-309.jpg
-    description: "Elevate your architecture with Salvo Metal Works\u2019 finials\u2014\
-      beauty meeting function. Designed for turrets, ridgelines, towers, and gables,\
-      \ they come in many shapes and sizes to suit any style. First used to curb water\
-      \ seepage on round roofs, finials evolved into striking accents across Gothic,\
-      \ Renaissance, and modern designs, giving rooflines a polished, memorable finish."
-    category: '3000'
+    name: Custom Copper Finials
     price: ''
+    sku: SMW-FINIALS
     type: product
-  - sku: SMW-DORMERS
-    name: Custom Copper Dormer
-    image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-dormer.png
+  - category: '4000'
     description: Dormers rise from a sloped roof to add space, light, and ventilation,
       typically housing a window or vent. Clad in copper or other durable metals,
       they increase usable area on upper levels while brightening attics or top-floor
       rooms. Copper dormers stand out for long life, low maintenance, and a rich patina
       that deepens over time, pairing practical benefits with distinctive curb appeal.
-    category: '4000'
+    image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-dormer.png
+    name: Custom Copper Dormer
     price: ''
+    sku: SMW-DORMERS
     type: product
-  - sku: SMW-ROOF-VENTS
-    name: Custom Copper Roof Vents
-    image_url: https://salvometalworks.com/wp-content/uploads/2025/04/Roof-vent.png
+  - category: '5000'
     description: Roof vents manage airflow by bringing in cool air and exhausting
       warm, moist air. Intakes are commonly placed in the soffit or near the eave;
       exhaust vents sit high on the roof, often integrated along the ridge. Available
       in multiple shapes and sizes, a balanced system improves energy efficiency,
       extends roof life, and helps prevent condensation, ice dams, and heat buildup.
-    category: '5000'
+    image_url: https://salvometalworks.com/wp-content/uploads/2025/04/Roof-vent.png
+    name: Custom Copper Roof Vents
     price: ''
+    sku: SMW-ROOF-VENTS
     type: product
-  - sku: SMW-CHIMNEY-SHROUDS
-    name: Custom Chimney Shrouds
+  - category: '6000'
+    description: Chimney Shrouds, also called chimney caps, chimney pots, chimney
+      covers, can be used as a decorative or functional top for a chimney. Not only
+      do these caps serve the purpose of protecting the top of a chimney, it also
+      can add a beautiful aesthetic to a home’s roof line. All Salvo Metal Works chimney
+      shrouds are made to order by our in-house fabricators. Expertly crafted from
+      high-quality materials.
     image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-chimney-shrouds.webp
-    description: "Chimney Shrouds, also called chimney caps, chimney pots, chimney\
-      \ covers, can be used as a decorative or functional top for a chimney. Not only\
-      \ do these caps serve the purpose of protecting the top of a chimney, it also\
-      \ can add a beautiful aesthetic to a home\u2019s roof line. All Salvo Metal\
-      \ Works chimney shrouds are made to order by our in-house fabricators. Expertly\
-      \ crafted from high-quality materials."
-    category: '6000'
+    name: Custom Chimney Shrouds
     price: ''
+    sku: SMW-CHIMNEY-SHROUDS
     type: product
-  - sku: SMW-LEADER-BOXES
-    name: Custom Copper Leader Box
+  - category: '2000'
+    description: Chimney shrouds—also called caps, pots, or covers—protect the flue
+      and elevate curb appeal. Made to order by Salvo Metal Works, each is crafted
+      from high-quality materials to block debris, shed water, and improve draft.
+      Choose from tailored designs and finishes that match your architecture. Our
+      custom fabrication delivers lasting durability and refined style for any home.
     image_url: https://salvometalworks.com/wp-content/uploads/2025/04/custom-copper-leaderbox.jpg
-    description: "Chimney shrouds\u2014also called caps, pots, or covers\u2014protect\
-      \ the flue and elevate curb appeal. Made to order by Salvo Metal Works, each\
-      \ is crafted from high-quality materials to block debris, shed water, and improve\
-      \ draft. Choose from tailored designs and finishes that match your architecture.\
-      \ Our custom fabrication delivers lasting durability and refined style for any\
-      \ home."
-    category: '2000'
+    name: Custom Copper Leader Box
     price: ''
+    sku: SMW-LEADER-BOXES
     type: product
-  - sku: SMW-SNOW-GUARDS
-    name: Custom Copper Snow Guards
-    image_url: https://salvometalworks.com/wp-content/uploads/2024/12/snow-guard-6.jpeg
+  - category: '1500'
     description: Custom Copper Snow Guards stop dangerous roof-snow slides, protecting
       people, gutters, and landscaping. Crafted from premium copper, they resist corrosion,
       develop a rich patina, and suit slate or metal roofs. Each system is custom-sized
       and spaced to your roof for dependable retention, long life, and refined curb
       appeal.
-    category: '1500'
+    image_url: https://salvometalworks.com/wp-content/uploads/2024/12/snow-guard-6.jpeg
+    name: Custom Copper Snow Guards
     price: ''
+    sku: SMW-SNOW-GUARDS
     type: product
-  faq: []
+  pages:
+  - primary_keyword: metal fabrication
+    secondary_keywords:
+    - salvo metal works
+    - local business
+    slug: index
+    title: Home
+  service_area_description: Serving the greater Chicagoland area and beyond with bespoke
+    architectural metal fabrication
+  service_guarantee: ''
+  social_media:
+    facebook: https://www.facebook.com/SalvoMetalWorks
+    instagram: https://www.instagram.com/salvometalworks/
+    linkedin: https://www.linkedin.com/company/salvometalworks/
+    youtube: https://www.youtube.com/@salvometalworks
+  tagline: Forging Function with Metal Mastery
   target_cities:
   - Chicago
   - Bellwood, Illinois
@@ -214,790 +1245,21 @@ client:
   - Riverside, Illinois
   - Skokie, Illinois
   - Summit, Illinois
-  city_pages:
-  - city_name: Chicago
-    state: ''
-    slug: chicago
-    title: "Chicago \u2014 Custom Architectural Metal"
-    meta_description: "Salvo Metal Works serves Chicago with bespoke architectural\
-      \ metal\u2014custom cupolas, dormers, finials, roof vents & snow guards\u2014\
-      built for beauty & durability."
-    primary_keyword: architectural metal fabrication Chicago
-    secondary_keywords: []
-    hero_title: "Chicago \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Chicago
-    about_city: "Chicago sits on the southwest shore of Lake Michigan and is known\
-      \ worldwide for architecture, arts, and industry. Often called the birthplace\
-      \ of the modern skyscraper, the city\u2019s skyline mixes early steel-frame\
-      \ innovation with contemporary supertalls, museums, parks, and miles of lakefront.\
-      \ The result is a dynamic, design-forward metropolis where buildings matter\u2014\
-      and details matter even more.\n\nNeighborhoods give Chicago its character. The\
-      \ Loop and River North hum with commerce and culture; the West Loop, Fulton\
-      \ Market, and South Loop blend historic warehouses with new residential and\
-      \ hospitality; the Near North, Old Town, and Lincoln Park bring classic streetscapes.\
-      \ Farther south and west, places like Hyde Park, Bronzeville, Pilsen, and Bridgeport\
-      \ showcase deep history, universities, and thriving arts scenes. Across all\
-      \ of it, thoughtful materials and well-executed craftsmanship are part of the\
-      \ city\u2019s DNA.\n\nWhy architectural metal matters here\n\nFour-season weather,\
-      \ lake-effect snow, wind, and freeze\u2013thaw cycles make performance non-negotiable.\
-      \ Copper, zinc, stainless, and powder-coated steel excel when designed for proper\
-      \ drainage, expansion, and concealed attachment. From cupolas and dormers to\
-      \ finials, leader boxes, roof vents, and snow guards, well-detailed metal elements\
-      \ protect envelopes, manage water, and elevate sightlines\u2014at street level\
-      \ and from fifty stories up.\n\nNeighborhoods and districts we serve\n\n* The\
-      \ Loop, River North, Streeterville\n* West Loop, Fulton Market, South Loop\n\
-      * Gold Coast, Old Town, Lincoln Park, Lakeview\n* Wicker Park, Bucktown, Logan\
-      \ Square\n* Hyde Park, Bronzeville, Bridgeport, Pilsen\n\nPlanning a project\
-      \ in Chicago? Specify premium details that look intentional and last. Partner\
-      \ with Salvo Metal Works\u2014your expert in architectural metal fabrication\
-      \ Chicago."
-    city_image:
-      image_url: https://upload.wikimedia.org/wikipedia/commons/a/a5/Chicago_River_ferry_b.jpg
-      alt_text: Chicago River
-      caption: "Bespoke Architectural Metal for Chicago\u2014Beauty with Backbone"
-      credit: ''
-      source: Wikipedia
-    seo_content_title: Architectural Metal Fabrication Chicago | Salvo Metal Works
-    seo_content_body: "Chicago doesn\u2019t just admire architecture\u2014it lives\
-      \ and breathes it. From lakefront wind to freeze\u2013thaw cycles, this city\
-      \ demands details that perform as well as they look. That\u2019s where **Salvo\
-      \ Metal Works** earns its keep. We blend studio-grade craft with jobsite pragmatism,\
-      \ delivering architectural metal that slots cleanly into your drawings, coordinates\
-      \ smoothly in the field, and holds its line for decades. If you\u2019re searching\
-      \ for *architectural metal fabrication Chicago*, you\u2019re in the right shop.\n\
-      \nWe start with process, because process is what protects design intent. Expect\
-      \ precise shop drawings, responsive RFIs, and submittals that answer questions\
-      \ instead of creating them. Our fabrications consider drainage paths, expansion\
-      \ and contraction, load paths, and attachment strategies from day one\u2014\
-      so your elevations read intentional from five feet and fifty. Copper, zinc,\
-      \ stainless, or powder-coated aluminum: we\u2019ll recommend the right alloy\
-      \ and thickness for the site, the fa\xE7ade, and the budget.\n\nNeed a statement\
-      \ piece that still behaves like building science? Our [custom cupolas](https://salvometalworks.com/product-category/custom-cupolas/)\
-      \ bring proportion, shadow play, and ventilation together without telegraphing\
-      \ fasteners or compromising the roof. We design for live loads, specify baffles\
-      \ and screens where appropriate, and finish with patinas or coatings that complement\
-      \ both historic districts and new-build glass. Whether it\u2019s River North\
-      \ contemporary or Gold Coast classic, a Salvo cupola looks born to the plan\
-      \ set.\n\nWater management is a Chicago sport. Our [custom leader boxes](https://salvometalworks.com/product-category/custom-leader-boxes/)\
-      \ turn downspouts into deliberate design moves, mitigating splash and icing\
-      \ while keeping fascia lines crisp. Match profiles to adjacent trim, integrate\
-      \ leaf control, and choose finishes that won\u2019t flinch at lake-effect winters.\
-      \ Pair them with roof-edge treatments and you get a system that reads like architecture,\
-      \ not an afterthought.\n\nUp top, airflow matters as much as silhouette. Our\
-      \ [custom roof vents](https://salvometalworks.com/product-category/custom-roof-vents/)\
-      \ balance exhaust performance with elevation discipline\u2014concealed fasteners,\
-      \ smart flashing, and expansion allowances baked in. Need a family of vents\
-      \ that scale across a mixed-use stack? We\u2019ll prototype proportions so the\
-      \ composition stays coherent from podium to penthouse.\n\nNothing frames a skyline\
-      \ detail like the right punctuation. Our [custom finials](https://salvometalworks.com/product-category/custom-finials/)\
-      \ bring that quiet \u201Cof course\u201D to steeples, ridges, and parapets.\
-      \ We tune height, massing, and base geometry to your roof pitch and sightlines,\
-      \ then fabricate for wind resistance and corrosion control. The result is a\
-      \ crown that feels inevitable\u2014as if the building always wanted it.\n\n\
-      Chicago winters call for pragmatism you can\u2019t Photoshop away. Our [custom\
-      \ snow guards](https://salvometalworks.com/product-category/custom-snow-guards/)\
-      \ are engineered for the live loads and sliding snow common on metal and slate\
-      \ roofs. We model spacing, specify the right attachment for the substrate, and\
-      \ align patterns so they read as intentional texture rather than clutter. Safety,\
-      \ envelope protection, and visual order in one move.\n\nFireplaces deserve more\
-      \ than a cap\u2014they deserve a composition. Our [custom chimney shrouds](https://salvometalworks.com/product-category/custom-chimney-shrouds/)\
-      \ solve for draft, animal intrusion, and water while elevating the roof profile.\
-      \ We coordinate with liners and code, manage thermal expansion at the base,\
-      \ and finish with seams that actually earn their keep. On heritage restorations\
-      \ or contemporary builds, the shroud becomes a signature, not a band-aid.\n\n\
-      Dormers can be fussy\u2014unless they\u2019re designed for the envelope they\
-      \ join. Our [custom dormers](https://salvometalworks.com/product-category/custom-dormers/)\
-      \ integrate with standing-seam and shingle assemblies, respect drainage planes,\
-      \ and maintain trim reveals that make carpenters and inspectors happy. Inside,\
-      \ you get daylight and ventilation; outside, you get cadence and rhythm that\
-      \ sharpen the fa\xE7ade.\n\nThe through-line: collaboration. We speak GC, coordinate\
-      \ with roofing subs, and keep timelines honest. Need value engineering without\
-      \ aesthetic compromise? We\u2019ll present options\u2014material swaps, gauge\
-      \ tweaks, joint strategies\u2014that preserve proportion and shadow while meeting\
-      \ the budget. Field templates, mockups, and clear install notes mean fewer surprises\
-      \ on the lift and fewer callbacks in January.\n\nChicago is a city of neighborhoods,\
-      \ and we work them all: Loop and River North commercial, West Loop adaptive\
-      \ reuse, Hyde Park institutional, and residential fabric from Lincoln Park to\
-      \ Beverly. Each site brings its own constraints\u2014historic review, coastal\
-      \ winds, intricate sightlines\u2014and we treat those as design inputs, not\
-      \ obstacles. Your drawings stay your drawings; our job is to make them buildable,\
-      \ durable, and beautiful.\n\nIf you\u2019re specifying in Chicago and want metal\
-      \ details that carry their weight\u2014literally and figuratively\u2014bring\
-      \ Salvo in early. We\u2019ll help you protect the envelope, honor the line,\
-      \ and deliver a finish that holds up to winter, time, and critical eyes.\n\n\
-      **Ready to talk details?** Let\u2019s review your set, align on materials and\
-      \ finish, and turn your concept into a submittal that sails through approval\u2014\
-      then a build that goes in cleanly, on schedule, and exactly as drawn."
-    places_of_interest:
-    - name: Millenium Park
-      embed_url: ''
-    city_faq:
-    - question: Why Choose Salvo Metal Works for you next historical restoration project?
-      answer: "When architects need bespoke metal that looks like sculpture and behaves\
-        \ like building science, they call Salvo Metal Works. This team blends studio-grade\
-        \ craftsmanship with jobsite pragmatism\u2014think custom cupolas, dormers,\
-        \ finials, leader boxes, roof vents, and snow guards engineered to live gracefully\
-        \ on real roofs in real weather.\n\nWhat sets Salvo apart isn\u2019t just\
-        \ copper, zinc, or powder-coated steel; it\u2019s process. You\u2019ll get\
-        \ clean shop drawings, clear tolerances, and submittals that actually answer\
-        \ questions. Need a quick RFI turnaround, a field template, or a tweak for\
-        \ tricky substrate transitions? Done. Salvo builds for performance first\u2014\
-        proper drainage paths, smart attachment systems, and expansion allowances\u2014\
-        then finishes with the kind of patina and proportion that makes elevations\
-        \ sing."
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Bellwood, Illinois
-    state: ''
-    slug: bellwood-illinois
-    title: "Bellwood, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Bellwood, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Bellwood, Illinois
-    about_city: ''
-    city_image:
-      image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Bellwood.jpg/1280px-Bellwood.jpg
-      alt_text: View of Bellwood
-      caption: Wikimedia Commons, Bellwood.jpg
-      credit: Wikimedia Commons, Bellwood.jpg
-      source: https://commons.wikimedia.org/wiki/File:Bellwood.jpg
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Oak Park Illinois
-    state: ''
-    slug: oak-park-illinois
-    title: "Oak Park Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Oak Park Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Oak Park Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Berwyn, Illinois
-    state: ''
-    slug: berwyn-illinois
-    title: "Berwyn, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Berwyn, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Berwyn, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Bridgeview, Illinois
-    state: ''
-    slug: bridgeview-illinois
-    title: "Bridgeview, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Bridgeview, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Bridgeview, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Brookfield, Illinois
-    state: ''
-    slug: brookfield-illinois
-    title: "Brookfield, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Brookfield, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Brookfield, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Burbank, Illinois
-    state: ''
-    slug: burbank-illinois
-    title: "Burbank, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Burbank, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Burbank, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Cicero, Illinois
-    state: ''
-    slug: cicero-illinois
-    title: "Cicero, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Cicero, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Cicero, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Elmwood Park, Illinois
-    state: ''
-    slug: elmwood-park-illinois
-    title: "Elmwood Park, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Elmwood Park, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Elmwood Park, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Evanston, Illinois
-    state: ''
-    slug: evanston-illinois
-    title: "Evanston, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Evanston, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Evanston, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Forest Park, Illinois
-    state: ''
-    slug: forest-park-illinois
-    title: "Forest Park, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Forest Park, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Forest Park, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Franklin Park, Illinois
-    state: ''
-    slug: franklin-park-illinois
-    title: "Franklin Park, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Franklin Park, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Franklin Park, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Harwood Heights, Illinois
-    state: ''
-    slug: harwood-heights-illinois
-    title: "Harwood Heights, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Harwood Heights, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Harwood Heights, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Lincolnwood, Illinois
-    state: ''
-    slug: lincolnwood-illinois
-    title: "Lincolnwood, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Lincolnwood, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Lincolnwood, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Lyons, Illinois
-    state: ''
-    slug: lyons-illinois
-    title: "Lyons, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Lyons, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Lyons, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Maywood, Illinois
-    state: ''
-    slug: maywood-illinois
-    title: "Maywood, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Maywood, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Maywood, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Melrose Park, Illinois
-    state: ''
-    slug: melrose-park-illinois
-    title: "Melrose Park, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Melrose Park, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Melrose Park, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Norridge, Illinois
-    state: ''
-    slug: norridge-illinois
-    title: "Norridge, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Norridge, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Norridge, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Oak Lawn, Illinois
-    state: ''
-    slug: oak-lawn-illinois
-    title: "Oak Lawn, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Oak Lawn, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Oak Lawn, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Oak Park, Illinois
-    state: ''
-    slug: oak-park-illinois
-    title: "Oak Park, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Oak Park, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Oak Park, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Park Ridge, Illinois
-    state: ''
-    slug: park-ridge-illinois
-    title: "Park Ridge, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Park Ridge, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Park Ridge, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: River Forest, Illinois
-    state: ''
-    slug: river-forest-illinois
-    title: "River Forest, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "River Forest, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - River Forest, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: River Grove, Illinois
-    state: ''
-    slug: river-grove-illinois
-    title: "River Grove, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "River Grove, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - River Grove, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Riverside, Illinois
-    state: ''
-    slug: riverside-illinois
-    title: "Riverside, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Riverside, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Riverside, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Skokie, Illinois
-    state: ''
-    slug: skokie-illinois
-    title: "Skokie, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Skokie, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Skokie, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
-  - city_name: Summit, Illinois
-    state: ''
-    slug: summit-illinois
-    title: "Summit, Illinois \u2014 Custom Architectural Metal"
-    meta_description: ''
-    primary_keyword: ''
-    secondary_keywords: []
-    hero_title: "Summit, Illinois \u2014 Custom Architectural Metal Fabrication"
-    breadcrumbs:
-    - Home
-    - Locations
-    - Summit, Illinois
-    about_city: ''
-    city_image:
-      image_url: ''
-      alt_text: ''
-      caption: ''
-      credit: ''
-      source: Wikipedia
-    seo_content_title: ''
-    seo_content_body: ''
-    places_of_interest: []
-    city_faq: []
-    featured_products: []
-    city_map_embed: ''
-    service_area_note: ''
+  why_choose_us:
+  - description: Our team brings years of experience in metal fabrication, understanding
+      the unique challenges and opportunities in our field. We stay current with the
+      latest techniques while honoring proven methods that deliver reliable results.
+    title: Unmatched Expertise
+  - description: Every project is unique, and we approach each one with fresh perspective
+      and creative problem-solving. Our team works closely with clients to understand
+      their vision and translate it into practical, effective solutions.
+    title: Custom Design and Engineering
+  - description: We use only the finest materials and maintain the highest standards
+      of workmanship. Our commitment to quality ensures that every project meets our
+      exacting standards and exceeds client expectations.
+    title: Quality Materials and Craftsmanship
+  - description: From initial consultation and planning through completion and follow-up,
+      we provide comprehensive service that makes the process smooth and stress-free
+      for our clients.
+    title: Comprehensive Service
+  years_in_business: Over 40 years

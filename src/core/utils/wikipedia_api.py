@@ -14,6 +14,7 @@ import urllib.request
 import json
 from typing import Optional, Dict, Any, Tuple
 import re
+import time
 
 
 class WikipediaAPI:
@@ -41,9 +42,35 @@ class WikipediaAPI:
         # Replace spaces with underscores for Wikipedia URLs
         return city.replace(" ", "_")
     
+    def validate_image_url(self, image_url: str) -> bool:
+        """
+        Validate that an image URL actually exists and returns a valid image
+        
+        Args:
+            image_url: URL to validate
+            
+        Returns:
+            True if URL is valid and returns an image
+        """
+        try:
+            request = urllib.request.Request(
+                image_url,
+                headers={'User-Agent': self.user_agent}
+            )
+            
+            with urllib.request.urlopen(request, timeout=5) as response:
+                if response.status == 200:
+                    content_type = response.headers.get('Content-Type', '')
+                    return content_type.startswith('image/')
+                    
+        except (urllib.error.URLError, urllib.error.HTTPError, Exception):
+            pass
+            
+        return False
+    
     def build_wikipedia_image_embed(self, city: str) -> Tuple[str, str, str]:
         """
-        Build Wikipedia image embed (Location Page Generator compatibility)
+        Build Wikipedia image embed using actual Wikipedia API calls
         
         Args:
             city: City name to get image for
@@ -51,32 +78,53 @@ class WikipediaAPI:
         Returns:
             Tuple of (image_url, source_url, attribution)
         """
+        # Get real Wikipedia page info first
+        page_info = self.search_wikipedia_page(city)
+        
+        if page_info and page_info.get("thumbnail", {}).get("source"):
+            thumbnail = page_info["thumbnail"]
+            original_url = thumbnail["source"]
+            
+            # Try different sizes to find working image
+            potential_urls = []
+            
+            if "/thumb/" in original_url:
+                base_url = original_url.split("/thumb/")[0] + "/thumb/" + original_url.split("/thumb/")[1]
+                
+                # Try different sizes, from largest to smallest
+                for size in ["1280px", "800px", "640px", "480px", "320px"]:
+                    if f"/{size}-" in original_url:
+                        # Use original size if it contains the size pattern
+                        potential_urls.append(original_url)
+                    else:
+                        # Try to construct larger versions
+                        if "/320px-" in original_url:
+                            potential_urls.append(original_url.replace("/320px-", f"/{size}-"))
+                        elif "/220px-" in original_url:
+                            potential_urls.append(original_url.replace("/220px-", f"/{size}-"))
+                        else:
+                            potential_urls.append(original_url)
+            else:
+                potential_urls.append(original_url)
+            
+            # Test each URL to find working image
+            for test_url in potential_urls:
+                if self.validate_image_url(test_url):
+                    source_url = page_info.get("content_urls", {}).get("desktop", {}).get("page", "")
+                    attribution = f"Wikipedia - {page_info.get('title', city)}"
+                    return test_url, source_url, attribution
+                    
+                # Add small delay to avoid rate limiting
+                time.sleep(0.1)
+        
+        # If no thumbnail available, try to construct a reasonable fallback
+        # but this should rarely be reached with real Wikipedia API calls
         safe_city = self.normalize_city_name(city)
+        fallback_url = f"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/No-image-available.svg/1280px-No-image-available.svg.png"
+        fallback_source = f"https://en.wikipedia.org/wiki/{safe_city}"
+        fallback_attribution = f"No image available for {city}"
         
-        # Common Wikipedia image patterns for cities
-        possible_files = [
-            f"{safe_city}.jpg",
-            f"{safe_city}_skyline.jpg", 
-            f"{safe_city}_panorama.jpg",
-            f"Downtown_{safe_city}.jpg",
-            f"{safe_city}_view.jpg"
-        ]
-        
-        # Try each possible file
-        for filename in possible_files:
-            image_url = f"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/{filename}/1280px-{filename}"
-            source_url = f"{self.commons_base}/File:{filename}"
-            attribution = f"Wikimedia Commons, {filename}"
-            
-            # For now, return the first pattern (can be enhanced with actual API calls)
-            return image_url, source_url, attribution
-            
-        # Fallback to generic pattern
-        image_url = f"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/{safe_city}.jpg/1280px-{safe_city}.jpg"
-        source_url = f"{self.commons_base}/File:{safe_city}.jpg"
-        attribution = f"Wikimedia Commons, {safe_city}.jpg"
-        
-        return image_url, source_url, attribution
+        return fallback_url, fallback_source, fallback_attribution
     
     def search_wikipedia_page(self, city_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -89,8 +137,90 @@ class WikipediaAPI:
             Dictionary with page information or None if not found
         """
         try:
-            # Normalize city name for search
-            search_term = city_name.replace(",", "").strip()
+            # Try multiple search variations to improve success rate
+            search_terms = []
+            
+            # Original term
+            search_terms.append(city_name.strip())
+            
+            # City name without state
+            if "," in city_name:
+                city_only = city_name.split(",")[0].strip()
+                search_terms.append(city_only)
+                
+                # Add state back in different formats
+                state_part = city_name.split(",")[1].strip()
+                if state_part.lower() in ["il", "illinois"]:
+                    search_terms.append(f"{city_only}, Illinois")
+                    search_terms.append(f"{city_only} Illinois")
+            
+            # Try each search term until we find a match
+            for search_term in search_terms:
+                page_info = self._try_wikipedia_search(search_term)
+                if page_info:
+                    return page_info
+                    
+        except Exception:
+            pass
+            
+        return None
+    
+    def get_city_about_content(self, city_name: str) -> str:
+        """
+        Get formatted about city content from Wikipedia for city pages
+        
+        Args:
+            city_name: City name to get content for
+            
+        Returns:
+            Formatted about city content suitable for city pages
+        """
+        page_info = self.search_wikipedia_page(city_name)
+        
+        if not page_info or not page_info.get("extract"):
+            # Fallback content if Wikipedia not available
+            city_only = city_name.split(",")[0].strip()
+            return f"{city_only} is a vibrant community known for its unique character and local heritage. The area offers distinctive opportunities for architectural and construction projects, with local building standards and community requirements that demand specialized expertise and attention to detail."
+        
+        extract = page_info["extract"]
+        
+        # Clean up and format the Wikipedia extract
+        # Remove any parenthetical pronunciations at the start
+        import re
+        extract = re.sub(r'^\([^)]*\)\s*', '', extract)
+        
+        # Limit to reasonable length (400-600 words)
+        sentences = extract.split('. ')
+        
+        # Take first several sentences but ensure we don't cut off mid-thought
+        about_content = []
+        char_count = 0
+        target_length = 500  # Target around 500 characters
+        
+        for sentence in sentences:
+            if char_count + len(sentence) > target_length and len(about_content) >= 2:
+                break
+            about_content.append(sentence.strip())
+            char_count += len(sentence)
+        
+        # Join sentences and ensure proper ending
+        result = '. '.join(about_content)
+        if not result.endswith('.'):
+            result += '.'
+            
+        return result
+    
+    def _try_wikipedia_search(self, search_term: str) -> Optional[Dict[str, Any]]:
+        """
+        Try a single Wikipedia search term
+        
+        Args:
+            search_term: Term to search for
+            
+        Returns:
+            Dictionary with page information or None if not found
+        """
+        try:
             encoded_term = urllib.parse.quote(search_term)
             
             # Wikipedia API search endpoint
