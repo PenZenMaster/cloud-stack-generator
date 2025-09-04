@@ -155,7 +155,33 @@ client:
     - Home
     - Locations
     - Bellwood, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Bellwood projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Bellwood vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Bellwood project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Bellwood's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork costs in Bellwood vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Bellwood project.
+      question: How much does architectural metalwork typically cost in Bellwood?
+    - answer: For architectural metalwork in Bellwood, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Bellwood?
     city_image:
       alt_text: View of Bellwood
       caption: Wikipedia - Bellwood, Illinois
@@ -174,7 +200,13 @@ client:
     featured_products: []
     hero_title: Bellwood, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.86449999999999!3d41.8889!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBellwood+Public+Library+123+Main+St,+Bellwood,+Illinois
+      name: Bellwood Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8845!3d41.868900000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBellwood+Community+Park+456+Park+Ave,+Bellwood,+Illinois
+      name: Bellwood Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8795!3d41.883900000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBellwood+Historical+Museum+789+Heritage+Blvd,+Bellwood,+Illinois
+      name: Bellwood Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -191,7 +223,32 @@ client:
     - Home
     - Locations
     - Oak Park Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Oak Park Illinois projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Oak Park Illinois vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your Oak Park Illinois project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Oak Park Illinois's
+        climate and architectural styles. Salvo Metal Works helps select the right
+        materials for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork costs in Oak Park Illinois vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your Oak Park Illinois project.
+      question: How much does architectural metalwork typically cost in Oak Park Illinois?
+    - answer: Architectural Metalwork projects in Oak Park Illinois may require permits
+        depending on scope and location. Salvo Metal Works works with local authorities
+        and can guide you through the permitting process to ensure your Oak Park Illinois
+        project meets all requirements.
+      question: What permits do I need for architectural metalwork in Oak Park Illinois?
     city_image:
       alt_text: View of Oak Park Illinois
       caption: No image available for Oak Park Illinois
@@ -210,7 +267,13 @@ client:
     featured_products: []
     hero_title: Oak Park Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.77449999999999!3d41.894999999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Illinois+Public+Library+123+Main+St,+Oak+Park+Illinois
+      name: Oak Park Illinois Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7945!3d41.875!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Illinois+Community+Park+456+Park+Ave,+Oak+Park+Illinois
+      name: Oak Park Illinois Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.78949999999999!3d41.89!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Illinois+Historical+Museum+789+Heritage+Blvd,+Oak+Park+Illinois
+      name: Oak Park Illinois Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -227,7 +290,32 @@ client:
     - Home
     - Locations
     - Berwyn, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Berwyn projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Berwyn vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Berwyn project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Berwyn's climate and
+        architectural styles. Salvo Metal Works helps select the right materials for
+        durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Salvo Metal Works serves Berwyn with expert architectural metalwork
+        services. Our team understands local building practices and requirements,
+        delivering quality craftsmanship that meets Berwyn's architectural standards.
+      question: Are there experienced architectural metalwork contractors in Berwyn?
+    - answer: For architectural metalwork in Berwyn, Salvo Metal Works combines traditional
+        craftsmanship with modern techniques to deliver exceptional results. Our team
+        understands local requirements and climate considerations to ensure your project
+        succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Berwyn?
     city_image:
       alt_text: View of Berwyn
       caption: Wikipedia - Berwyn, Illinois
@@ -246,7 +334,13 @@ client:
     featured_products: []
     hero_title: Berwyn, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7837!3d41.860299999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBerwyn+Public+Library+123+Main+St,+Berwyn,+Illinois
+      name: Berwyn Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8037!3d41.8403!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBerwyn+Community+Park+456+Park+Ave,+Berwyn,+Illinois
+      name: Berwyn Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7987!3d41.8553!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBerwyn+Historical+Museum+789+Heritage+Blvd,+Berwyn,+Illinois
+      name: Berwyn Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -262,7 +356,33 @@ client:
     - Home
     - Locations
     - Bridgeview, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Bridgeview projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Bridgeview vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Bridgeview project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Bridgeview's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Bridgeview, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Bridgeview?
+    - answer: Architectural Metalwork costs in Bridgeview vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Bridgeview project.
+      question: How much does architectural metalwork typically cost in Bridgeview?
     city_image:
       alt_text: View of Bridgeview
       caption: Wikipedia - Bridgeview, Illinois
@@ -281,7 +401,13 @@ client:
     featured_products: []
     hero_title: Bridgeview, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7948!3d41.7631!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBridgeview+Public+Library+123+Main+St,+Bridgeview,+Illinois
+      name: Bridgeview Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8148!3d41.743100000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBridgeview+Community+Park+456+Park+Ave,+Bridgeview,+Illinois
+      name: Bridgeview Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8098!3d41.758100000000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBridgeview+Historical+Museum+789+Heritage+Blvd,+Bridgeview,+Illinois
+      name: Bridgeview Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -297,7 +423,31 @@ client:
     - Home
     - Locations
     - Brookfield, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Brookfield projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Brookfield vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Brookfield project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Brookfield's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Salvo Metal Works serves Brookfield with expert architectural metalwork
+        services. Our team understands local building practices and requirements,
+        delivering quality craftsmanship that meets Brookfield's architectural standards.
+      question: Are there experienced architectural metalwork contractors in Brookfield?
+    - answer: For architectural metalwork in Brookfield, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What should I know about architectural metalwork in Brookfield?
     city_image:
       alt_text: View of Brookfield
       caption: Wikipedia - Brookfield, Illinois
@@ -316,7 +466,13 @@ client:
     featured_products: []
     hero_title: Brookfield, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8412!3d41.834199999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBrookfield+Public+Library+123+Main+St,+Brookfield,+Illinois
+      name: Brookfield Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.86120000000001!3d41.8142!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBrookfield+Community+Park+456+Park+Ave,+Brookfield,+Illinois
+      name: Brookfield Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8562!3d41.8292!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBrookfield+Historical+Museum+789+Heritage+Blvd,+Brookfield,+Illinois
+      name: Brookfield Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -335,7 +491,33 @@ client:
     - Home
     - Locations
     - Burbank, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Burbank projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Burbank vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Burbank project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Burbank's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Burbank, Salvo Metal Works combines traditional
+        craftsmanship with modern techniques to deliver exceptional results. Our team
+        understands local requirements and climate considerations to ensure your project
+        succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Burbank?
+    - answer: Architectural Metalwork costs in Burbank vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Burbank project.
+      question: How much does architectural metalwork typically cost in Burbank?
     city_image:
       alt_text: View of Burbank
       caption: Wikipedia - Burbank, Illinois
@@ -354,7 +536,13 @@ client:
     featured_products: []
     hero_title: Burbank, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.76899999999999!3d41.749199999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBurbank+Public+Library+123+Main+St,+Burbank,+Illinois
+      name: Burbank Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.789!3d41.7292!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBurbank+Community+Park+456+Park+Ave,+Burbank,+Illinois
+      name: Burbank Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.78399999999999!3d41.7442!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBurbank+Historical+Museum+789+Heritage+Blvd,+Burbank,+Illinois
+      name: Burbank Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -372,7 +560,32 @@ client:
     - Home
     - Locations
     - Cicero, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Cicero projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Cicero vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Cicero project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Cicero's climate and
+        architectural styles. Salvo Metal Works helps select the right materials for
+        durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork costs in Cicero vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Cicero project.
+      question: How much does architectural metalwork typically cost in Cicero?
+    - answer: For architectural metalwork in Cicero, Salvo Metal Works combines traditional
+        craftsmanship with modern techniques to deliver exceptional results. Our team
+        understands local requirements and climate considerations to ensure your project
+        succeeds.
+      question: What should I know about architectural metalwork in Cicero?
     city_image:
       alt_text: View of Cicero
       caption: Wikipedia - Cicero, Illinois
@@ -391,7 +604,13 @@ client:
     featured_products: []
     hero_title: Cicero, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7439!3d41.855599999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sCicero+Public+Library+123+Main+St,+Cicero,+Illinois
+      name: Cicero Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7639!3d41.8356!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sCicero+Community+Park+456+Park+Ave,+Cicero,+Illinois
+      name: Cicero Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7589!3d41.8506!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sCicero+Historical+Museum+789+Heritage+Blvd,+Cicero,+Illinois
+      name: Cicero Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -408,7 +627,32 @@ client:
     - Home
     - Locations
     - Elmwood Park, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Elmwood Park projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Elmwood Park vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your Elmwood Park project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Elmwood Park's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork projects in Elmwood Park may require permits
+        depending on scope and location. Salvo Metal Works works with local authorities
+        and can guide you through the permitting process to ensure your Elmwood Park
+        project meets all requirements.
+      question: What permits do I need for architectural metalwork in Elmwood Park?
+    - answer: Salvo Metal Works serves Elmwood Park with expert architectural metalwork
+        services. Our team understands local building practices and requirements,
+        delivering quality craftsmanship that meets Elmwood Park's architectural standards.
+      question: Are there experienced architectural metalwork contractors in Elmwood
+        Park?
     city_image:
       alt_text: View of Elmwood Park
       caption: Wikipedia - Elmwood Park, Illinois
@@ -427,7 +671,13 @@ client:
     featured_products: []
     hero_title: Elmwood Park, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.79809999999999!3d41.9308!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sElmwood+Park+Public+Library+123+Main+St,+Elmwood+Park,+Illinois
+      name: Elmwood Park Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8181!3d41.9108!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sElmwood+Park+Community+Park+456+Park+Ave,+Elmwood+Park,+Illinois
+      name: Elmwood Park Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81309999999999!3d41.9258!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sElmwood+Park+Historical+Museum+789+Heritage+Blvd,+Elmwood+Park,+Illinois
+      name: Elmwood Park Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -445,7 +695,32 @@ client:
     - Home
     - Locations
     - Evanston, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Evanston projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Evanston vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Evanston project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Evanston's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Evanston, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What should I know about architectural metalwork in Evanston?
+    - answer: Architectural Metalwork projects in Evanston may require permits depending
+        on scope and location. Salvo Metal Works works with local authorities and
+        can guide you through the permitting process to ensure your Evanston project
+        meets all requirements.
+      question: What permits do I need for architectural metalwork in Evanston?
     city_image:
       alt_text: View of Evanston
       caption: Wikipedia - Evanston, Illinois
@@ -464,7 +739,13 @@ client:
     featured_products: []
     hero_title: Evanston, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.6777!3d42.055099999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sEvanston+Public+Library+123+Main+St,+Evanston,+Illinois
+      name: Evanston Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.69770000000001!3d42.0351!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sEvanston+Community+Park+456+Park+Ave,+Evanston,+Illinois
+      name: Evanston Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.6927!3d42.0501!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sEvanston+Historical+Museum+789+Heritage+Blvd,+Evanston,+Illinois
+      name: Evanston Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -483,7 +764,32 @@ client:
     - Home
     - Locations
     - Forest Park, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Forest Park projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Forest Park vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Forest Park project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Forest Park's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Forest Park, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What should I know about architectural metalwork in Forest Park?
+    - answer: Salvo Metal Works serves Forest Park with expert architectural metalwork
+        services. Our team understands local building practices and requirements,
+        delivering quality craftsmanship that meets Forest Park's architectural standards.
+      question: Are there experienced architectural metalwork contractors in Forest
+        Park?
     city_image:
       alt_text: View of Forest Park
       caption: Wikipedia - Forest Park, Illinois
@@ -502,7 +808,13 @@ client:
     featured_products: []
     hero_title: Forest Park, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.80369999999999!3d41.889199999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sForest+Park+Public+Library+123+Main+St,+Forest+Park,+Illinois
+      name: Forest Park Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8237!3d41.8692!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sForest+Park+Community+Park+456+Park+Ave,+Forest+Park,+Illinois
+      name: Forest Park Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81869999999999!3d41.8842!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sForest+Park+Historical+Museum+789+Heritage+Blvd,+Forest+Park,+Illinois
+      name: Forest Park Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -519,7 +831,33 @@ client:
     - Home
     - Locations
     - Franklin Park, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Franklin Park projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Franklin Park vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your Franklin Park project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Franklin Park's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork projects in Franklin Park may require permits
+        depending on scope and location. Salvo Metal Works works with local authorities
+        and can guide you through the permitting process to ensure your Franklin Park
+        project meets all requirements.
+      question: What permits do I need for architectural metalwork in Franklin Park?
+    - answer: For architectural metalwork in Franklin Park, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Franklin Park?
     city_image:
       alt_text: View of Franklin Park
       caption: Wikipedia - Franklin Park, Illinois
@@ -538,7 +876,13 @@ client:
     featured_products: []
     hero_title: Franklin Park, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8548!3d41.939699999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sFranklin+Park+Public+Library+123+Main+St,+Franklin+Park,+Illinois
+      name: Franklin Park Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.87480000000001!3d41.9197!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sFranklin+Park+Community+Park+456+Park+Ave,+Franklin+Park,+Illinois
+      name: Franklin Park Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8698!3d41.9347!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sFranklin+Park+Historical+Museum+789+Heritage+Blvd,+Franklin+Park,+Illinois
+      name: Franklin Park Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -554,7 +898,32 @@ client:
     - Home
     - Locations
     - Harwood Heights, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Harwood Heights projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Harwood Heights vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your Harwood Heights project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Harwood Heights's
+        climate and architectural styles. Salvo Metal Works helps select the right
+        materials for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork projects in Harwood Heights may require permits
+        depending on scope and location. Salvo Metal Works works with local authorities
+        and can guide you through the permitting process to ensure your Harwood Heights
+        project meets all requirements.
+      question: What permits do I need for architectural metalwork in Harwood Heights?
+    - answer: Architectural Metalwork costs in Harwood Heights vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your Harwood Heights project.
+      question: How much does architectural metalwork typically cost in Harwood Heights?
     city_image:
       alt_text: View of Harwood Heights
       caption: Wikipedia - Harwood Heights, Illinois
@@ -573,7 +942,13 @@ client:
     featured_products: []
     hero_title: Harwood Heights, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.79809999999999!3d41.9767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sHarwood+Heights+Public+Library+123+Main+St,+Harwood+Heights,+Illinois
+      name: Harwood Heights Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8181!3d41.956700000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sHarwood+Heights+Community+Park+456+Park+Ave,+Harwood+Heights,+Illinois
+      name: Harwood Heights Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81309999999999!3d41.971700000000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sHarwood+Heights+Historical+Museum+789+Heritage+Blvd,+Harwood+Heights,+Illinois
+      name: Harwood Heights Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -590,7 +965,33 @@ client:
     - Home
     - Locations
     - Lincolnwood, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Lincolnwood projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Lincolnwood vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Lincolnwood project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Lincolnwood's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Lincolnwood, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Lincolnwood?
+    - answer: Architectural Metalwork costs in Lincolnwood vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Lincolnwood project.
+      question: How much does architectural metalwork typically cost in Lincolnwood?
     city_image:
       alt_text: View of Lincolnwood
       caption: Wikipedia - Lincolnwood, Illinois
@@ -609,7 +1010,13 @@ client:
     featured_products: []
     hero_title: Lincolnwood, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7187!3d42.018899999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLincolnwood+Public+Library+123+Main+St,+Lincolnwood,+Illinois
+      name: Lincolnwood Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.73870000000001!3d41.9989!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLincolnwood+Community+Park+456+Park+Ave,+Lincolnwood,+Illinois
+      name: Lincolnwood Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7337!3d42.0139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLincolnwood+Historical+Museum+789+Heritage+Blvd,+Lincolnwood,+Illinois
+      name: Lincolnwood Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -625,7 +1032,33 @@ client:
     - Home
     - Locations
     - Lyons, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Lyons projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Lyons vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Lyons project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Lyons's climate and
+        architectural styles. Salvo Metal Works helps select the right materials for
+        durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Lyons, Salvo Metal Works combines traditional
+        craftsmanship with modern techniques to deliver exceptional results. Our team
+        understands local requirements and climate considerations to ensure your project
+        succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Lyons?
+    - answer: Architectural Metalwork projects in Lyons may require permits depending
+        on scope and location. Salvo Metal Works works with local authorities and
+        can guide you through the permitting process to ensure your Lyons project
+        meets all requirements.
+      question: What permits do I need for architectural metalwork in Lyons?
     city_image:
       alt_text: View of Lyons
       caption: Wikipedia - Lyons, Illinois
@@ -644,7 +1077,13 @@ client:
     featured_products: []
     hero_title: Lyons, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.80839999999999!3d41.8231!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLyons+Public+Library+123+Main+St,+Lyons,+Illinois
+      name: Lyons Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8284!3d41.8031!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLyons+Community+Park+456+Park+Ave,+Lyons,+Illinois
+      name: Lyons Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.82339999999999!3d41.8181!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLyons+Historical+Museum+789+Heritage+Blvd,+Lyons,+Illinois
+      name: Lyons Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -660,7 +1099,33 @@ client:
     - Home
     - Locations
     - Maywood, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Maywood projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Maywood vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Maywood project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Maywood's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Maywood, Salvo Metal Works combines traditional
+        craftsmanship with modern techniques to deliver exceptional results. Our team
+        understands local requirements and climate considerations to ensure your project
+        succeeds.
+      question: What should I know about architectural metalwork in Maywood?
+    - answer: For architectural metalwork in Maywood, Salvo Metal Works combines traditional
+        craftsmanship with modern techniques to deliver exceptional results. Our team
+        understands local requirements and climate considerations to ensure your project
+        succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Maywood?
     city_image:
       alt_text: View of Maywood
       caption: Wikipedia - Maywood, Illinois
@@ -679,7 +1144,13 @@ client:
     featured_products: []
     hero_title: Maywood, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8337!3d41.889199999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMaywood+Public+Library+123+Main+St,+Maywood,+Illinois
+      name: Maywood Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8537!3d41.8692!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMaywood+Community+Park+456+Park+Ave,+Maywood,+Illinois
+      name: Maywood Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8487!3d41.8842!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMaywood+Historical+Museum+789+Heritage+Blvd,+Maywood,+Illinois
+      name: Maywood Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -695,7 +1166,33 @@ client:
     - Home
     - Locations
     - Melrose Park, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Melrose Park projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Melrose Park vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your Melrose Park project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Melrose Park's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Melrose Park, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Melrose Park?
+    - answer: Architectural Metalwork projects in Melrose Park may require permits
+        depending on scope and location. Salvo Metal Works works with local authorities
+        and can guide you through the permitting process to ensure your Melrose Park
+        project meets all requirements.
+      question: What permits do I need for architectural metalwork in Melrose Park?
     city_image:
       alt_text: View of Melrose Park
       caption: Wikipedia - Melrose Park, Illinois
@@ -714,7 +1211,13 @@ client:
     featured_products: []
     hero_title: Melrose Park, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.84809999999999!3d41.9092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMelrose+Park+Public+Library+123+Main+St,+Melrose+Park,+Illinois
+      name: Melrose Park Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8681!3d41.8892!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMelrose+Park+Community+Park+456+Park+Ave,+Melrose+Park,+Illinois
+      name: Melrose Park Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.86309999999999!3d41.9042!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMelrose+Park+Historical+Museum+789+Heritage+Blvd,+Melrose+Park,+Illinois
+      name: Melrose Park Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -732,7 +1235,32 @@ client:
     - Home
     - Locations
     - Norridge, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Norridge projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Norridge vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Norridge project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Norridge's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Norridge, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What should I know about architectural metalwork in Norridge?
+    - answer: Architectural Metalwork costs in Norridge vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Norridge project.
+      question: How much does architectural metalwork typically cost in Norridge?
     city_image:
       alt_text: View of Norridge
       caption: Wikipedia - Norridge, Illinois
@@ -751,7 +1279,13 @@ client:
     featured_products: []
     hero_title: Norridge, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81729999999999!3d41.9725!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sNorridge+Public+Library+123+Main+St,+Norridge,+Illinois
+      name: Norridge Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8373!3d41.9525!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sNorridge+Community+Park+456+Park+Ave,+Norridge,+Illinois
+      name: Norridge Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.83229999999999!3d41.9675!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sNorridge+Historical+Museum+789+Heritage+Blvd,+Norridge,+Illinois
+      name: Norridge Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -768,7 +1302,33 @@ client:
     - Home
     - Locations
     - Oak Lawn, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Oak Lawn projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Oak Lawn vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Oak Lawn project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Oak Lawn's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: For architectural metalwork in Oak Lawn, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Oak Lawn?
+    - answer: Architectural Metalwork projects in Oak Lawn may require permits depending
+        on scope and location. Salvo Metal Works works with local authorities and
+        can guide you through the permitting process to ensure your Oak Lawn project
+        meets all requirements.
+      question: What permits do I need for architectural metalwork in Oak Lawn?
     city_image:
       alt_text: View of Oak Lawn
       caption: Wikipedia - Oak Lawn, Illinois
@@ -787,7 +1347,13 @@ client:
     featured_products: []
     hero_title: Oak Lawn, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7431!3d41.7297!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Lawn+Public+Library+123+Main+St,+Oak+Lawn,+Illinois
+      name: Oak Lawn Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.76310000000001!3d41.709700000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Lawn+Community+Park+456+Park+Ave,+Oak+Lawn,+Illinois
+      name: Oak Lawn Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7581!3d41.724700000000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Lawn+Historical+Museum+789+Heritage+Blvd,+Oak+Lawn,+Illinois
+      name: Oak Lawn Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -806,7 +1372,32 @@ client:
     - Home
     - Locations
     - Oak Park, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Oak Park projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Oak Park vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Oak Park project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Oak Park's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork projects in Oak Park may require permits depending
+        on scope and location. Salvo Metal Works works with local authorities and
+        can guide you through the permitting process to ensure your Oak Park project
+        meets all requirements.
+      question: What permits do I need for architectural metalwork in Oak Park?
+    - answer: For architectural metalwork in Oak Park, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What should I know about architectural metalwork in Oak Park?
     city_image:
       alt_text: View of Oak Park
       caption: Wikipedia - Oak Park, Illinois
@@ -825,7 +1416,13 @@ client:
     featured_products: []
     hero_title: Oak Park, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.77449999999999!3d41.894999999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Public+Library+123+Main+St,+Oak+Park,+Illinois
+      name: Oak Park Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7945!3d41.875!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Community+Park+456+Park+Ave,+Oak+Park,+Illinois
+      name: Oak Park Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.78949999999999!3d41.89!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Historical+Museum+789+Heritage+Blvd,+Oak+Park,+Illinois
+      name: Oak Park Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -844,7 +1441,32 @@ client:
     - Home
     - Locations
     - Park Ridge, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Park Ridge projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Park Ridge vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Park Ridge project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Park Ridge's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork projects in Park Ridge may require permits depending
+        on scope and location. Salvo Metal Works works with local authorities and
+        can guide you through the permitting process to ensure your Park Ridge project
+        meets all requirements.
+      question: What permits do I need for architectural metalwork in Park Ridge?
+    - answer: For architectural metalwork in Park Ridge, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What should I know about architectural metalwork in Park Ridge?
     city_image:
       alt_text: View of Park Ridge
       caption: Wikipedia - Park Ridge, Illinois
@@ -863,7 +1485,13 @@ client:
     featured_products: []
     hero_title: Park Ridge, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.83059999999999!3d42.0212!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sPark+Ridge+Public+Library+123+Main+St,+Park+Ridge,+Illinois
+      name: Park Ridge Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8506!3d42.001200000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sPark+Ridge+Community+Park+456+Park+Ave,+Park+Ridge,+Illinois
+      name: Park Ridge Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.84559999999999!3d42.016200000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sPark+Ridge+Historical+Museum+789+Heritage+Blvd,+Park+Ridge,+Illinois
+      name: Park Ridge Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -882,7 +1510,32 @@ client:
     - Home
     - Locations
     - River Forest, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for River Forest projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in River Forest vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your River Forest project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for River Forest's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork costs in River Forest vary based on project
+        complexity, materials, and design specifications. Salvo Metal Works provides
+        detailed estimates that account for local factors and ensure transparent pricing
+        for your River Forest project.
+      question: How much does architectural metalwork typically cost in River Forest?
+    - answer: Architectural Metalwork projects in River Forest may require permits
+        depending on scope and location. Salvo Metal Works works with local authorities
+        and can guide you through the permitting process to ensure your River Forest
+        project meets all requirements.
+      question: What permits do I need for architectural metalwork in River Forest?
     city_image:
       alt_text: View of River Forest
       caption: Wikipedia - River Forest, Illinois
@@ -901,7 +1554,13 @@ client:
     featured_products: []
     hero_title: River Forest, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.80369999999999!3d41.9092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Forest+Public+Library+123+Main+St,+River+Forest,+Illinois
+      name: River Forest Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8237!3d41.8892!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Forest+Community+Park+456+Park+Ave,+River+Forest,+Illinois
+      name: River Forest Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81869999999999!3d41.9042!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Forest+Historical+Museum+789+Heritage+Blvd,+River+Forest,+Illinois
+      name: River Forest Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -917,7 +1576,33 @@ client:
     - Home
     - Locations
     - River Grove, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for River Grove projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in River Grove vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your River Grove project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for River Grove's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork projects in River Grove may require permits
+        depending on scope and location. Salvo Metal Works works with local authorities
+        and can guide you through the permitting process to ensure your River Grove
+        project meets all requirements.
+      question: What permits do I need for architectural metalwork in River Grove?
+    - answer: For architectural metalwork in River Grove, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in River Grove?
     city_image:
       alt_text: View of River Grove
       caption: Wikipedia - River Grove, Illinois
@@ -936,7 +1621,13 @@ client:
     featured_products: []
     hero_title: River Grove, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.82809999999999!3d41.9392!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Grove+Public+Library+123+Main+St,+River+Grove,+Illinois
+      name: River Grove Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8481!3d41.919200000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Grove+Community+Park+456+Park+Ave,+River+Grove,+Illinois
+      name: River Grove Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.84309999999999!3d41.934200000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Grove+Historical+Museum+789+Heritage+Blvd,+River+Grove,+Illinois
+      name: River Grove Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -955,7 +1646,33 @@ client:
     - Home
     - Locations
     - Riverside, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Riverside projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Riverside vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Riverside project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Riverside's climate
+        and architectural styles. Salvo Metal Works helps select the right materials
+        for durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork projects in Riverside may require permits depending
+        on scope and location. Salvo Metal Works works with local authorities and
+        can guide you through the permitting process to ensure your Riverside project
+        meets all requirements.
+      question: What permits do I need for architectural metalwork in Riverside?
+    - answer: For architectural metalwork in Riverside, Salvo Metal Works combines
+        traditional craftsmanship with modern techniques to deliver exceptional results.
+        Our team understands local requirements and climate considerations to ensure
+        your project succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Riverside?
     city_image:
       alt_text: View of Riverside
       caption: Wikipedia - Riverside, Illinois
@@ -974,7 +1691,13 @@ client:
     featured_products: []
     hero_title: Riverside, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.80839999999999!3d41.8431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiverside+Public+Library+123+Main+St,+Riverside,+Illinois
+      name: Riverside Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8284!3d41.823100000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiverside+Community+Park+456+Park+Ave,+Riverside,+Illinois
+      name: Riverside Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.82339999999999!3d41.838100000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiverside+Historical+Museum+789+Heritage+Blvd,+Riverside,+Illinois
+      name: Riverside Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -992,7 +1715,32 @@ client:
     - Home
     - Locations
     - Skokie, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Skokie projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Skokie vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Skokie project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Skokie's climate and
+        architectural styles. Salvo Metal Works helps select the right materials for
+        durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Architectural Metalwork projects in Skokie may require permits depending
+        on scope and location. Salvo Metal Works works with local authorities and
+        can guide you through the permitting process to ensure your Skokie project
+        meets all requirements.
+      question: What permits do I need for architectural metalwork in Skokie?
+    - answer: Architectural Metalwork costs in Skokie vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Skokie project.
+      question: How much does architectural metalwork typically cost in Skokie?
     city_image:
       alt_text: View of Skokie
       caption: Wikipedia - Skokie, Illinois
@@ -1011,7 +1759,13 @@ client:
     featured_products: []
     hero_title: Skokie, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7234!3d42.0434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSkokie+Public+Library+123+Main+St,+Skokie,+Illinois
+      name: Skokie Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.74340000000001!3d42.0234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSkokie+Community+Park+456+Park+Ave,+Skokie,+Illinois
+      name: Skokie Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7384!3d42.0384!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSkokie+Historical+Museum+789+Heritage+Blvd,+Skokie,+Illinois
+      name: Skokie Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
@@ -1029,7 +1783,32 @@ client:
     - Home
     - Locations
     - Summit, Illinois
-    city_faq: []
+    city_faq:
+    - answer: Salvo Metal Works offers comprehensive architectural metalwork including
+        design consultation, custom fabrication, and professional installation. We
+        specialize in cupolas, finials, dormers, roof vents, chimney shrouds, leader
+        boxes, and snow guards for Summit projects.
+      question: What types of architectural metal fabrication services are available?
+    - answer: Architectural Metalwork costs in Summit vary based on project complexity,
+        materials, and design specifications. Salvo Metal Works provides detailed
+        estimates that account for local factors and ensure transparent pricing for
+        your Summit project.
+      question: How much does custom architectural metalwork cost?
+    - answer: Common materials for architectural metalwork include copper, zinc, stainless
+        steel, and aluminum. Each offers different benefits for Summit's climate and
+        architectural styles. Salvo Metal Works helps select the right materials for
+        durability and aesthetic appeal.
+      question: What materials are used in architectural metal fabrication?
+    - answer: Salvo Metal Works serves Summit with expert architectural metalwork
+        services. Our team understands local building practices and requirements,
+        delivering quality craftsmanship that meets Summit's architectural standards.
+      question: Are there experienced architectural metalwork contractors in Summit?
+    - answer: For architectural metalwork in Summit, Salvo Metal Works combines traditional
+        craftsmanship with modern techniques to deliver exceptional results. Our team
+        understands local requirements and climate considerations to ensure your project
+        succeeds.
+      question: What are the local building requirements for architectural metalwork
+        in Summit?
     city_image:
       alt_text: View of Summit
       caption: Wikipedia - Summit, Illinois
@@ -1048,7 +1827,13 @@ client:
     featured_products: []
     hero_title: Summit, Illinois — Custom Architectural Metal Fabrication
     meta_description: ''
-    places_of_interest: []
+    places_of_interest:
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8065!3d41.7986!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSummit+Public+Library+123+Main+St,+Summit,+Illinois
+      name: Summit Public Library
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.82650000000001!3d41.778600000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSummit+Community+Park+456+Park+Ave,+Summit,+Illinois
+      name: Summit Community Park
+    - embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8215!3d41.793600000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSummit+Historical+Museum+789+Heritage+Blvd,+Summit,+Illinois
+      name: Summit Historical Museum
     primary_keyword: ''
     secondary_keywords: []
     seo_content_body: ''
