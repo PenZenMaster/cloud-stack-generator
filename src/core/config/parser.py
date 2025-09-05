@@ -100,7 +100,6 @@ class ConfigParser:
 
         # Parse Google Business Profile
         google_business_profile = client_data.get("google_business_profile", {})
-        print(f"DEBUG PARSER: google_business_profile from YAML: {google_business_profile}")
 
         # Parse pages
         pages = self._parse_pages_config(client_data)
@@ -136,7 +135,6 @@ class ConfigParser:
             seo_content=seo_content,
             api_keys=api_keys,
         )
-        print(f"DEBUG PARSER: Created config.google_business_profile: {config.google_business_profile}")
 
         self.current_config = config
         return config

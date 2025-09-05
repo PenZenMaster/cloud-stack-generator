@@ -3,8 +3,8 @@
 SEO Authority Website Generator v2.0
 Sprint 2 Week 2 - Enhanced Main Application Entry Point
 
-Updated: August 12, 2025
-Version: 2.0.1 - Enhanced Modular Architecture
+Updated: September 05, 2025
+Version: 2.1.1 - Identified Preview Website blocking issue - requires AWS separation
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 
@@ -72,9 +72,13 @@ try:
         
         app = QApplication(sys.argv)
 
-        # Set application properties
+        # Set application properties with dynamic version
         app.setApplicationName("SEO Authority Website Generator")
-        app.setApplicationVersion("2.0.0")
+        try:
+            from src.version import get_version
+            app.setApplicationVersion(get_version())
+        except ImportError:
+            app.setApplicationVersion("2.1.0")  # Fallback version
         app.setOrganizationName("Cloud Stack Solutions")
 
         # Set default font

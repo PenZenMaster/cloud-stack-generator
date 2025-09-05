@@ -472,8 +472,16 @@ class S3Manager:
         if '..' in bucket_name:
             return False, "Bucket name cannot contain consecutive periods"
         
-        # SOP-specific convention check
-        if not bucket_name.startswith('client-website-'):
-            return False, "Bucket name should follow SOP pattern: 'client-website-*'"
+        # SOP-specific convention check (relaxed to allow client-specific names)
+        # Allow bucket names that follow business naming patterns
+        sop_patterns = [
+            r'^client-website-',      # Original SOP pattern
+            r'^[a-z0-9]+-website',    # Business-website pattern
+            r'^[a-z0-9-]+-[a-z0-9-]+$'  # General business pattern (like salvo-metal-works-fabrication)
+        ]
+        
+        pattern_match = any(re.match(pattern, bucket_name) for pattern in sop_patterns)
+        if not pattern_match:
+            return False, "Bucket name should follow SOP patterns: 'client-website-*', 'business-website', or business-specific naming"
         
         return True, "Bucket name is valid"

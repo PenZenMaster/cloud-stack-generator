@@ -732,6 +732,50 @@ This architectural inconsistency caused **Sprint 2.5 save functionality failures
 - [ ] Create deployment status tracking system
 - [ ] Implement Mode A (S3 Static Website) deployment
 
+### **Enhanced SSO Workflow Feature** ✅ **COMPLETED**
+
+**Feature Overview**: Streamlined AWS SSO profile configuration with integrated terminal access and contextual help system.
+
+#### **UI Enhancements**
+- ✅ **Integrated Terminal Access**: "Configure SSO" buttons in both New Profile dialog and main CloudTab interface
+- ✅ **Context-Sensitive Controls**: SSO configuration button only enabled for SSO profiles
+- ✅ **Cross-Platform Terminal Support**: Windows (cmd/Windows Terminal), macOS (Terminal.app), Linux (gnome-terminal/konsole/xterm)
+- ✅ **Pre-populated Commands**: Automatic generation of `aws configure sso --profile {profile-name}` commands
+- ✅ **Contextual Help System**: Comprehensive "?" help button with SSO configuration instructions
+
+#### **Workflow Integration**
+1. **New Profile Creation**:
+   - User enters profile name in dialog
+   - User clicks "Configure SSO" button
+   - Terminal opens with pre-populated `aws configure sso --profile {name}` command
+   - User completes AWS SSO authentication flow in terminal
+   - User returns to dialog to finalize profile configuration
+
+2. **Existing Profile Management**:
+   - Context-sensitive "Configure SSO" button appears only for SSO profiles
+   - One-click terminal access for profile reconfiguration
+   - Automatic profile name population in CLI commands
+
+3. **Help and Guidance**:
+   - Contextual "?" help button provides detailed SSO setup instructions
+   - Step-by-step configuration process documentation
+   - Troubleshooting guidance for common issues
+   - Prerequisites and URL format examples
+
+#### **Technical Implementation**
+- **Cross-Platform Terminal Integration**: Uses `subprocess` with OS-specific commands
+- **Error Handling**: Graceful fallbacks when terminals not available
+- **Security Compliance**: No credential exposure in UI or commands
+- **Professional UX**: Tooltips, contextual enabling/disabling of controls
+- **Documentation**: Rich HTML help dialog with comprehensive guidance
+
+#### **User Experience Benefits**
+- **Streamlined Setup**: No need to manually open terminals or remember CLI syntax
+- **Reduced Errors**: Pre-populated commands eliminate typos and syntax mistakes
+- **Context Awareness**: Interface adapts based on selected profile type
+- **Professional Flow**: Integrated experience maintains application context
+- **Comprehensive Support**: Built-in help reduces user friction and support needs
+
 ### **Phase 2: Advanced Deployment Features (Week 2)**
 
 #### **Week 2 Day 8-10: CloudFront Integration**

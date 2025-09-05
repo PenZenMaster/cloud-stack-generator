@@ -255,18 +255,10 @@ class HTMLGenerator:
             template_data['social_media'] = config.social_media
             
         # Check for Google Business Profile data from multiple sources
-        print(f"DEBUG: config has google_business_profile: {hasattr(config, 'google_business_profile')}")
-        if hasattr(config, 'google_business_profile'):
-            print(f"DEBUG: google_business_profile value: {config.google_business_profile}")
-        print(f"DEBUG: config has google_business: {hasattr(config, 'google_business')}")
-        print(f"DEBUG: config.contact has google_business: {hasattr(config.contact, 'google_business')}")
-        
         if hasattr(config, 'google_business_profile') and config.google_business_profile:
             template_data['google_business'] = config.google_business_profile
-            print("DEBUG: Added google_business_profile to template_data")
         elif hasattr(config, 'google_business') and config.google_business:
             template_data['google_business'] = config.google_business
-            print("DEBUG: Added google_business to template_data")
         elif hasattr(config.contact, 'google_business') and config.contact.google_business:
             template_data['google_business'] = config.contact.google_business
             
@@ -427,16 +419,10 @@ class HTMLGenerator:
         self, template_name: str, template_data: Dict[str, Any]
     ) -> str:
         """Render template with data"""
-        print(f"DEBUG: Rendering template: {template_name}")
-        print(f"DEBUG: Jinja env available: {self.jinja_env is not None}")
-        print(f"DEBUG: Template dir: {self.template_dir}")
-        print(f"DEBUG: GBP in template_data: {'google_business' in template_data}")
-        
         if self.jinja_env:
             try:
                 template = self.jinja_env.get_template(template_name)
                 rendered = template.render(**template_data)
-                print(f"DEBUG: Template rendered successfully, contains 'Visit Our Location': {'Visit Our Location' in rendered}")
                 return rendered
             except jinja2.TemplateNotFound:
                 print(f"Warning: Template {template_name} not found, using fallback")
@@ -445,7 +431,6 @@ class HTMLGenerator:
                 print(f"Error rendering template {template_name}: {e}")
                 return self._render_fallback_template(template_name, template_data)
         else:
-            print("DEBUG: No Jinja env, using fallback")
             return self._render_fallback_template(template_name, template_data)
 
     def _render_fallback_template(

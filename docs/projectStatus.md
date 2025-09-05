@@ -1,11 +1,12 @@
 # SEO Authority Website Generator - Project Status  
 ## Sprint 3 Week 1 - Enhanced City Page Template Design COMPLETE
 
-**Last Updated**: September 4, 2025  
-**Current Status**: Sprint 3 Week 1 - Enhanced City Page Templates Complete - All Content Generation Systems Operational  
+**Last Updated**: September 5, 2025  
+**Current Status**: Sprint 3 Week 2 - Validation & Version Management Systems Complete - CRITICAL Preview Issue Identified  
 **Working Directory**: `E:\projects\cloud-stack-generator\`  
-**Git Status**: sprint/css-refactor-and-testing branch - All changes committed and synced  
-**Current Branch**: sprint/css-refactor-and-testing
+**Git Status**: main branch - All changes committed and synced  
+**Current Branch**: main  
+**Current Version**: 2.1.1
 **IMPORTANT** Always include standard header in all files and semantically update version number for each iteration.
 **IMPORTANT** Always generate python code that will pass pylance 'standard' setting
 ---
@@ -43,11 +44,47 @@
 
 ---
 
+## 🚨 CRITICAL ISSUE - NEXT SESSION PRIORITY #1
+
+### **Preview Website Blocked by AWS Validation**
+- **Status**: CRITICAL BUG - Blocks QA workflow completely
+- **Problem**: Preview Website requires AWS profile/bucket validation even though preview doesn't deploy
+- **Impact**: Cannot preview websites without full AWS deployment setup
+- **QA Workflow Broken**: Load config → Validate All (Pass) → Save → Preview Website → FAILS with validation error
+
+### **Required Fix**:
+1. Separate preview validation from deployment validation
+2. Preview should work with just business/content validation
+3. Only deployment should require AWS configuration
+4. Restore QA testing workflow functionality
+
+---
+
+## 📋 COMPLETED THIS SESSION
+
+### **Sprint 3 Week 2 - September 5, 2025 ACHIEVEMENTS**
+- ✅ **Circular Validation Logic Fixed** - Preview/Validate All consistency resolved
+- ✅ **Dynamic Version Management** - Automatic version updates implemented  
+- ✅ **Version Display in Header** - Main window shows current version from main.py
+- ✅ **Client AWS Configuration** - Per-client AWS settings with YAML precedence fix
+- ✅ **Salvo Bucket Validation** - Flexible bucket naming patterns supported
+- ✅ **Application Version**: 2.0.1 → 2.1.1 (3 version increments)
+
+### **System Improvements**
+- ✅ **Version Management**: Automatic feature/bugfix version incrementing
+- ✅ **Client Separation**: AWS configs isolated per client for billing
+- ✅ **Validation Consistency**: All validation methods now use identical logic
+- ✅ **Bucket Name Support**: Business-specific naming patterns accepted
+
+---
+
 ## 📋 NEXT SESSION WORK ITEMS
 
-### **Current Focus: Sprint 3 Week 2 - Advanced Features Phase**
-- ✅ **Enhanced City Page Templates Complete** - All 3 phases successfully implemented
-- ✅ **Wikipedia API Integration** - Fixed and operational with authentic content generation
+### **🚨 PRIORITY #1: Fix Preview Website AWS Dependency**
+- Separate preview validation from deployment validation
+- Allow preview without AWS configuration
+- Test complete QA workflow: Load → Validate → Preview
+- Ensure deployment still requires AWS validation
 - ✅ **Content Generation Systems** - POI and FAQ systems fully operational
 - ✅ **YAML Persistence** - All generated content persisted in editable configuration files
 

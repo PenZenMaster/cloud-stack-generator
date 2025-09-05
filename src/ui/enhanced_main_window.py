@@ -40,6 +40,7 @@ from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
 # Import core functionality
 from ..core.config.models import ClientConfig
 from ..core.config.parser import ConfigParser
+from ..version import get_version
 
 # Import error logging
 from ..utils import log_error_dialog, log_file_operation_error, log_validation_error
@@ -81,7 +82,8 @@ class EnhancedMainWindow(QMainWindow):
 
     def setup_window(self):
         """Configure main window properties"""
-        self.setWindowTitle("SEO Authority Website Generator v2.0")
+        current_version = get_version()
+        self.setWindowTitle(f"SEO Authority Website Generator v{current_version}")
         self.setMinimumSize(1200, 800)
         self.resize(1400, 900)
 
@@ -341,6 +343,18 @@ class EnhancedMainWindow(QMainWindow):
         self.unsaved_changes = True
         self.update_window_title()
         self.status_label.setText("Configuration modified - use Save Configuration to save changes")
+        
+        # Update cloud tab client context when business info changes
+        try:
+            business_data = self.business_tab.get_config_data()
+            if business_data.get('business_name') and business_data.get('domain'):
+                self.cloud_tab.set_client_context(
+                    business_data['business_name'], 
+                    business_data['domain']
+                )
+        except Exception as e:
+            # Don't fail the config change event if cloud tab update fails
+            print(f"Warning: Failed to update cloud tab client context: {e}")
 
 
     def on_tab_changed(self, index):
@@ -388,7 +402,8 @@ class EnhancedMainWindow(QMainWindow):
 
     def update_window_title(self):
         """Update window title with current state"""
-        title = "SEO Authority Website Generator v2.0"
+        current_version = get_version()
+        title = f"SEO Authority Website Generator v{current_version}"
 
         if self.current_config_file:
             filename = Path(self.current_config_file).name
@@ -454,7 +469,6 @@ class EnhancedMainWindow(QMainWindow):
             # Parse the YAML file and store the config
             config = self.config_parser.parse_yaml_file(file_path)
             self.loaded_config = config  # Store for website generation
-            print(f"DEBUG: Stored loaded_config with GBP: {config.google_business_profile}")
         except Exception as e:
             error_msg = f"Failed to load configuration:\n{str(e)}"
             log_file_operation_error(
@@ -985,6 +999,9 @@ class EnhancedMainWindow(QMainWindow):
         }
         self.services_tab.set_config_data(services_data)
 
+        # Set client context for cloud tab (loads client-specific AWS config)
+        self.cloud_tab.set_client_context(config.business.business_name, config.business.domain)
+        
         # Load cloud deployment data
         cloud_data = {
             "aws_profile": config.cloud.aws_profile,
@@ -1016,7 +1033,29 @@ class EnhancedMainWindow(QMainWindow):
         for tab_name, tab in tabs.items():
             if hasattr(tab, "validate_data"):
                 try:
+                    # Handle different return types from validate_data()
                     validation_result = tab.validate_data()
+                    if (
+                        isinstance(validation_result, tuple)
+                        and len(validation_result) == 2
+                    ):
+                        is_valid, errors = validation_result
+                    elif isinstance(validation_result, bool):
+                        is_valid = validation_result
+                        errors = [] if validation_result else ["Validation failed"]
+                    else:
+                        # Handle ValidationResult objects with attributes
+                        is_valid = getattr(validation_result, 'is_valid', False)
+                        errors = getattr(validation_result, 'errors', ["Unable to determine validation result"])
+
+                    validation_results[tab_name] = {
+                        "valid": is_valid,
+                        "errors": errors if errors else [],
+                    }
+                    
+                    if not is_valid:
+                        all_valid = False
+
                 except Exception as e:
                     print(f"DEBUG: Exception during validation of {tab_name}: {e}")
                     validation_results[tab_name] = {
@@ -1172,6 +1211,14 @@ class EnhancedMainWindow(QMainWindow):
     def preview_website(self):
         """Preview website before generation for QA testing"""
         try:
+            # Ensure client context is set for cloud tab before validation
+            business_data = self.business_tab.get_config_data()
+            if business_data.get('business_name') and business_data.get('domain'):
+                self.cloud_tab.set_client_context(
+                    business_data['business_name'], 
+                    business_data['domain']
+                )
+            
             # Validate configuration first (get results without showing dialog)
             validation_results, all_valid = self.get_validation_results()
             
@@ -1218,6 +1265,14 @@ class EnhancedMainWindow(QMainWindow):
     def generate_website(self):
         """Generate website from current configuration"""
         try:
+            # Ensure client context is set for cloud tab before validation
+            business_data = self.business_tab.get_config_data()
+            if business_data.get('business_name') and business_data.get('domain'):
+                self.cloud_tab.set_client_context(
+                    business_data['business_name'], 
+                    business_data['domain']
+                )
+            
             # First validate
             validation_results, all_valid = self.get_validation_results()
             if not all_valid:
@@ -1244,9 +1299,6 @@ class EnhancedMainWindow(QMainWindow):
                 # Preserve Google Business Profile data
                 if hasattr(self.loaded_config, 'google_business_profile') and self.loaded_config.google_business_profile:
                     config.google_business_profile = self.loaded_config.google_business_profile
-                    print(f"DEBUG: Preserved GBP data from loaded config: {config.google_business_profile}")
-            
-            print("DEBUG: Using current UI data for generation (WYSIWYG) with preserved loaded data")
             
             # Ask user for output directory
             output_dir = QFileDialog.getExistingDirectory(

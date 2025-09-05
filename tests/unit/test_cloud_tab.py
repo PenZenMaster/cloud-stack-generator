@@ -77,6 +77,94 @@ class TestAWSProfileDialog:
         assert data['description'] == "Test Keys Profile"
         assert data['auth_method'] == AuthMethod.ACCESS_KEYS
         assert data['region'] == "us-east-1"
+    
+    @patch('subprocess.run')
+    @patch('platform.system')
+    def test_configure_sso_cli_windows(self, mock_system, mock_subprocess, qapp):
+        """Test SSO CLI configuration on Windows"""
+        mock_system.return_value = "Windows"
+        dialog = AWSProfileDialog()
+        dialog.profile_name_input.setText("test-profile")
+        
+        with patch.object(QMessageBox, 'information') as mock_info:
+            dialog.configure_sso_cli()
+        
+        # Should try Windows Terminal first
+        mock_subprocess.assert_called()
+        mock_info.assert_called_once()
+        
+        # Check that the correct command was used
+        call_args = mock_subprocess.call_args[0][0]
+        assert "test-profile" in str(call_args)
+    
+    @patch('subprocess.run')
+    @patch('platform.system')
+    def test_configure_sso_cli_macos(self, mock_system, mock_subprocess, qapp):
+        """Test SSO CLI configuration on macOS"""
+        mock_system.return_value = "Darwin"
+        dialog = AWSProfileDialog()
+        dialog.profile_name_input.setText("test-profile")
+        
+        with patch.object(QMessageBox, 'information') as mock_info:
+            dialog.configure_sso_cli()
+        
+        mock_subprocess.assert_called()
+        mock_info.assert_called_once()
+        
+        # Check osascript was called for macOS
+        call_args = mock_subprocess.call_args[0][0]
+        assert call_args[0] == "osascript"
+    
+    @patch('subprocess.run')
+    @patch('platform.system')  
+    def test_configure_sso_cli_linux(self, mock_system, mock_subprocess, qapp):
+        """Test SSO CLI configuration on Linux"""
+        mock_system.return_value = "Linux"
+        dialog = AWSProfileDialog()
+        dialog.profile_name_input.setText("test-profile")
+        
+        with patch.object(QMessageBox, 'information') as mock_info:
+            dialog.configure_sso_cli()
+        
+        mock_subprocess.assert_called()
+        mock_info.assert_called_once()
+    
+    def test_configure_sso_cli_no_profile_name(self, qapp):
+        """Test SSO CLI configuration with no profile name"""
+        dialog = AWSProfileDialog()
+        dialog.profile_name_input.setText("")
+        
+        with patch.object(QMessageBox, 'warning') as mock_warning:
+            dialog.configure_sso_cli()
+        
+        mock_warning.assert_called_once()
+        args = mock_warning.call_args[0]
+        assert "Profile Name Required" in args[1]
+    
+    @patch('subprocess.run')
+    @patch('platform.system')
+    def test_configure_sso_cli_subprocess_error(self, mock_system, mock_subprocess, qapp):
+        """Test SSO CLI configuration with subprocess error"""
+        mock_system.return_value = "Windows"
+        mock_subprocess.side_effect = Exception("Process failed")
+        dialog = AWSProfileDialog()
+        dialog.profile_name_input.setText("test-profile")
+        
+        with patch.object(QMessageBox, 'critical') as mock_critical:
+            dialog.configure_sso_cli()
+        
+        mock_critical.assert_called_once()
+        args = mock_critical.call_args[0]
+        assert "Failed to open terminal" in args[2]
+    
+    def test_show_sso_help(self, qapp):
+        """Test showing SSO help dialog"""
+        dialog = AWSProfileDialog()
+        
+        with patch.object(QMessageBox, 'exec') as mock_exec:
+            dialog.show_sso_help()
+        
+        mock_exec.assert_called_once()
 
 
 @pytest.mark.ui
@@ -99,7 +187,8 @@ class TestCloudTab:
         
         # Check UI components exist
         assert tab.profile_combo is not None
-        assert tab.bucket_input is not None
+        assert tab.bucket_combo is not None
+        assert tab.directory_combo is not None
         assert tab.region_combo is not None
         assert tab.s3_mode_radio is not None
         assert tab.cloudfront_mode_radio is not None
@@ -292,7 +381,7 @@ class TestCloudTab:
         """Test bucket name change validation - valid name"""
         tab = CloudTab()
         
-        tab.bucket_input.setText("client-website-test-123456")
+        tab.bucket_combo.setCurrentText("client-website-test-123456")
         tab.on_bucket_name_changed()
         
         assert "valid" in tab.bucket_status_label.text()
@@ -302,7 +391,7 @@ class TestCloudTab:
         """Test bucket name change validation - invalid name"""
         tab = CloudTab()
         
-        tab.bucket_input.setText("INVALID-NAME")
+        tab.bucket_combo.setCurrentText("INVALID-NAME")
         tab.on_bucket_name_changed()
         
         assert "Invalid" in tab.bucket_status_label.text()
@@ -312,7 +401,7 @@ class TestCloudTab:
         """Test bucket name change validation - empty name"""
         tab = CloudTab()
         
-        tab.bucket_input.setText("")
+        tab.bucket_combo.setCurrentText("")
         tab.on_bucket_name_changed()
         
         assert "No bucket configured" in tab.bucket_status_label.text()
@@ -326,7 +415,7 @@ class TestCloudTab:
         tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
         tab.refresh_profiles()
         tab.profile_combo.setCurrentText("test-profile")
-        tab.bucket_input.setText("client-website-test-123456")
+        tab.bucket_combo.setCurrentText("client-website-test-123456")
         
         tab.update_deploy_button_state()
         
@@ -349,7 +438,7 @@ class TestCloudTab:
         tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
         tab.refresh_profiles()
         tab.profile_combo.setCurrentText("test-profile")
-        tab.bucket_input.setText("client-website-test-123456")
+        tab.bucket_combo.setCurrentText("client-website-test-123456")
         tab.region_combo.setCurrentText("us-west-2")
         tab.s3_mode_radio.setChecked(True)
         
@@ -378,7 +467,7 @@ class TestCloudTab:
         
         assert tab.profile_combo.currentText() == "test-profile"
         assert tab.region_combo.currentText() == "us-west-2"
-        assert tab.bucket_input.text() == "client-website-test-123456"
+        assert tab.bucket_combo.currentText() == "client-website-test-123456"
         assert tab.s3_mode_radio.isChecked() is True
     
     def test_validate_data_success(self, qapp):
@@ -389,7 +478,7 @@ class TestCloudTab:
         tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
         tab.refresh_profiles()
         tab.profile_combo.setCurrentText("test-profile")
-        tab.bucket_input.setText("client-website-test-123456")
+        tab.bucket_combo.setCurrentText("client-website-test-123456")
         
         is_valid, errors = tab.validate_data()
         
@@ -401,7 +490,7 @@ class TestCloudTab:
         tab = CloudTab()
         
         # No profile selected
-        tab.bucket_input.setText("client-website-test-123456")
+        tab.bucket_combo.setCurrentText("client-website-test-123456")
         
         is_valid, errors = tab.validate_data()
         
@@ -432,7 +521,7 @@ class TestCloudTab:
         tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
         tab.refresh_profiles()
         tab.profile_combo.setCurrentText("test-profile")
-        tab.bucket_input.setText("INVALID-BUCKET-NAME")
+        tab.bucket_combo.setCurrentText("INVALID-BUCKET-NAME")
         
         is_valid, errors = tab.validate_data()
         
@@ -449,6 +538,209 @@ class TestCloudTab:
         text_content = tab.status_text.toPlainText()
         assert "Test message" in text_content
         assert "[" in text_content  # Timestamp should be present
+    
+    def test_configure_existing_profile_sso_no_profile_selected(self, qapp):
+        """Test configure SSO with no profile selected"""
+        tab = CloudTab()
+        tab.profile_combo.addItem("No profiles configured")
+        tab.profile_combo.setCurrentText("No profiles configured")
+        
+        with patch.object(QMessageBox, 'warning') as mock_warning:
+            tab.configure_existing_profile_sso()
+        
+        mock_warning.assert_called_once()
+        args = mock_warning.call_args[0]
+        assert "No Profile Selected" in args[1]
+    
+    def test_configure_existing_profile_sso_profile_not_found(self, qapp):
+        """Test configure SSO with profile not found"""
+        tab = CloudTab()
+        tab.profile_combo.addItem("nonexistent-profile")
+        tab.profile_combo.setCurrentText("nonexistent-profile")
+        
+        with patch.object(QMessageBox, 'warning') as mock_warning:
+            tab.configure_existing_profile_sso()
+        
+        mock_warning.assert_called_once()
+        args = mock_warning.call_args[0]
+        assert "Profile Not Found" in args[1]
+    
+    def test_configure_existing_profile_sso_not_sso_profile(self, qapp):
+        """Test configure SSO with non-SSO profile"""
+        tab = CloudTab()
+        
+        # Add access key profile
+        profile = tab.credentials_manager.add_access_key_profile("test-keys", "us-east-1")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-keys")
+        
+        with patch.object(QMessageBox, 'information') as mock_info:
+            tab.configure_existing_profile_sso()
+        
+        mock_info.assert_called_once()
+        args = mock_info.call_args[0]
+        assert "Not an SSO Profile" in args[1]
+    
+    @patch('subprocess.run')
+    @patch('platform.system')
+    def test_configure_existing_profile_sso_success(self, mock_system, mock_subprocess, qapp):
+        """Test successful SSO configuration for existing profile"""
+        mock_system.return_value = "Windows"
+        tab = CloudTab()
+        
+        # Add SSO profile
+        profile = tab.credentials_manager.add_sso_profile("test-sso", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-sso")
+        
+        with patch.object(QMessageBox, 'information') as mock_info:
+            tab.configure_existing_profile_sso()
+        
+        mock_subprocess.assert_called()
+        mock_info.assert_called_once()
+        
+        # Check that the correct command was used
+        call_args = mock_subprocess.call_args[0][0]
+        assert "test-sso" in str(call_args)
+    
+    @patch('subprocess.run')
+    @patch('platform.system')
+    def test_configure_existing_profile_sso_subprocess_error(self, mock_system, mock_subprocess, qapp):
+        """Test SSO configuration with subprocess error"""
+        mock_system.return_value = "Windows"
+        mock_subprocess.side_effect = Exception("Terminal failed")
+        tab = CloudTab()
+        
+        # Add SSO profile
+        profile = tab.credentials_manager.add_sso_profile("test-sso", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-sso")
+        
+        with patch.object(QMessageBox, 'critical') as mock_critical:
+            tab.configure_existing_profile_sso()
+        
+        mock_critical.assert_called_once()
+        args = mock_critical.call_args[0]
+        assert "Failed to open terminal" in args[2]
+    
+    def test_refresh_bucket_list_no_profile(self, qapp):
+        """Test refresh bucket list with no profile selected"""
+        tab = CloudTab()
+        
+        with patch.object(QMessageBox, 'warning') as mock_warning:
+            tab.refresh_bucket_list()
+        
+        mock_warning.assert_called_once()
+        args = mock_warning.call_args[0]
+        assert "No Profile Selected" in args[1]
+    
+    @patch('src.core.aws.credentials.AWSCredentialsManager._get_session')
+    @patch('src.core.aws.credentials.AWSCredentialsManager.list_client_buckets')
+    def test_refresh_bucket_list_success(self, mock_list_buckets, mock_get_session, qapp):
+        """Test successful bucket list refresh"""
+        tab = CloudTab()
+        
+        # Setup mocks
+        mock_get_session.return_value = Mock()
+        mock_list_buckets.return_value = [
+            {'name': 'client-website-test-123'},
+            {'name': 'client-website-prod-456'}
+        ]
+        
+        # Add profile and refresh
+        tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-profile")
+        
+        tab.refresh_bucket_list()
+        
+        # Check that buckets were added to combo
+        assert tab.bucket_combo.count() == 2
+        assert tab.bucket_combo.itemText(0) == 'client-website-test-123'
+        assert tab.bucket_combo.itemText(1) == 'client-website-prod-456'
+    
+    def test_refresh_directory_list_no_bucket(self, qapp):
+        """Test refresh directory list with no bucket selected"""
+        tab = CloudTab()
+        
+        with patch.object(QMessageBox, 'warning') as mock_warning:
+            tab.refresh_directory_list()
+        
+        mock_warning.assert_called_once()
+        args = mock_warning.call_args[0]
+        assert "No Bucket Selected" in args[1]
+    
+    @patch('src.core.aws.credentials.AWSCredentialsManager._get_session')
+    @patch('src.core.aws.s3_manager.S3Manager.list_bucket_contents')
+    def test_refresh_directory_list_success(self, mock_list_contents, mock_get_session, qapp):
+        """Test successful directory list refresh"""
+        tab = CloudTab()
+        
+        # Setup mocks
+        mock_get_session.return_value = Mock()
+        mock_list_contents.return_value = [
+            {'key': 'subdir1/file.html'},
+            {'key': 'subdir2/nested/file.css'},
+            {'key': 'root-file.html'}
+        ]
+        
+        # Setup tab state
+        tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-profile")
+        tab.bucket_combo.setCurrentText("test-bucket")
+        
+        tab.refresh_directory_list()
+        
+        # Check that directories were found (should include root, subdir1/, subdir2/, subdir2/nested/)
+        assert tab.directory_combo.count() >= 3  # At least root, subdir1/, subdir2/
+    
+    def test_on_bucket_selection_changed(self, qapp):
+        """Test bucket selection change handling"""
+        tab = CloudTab()
+        
+        tab.on_bucket_selection_changed("test-bucket")
+        
+        # Should reset directory to root
+        assert tab.directory_combo.currentText() == "/ (root)"
+        assert "test-bucket" in tab.bucket_status_label.text()
+    
+    def test_on_directory_selection_changed(self, qapp):
+        """Test directory selection change handling"""
+        tab = CloudTab()
+        
+        tab.bucket_combo.setCurrentText("test-bucket")
+        tab.on_directory_selection_changed("subdir/")
+        
+        assert "test-bucket" in tab.bucket_status_label.text()
+        assert "subdir/" in tab.bucket_status_label.text()
+    
+    def test_check_directory_exists_true(self, qapp):
+        """Test directory existence check - directory exists"""
+        tab = CloudTab()
+        
+        with patch.object(tab.s3_manager, 'list_bucket_contents') as mock_list:
+            mock_list.return_value = [
+                {'key': 'testdir/file1.html'},
+                {'key': 'testdir/file2.css'},
+                {'key': 'other/file.html'}
+            ]
+            
+            result = tab.check_directory_exists("test-bucket", "testdir")
+            assert result is True
+    
+    def test_check_directory_exists_false(self, qapp):
+        """Test directory existence check - directory does not exist"""
+        tab = CloudTab()
+        
+        with patch.object(tab.s3_manager, 'list_bucket_contents') as mock_list:
+            mock_list.return_value = [
+                {'key': 'other/file1.html'},
+                {'key': 'different/file2.css'}
+            ]
+            
+            result = tab.check_directory_exists("test-bucket", "nonexistent")
+            assert result is False
 
 
 @pytest.mark.unit

@@ -442,8 +442,8 @@ class TestS3Manager:
         assert "consecutive periods" in message
     
     def test_validate_bucket_name_wrong_prefix(self):
-        """Test bucket name validation - wrong SOP prefix"""
-        is_valid, message = self.manager.validate_bucket_name("wrong-prefix-bucket")
+        """Test bucket name validation - invalid format (should use periods which are invalid)"""
+        is_valid, message = self.manager.validate_bucket_name("invalid.bucket.name")
         
         assert is_valid is False
         assert "SOP pattern" in message
