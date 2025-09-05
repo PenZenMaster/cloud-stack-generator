@@ -65,6 +65,7 @@ logs/
 tests/
 test_output/
 *.log
+config/
 
 # Security - API keys and sensitive data
 config/api_keys.json

@@ -52,6 +52,13 @@ client:
       alt_text: View of Chicago
       caption: Wikipedia - Chicago
       credit: Wikipedia - Chicago
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Chicago\"\
+        \ href=\"https://en.wikipedia.org/wiki/Chicago\" target=\"_blank\" rel=\"\
+        noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Chicago_River_ferry_b.jpg/330px-Chicago_River_ferry_b.jpg\"\
+        \ \n             alt=\"View of Chicago\"\n             width=\"100%\" \n \
+        \            style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Chicago</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Chicago_River_ferry_b.jpg/330px-Chicago_River_ferry_b.jpg
       source: https://en.wikipedia.org/wiki/Chicago
     city_map_embed: ''
@@ -177,6 +184,13 @@ client:
       alt_text: View of Bellwood
       caption: Wikipedia - Bellwood, Illinois
       credit: Wikipedia - Bellwood, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Bellwood,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Bellwood%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg/330px-Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg\"\
+        \ \n             alt=\"View of Bellwood\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Bellwood, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg/330px-Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg
       source: https://en.wikipedia.org/wiki/Bellwood%2C_Illinois
     city_map_embed: ''
@@ -238,6 +252,13 @@ client:
       alt_text: View of Oak Park Illinois
       caption: No image available for Oak Park Illinois
       credit: No image available for Oak Park Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"No image available\
+        \ for Oak Park Illinois\" href=\"https://en.wikipedia.org/wiki/Oak_Park_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/No-image-available.svg/1280px-No-image-available.svg.png\"\
+        \ \n             alt=\"View of Oak Park Illinois\"\n             width=\"\
+        100%\" \n             style=\"height: auto; margin: 20px 0;\"\n          \
+        \   loading=\"lazy\">\n    </a>\n    <p class=\"image-caption\">No image available\
+        \ for Oak Park Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/No-image-available.svg/1280px-No-image-available.svg.png
       source: https://en.wikipedia.org/wiki/Oak_Park_Illinois
     city_map_embed: ''
@@ -298,6 +319,13 @@ client:
       alt_text: View of Berwyn
       caption: Wikipedia - Berwyn, Illinois
       credit: Wikipedia - Berwyn, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Berwyn,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Berwyn%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Berwyn_City_Hall.jpg/330px-Berwyn_City_Hall.jpg\"\
+        \ \n             alt=\"View of Berwyn\"\n             width=\"100%\" \n  \
+        \           style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Berwyn, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Berwyn_City_Hall.jpg/330px-Berwyn_City_Hall.jpg
       source: https://en.wikipedia.org/wiki/Berwyn%2C_Illinois
     city_map_embed: ''
@@ -358,6 +386,13 @@ client:
       alt_text: View of Bridgeview
       caption: Wikipedia - Bridgeview, Illinois
       credit: Wikipedia - Bridgeview, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Bridgeview,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Bridgeview%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bridgeview_City_Hall.jpg/330px-Bridgeview_City_Hall.jpg\"\
+        \ \n             alt=\"View of Bridgeview\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Bridgeview,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bridgeview_City_Hall.jpg/330px-Bridgeview_City_Hall.jpg
       source: https://en.wikipedia.org/wiki/Bridgeview%2C_Illinois
     city_map_embed: ''
@@ -416,6 +451,13 @@ client:
       alt_text: View of Brookfield
       caption: Wikipedia - Brookfield, Illinois
       credit: Wikipedia - Brookfield, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Brookfield,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Brookfield%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/La_Grange_Park_and_Brookfield%2C_Illinois.jpg/330px-La_Grange_Park_and_Brookfield%2C_Illinois.jpg\"\
+        \ \n             alt=\"View of Brookfield\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Brookfield,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/La_Grange_Park_and_Brookfield%2C_Illinois.jpg/330px-La_Grange_Park_and_Brookfield%2C_Illinois.jpg
       source: https://en.wikipedia.org/wiki/Brookfield%2C_Illinois
     city_map_embed: ''
@@ -478,6 +520,13 @@ client:
       alt_text: View of Burbank
       caption: Wikipedia - Burbank, Illinois
       credit: Wikipedia - Burbank, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Burbank,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Burbank%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Burbank%2C_Illinois_%2811004367403%29.jpg/330px-Burbank%2C_Illinois_%2811004367403%29.jpg\"\
+        \ \n             alt=\"View of Burbank\"\n             width=\"100%\" \n \
+        \            style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Burbank, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Burbank%2C_Illinois_%2811004367403%29.jpg/330px-Burbank%2C_Illinois_%2811004367403%29.jpg
       source: https://en.wikipedia.org/wiki/Burbank%2C_Illinois
     city_map_embed: ''
@@ -539,6 +588,13 @@ client:
       alt_text: View of Cicero
       caption: Wikipedia - Cicero, Illinois
       credit: Wikipedia - Cicero, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Cicero,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Cicero%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/J._Sterling_Morton_High_School_East_Auditorium.jpg/330px-J._Sterling_Morton_High_School_East_Auditorium.jpg\"\
+        \ \n             alt=\"View of Cicero\"\n             width=\"100%\" \n  \
+        \           style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Cicero, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/J._Sterling_Morton_High_School_East_Auditorium.jpg/330px-J._Sterling_Morton_High_School_East_Auditorium.jpg
       source: https://en.wikipedia.org/wiki/Cicero%2C_Illinois
     city_map_embed: ''
@@ -600,6 +656,13 @@ client:
       alt_text: View of Elmwood Park
       caption: Wikipedia - Elmwood Park, Illinois
       credit: Wikipedia - Elmwood Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Elmwood\
+        \ Park, Illinois\" href=\"https://en.wikipedia.org/wiki/Elmwood_Park%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Chicago_vicinity%2C_Elmwood_Park%2C_Saint_Celestine_Catholic_Parish_-_summer_1981_%28ko%C5%9Bci%C3%B3%C5%82_parafialny_p.w._%C5%9Bw._Celestyna%29.jpg/330px-Chicago_vicinity%2C_Elmwood_Park%2C_Saint_Celestine_Catholic_Parish_-_summer_1981_%28ko%C5%9Bci%C3%B3%C5%82_parafialny_p.w._%C5%9Bw._Celestyna%29.jpg\"\
+        \ \n             alt=\"View of Elmwood Park\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Elmwood Park,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Chicago_vicinity%2C_Elmwood_Park%2C_Saint_Celestine_Catholic_Parish_-_summer_1981_%28ko%C5%9Bci%C3%B3%C5%82_parafialny_p.w._%C5%9Bw._Celestyna%29.jpg/330px-Chicago_vicinity%2C_Elmwood_Park%2C_Saint_Celestine_Catholic_Parish_-_summer_1981_%28ko%C5%9Bci%C3%B3%C5%82_parafialny_p.w._%C5%9Bw._Celestyna%29.jpg
       source: https://en.wikipedia.org/wiki/Elmwood_Park%2C_Illinois
     city_map_embed: ''
@@ -662,6 +725,13 @@ client:
       alt_text: View of Evanston
       caption: Wikipedia - Evanston, Illinois
       credit: Wikipedia - Evanston, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Evanston,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Evanston%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Fountain_Square_Evanston.jpg/330px-Fountain_Square_Evanston.jpg\"\
+        \ \n             alt=\"View of Evanston\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Evanston, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Fountain_Square_Evanston.jpg/330px-Fountain_Square_Evanston.jpg
       source: https://en.wikipedia.org/wiki/Evanston%2C_Illinois
     city_map_embed: ''
@@ -724,6 +794,13 @@ client:
       alt_text: View of Forest Park
       caption: Wikipedia - Forest Park, Illinois
       credit: Wikipedia - Forest Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Forest\
+        \ Park, Illinois\" href=\"https://en.wikipedia.org/wiki/Forest_Park%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Madison_Street%2C_Forest_Park.jpg/330px-Madison_Street%2C_Forest_Park.jpg\"\
+        \ \n             alt=\"View of Forest Park\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Forest Park,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Madison_Street%2C_Forest_Park.jpg/330px-Madison_Street%2C_Forest_Park.jpg
       source: https://en.wikipedia.org/wiki/Forest_Park%2C_Illinois
     city_map_embed: ''
@@ -785,6 +862,13 @@ client:
       alt_text: View of Franklin Park
       caption: Wikipedia - Franklin Park, Illinois
       credit: Wikipedia - Franklin Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Franklin\
+        \ Park, Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n       \
+        \ <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/FPtrainhouse.JPG/330px-FPtrainhouse.JPG\"\
+        \ \n             alt=\"View of Franklin Park\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Franklin Park,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/FPtrainhouse.JPG/330px-FPtrainhouse.JPG
       source: ''
     city_map_embed: ''
@@ -845,6 +929,13 @@ client:
       alt_text: View of Harwood Heights
       caption: Wikipedia - Harwood Heights, Illinois
       credit: Wikipedia - Harwood Heights, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Harwood\
+        \ Heights, Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n    \
+        \    <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/The_Mont_Clare.JPG/330px-The_Mont_Clare.JPG\"\
+        \ \n             alt=\"View of Harwood Heights\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Harwood Heights,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/The_Mont_Clare.JPG/330px-The_Mont_Clare.JPG
       source: ''
     city_map_embed: ''
@@ -905,6 +996,13 @@ client:
       alt_text: View of Lincolnwood
       caption: Wikipedia - Lincolnwood, Illinois
       credit: Wikipedia - Lincolnwood, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Lincolnwood,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Lincolnwood%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Lincolnwood_Village_Hall%2C_Lincolnwood%2C_Illinois_%289181752202%29.jpg/330px-Lincolnwood_Village_Hall%2C_Lincolnwood%2C_Illinois_%289181752202%29.jpg\"\
+        \ \n             alt=\"View of Lincolnwood\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Lincolnwood,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Lincolnwood_Village_Hall%2C_Lincolnwood%2C_Illinois_%289181752202%29.jpg/330px-Lincolnwood_Village_Hall%2C_Lincolnwood%2C_Illinois_%289181752202%29.jpg
       source: https://en.wikipedia.org/wiki/Lincolnwood%2C_Illinois
     city_map_embed: ''
@@ -965,6 +1063,13 @@ client:
       alt_text: View of Lyons
       caption: Wikipedia - Lyons, Illinois
       credit: Wikipedia - Lyons, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Lyons,\
+        \ Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n        <img src=\"\
+        https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/HofmannTower.JPG/330px-HofmannTower.JPG\"\
+        \ \n             alt=\"View of Lyons\"\n             width=\"100%\" \n   \
+        \          style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Lyons, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/HofmannTower.JPG/330px-HofmannTower.JPG
       source: ''
     city_map_embed: ''
@@ -1024,6 +1129,13 @@ client:
       alt_text: View of Maywood
       caption: Wikipedia - Maywood, Illinois
       credit: Wikipedia - Maywood, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Maywood,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Maywood%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/ImageMasonic_Temple.jpg/330px-ImageMasonic_Temple.jpg\"\
+        \ \n             alt=\"View of Maywood\"\n             width=\"100%\" \n \
+        \            style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Maywood, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/ImageMasonic_Temple.jpg/330px-ImageMasonic_Temple.jpg
       source: https://en.wikipedia.org/wiki/Maywood%2C_Illinois
     city_map_embed: ''
@@ -1083,6 +1195,13 @@ client:
       alt_text: View of Melrose Park
       caption: Wikipedia - Melrose Park, Illinois
       credit: Wikipedia - Melrose Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Melrose\
+        \ Park, Illinois\" href=\"https://en.wikipedia.org/wiki/Melrose_Park%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Downtown_Melrose_Park.jpg/330px-Downtown_Melrose_Park.jpg\"\
+        \ \n             alt=\"View of Melrose Park\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Melrose Park,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Downtown_Melrose_Park.jpg/330px-Downtown_Melrose_Park.jpg
       source: https://en.wikipedia.org/wiki/Melrose_Park%2C_Illinois
     city_map_embed: ''
@@ -1145,6 +1264,13 @@ client:
       alt_text: View of Norridge
       caption: Wikipedia - Norridge, Illinois
       credit: Wikipedia - Norridge, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Norridge,\
+        \ Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n        <img src=\"\
+        https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Cook_County_Illinois_Incorporated_and_Unincorporated_areas_Norridge_Highlighted.svg/330px-Cook_County_Illinois_Incorporated_and_Unincorporated_areas_Norridge_Highlighted.svg.png\"\
+        \ \n             alt=\"View of Norridge\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Norridge, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Cook_County_Illinois_Incorporated_and_Unincorporated_areas_Norridge_Highlighted.svg/330px-Cook_County_Illinois_Incorporated_and_Unincorporated_areas_Norridge_Highlighted.svg.png
       source: ''
     city_map_embed: ''
@@ -1206,6 +1332,13 @@ client:
       alt_text: View of Oak Lawn
       caption: Wikipedia - Oak Lawn, Illinois
       credit: Wikipedia - Oak Lawn, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Oak\
+        \ Lawn, Illinois\" href=\"https://en.wikipedia.org/wiki/Oak_Lawn%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Oak_Lawn%2C_Illinois.jpg/330px-Oak_Lawn%2C_Illinois.jpg\"\
+        \ \n             alt=\"View of Oak Lawn\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Oak Lawn, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Oak_Lawn%2C_Illinois.jpg/330px-Oak_Lawn%2C_Illinois.jpg
       source: https://en.wikipedia.org/wiki/Oak_Lawn%2C_Illinois
     city_map_embed: ''
@@ -1268,6 +1401,13 @@ client:
       alt_text: View of Oak Park
       caption: Wikipedia - Oak Park, Illinois
       credit: Wikipedia - Oak Park, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Oak\
+        \ Park, Illinois\" href=\"https://en.wikipedia.org/wiki/Oak_Park%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Lake_Street_at_dusk%2C_Oak_Park.jpg/330px-Lake_Street_at_dusk%2C_Oak_Park.jpg\"\
+        \ \n             alt=\"View of Oak Park\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Oak Park, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Lake_Street_at_dusk%2C_Oak_Park.jpg/330px-Lake_Street_at_dusk%2C_Oak_Park.jpg
       source: https://en.wikipedia.org/wiki/Oak_Park%2C_Illinois
     city_map_embed: ''
@@ -1330,6 +1470,13 @@ client:
       alt_text: View of Park Ridge
       caption: Wikipedia - Park Ridge, Illinois
       credit: Wikipedia - Park Ridge, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Park\
+        \ Ridge, Illinois\" href=\"https://en.wikipedia.org/wiki/Park_Ridge%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/ParkRidgePickwick.jpg/330px-ParkRidgePickwick.jpg\"\
+        \ \n             alt=\"View of Park Ridge\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Park Ridge,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/ParkRidgePickwick.jpg/330px-ParkRidgePickwick.jpg
       source: https://en.wikipedia.org/wiki/Park_Ridge%2C_Illinois
     city_map_embed: ''
@@ -1392,6 +1539,13 @@ client:
       alt_text: View of River Forest
       caption: Wikipedia - River Forest, Illinois
       credit: Wikipedia - River Forest, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - River\
+        \ Forest, Illinois\" href=\"https://en.wikipedia.org/wiki/River_Forest%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/River_Forest_%28IL%29_Public_Library.jpg/330px-River_Forest_%28IL%29_Public_Library.jpg\"\
+        \ \n             alt=\"View of River Forest\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - River Forest,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/River_Forest_%28IL%29_Public_Library.jpg/330px-River_Forest_%28IL%29_Public_Library.jpg
       source: https://en.wikipedia.org/wiki/River_Forest%2C_Illinois
     city_map_embed: ''
@@ -1451,6 +1605,13 @@ client:
       alt_text: View of River Grove
       caption: Wikipedia - River Grove, Illinois
       credit: Wikipedia - River Grove, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - River\
+        \ Grove, Illinois\" href=\"\" target=\"_blank\" rel=\"noopener\">\n      \
+        \  <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Dorhmann-Buckman_House_4.JPG/330px-Dorhmann-Buckman_House_4.JPG\"\
+        \ \n             alt=\"View of River Grove\"\n             width=\"100%\"\
+        \ \n             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - River Grove,\
+        \ Illinois</p>\n</section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Dorhmann-Buckman_House_4.JPG/330px-Dorhmann-Buckman_House_4.JPG
       source: ''
     city_map_embed: ''
@@ -1512,6 +1673,13 @@ client:
       alt_text: View of Riverside
       caption: Wikipedia - Riverside, Illinois
       credit: Wikipedia - Riverside, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Riverside,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Riverside%2C_Illinois\"\
+        \ target=\"_blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Riverside%2C_Illinois.jpg/330px-Riverside%2C_Illinois.jpg\"\
+        \ \n             alt=\"View of Riverside\"\n             width=\"100%\" \n\
+        \             style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Riverside, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Riverside%2C_Illinois.jpg/330px-Riverside%2C_Illinois.jpg
       source: https://en.wikipedia.org/wiki/Riverside%2C_Illinois
     city_map_embed: ''
@@ -1572,6 +1740,13 @@ client:
       alt_text: View of Skokie
       caption: Wikipedia - Skokie, Illinois
       credit: Wikipedia - Skokie, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Skokie,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Skokie%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Skokie%2C_Illinois_%289179544141%29.jpg/330px-Skokie%2C_Illinois_%289179544141%29.jpg\"\
+        \ \n             alt=\"View of Skokie\"\n             width=\"100%\" \n  \
+        \           style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Skokie, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Skokie%2C_Illinois_%289179544141%29.jpg/330px-Skokie%2C_Illinois_%289179544141%29.jpg
       source: https://en.wikipedia.org/wiki/Skokie%2C_Illinois
     city_map_embed: ''
@@ -1632,6 +1807,13 @@ client:
       alt_text: View of Summit
       caption: Wikipedia - Summit, Illinois
       credit: Wikipedia - Summit, Illinois
+      embed_code: "<section class=\"city-image\">\n    <a title=\"Wikipedia - Summit,\
+        \ Illinois\" href=\"https://en.wikipedia.org/wiki/Summit%2C_Illinois\" target=\"\
+        _blank\" rel=\"noopener\">\n        <img src=\"https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Cement_silo_-_panoramio.jpg/330px-Cement_silo_-_panoramio.jpg\"\
+        \ \n             alt=\"View of Summit\"\n             width=\"100%\" \n  \
+        \           style=\"height: auto; margin: 20px 0;\"\n             loading=\"\
+        lazy\">\n    </a>\n    <p class=\"image-caption\">Wikipedia - Summit, Illinois</p>\n\
+        </section>"
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Cement_silo_-_panoramio.jpg/330px-Cement_silo_-_panoramio.jpg
       source: https://en.wikipedia.org/wiki/Summit%2C_Illinois
     city_map_embed: ''
