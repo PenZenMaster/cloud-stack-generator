@@ -404,23 +404,23 @@ Python 3.9+
 
 ### 7. Development Sprint Plan
 
-#### Sprint 1: Foundation & MVP Core (2 weeks)
+#### Sprint 1: Foundation & MVP Core (2 weeks) ✅ **COMPLETED**
 **Goal**: Basic website generation with minimal UI
 
 **Deliverables**:
-- YAML configuration parser
-- Basic HTML template system
-- Simple PyQt6 interface
-- Single page generation
-- Local file output
+- ✅ YAML configuration parser
+- ✅ Basic HTML template system
+- ✅ Simple PyQt6 interface
+- ✅ Single page generation
+- ✅ Local file output
 
 **Acceptance Criteria**:
-- Parse client YAML configuration
-- Generate single HTML page with hero, content, footer
-- Desktop UI can load config and trigger generation
-- Generated page is mobile responsive
+- ✅ Parse client YAML configuration
+- ✅ Generate single HTML page with hero, content, footer
+- ✅ Desktop UI can load config and trigger generation
+- ✅ Generated page is mobile responsive
 
-#### Sprint 2: Multi-Page & Navigation (2 weeks)
+#### Sprint 2: Multi-Page & Navigation (2 weeks) ✅ **COMPLETED**
 **Goal**: Full multi-page website generation
 
 **Deliverables**:
@@ -693,12 +693,143 @@ This architectural inconsistency caused **Sprint 2.5 save functionality failures
 - ✅ Sprint 2.5 save/load functionality working correctly
 - ✅ Simplified maintenance and development
 
-### Current Status: **CITIES ARCHITECTURE CONSOLIDATION IN PROGRESS** 🎯
+### Current Status: **READY FOR SPRINT 3 - CLOUD UPLOAD IMPLEMENTATION** 🎯
 - ✅ Website generation fully operational with advanced navigation system
 - ✅ 27 pages generating with professional dropdown navigation (1 home + 26 cities)
 - ✅ Navigation system matches provided UI mockup specifications exactly
 - ✅ City infrastructure enhanced with active state management
-- 🔄 **ACTIVE**: Cities tab consolidation to resolve save functionality issues
+- ✅ **Cities tab consolidation COMPLETED** - All save functionality issues resolved
+- 🚀 **NEXT**: Sprint 3 Cloud Upload & AWS Integration (3 weeks)
+
+## 🚀 **Sprint 3: Cloud Upload & AWS Integration** - **ACTIVE SPRINT**
+
+### **Sprint 3 Implementation Roadmap** 
+
+**Duration**: 3 weeks (21 days)  
+**Goal**: Transform desktop application into complete generation + deployment solution  
+**Status**: 🔄 **READY TO START** - All prerequisites completed
+
+### **Phase 1: Core Cloud Infrastructure (Week 1)**
+
+#### **Week 1 Day 1-2: AWS Credential Management**
+- [ ] Extend `src/core/security/api_key_manager.py` for AWS credential storage
+- [ ] Implement AWS profile management (SSO, AssumeRole, Access Keys)
+- [ ] Add AWS credential validation and testing functionality  
+- [ ] Create credential management UI components following existing patterns
+- [ ] Integrate with OS keychain for secure storage (Windows Credential Manager)
+
+#### **Week 1 Day 3-4: Cloud Configuration System**
+- [ ] Extend `ClientConfig` model with `CloudConfig` dataclass
+- [ ] Add cloud configuration parsing to existing YAML system
+- [ ] Create `CloudTab` component following `BaseTab` pattern
+- [ ] Implement profile selector, bucket management UI
+- [ ] Add validation for cloud configuration data
+
+#### **Week 1 Day 5-7: Basic S3 Integration**
+- [ ] Create `src/core/aws/s3_manager.py` with boto3 integration
+- [ ] Implement bucket creation and selection functionality
+- [ ] Add basic file upload with progress tracking
+- [ ] Create deployment status tracking system
+- [ ] Implement Mode A (S3 Static Website) deployment
+
+### **Phase 2: Advanced Deployment Features (Week 2)**
+
+#### **Week 2 Day 8-10: CloudFront Integration**
+- [ ] Create `src/core/aws/cloudfront_manager.py` for distribution management
+- [ ] Implement CloudFront distribution creation with OAC
+- [ ] Add advanced caching and header management
+- [ ] Implement custom domain and ACM certificate handling
+- [ ] Add invalidation management for content updates
+
+#### **Week 2 Day 11-12: Deployment Pipeline**
+- [ ] Create deployment orchestrator for both modes
+- [ ] Implement deployment validation and verification
+- [ ] Add website accessibility testing and live URL verification
+- [ ] Create deployment history and rollback capabilities
+- [ ] Add comprehensive error handling and retry mechanisms
+
+#### **Week 2 Day 13-14: Profile Management**
+- [ ] Implement multi-profile AWS account management
+- [ ] Add profile switching and validation
+- [ ] Create profile backup and export functionality
+- [ ] Add deployment project persistence and recall
+- [ ] Implement deployment presets and templates
+
+### **Phase 3: Production Polish & Testing (Week 3)**
+
+#### **Week 3 Day 15-17: Performance & Reliability**
+- [ ] Optimize large file upload handling with multipart
+- [ ] Implement parallel upload processing
+- [ ] Add resumable upload capability for interruption recovery
+- [ ] Create comprehensive deployment logging and monitoring
+- [ ] Add deployment cost estimation and resource tracking
+
+#### **Week 3 Day 18-19: Integration & Security**
+- [ ] Complete integration with existing website generation flow
+- [ ] Add end-to-end testing from generation to live deployment
+- [ ] Conduct security audit of credential handling
+- [ ] Implement deployment permission validation
+- [ ] Add comprehensive error messaging and user guidance
+
+#### **Week 3 Day 20-21: Documentation & Polish**
+- [ ] Create deployment user guides and documentation
+- [ ] Add deployment status visualization and progress indicators
+- [ ] Implement deployment success/failure notifications
+- [ ] Create troubleshooting guides and common issue resolution
+- [ ] Final testing and quality assurance validation
+
+### **Sprint 3 Success Criteria**
+- ✅ Secure AWS credential storage using OS keychain
+- ✅ Create/select S3 buckets with proper validation
+- ✅ Deploy generated websites to S3 static hosting (Mode A)
+- ✅ Deploy via CloudFront + OAC for production use (Mode B)
+- ✅ Complete deployment pipeline from generation to live URL
+- ✅ Professional UX with progress tracking and error handling
+- ✅ Full integration with existing configuration and generation systems
+
+### **Technical Architecture Integration**
+
+**New Modules to Create**:
+```
+src/
+├── core/
+│   ├── aws/                    # ✨ NEW: AWS integration
+│   │   ├── __init__.py
+│   │   ├── credentials.py      # AWS credential management
+│   │   ├── s3_manager.py       # S3 operations and uploads
+│   │   ├── cloudfront_manager.py # CloudFront + OAC management
+│   │   └── deployment_orchestrator.py # Deployment pipeline
+│   │
+│   ├── security/               # 🔧 EXTEND: Enhanced security
+│   │   ├── api_key_manager.py  # Extend for AWS credentials
+│   │   └── credential_validator.py # ✨ NEW: Credential validation
+│   │
+├── ui/
+│   ├── components/
+│   │   └── cloud_tab.py        # ✨ NEW: Cloud deployment tab
+│   │
+│   └── dialogs/
+│       ├── aws_profile_dialog.py # ✨ NEW: AWS profile management
+│       ├── bucket_selector_dialog.py # ✨ NEW: S3 bucket selection
+│       └── deployment_status_dialog.py # ✨ NEW: Deployment progress
+```
+
+**Configuration Model Extensions**:
+```python
+@dataclass
+class CloudConfig:
+    aws_profile: str = ""
+    bucket_name: str = ""
+    bucket_region: str = "us-east-1" 
+    deployment_mode: str = "cloudfront"  # "s3" or "cloudfront"
+    custom_domain: str = ""
+    cache_settings: Dict[str, str] = field(default_factory=dict)
+    
+@dataclass
+class ClientConfig:
+    # ... existing fields ...
+    cloud: CloudConfig = field(default_factory=CloudConfig)
+```
 
 ### Next Phase: CloudStack SEO Authority Implementation
 
@@ -840,56 +971,74 @@ def _create_enhanced_city_content(self, config: ClientConfig, city: str) -> str:
 - Bulk content updates
 - Performance at scale
 
-#### Sprint 3: SEO Optimization & Schema (2 weeks)
-**Goal**: Complete SEO implementation
+#### Sprint 3: Cloud Upload & AWS Integration (3 weeks) 🚀 **NEW PRIORITY FEATURE**
+**Goal**: Complete cloud deployment capability with professional UX
 
-**Deliverables**:
-- SEO meta tags generation
-- Schema.org markup implementation
-- Keyword optimization system
-- Sitemap and robots.txt generation
-- Content generation with E-E-A-T compliance
+**Overview**: Transform the desktop application into a complete website generation and deployment solution with secure AWS integration, following the comprehensive Feature Request specification.
 
-**Acceptance Criteria**:
-- All pages have proper SEO tags
-- Schema markup validates
-- Keywords properly bolded
-- Generated content meets quality guidelines
-- SEO audit passes basic checks
+**Phase 1: Core Cloud Infrastructure (Week 1)**
+- AWS credential management with OS keychain integration
+- S3 bucket creation and management interface
+- Basic file upload with progress tracking
+- Mode A (S3 Static Website) implementation
+- Integration with existing UI architecture
 
-#### Sprint 4: AWS Integration & Deployment (2 weeks)
-**Goal**: S3 deployment capability
+**Phase 2: Advanced Deployment Features (Week 2)**
+- Mode B (CloudFront + OAC) implementation
+- Advanced header management and caching rules
+- Deployment validation and verification system
+- Error handling and retry mechanisms
+- Profile management for multiple AWS accounts
 
-**Deliverables**:
-- AWS S3 integration
-- Deployment pipeline
-- Credential management
-- Deployment status tracking
-- Error handling and logging
-
-**Acceptance Criteria**:
-- Successful S3 bucket creation and deployment
-- Websites accessible via S3 static hosting
-- Deployment progress tracking in UI
-- Error handling for AWS operations
-
-#### Sprint 5: Enhanced Features & Polish (2 weeks)
-**Goal**: Production-ready application
-
-**Deliverables**:
-- Google Maps integration
-- Social media integration
-- Template customization
-- Batch processing
-- Comprehensive testing
-- Documentation
+**Phase 3: Production Polish & Testing (Week 3)**
+- Comprehensive error handling and user feedback
+- Performance optimization for large file uploads
+- Integration testing with existing website generation
+- Security audit and credential validation
+- Complete documentation and user guides
 
 **Acceptance Criteria**:
-- Google Maps properly embedded
-- Social links functional
-- Multiple templates available
-- Process multiple clients in batch
-- Complete user documentation
+- Secure AWS credential storage using OS keychain
+- Create/select S3 buckets with proper validation
+- Deploy generated websites to S3 static hosting (Mode A)
+- Deploy via CloudFront + OAC for production use (Mode B)
+- Complete deployment pipeline from generation to live URL
+- Professional UX with progress tracking and error handling
+- Full integration with existing configuration and generation systems
+
+#### Sprint 4: Advanced SEO & Performance (2 weeks)
+**Goal**: Enterprise-grade SEO optimization
+
+**Deliverables**:
+- Advanced schema markup implementation
+- Performance optimization and image handling
+- Enhanced content generation with E-E-A-T compliance
+- Sitemap.xml and robots.txt generation
+- SEO audit and validation tools
+
+**Acceptance Criteria**:
+- All pages have comprehensive SEO optimization
+- Schema markup validates across all page types
+- Performance metrics meet modern web standards
+- Generated content meets Google quality guidelines
+- SEO audit tools integrated into workflow
+
+#### Sprint 5: Enhanced Content & Automation (2 weeks)
+**Goal**: Advanced content management and automation
+
+**Deliverables**:
+- Enhanced template system with multiple themes
+- Advanced city page content generation
+- Bulk processing and batch deployment
+- Analytics integration preparation
+- Multi-client workflow management
+
+**Acceptance Criteria**:
+- Multiple professional templates available
+- City pages generate rich, localized content
+- Batch processing handles multiple clients efficiently
+- System ready for agency-scale deployment
+- Complete workflow automation from config to live site
 
 ### 8. MVP Definition
 
