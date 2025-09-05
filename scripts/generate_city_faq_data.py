@@ -16,9 +16,11 @@ from typing import Dict, List, Any
 import yaml
 
 # Add src to Python path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+src_path = str(Path(__file__).resolve().parent.parent / "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
 
-from core.utils.people_also_ask_api import PeopleAlsoAskAPI
+from core.utils.people_also_ask_api import PeopleAlsoAskAPI  # type: ignore
 
 
 def load_config() -> Dict[str, Any]:

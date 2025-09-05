@@ -16,10 +16,12 @@ from typing import Dict, List, Any
 import yaml
 
 # Add src to Python path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+src_path = str(Path(__file__).resolve().parent.parent / "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
 
 try:
-    from core.utils.wikipedia_api import WikipediaAPI
+    from core.utils.wikipedia_api import WikipediaAPI  # type: ignore
 except ModuleNotFoundError:
     print(
         "Error: The module 'core.utils.wikipedia_api' could not be found. Ensure the 'src' directory is correctly structured and added to the Python path."
