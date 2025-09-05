@@ -32,6 +32,7 @@ from .components.business_tab import BusinessTab
 from .components.contact_tab import ContactTab
 from .components.branding_tab import BrandingTab
 from .components.api_keys_tab import APIKeysTab
+from .components.cloud_tab import CloudTab
 from .content_tabs.products_tab import ProductsTab
 from .content_tabs.services_tab import ServicesTab
 from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
@@ -217,6 +218,7 @@ class EnhancedMainWindow(QMainWindow):
         self.enhanced_cities_tab = EnhancedCitiesTab()
         self.products_tab = ProductsTab()
         self.services_tab = ServicesTab()
+        self.cloud_tab = CloudTab()
 
         # Add tabs to main widget
         self.main_tabs.addTab(self.business_tab, "Business Info")
@@ -226,6 +228,7 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.products_tab, "Products")
         self.main_tabs.addTab(self.services_tab, "Services & FAQ")
         self.main_tabs.addTab(self.api_keys_tab, "API Keys")
+        self.main_tabs.addTab(self.cloud_tab, "Cloud Deploy")
 
         layout.addWidget(self.main_tabs)
 
@@ -595,6 +598,7 @@ class EnhancedMainWindow(QMainWindow):
             "cities": self.enhanced_cities_tab.get_config_data(),
             "products": self.products_tab.get_config_data(),
             "services": self.services_tab.get_config_data(),
+            "cloud": self.cloud_tab.get_config_data(),
             # API keys are application-level, not saved in client configs
         }
 
@@ -607,6 +611,7 @@ class EnhancedMainWindow(QMainWindow):
             ProductConfig,
             ServiceConfig,
             SocialMediaConfig,
+            CloudConfig,
         )
 
         # Create business config with enhanced fields
@@ -798,11 +803,21 @@ class EnhancedMainWindow(QMainWindow):
             target_cities = [cp.city_name for cp in city_pages if cp.city_name]
         seo_content = cities_data.get("seo_content", {})
 
+        # Create cloud config
+        cloud_data = config_data.get("cloud", {})
+        cloud = CloudConfig(
+            aws_profile=cloud_data.get("aws_profile", ""),
+            aws_region=cloud_data.get("aws_region", "us-east-1"),
+            bucket_name=cloud_data.get("bucket_name", ""),
+            deployment_mode=cloud_data.get("deployment_mode", "s3"),
+        )
+
         # Create complete config
         return ClientConfig(
             business=business,
             contact=contact,
             branding=branding,
+            cloud=cloud,
             products=products,
             services=services,
             social_media=social_media,
@@ -970,6 +985,15 @@ class EnhancedMainWindow(QMainWindow):
         }
         self.services_tab.set_config_data(services_data)
 
+        # Load cloud deployment data
+        cloud_data = {
+            "aws_profile": config.cloud.aws_profile,
+            "aws_region": config.cloud.aws_region,
+            "bucket_name": config.cloud.bucket_name,
+            "deployment_mode": config.cloud.deployment_mode,
+        }
+        self.cloud_tab.set_config_data(cloud_data)
+
     def validate_all_tabs_simple(self):
         """Validate all tabs and show results with proper ValidationResult handling"""
         self.status_label.setText("Validating configuration...")
@@ -985,6 +1009,7 @@ class EnhancedMainWindow(QMainWindow):
             "Cities": self.enhanced_cities_tab,
             "Products": self.products_tab,
             "Services & FAQ": self.services_tab,
+            "Cloud Deploy": self.cloud_tab,
             # API Keys tab excluded - it's application-level, not client-specific
         }
 
@@ -1074,6 +1099,7 @@ class EnhancedMainWindow(QMainWindow):
             "Cities": self.enhanced_cities_tab,
             "Products": self.products_tab,
             "Services & FAQ": self.services_tab,
+            "Cloud Deploy": self.cloud_tab,
         }
 
         for tab_name, tab in tabs.items():
@@ -1246,11 +1272,38 @@ class EnhancedMainWindow(QMainWindow):
                     message += f"• {Path(file_path).name}\n"
                 message += f"\nLocation: {output_dir}"
                 
-                QMessageBox.information(
+                # Show generation success and offer cloud deployment
+                reply = QMessageBox.question(
                     self,
                     "Website Generation Complete",
-                    message
+                    message + "\n\nWould you like to deploy this website to the cloud?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes
                 )
+                
+                if reply == QMessageBox.StandardButton.Yes:
+                    # Switch to cloud tab and start deployment
+                    cloud_tab_index = self.main_tabs.indexOf(self.cloud_tab)
+                    self.main_tabs.setCurrentIndex(cloud_tab_index)
+                    
+                    # Check if cloud deployment is configured
+                    if self.cloud_tab.get_config_data().get('aws_profile') and self.cloud_tab.get_config_data().get('bucket_name'):
+                        # Set the local path in cloud tab and start deployment
+                        self.cloud_tab.local_path_input.setText(output_dir)
+                        self.cloud_tab.deploy_website(output_dir)
+                    else:
+                        QMessageBox.information(
+                            self,
+                            "Cloud Configuration Required",
+                            "Please configure your AWS profile and S3 bucket in the Cloud Deploy tab before deploying."
+                        )
+                else:
+                    QMessageBox.information(
+                        self,
+                        "Website Ready",
+                        "Your website is ready for manual deployment or you can use the Cloud Deploy tab later."
+                    )
+                
                 self.status_label.setText(f"Website generated successfully in {output_dir}")
             else:
                 error_message = f"Failed to generate website:\n\n{result.errors}"

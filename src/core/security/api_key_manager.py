@@ -13,7 +13,7 @@ import os
 import json
 import hashlib
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 import base64
 
 
@@ -105,6 +105,53 @@ class APIKeyManager:
     def clear_all_keys(self) -> bool:
         """Clear all stored API keys"""
         return self._save_keys({})
+    
+    # AWS-specific credential methods
+    def set_aws_credentials(self, profile_name: str, access_key_id: str, secret_access_key: str, session_token: str = "") -> bool:
+        """Store AWS credentials securely"""
+        aws_key = f"aws_{profile_name}"
+        credentials = {
+            "access_key_id": access_key_id,
+            "secret_access_key": secret_access_key,
+            "session_token": session_token
+        }
+        
+        keys = self._load_keys()
+        keys[aws_key] = json.dumps(credentials)
+        return self._save_keys(keys)
+    
+    def get_aws_credentials(self, profile_name: str) -> Optional[Dict[str, str]]:
+        """Retrieve AWS credentials"""
+        aws_key = f"aws_{profile_name}"
+        keys = self._load_keys()
+        
+        if aws_key in keys:
+            try:
+                return json.loads(keys[aws_key])
+            except json.JSONDecodeError:
+                return None
+        return None
+    
+    def remove_aws_credentials(self, profile_name: str) -> bool:
+        """Remove AWS credentials"""
+        aws_key = f"aws_{profile_name}"
+        return self.remove_api_key(aws_key)
+    
+    def list_aws_profiles(self) -> list:
+        """List AWS profiles with stored credentials"""
+        keys = self._load_keys()
+        aws_profiles = []
+        
+        for key in keys.keys():
+            if key.startswith("aws_"):
+                profile_name = key[4:]  # Remove "aws_" prefix
+                aws_profiles.append(profile_name)
+        
+        return aws_profiles
+    
+    def has_aws_credentials(self, profile_name: str) -> bool:
+        """Check if AWS credentials exist for profile"""
+        return self.get_aws_credentials(profile_name) is not None
 
 
 # Global instance

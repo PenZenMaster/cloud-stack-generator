@@ -452,6 +452,64 @@ class GoogleMapsConfig:
 
 
 @dataclass
+class CloudConfig:
+    """Cloud deployment configuration following SOP patterns"""
+    
+    # AWS profile and authentication
+    aws_profile: str = ""
+    aws_region: str = "us-east-1"
+    
+    # Deployment settings
+    bucket_name: str = ""
+    deployment_mode: str = "s3"  # "s3" or "cloudfront"
+    
+    # CloudFront settings (for cloudfront mode)
+    distribution_id: str = ""
+    custom_domain: str = ""
+    
+    # Caching configuration following SOP
+    html_cache_control: str = "max-age=300,public"  # 5 minutes for HTML
+    asset_cache_control: str = "max-age=86400,public"  # 1 day for assets
+    
+    # S3 website configuration (for s3 mode)
+    index_document: str = "index.html"
+    error_document: str = "404.html"
+    
+    # Deployment history and metadata
+    last_deployment: Optional[str] = None
+    deployment_url: str = ""
+    
+    def __post_init__(self):
+        """Post-initialization validation and setup"""
+        # Validate deployment mode
+        if self.deployment_mode not in ["s3", "cloudfront"]:
+            self.deployment_mode = "s3"
+        
+        # Generate bucket name if not provided (following SOP pattern)
+        if not self.bucket_name and self.aws_profile:
+            import re
+            # This will be enhanced when integrated with business config
+            safe_profile = re.sub(r'[^a-zA-Z0-9-]', '-', self.aws_profile.lower())
+            self.bucket_name = f"client-website-{safe_profile}"
+    
+    def get_website_url(self) -> str:
+        """Get the public website URL based on deployment mode"""
+        if self.deployment_url:
+            return self.deployment_url
+        
+        if self.deployment_mode == "cloudfront" and self.distribution_id:
+            return f"https://{self.distribution_id}.cloudfront.net"
+        elif self.deployment_mode == "s3" and self.bucket_name:
+            return f"http://{self.bucket_name}.s3-website-{self.aws_region}.amazonaws.com"
+        
+        return ""
+    
+    def is_configured(self) -> bool:
+        """Check if cloud deployment is properly configured"""
+        return bool(self.aws_profile and self.bucket_name)
+
+
+@dataclass
 class ClientConfig:
     """Complete client configuration"""
 
@@ -459,6 +517,9 @@ class ClientConfig:
     business: BusinessConfig = field(default_factory=BusinessConfig)
     contact: ContactConfig = field(default_factory=ContactConfig)
     branding: BrandingConfig = field(default_factory=BrandingConfig)
+    
+    # Cloud deployment configuration
+    cloud: CloudConfig = field(default_factory=CloudConfig)
 
     # Content
     products: List[ProductConfig] = field(default_factory=list)
@@ -678,6 +739,20 @@ class ClientConfig:
                 "target_cities": self.target_cities,
                 "seo_content": self.seo_content,
                 "api_keys": self.api_keys,
+                "cloud": {
+                    "aws_profile": self.cloud.aws_profile,
+                    "aws_region": self.cloud.aws_region,
+                    "bucket_name": self.cloud.bucket_name,
+                    "deployment_mode": self.cloud.deployment_mode,
+                    "distribution_id": self.cloud.distribution_id,
+                    "custom_domain": self.cloud.custom_domain,
+                    "html_cache_control": self.cloud.html_cache_control,
+                    "asset_cache_control": self.cloud.asset_cache_control,
+                    "index_document": self.cloud.index_document,
+                    "error_document": self.cloud.error_document,
+                    "last_deployment": self.cloud.last_deployment,
+                    "deployment_url": self.cloud.deployment_url,
+                },
                 "pages": pages_list,
                 "offerings": offerings,
                 "faq": faq_list,
