@@ -451,8 +451,8 @@ class S3Manager:
         # Default for unknown file types
         content_type, _ = mimetypes.guess_type(f"file.{file_ext}")
         return {
-            'CacheControl': 'max-age=86400,public',
-            'ContentType': content_type or 'application/octet-stream'
+            'Cache-Control': 'max-age=86400,public',
+            'Content-Type': content_type or 'application/octet-stream'
         }
     
     def _matches_pattern(self, filename: str, pattern: str) -> bool:
