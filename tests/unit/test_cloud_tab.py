@@ -647,6 +647,22 @@ class TestCloudTab:
         args = mock_warning.call_args[0]
         assert "No Profile Selected" in args[1]
     
+    @patch('src.core.aws.credentials.AWSCredentialsManager._load_profiles')
+    @patch('src.ui.components.cloud_tab.CloudTab._populate_buckets_for_profile_silently')
+    def test_automatic_bucket_population_on_profile_change(self, mock_populate_buckets, mock_load_profiles, qapp):
+        """Test that bucket population method is called when profile changes"""
+        mock_load_profiles.return_value = None
+        tab = CloudTab()
+        
+        # Add a test profile
+        tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
+        
+        # Trigger profile change
+        tab.on_profile_changed("test-profile")
+        
+        # Verify bucket population method was called
+        mock_populate_buckets.assert_called_once_with("test-profile")
+    
     @patch('src.core.aws.credentials.AWSCredentialsManager._get_session')
     @patch('src.core.aws.credentials.AWSCredentialsManager.list_client_buckets')
     def test_refresh_bucket_list_success(self, mock_list_buckets, mock_get_session, qapp):

@@ -716,6 +716,8 @@ class CloudTab(BaseTab):
             self.profile_combo.setToolTip(tooltip_text)
             # Enable Configure SSO button only for SSO profiles
             self.configure_sso_button.setEnabled(profile.auth_method == AuthMethod.SSO)
+            # Automatically populate bucket list for the selected profile
+            self._populate_buckets_for_profile_silently(profile_name)
             self.update_deploy_button_state()
             # Auto-save client AWS config
             self.log_status(f"Debug: Triggering auto-save for profile '{profile_name}'")
@@ -725,6 +727,53 @@ class CloudTab(BaseTab):
             self.profile_combo.setToolTip(f"Profile '{profile_name}' not found in credentials manager")
             self.configure_sso_button.setEnabled(False)
             self.log_status(f"Debug: Profile '{profile_name}' not found in credentials manager")
+    
+    def _populate_buckets_for_profile_silently(self, profile_name: str):
+        """Silently populate bucket list for the given profile without showing error messages"""
+        try:
+            if not profile_name or profile_name == "No profiles configured":
+                self.log_status("Debug: No profile selected for bucket population")
+                return
+            
+            if profile_name not in self.credentials_manager.profiles:
+                self.log_status(f"Debug: Profile '{profile_name}' not found for bucket population")
+                return
+            
+            # Get AWS session for the profile
+            session = self.credentials_manager._get_session(profile_name)
+            if not session:
+                self.log_status(f"Debug: Could not create AWS session for profile '{profile_name}'")
+                return
+            
+            # Set session and get buckets
+            self.s3_manager.set_session(session)
+            
+            # Get client buckets (SOP-compliant buckets only)
+            buckets = self.credentials_manager.list_client_buckets(profile_name)
+            
+            # Store current selection
+            current_bucket = self.bucket_combo.currentText() if self.bucket_combo else ""
+            
+            # Clear and populate combo
+            if self.bucket_combo:
+                self.bucket_combo.clear()
+                
+                if buckets:
+                    for bucket in buckets:
+                        self.bucket_combo.addItem(bucket['name'])
+                    
+                    # Restore selection if it exists
+                    index = self.bucket_combo.findText(current_bucket)
+                    if index >= 0:
+                        self.bucket_combo.setCurrentIndex(index)
+                    
+                    self.log_status(f"Auto-populated {len(buckets)} buckets for profile '{profile_name}'")
+                else:
+                    self.bucket_combo.addItem("No buckets found")
+                    self.log_status(f"No SOP-compliant buckets found for profile '{profile_name}'")
+        
+        except Exception as e:
+            self.log_status(f"Debug: Failed to auto-populate buckets for profile '{profile_name}': {str(e)}")
     
     def test_aws_connection(self):
         """Test AWS connection for selected profile"""
