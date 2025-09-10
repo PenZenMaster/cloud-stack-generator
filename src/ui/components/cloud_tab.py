@@ -748,32 +748,75 @@ class CloudTab(BaseTab):
             # Set session and get buckets
             self.s3_manager.set_session(session)
             
-            # Get client buckets (SOP-compliant buckets only)
-            buckets = self.credentials_manager.list_client_buckets(profile_name)
+            # Get all client buckets with SOP compliance indicators
+            buckets = self.credentials_manager.list_client_buckets(profile_name, show_all=True)
             
-            # Store current selection
-            current_bucket = self.bucket_combo.currentText() if self.bucket_combo else ""
+            # Store current selection (extract actual bucket name if it has indicators)
+            current_bucket = ""
+            if self.bucket_combo and self.bucket_combo.currentText():
+                current_selection = self.bucket_combo.currentText()
+                # If current selection has visual indicators, extract the actual bucket name
+                if current_selection.startswith("✓ "):
+                    current_bucket = current_selection[2:]  # Remove "✓ " prefix
+                elif current_selection.startswith("• "):
+                    current_bucket = current_selection[2:]  # Remove "• " prefix
+                else:
+                    current_bucket = current_selection
             
             # Clear and populate combo
             if self.bucket_combo:
                 self.bucket_combo.clear()
                 
                 if buckets:
+                    sop_compliant_count = 0
                     for bucket in buckets:
-                        self.bucket_combo.addItem(bucket['name'])
+                        bucket_name = bucket['name']
+                        if bucket.get('sop_compliant', False):
+                            # Mark SOP-compliant buckets with a prefix
+                            display_name = f"✓ {bucket_name}"
+                            sop_compliant_count += 1
+                        else:
+                            # Show non-SOP buckets with a different indicator
+                            display_name = f"• {bucket_name}"
+                        
+                        self.bucket_combo.addItem(display_name)
+                        # Store the actual bucket name as item data
+                        self.bucket_combo.setItemData(self.bucket_combo.count() - 1, bucket_name)
                     
-                    # Restore selection if it exists
-                    index = self.bucket_combo.findText(current_bucket)
-                    if index >= 0:
-                        self.bucket_combo.setCurrentIndex(index)
+                    # Restore selection if it exists (match by actual bucket name)
+                    for i in range(self.bucket_combo.count()):
+                        if self.bucket_combo.itemData(i) == current_bucket:
+                            self.bucket_combo.setCurrentIndex(i)
+                            break
                     
-                    self.log_status(f"Auto-populated {len(buckets)} buckets for profile '{profile_name}'")
+                    self.log_status(f"Auto-populated {len(buckets)} buckets ({sop_compliant_count} SOP-compliant) for profile '{profile_name}'")
                 else:
                     self.bucket_combo.addItem("No buckets found")
-                    self.log_status(f"No SOP-compliant buckets found for profile '{profile_name}'")
+                    self.log_status(f"No buckets found in AWS account for profile '{profile_name}'")
         
         except Exception as e:
             self.log_status(f"Debug: Failed to auto-populate buckets for profile '{profile_name}': {str(e)}")
+    
+    def _get_actual_bucket_name(self) -> str:
+        """Get the actual bucket name from the combo box, handling visual indicators"""
+        if not self.bucket_combo:
+            return ""
+        
+        current_index = self.bucket_combo.currentIndex()
+        if current_index >= 0:
+            # Try to get the stored bucket name from item data
+            bucket_name = self.bucket_combo.itemData(current_index)
+            if bucket_name:
+                return bucket_name
+        
+        # Fallback: extract from display text
+        current_text = self.bucket_combo.currentText().strip()
+        if current_text.startswith("✓ "):
+            return current_text[2:]  # Remove "✓ " prefix
+        elif current_text.startswith("• "):
+            return current_text[2:]  # Remove "• " prefix
+        else:
+            return current_text
     
     def test_aws_connection(self):
         """Test AWS connection for selected profile"""
@@ -806,7 +849,7 @@ class CloudTab(BaseTab):
     
     def on_bucket_name_changed(self):
         """Handle bucket name change"""
-        bucket_name = self.bucket_combo.currentText().strip()
+        bucket_name = self._get_actual_bucket_name()
         
         if bucket_name:
             is_valid, message = self.s3_manager.validate_bucket_name(bucket_name)
@@ -849,8 +892,8 @@ class CloudTab(BaseTab):
             # Set session and get buckets
             self.s3_manager.set_session(session)
             
-            # Get client buckets (SOP-compliant buckets only)
-            buckets = self.credentials_manager.list_client_buckets(profile_name)
+            # Get all client buckets with SOP compliance indicators
+            buckets = self.credentials_manager.list_client_buckets(profile_name, show_all=True)
             
             # Store current selection
             current_bucket = self.bucket_combo.currentText()
@@ -859,18 +902,31 @@ class CloudTab(BaseTab):
             self.bucket_combo.clear()
             
             if buckets:
+                sop_compliant_count = 0
                 for bucket in buckets:
-                    self.bucket_combo.addItem(bucket['name'])
+                    bucket_name = bucket['name']
+                    if bucket.get('sop_compliant', False):
+                        # Mark SOP-compliant buckets with a prefix
+                        display_name = f"✓ {bucket_name}"
+                        sop_compliant_count += 1
+                    else:
+                        # Show non-SOP buckets with a different indicator
+                        display_name = f"• {bucket_name}"
+                    
+                    self.bucket_combo.addItem(display_name)
+                    # Store the actual bucket name as item data
+                    self.bucket_combo.setItemData(self.bucket_combo.count() - 1, bucket_name)
                 
-                # Restore selection if it exists
-                index = self.bucket_combo.findText(current_bucket)
-                if index >= 0:
-                    self.bucket_combo.setCurrentIndex(index)
+                # Restore selection if it exists (match by actual bucket name)
+                for i in range(self.bucket_combo.count()):
+                    if self.bucket_combo.itemData(i) == current_bucket:
+                        self.bucket_combo.setCurrentIndex(i)
+                        break
                 
-                self.log_status(f"Found {len(buckets)} SOP-compliant buckets")
+                self.log_status(f"Found {len(buckets)} buckets ({sop_compliant_count} SOP-compliant)")
             else:
                 self.bucket_combo.addItem("No buckets found")
-                self.log_status("No SOP-compliant buckets found")
+                self.log_status("No buckets found in AWS account")
                 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to retrieve bucket list: {str(e)}")
@@ -878,7 +934,7 @@ class CloudTab(BaseTab):
     
     def refresh_directory_list(self):
         """Refresh the list of directories in the selected bucket"""
-        bucket_name = self.bucket_combo.currentText().strip()
+        bucket_name = self._get_actual_bucket_name()
         profile_name = self.profile_combo.currentText()
         
         if not bucket_name or bucket_name == "No buckets found":
@@ -961,7 +1017,7 @@ class CloudTab(BaseTab):
     
     def on_directory_selection_changed(self, directory: str):
         """Handle directory selection change"""
-        bucket_name = self.bucket_combo.currentText()
+        bucket_name = self._get_actual_bucket_name()
         
         if bucket_name and bucket_name != "No buckets found" and directory:
             self.bucket_status_label.setText(f"Bucket: {bucket_name} | Directory: {directory}")
@@ -977,7 +1033,7 @@ class CloudTab(BaseTab):
     def create_s3_bucket(self):
         """Create S3 bucket with validation and confirmation"""
         profile_name = self.profile_combo.currentText()
-        bucket_name = self.bucket_combo.currentText().strip()
+        bucket_name = self._get_actual_bucket_name()
         directory = self.directory_combo.currentText().strip()
         region = self.region_combo.currentText()
         
@@ -1098,7 +1154,8 @@ class CloudTab(BaseTab):
             return  # Button not yet created
             
         profile_selected = (self.profile_combo.currentText() != "No profiles configured")
-        bucket_configured = bool(self.bucket_combo.currentText().strip()) and (self.bucket_combo.currentText() != "No buckets found")
+        bucket_name = self._get_actual_bucket_name()
+        bucket_configured = bool(bucket_name) and (bucket_name != "No buckets found")
         
         self.deploy_button.setEnabled(profile_selected and bucket_configured)
     
@@ -1117,7 +1174,7 @@ class CloudTab(BaseTab):
     def deploy_website(self, website_path: str):
         """Deploy generated website to cloud"""
         profile_name = self.profile_combo.currentText()
-        bucket_name = self.bucket_combo.currentText().strip()
+        bucket_name = self._get_actual_bucket_name()
         
         if not profile_name or profile_name == "No profiles configured":
             self.log_status("Error: No AWS profile selected")
@@ -1173,7 +1230,7 @@ class CloudTab(BaseTab):
         
         if result.success:
             # Get website URL
-            bucket_name = self.bucket_combo.currentText().strip()
+            bucket_name = self._get_actual_bucket_name()
             region = self.region_combo.currentText()
             website_url = self.s3_manager.get_website_url(bucket_name, region)
             
@@ -1212,7 +1269,7 @@ class CloudTab(BaseTab):
         return {
             'aws_profile': self.profile_combo.currentText() if self.profile_combo.currentText() != "No profiles configured" else "",
             'aws_region': self.region_combo.currentText(),
-            'bucket_name': self.bucket_combo.currentText().strip(),
+            'bucket_name': self._get_actual_bucket_name(),
             'directory': self.directory_combo.currentText().strip(),
             'deployment_mode': 's3' if self.s3_mode_radio.isChecked() else 'cloudfront'
         }
@@ -1289,7 +1346,7 @@ class CloudTab(BaseTab):
         if not profile_name or profile_name == "No profiles configured":
             errors.append("AWS profile is required for cloud deployment")
         
-        bucket_name = self.bucket_combo.currentText().strip()
+        bucket_name = self._get_actual_bucket_name()
         if not bucket_name or bucket_name == "No buckets found":
             errors.append("S3 bucket name is required")
         else:
@@ -1386,7 +1443,7 @@ class CloudTab(BaseTab):
         
         # Update config with current UI values
         self.current_client_aws_config.aws_profile = current_profile
-        self.current_client_aws_config.bucket_name = self.bucket_combo.currentText().strip()
+        self.current_client_aws_config.bucket_name = self._get_actual_bucket_name()
         self.current_client_aws_config.directory = self.directory_combo.currentText().strip()
         self.current_client_aws_config.bucket_region = self.region_combo.currentText()
         

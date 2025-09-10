@@ -199,35 +199,45 @@ class AWSCredentialsManager:
         except Exception as e:
             return False, f"S3 permission test failed: {str(e)}"
     
-    def list_client_buckets(self, profile_name: str, prefix: str = "client-website-") -> List[Dict[str, Any]]:
-        """List buckets following SOP naming conventions"""
+    def list_client_buckets(self, profile_name: str, prefix: str = "client-website-", show_all: bool = True) -> List[Dict[str, Any]]:
+        """List buckets with optional SOP filtering"""
         try:
             session = self._get_session(profile_name)
             s3 = session.client('s3')
             
             response = s3.list_buckets()
+            all_buckets = response.get('Buckets', [])
+            
             buckets = []
             
-            for bucket in response.get('Buckets', []):
+            for bucket in all_buckets:
                 bucket_name = bucket['Name']
-                if bucket_name.startswith(prefix):
-                    # Get bucket region
-                    try:
-                        location = s3.get_bucket_location(Bucket=bucket_name)
-                        region = location.get('LocationConstraint') or 'us-east-1'
-                    except:
-                        region = 'unknown'
-                    
-                    buckets.append({
-                        'name': bucket_name,
-                        'creation_date': bucket['CreationDate'],
-                        'region': region
-                    })
+                is_sop_compliant = bucket_name.startswith(prefix)
+                
+                # Get bucket region
+                try:
+                    location = s3.get_bucket_location(Bucket=bucket_name)
+                    region = location.get('LocationConstraint') or 'us-east-1'
+                except:
+                    region = 'unknown'
+                
+                bucket_info = {
+                    'name': bucket_name,
+                    'creation_date': bucket['CreationDate'],
+                    'region': region,
+                    'sop_compliant': is_sop_compliant
+                }
+                
+                if show_all or is_sop_compliant:
+                    buckets.append(bucket_info)
+            
+            # Sort buckets: SOP-compliant first, then alphabetically
+            buckets.sort(key=lambda x: (not x['sop_compliant'], x['name']))
             
             return buckets
             
         except Exception as e:
-            print(f"Error listing buckets: {e}")
+            print(f"Error listing buckets for profile '{profile_name}': {e}")
             return []
     
     def set_active_profile(self, profile_name: str) -> bool:

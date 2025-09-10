@@ -223,13 +223,23 @@ class TestAWSCredentialsManager:
         # Add profile
         self.manager.add_sso_profile(name="test-profile", sso_start_url="https://test.awsapps.com/start")
         
-        # Test bucket listing
+        # Test bucket listing (show_all=True by default)
         buckets = self.manager.list_client_buckets("test-profile")
         
-        assert len(buckets) == 2  # Only client-website-* buckets
-        assert buckets[0]['name'] == 'client-website-test-123456'
-        assert buckets[1]['name'] == 'client-website-prod-789012'
+        assert len(buckets) == 3  # All buckets with SOP compliance indicators
+        # Buckets should be sorted: SOP-compliant first, then alphabetically
+        assert buckets[0]['name'] == 'client-website-prod-789012'
+        assert buckets[0]['sop_compliant'] == True
+        assert buckets[1]['name'] == 'client-website-test-123456'
+        assert buckets[1]['sop_compliant'] == True
+        assert buckets[2]['name'] == 'other-bucket'
+        assert buckets[2]['sop_compliant'] == False
         assert buckets[0]['region'] == 'us-west-2'
+        
+        # Test SOP-only filtering
+        sop_buckets = self.manager.list_client_buckets("test-profile", show_all=False)
+        assert len(sop_buckets) == 2  # Only SOP-compliant buckets
+        assert all(bucket['sop_compliant'] for bucket in sop_buckets)
     
     def test_set_active_profile_success(self):
         """Test setting active profile"""
