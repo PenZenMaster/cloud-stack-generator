@@ -19,7 +19,6 @@ Comments:
 * v1.00 - Initial implementation following SOP bucket naming and caching patterns
 """
 
-import os
 import json
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any, Callable
@@ -29,7 +28,7 @@ import mimetypes
 import re
 
 import boto3
-from botocore.exceptions import ClientError, NoCredentialsError, BotoCoreError
+from botocore.exceptions import ClientError, NoCredentialsError
 
 
 @dataclass
@@ -210,7 +209,7 @@ class S3Manager:
             s3 = self._get_s3_client()
             
             # Step 1: Disable Block Public Access (SOP section 8.2)
-            s3.put_bucket_public_access_block(
+            s3.put_public_access_block(
                 Bucket=bucket_name,
                 PublicAccessBlockConfiguration={
                     'BlockPublicAcls': False,
@@ -250,7 +249,7 @@ class S3Manager:
             try:
                 location = s3.get_bucket_location(Bucket=bucket_name)
                 region = location.get('LocationConstraint') or 'us-east-1'
-            except:
+            except Exception:
                 region = 'us-east-1'
             
             website_url = f"http://{bucket_name}.s3-website-{region}.amazonaws.com"

@@ -216,7 +216,7 @@ class TestS3Manager:
         assert "http://test-bucket.s3-website-us-west-2.amazonaws.com" in message
         
         # Verify all configuration calls were made
-        mock_s3.put_bucket_public_access_block.assert_called_once()
+        mock_s3.put_public_access_block.assert_called_once()
         mock_s3.put_bucket_policy.assert_called_once()
         mock_s3.put_bucket_website.assert_called_once()
     

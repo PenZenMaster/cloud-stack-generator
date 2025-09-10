@@ -22,19 +22,16 @@ Comments:
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QLabel, QLineEdit,
     QPushButton, QComboBox, QRadioButton, QButtonGroup, QTextEdit,
-    QProgressBar, QMessageBox, QDialog, QDialogButtonBox, QListWidget,
-    QListWidgetItem, QFrame
+    QProgressBar, QMessageBox, QDialog, QDialogButtonBox
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QPalette
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from typing import Dict, Any, Optional, List
 import subprocess
 import platform
 
 from .base_tab import BaseTab
-from ...core.aws.credentials import AWSCredentialsManager, AWSProfile, AuthMethod
+from ...core.aws.credentials import AWSCredentialsManager, AuthMethod
 from ...core.aws.s3_manager import S3Manager, UploadProgress, UploadResult
-from ...core.security.api_key_manager import api_key_manager
 from ...core.config.client_aws_config import ClientAWSConfig, get_client_aws_manager
 
 
@@ -596,6 +593,9 @@ class CloudTab(BaseTab):
             self.refresh_profiles()
             self.profile_combo.setCurrentText(profile_data['name'])
             
+            # Explicitly save the profile selection 
+            self.on_aws_config_changed()
+            
             QMessageBox.information(
                 self, 
                 "Profile Created", 
@@ -682,12 +682,23 @@ class CloudTab(BaseTab):
             self.profile_combo.addItems(profiles)
             if current_text in profiles:
                 self.profile_combo.setCurrentText(current_text)
+            # Don't change selection if current text not found - let user manually select
         else:
             self.profile_combo.addItem("No profiles configured")
+            self.profile_combo.setCurrentText("No profiles configured")
     
     def on_profile_changed(self, profile_name: str):
         """Handle profile selection change"""
+        self.log_status(f"Debug: Profile changed to '{profile_name}'")
+        
         if profile_name == "No profiles configured":
+            self.profile_status_label.setText("No profile selected")
+            self.configure_sso_button.setEnabled(False)
+            return
+        
+        # Handle empty string profile name
+        if profile_name == "":
+            self.log_status(f"Debug: Empty profile name detected - not triggering auto-save")
             self.profile_status_label.setText("No profile selected")
             self.configure_sso_button.setEnabled(False)
             return
@@ -700,10 +711,12 @@ class CloudTab(BaseTab):
             self.configure_sso_button.setEnabled(profile.auth_method == AuthMethod.SSO)
             self.update_deploy_button_state()
             # Auto-save client AWS config
+            self.log_status(f"Debug: Triggering auto-save for profile '{profile_name}'")
             self.on_aws_config_changed()
         else:
             self.profile_status_label.setText("Profile not found")
             self.configure_sso_button.setEnabled(False)
+            self.log_status(f"Debug: Profile '{profile_name}' not found in credentials manager")
     
     def test_aws_connection(self):
         """Test AWS connection for selected profile"""
@@ -1128,7 +1141,14 @@ class CloudTab(BaseTab):
         """Add message to status log"""
         from datetime import datetime
         timestamp = datetime.now().strftime("%H:%M:%S")
-        self.status_text.append(f"[{timestamp}] {message}")
+        formatted_message = f"[{timestamp}] {message}"
+        
+        # Safety check - status_text might not be initialized yet
+        if self.status_text is not None:
+            self.status_text.append(formatted_message)
+        else:
+            # Fallback to print if UI not ready
+            print(f"CloudTab: {formatted_message}")
     
     def get_config_data(self) -> Dict[str, Any]:
         """Get cloud configuration data"""
@@ -1150,23 +1170,33 @@ class CloudTab(BaseTab):
             # Use client-specific AWS configuration (already loaded by set_client_context)
             client_config = self.current_client_aws_config
             
-            # Set AWS profile from client config if available
+            # Set AWS profile from client config, with YAML fallback
             if client_config.aws_profile:
                 index = self.profile_combo.findText(client_config.aws_profile)
                 if index >= 0:
                     self.profile_combo.setCurrentIndex(index)
+                    self.log_status(f"Debug: Profile '{client_config.aws_profile}' restored from client config")
+            elif data.get('aws_profile'):
+                # Fallback to YAML if client config profile is empty
+                index = self.profile_combo.findText(data['aws_profile'])
+                if index >= 0:
+                    self.profile_combo.setCurrentIndex(index)
+                    self.log_status(f"Debug: Profile '{data['aws_profile']}' restored from YAML")
             
-            # Set bucket from client config if available
-            if client_config.bucket_name:
-                self.bucket_combo.setCurrentText(client_config.bucket_name)
+            # Set bucket - prefer client config, fallback to YAML
+            bucket_to_use = client_config.bucket_name or data.get('bucket_name', '')
+            if bucket_to_use:
+                self.bucket_combo.setCurrentText(bucket_to_use)
             
-            # Set directory from client config if available
-            if client_config.directory:
-                self.directory_combo.setCurrentText(client_config.directory)
+            # Set directory - prefer client config, fallback to YAML  
+            directory_to_use = client_config.directory or data.get('directory', '')
+            if directory_to_use:
+                self.directory_combo.setCurrentText(directory_to_use)
             
-            # Set region from client config if available
-            if client_config.bucket_region:
-                index = self.region_combo.findText(client_config.bucket_region)
+            # Set region - prefer client config, fallback to YAML
+            region_to_use = client_config.bucket_region or data.get('aws_region', '')
+            if region_to_use:
+                index = self.region_combo.findText(region_to_use)
                 if index >= 0:
                     self.region_combo.setCurrentIndex(index)
         else:
@@ -1223,6 +1253,9 @@ class CloudTab(BaseTab):
         self.current_business_name = business_name
         self.current_domain = domain
         
+        # Refresh profiles first to ensure combo is populated
+        self.refresh_profiles()
+        
         # Load existing client AWS config or create default
         self.current_client_aws_config = self.aws_config_manager.load_client_aws_config(
             business_name, domain
@@ -1249,9 +1282,13 @@ class CloudTab(BaseTab):
         
         # Set AWS profile
         if config.aws_profile:
+            self.log_status(f"Attempting to restore AWS profile: {config.aws_profile}")
             index = self.profile_combo.findText(config.aws_profile)
             if index >= 0:
                 self.profile_combo.setCurrentIndex(index)
+                self.log_status(f"Successfully selected AWS profile: {config.aws_profile}")
+            else:
+                self.log_status(f"Warning: AWS profile '{config.aws_profile}' not found in available profiles")
         
         # Set bucket name
         if config.bucket_name:
@@ -1270,14 +1307,28 @@ class CloudTab(BaseTab):
     def _save_client_aws_config_from_ui(self):
         """Save current UI state to client AWS configuration"""
         if not self.current_client_aws_config:
+            self.log_status("Debug: No client AWS config to save")
             return
         
-        # Update config with current UI values
-        self.current_client_aws_config.aws_profile = (
-            self.profile_combo.currentText() 
-            if self.profile_combo.currentText() != "No profiles configured" 
+        # Get current profile selection
+        current_combo_text = self.profile_combo.currentText()
+        current_profile = (
+            current_combo_text 
+            if current_combo_text != "No profiles configured" 
             else ""
         )
+        
+        # CRITICAL FIX: Don't overwrite existing saved profile with empty profile
+        # This protects against timing issues and unintended empty profile saves
+        if (current_profile == "" and 
+            self.current_client_aws_config.aws_profile != ""):
+            self.log_status(f"Debug: Preventing overwrite of saved profile '{self.current_client_aws_config.aws_profile}' with empty value (combo: '{current_combo_text}')")
+            return
+        
+        self.log_status(f"Debug: Saving AWS profile '{current_profile}' for {self.current_business_name}")
+        
+        # Update config with current UI values
+        self.current_client_aws_config.aws_profile = current_profile
         self.current_client_aws_config.bucket_name = self.bucket_combo.currentText().strip()
         self.current_client_aws_config.directory = self.directory_combo.currentText().strip()
         self.current_client_aws_config.bucket_region = self.region_combo.currentText()
@@ -1285,7 +1336,7 @@ class CloudTab(BaseTab):
         # Save to persistent storage
         success = self.aws_config_manager.save_client_aws_config(self.current_client_aws_config)
         if success:
-            self.log_status(f"AWS configuration saved for {self.current_business_name}")
+            self.log_status(f"AWS configuration saved successfully for {self.current_business_name}")
         else:
             self.log_status("Warning: Failed to save AWS configuration")
     

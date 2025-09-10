@@ -20,14 +20,14 @@ from PyQt6.QtWidgets import (
     QProgressBar,
     QDialog,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QIcon, QAction
+from PyQt6.QtCore import pyqtSignal, QTimer
+from PyQt6.QtGui import QFont, QAction
 from pathlib import Path
-from typing import Dict, Any, Optional, List
-import yaml
+from typing import Dict, Any
 import json
 
 # Import all modular components
+from ..utils.error_logger import ErrorLogger
 from .components.business_tab import BusinessTab
 from .components.contact_tab import ContactTab
 from .components.branding_tab import BrandingTab
@@ -43,7 +43,7 @@ from ..core.config.parser import ConfigParser
 from ..version import get_version
 
 # Import error logging
-from ..utils import log_error_dialog, log_file_operation_error, log_validation_error
+from ..utils import log_error_dialog, log_file_operation_error
 
 
 class EnhancedMainWindow(QMainWindow):
@@ -61,6 +61,9 @@ class EnhancedMainWindow(QMainWindow):
         self.config_parser = ConfigParser()
         self.current_config_file = None
         self.unsaved_changes = False
+        
+        # Initialize error logger
+        self.error_logger = ErrorLogger()
         
         # Load application-wide API keys
         self.app_api_keys = self.load_app_api_keys()
@@ -524,7 +527,7 @@ class EnhancedMainWindow(QMainWindow):
                     safe_name = re.sub(r'[^\w\s-]', '', business_name.lower())
                     safe_name = re.sub(r'[-\s]+', '_', safe_name)
                     default_filename = f"{safe_name}_config.yaml"
-            except:
+            except Exception:
                 pass  # Use default if there's any error
             
         # Use /config/clients/ as default location
@@ -753,7 +756,6 @@ class EnhancedMainWindow(QMainWindow):
         
         # Create Google Maps config with cities data and API key
         cities_data = config_data.get("cities", {})
-        api_keys_data = config_data.get("api_keys", {})
         google_maps = GoogleMapsConfig()
         
         # API keys are stored separately, not in main config
@@ -1176,6 +1178,56 @@ class EnhancedMainWindow(QMainWindow):
 
         return validation_results, all_valid
 
+    def get_preview_validation_results(self) -> tuple[Dict[str, Dict], bool]:
+        """Get validation results for preview - excludes Cloud Deploy tab"""
+        validation_results = {}
+        all_valid = True
+
+        # Validate tabs needed for preview (exclude Cloud Deploy)
+        tabs = {
+            "Business Info": self.business_tab,
+            "Contact Details": self.contact_tab,
+            "Branding & Style": self.branding_tab,
+            "Cities": self.enhanced_cities_tab,
+            "Products": self.products_tab,
+            "Services & FAQ": self.services_tab,
+        }
+
+        for tab_name, tab in tabs.items():
+            if hasattr(tab, "validate_data"):
+                try:
+                    # Handle different return types from validate_data()
+                    validation_result = tab.validate_data()
+                    if (
+                        isinstance(validation_result, tuple)
+                        and len(validation_result) == 2
+                    ):
+                        is_valid, errors = validation_result
+                    elif isinstance(validation_result, bool):
+                        is_valid = validation_result
+                        errors = [] if validation_result else ["Validation failed"]
+                    else:
+                        # Handle ValidationResult objects with attributes
+                        is_valid = getattr(validation_result, 'is_valid', False)
+                        errors = getattr(validation_result, 'errors', ["Unable to determine validation result"])
+
+                    validation_results[tab_name] = {
+                        "valid": is_valid,
+                        "errors": errors if errors else [],
+                    }
+                    
+                    if not is_valid:
+                        all_valid = False
+
+                except Exception as e:
+                    validation_results[tab_name] = {
+                        "valid": False,
+                        "errors": [f"Validation error: {str(e)}"],
+                    }
+                    all_valid = False
+
+        return validation_results, all_valid
+
     def show_validation_results(self, results: Dict[str, Dict], all_valid: bool):
         """Show validation results in a dialog"""
         if all_valid:
@@ -1219,14 +1271,33 @@ class EnhancedMainWindow(QMainWindow):
                     business_data['domain']
                 )
             
-            # Validate configuration first (get results without showing dialog)
-            validation_results, all_valid = self.get_validation_results()
+            # Use preview-specific validation (excludes Cloud Deploy tab)
+            validation_results, all_valid = self.get_preview_validation_results()
             
             if not all_valid:
+                # Log validation errors to human-readable log
+                error_details = []
+                for tab_name, result in validation_results.items():
+                    if not result["valid"] and result["errors"]:
+                        for error in result["errors"]:
+                            error_details.append(f"{tab_name}: {error}")
+                
+                error_message = "Please fix validation errors before previewing the website."
+                context_info = "Preview validation failed. Errors: " + "; ".join(error_details)
+                
+                # Log to error file
+                self.error_logger.log_error_dialog(
+                    title="Preview Website Validation Failed",
+                    message=error_message,
+                    context=context_info,
+                    component="preview_website",
+                    user_action="Attempting to preview website"
+                )
+                
                 QMessageBox.warning(
                     self,
-                    "Validation Required",
-                    "Please fix validation errors before previewing the website."
+                    "Validation Required", 
+                    error_message
                 )
                 return
             
@@ -1255,6 +1326,17 @@ class EnhancedMainWindow(QMainWindow):
                 
         except Exception as e:
             error_message = f"Error during website preview:\n\n{str(e)}"
+            
+            # Log exception to error file
+            self.error_logger.log_error_dialog(
+                title="Website Preview Error",
+                message=error_message,
+                context="Exception occurred during website preview process",
+                component="preview_website",
+                exception=e,
+                user_action="Attempting to preview website"
+            )
+            
             QMessageBox.critical(
                 self,
                 "Website Preview Error",
@@ -1285,7 +1367,7 @@ class EnhancedMainWindow(QMainWindow):
                 QMessageBox.warning(
                     self,
                     "Validation Errors",
-                    f"Please fix the following errors before generating:\n\n" + "\n".join(error_messages)
+                    "Please fix the following errors before generating:\n\n" + "\n".join(error_messages)
                 )
                 return
 
@@ -1319,7 +1401,7 @@ class EnhancedMainWindow(QMainWindow):
             result = generator.generate_complete_website(config)
             
             if result.success:
-                message = f"Website generated successfully!\n\nFiles created:\n"
+                message = "Website generated successfully!\n\nFiles created:\n"
                 for file_path in result.generated_files:
                     message += f"• {Path(file_path).name}\n"
                 message += f"\nLocation: {output_dir}"

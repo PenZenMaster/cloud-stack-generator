@@ -1,14 +1,15 @@
 {
-	"permissions": {
-		"allow": [
-			"Read(C:\\Users\\georg\\.claude/**)",
-			"Bash(npx:*)",
-			"Bash(node:*)",
-			"Bash(npm --version)",
-			"WebFetch(domain:raw.githubusercontent.com)",
-			"Read(C:\\Users\\georg\\.config\\ccstatusline/**)"
-		],
-		"deny": [],
-		"ask": []
-	}
+  "permissions": {
+    "allow": [
+      "Read(C:\\Users\\georg\\.claude/**)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(C:\\Users\\georg\\.config\\ccstatusline/**)",
+      "Bash(ruff check:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
 }

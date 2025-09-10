@@ -73,9 +73,15 @@ class TestAWSCredentialsManager:
     
     def test_manager_initialization(self):
         """Test manager initialization"""
-        assert self.manager.profiles == {}
-        assert self.manager.active_profile is None
-        assert self.manager._session_cache == {}
+        # Clear any persisted profiles for testing
+        self.manager.profiles.clear()
+        self.manager._save_profiles()
+        
+        # Re-initialize to test clean state
+        fresh_manager = AWSCredentialsManager()
+        assert fresh_manager.profiles == {}
+        assert fresh_manager.active_profile is None
+        assert fresh_manager._session_cache == {}
     
     def test_add_sso_profile(self):
         """Test adding SSO profile"""
@@ -248,6 +254,10 @@ class TestAWSCredentialsManager:
     
     def test_export_profiles(self):
         """Test exporting profiles configuration"""
+        # Clear any existing profiles for clean test
+        self.manager.profiles.clear()
+        self.manager._save_profiles()
+        
         # Add test profiles
         sso_profile = self.manager.add_sso_profile(
             name="sso-profile",
@@ -280,6 +290,10 @@ class TestAWSCredentialsManager:
     
     def test_import_profiles(self):
         """Test importing profiles configuration"""
+        # Clear any existing profiles for clean test
+        self.manager.profiles.clear()
+        self.manager._save_profiles()
+        
         import_data = {
             'profiles': {
                 'imported-sso': {

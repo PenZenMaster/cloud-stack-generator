@@ -29,7 +29,7 @@ from PyQt6.QtWidgets import (
     QProgressBar, QComboBox, QWidget
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtGui import QFont
 from ...core.config.models import ClientConfig
 from ...core.generators.page_generator import PageGenerator
 
@@ -323,7 +323,6 @@ class WebsitePreviewDialog(QDialog):
         preview_lines = []
         
         in_head = False
-        in_title = False
         in_body = False
         
         for line in lines:
@@ -336,7 +335,6 @@ class WebsitePreviewDialog(QDialog):
                 in_head = False
                 preview_lines.append("<hr>")
             elif '<title>' in line:
-                in_title = True
                 preview_lines.append(f"<b>Title:</b> {line}")
             elif '<body>' in line:
                 in_body = True
@@ -385,7 +383,7 @@ class WebsitePreviewDialog(QDialog):
         """User approved preview - proceed with actual generation"""
         reply = QMessageBox.question(
             self,
-            "Generate Website",
+            "Generate Website", 
             "You have approved the website preview. Would you like to generate the final website now?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes
@@ -393,6 +391,9 @@ class WebsitePreviewDialog(QDialog):
         
         if reply == QMessageBox.StandardButton.Yes:
             self.accept()  # Close dialog and return accepted
+        else:
+            # User clicked No - close both popup and preview dialog
+            self.reject()  # Close preview dialog and return rejected
             
     def cleanup(self):
         """Clean up temporary files"""

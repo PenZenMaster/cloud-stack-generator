@@ -73,6 +73,16 @@ class AWSCredentialsManager:
         self.active_profile: Optional[str] = None
         self._session_cache: Dict[str, boto3.Session] = {}
         
+        # Profile persistence configuration
+        self._profiles_dir = Path.home() / ".claude" / "aws_profiles"
+        self._profiles_file = self._profiles_dir / "profiles.json"
+        
+        # Ensure profiles directory exists
+        self._profiles_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Load existing profiles
+        self._load_profiles()
+        
     def add_sso_profile(
         self, 
         name: str, 
@@ -91,6 +101,7 @@ class AWSCredentialsManager:
         )
         
         self.profiles[name] = profile
+        self._save_profiles()  # Persist the new profile
         return profile
     
     def add_assume_role_profile(
@@ -111,6 +122,7 @@ class AWSCredentialsManager:
         )
         
         self.profiles[name] = profile
+        self._save_profiles()  # Persist the new profile
         return profile
     
     def add_access_key_profile(
@@ -127,6 +139,7 @@ class AWSCredentialsManager:
         )
         
         self.profiles[name] = profile
+        self._save_profiles()  # Persist the new profile
         return profile
     
     def validate_profile(self, profile_name: str) -> Tuple[bool, str, Dict[str, Any]]:
@@ -357,6 +370,26 @@ class AWSCredentialsManager:
         except Exception as e:
             print(f"Error importing profiles: {e}")
             return False
+    
+    def _load_profiles(self) -> None:
+        """Load profiles from persistent storage"""
+        try:
+            if self._profiles_file.exists():
+                with open(self._profiles_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self.import_profiles(data)
+        except Exception as e:
+            print(f"Warning: Could not load AWS profiles: {e}")
+            # Continue with empty profiles if loading fails
+    
+    def _save_profiles(self) -> None:
+        """Save profiles to persistent storage"""
+        try:
+            data = self.export_profiles()
+            with open(self._profiles_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Warning: Could not save AWS profiles: {e}")
 
 
 # Utility functions for AWS CLI integration
