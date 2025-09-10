@@ -346,6 +346,7 @@ class CloudTab(BaseTab):
         layout.addWidget(QLabel("Profile:"), 0, 0)
         self.profile_combo = QComboBox()
         self.profile_combo.setMinimumWidth(200)
+        self.profile_combo.setToolTip("Select an AWS profile for cloud deployment")
         layout.addWidget(self.profile_combo, 0, 1)
         
         # Profile management buttons
@@ -700,13 +701,19 @@ class CloudTab(BaseTab):
         if profile_name == "":
             self.log_status(f"Debug: Empty profile name detected - not triggering auto-save")
             self.profile_status_label.setText("No profile selected")
+            self.profile_combo.setToolTip("Select an AWS profile for cloud deployment")
             self.configure_sso_button.setEnabled(False)
             return
         
         if profile_name in self.credentials_manager.profiles:
             profile = self.credentials_manager.profiles[profile_name]
             self.profile_status_label.setText(f"Profile: {profile.auth_method.value} | Region: {profile.region}")
-            self.region_combo.setCurrentText(profile.region)
+            # Only set region combo if it's been initialized
+            if self.region_combo is not None:
+                self.region_combo.setCurrentText(profile.region)
+            # Update profile combo tooltip with detailed information
+            tooltip_text = f"Profile: {profile_name}\nAuth Method: {profile.auth_method.value}\nRegion: {profile.region}"
+            self.profile_combo.setToolTip(tooltip_text)
             # Enable Configure SSO button only for SSO profiles
             self.configure_sso_button.setEnabled(profile.auth_method == AuthMethod.SSO)
             self.update_deploy_button_state()
@@ -715,6 +722,7 @@ class CloudTab(BaseTab):
             self.on_aws_config_changed()
         else:
             self.profile_status_label.setText("Profile not found")
+            self.profile_combo.setToolTip(f"Profile '{profile_name}' not found in credentials manager")
             self.configure_sso_button.setEnabled(False)
             self.log_status(f"Debug: Profile '{profile_name}' not found in credentials manager")
     

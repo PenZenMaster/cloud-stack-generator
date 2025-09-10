@@ -196,8 +196,11 @@ class TestCloudTab:
         assert tab.progress_bar is not None
         assert tab.status_text is not None
     
-    def test_profile_combo_default_state(self, qapp):
+    @patch('src.core.aws.credentials.AWSCredentialsManager._load_profiles')
+    def test_profile_combo_default_state(self, mock_load_profiles, qapp):
         """Test profile combo default state"""
+        # Mock to prevent loading persistent profiles
+        mock_load_profiles.return_value = None
         tab = CloudTab()
         
         # Should show "No profiles configured" by default
@@ -213,7 +216,9 @@ class TestCloudTab:
         assert tab.cloudfront_mode_radio.isEnabled() is False  # Phase 2 feature
     
     @patch('src.ui.components.cloud_tab.AWSProfileDialog')
-    def test_create_new_profile_success(self, mock_dialog, qapp):
+    @patch('src.core.aws.credentials.AWSCredentialsManager._load_profiles')
+    @patch('src.core.aws.credentials.AWSCredentialsManager._save_profiles')
+    def test_create_new_profile_success(self, mock_save_profiles, mock_load_profiles, mock_dialog, qapp):
         """Test successful profile creation"""
         tab = CloudTab()
         
@@ -284,16 +289,20 @@ class TestCloudTab:
             args, kwargs = mock_warning.call_args
             assert "Profile name is required" in args[2]
     
-    def test_refresh_profiles_empty(self, qapp):
+    @patch('src.core.aws.credentials.AWSCredentialsManager._load_profiles')
+    def test_refresh_profiles_empty(self, mock_load_profiles, qapp):
         """Test refreshing profiles when none exist"""
+        mock_load_profiles.return_value = None
         tab = CloudTab()
         
         tab.refresh_profiles()
         
         assert tab.profile_combo.currentText() == "No profiles configured"
     
-    def test_refresh_profiles_with_data(self, qapp):
+    @patch('src.core.aws.credentials.AWSCredentialsManager._load_profiles')
+    def test_refresh_profiles_with_data(self, mock_load_profiles, qapp):
         """Test refreshing profiles with existing profiles"""
+        mock_load_profiles.return_value = None
         tab = CloudTab()
         
         # Add test profiles
@@ -485,8 +494,10 @@ class TestCloudTab:
         assert is_valid is True
         assert len(errors) == 0
     
-    def test_validate_data_no_profile(self, qapp):
+    @patch('src.core.aws.credentials.AWSCredentialsManager._load_profiles')
+    def test_validate_data_no_profile(self, mock_load_profiles, qapp):
         """Test validation with no profile"""
+        mock_load_profiles.return_value = None
         tab = CloudTab()
         
         # No profile selected
@@ -623,8 +634,10 @@ class TestCloudTab:
         args = mock_critical.call_args[0]
         assert "Failed to open terminal" in args[2]
     
-    def test_refresh_bucket_list_no_profile(self, qapp):
+    @patch('src.core.aws.credentials.AWSCredentialsManager._load_profiles')
+    def test_refresh_bucket_list_no_profile(self, mock_load_profiles, qapp):
         """Test refresh bucket list with no profile selected"""
+        mock_load_profiles.return_value = None
         tab = CloudTab()
         
         with patch.object(QMessageBox, 'warning') as mock_warning:
