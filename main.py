@@ -13,7 +13,6 @@ import traceback
 from pathlib import Path
 from datetime import datetime
 from PyQt6.QtWidgets import QApplication, QMessageBox
-from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
 # Add src directory to path for imports
@@ -214,9 +213,9 @@ Component Status Check:
         else:
             print(f"   MISSING {component}")
 
-    print(f"\nIf components are missing, you may need to create them first.")
-    print(f"Try running your working tests to verify component status:")
-    print(f"   python tests/simple_business_test.py")
+    print("\nIf components are missing, you may need to create them first.")
+    print("Try running your working tests to verify component status:")
+    print("   python tests/simple_business_test.py")
 
     sys.exit(1)
 

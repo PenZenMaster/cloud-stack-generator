@@ -10,9 +10,8 @@ This script:
 """
 
 import sys
-import os
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, Any
 import yaml
 
 # Add src to Python path
@@ -75,7 +74,7 @@ def main():
             if primary_keyword:
                 print(f"    Using primary keyword: {primary_keyword}")
             else:
-                print(f"    No primary keyword found, using default")
+                print("    No primary keyword found, using default")
             
             faq_data = paa_api.get_city_faq_data(city_name, primary_keyword)
             

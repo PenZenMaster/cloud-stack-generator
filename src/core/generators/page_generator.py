@@ -7,9 +7,8 @@ Coordinates HTML and CSS generation for complete multi-page websites
 with navigation, internal linking, and SEO optimization.
 """
 
-from typing import Dict, Any, List, Optional, Tuple, Callable
+from typing import List, Optional, Callable
 from pathlib import Path
-import os
 import shutil
 from datetime import datetime
 

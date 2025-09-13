@@ -10,9 +10,8 @@ This script:
 """
 
 import sys
-import os
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, Any
 import yaml
 
 # Add src to Python path

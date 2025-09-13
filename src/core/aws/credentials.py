@@ -21,12 +21,11 @@ Comments:
 
 import json
 import boto3
-from botocore.exceptions import ClientError, NoCredentialsError, BotoCoreError
-from dataclasses import dataclass, field
+from botocore.exceptions import ClientError, NoCredentialsError
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 import subprocess
-import os
 from pathlib import Path
 
 
@@ -236,8 +235,18 @@ class AWSCredentialsManager:
             
             return buckets
             
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            if 'Token has expired' in str(e) or 'UnauthorizedOperation' in str(e):
+                print(f"SSO token expired for profile '{profile_name}'. Run: aws sso login --profile {profile_name}")
+            else:
+                print(f"AWS Error listing buckets for profile '{profile_name}' ({error_code}): {e}")
+            return []
         except Exception as e:
-            print(f"Error listing buckets for profile '{profile_name}': {e}")
+            if 'Token has expired' in str(e):
+                print(f"SSO token expired for profile '{profile_name}'. Run: aws sso login --profile {profile_name}")
+            else:
+                print(f"Error listing buckets for profile '{profile_name}': {e}")
             return []
     
     def set_active_profile(self, profile_name: str) -> bool:
@@ -288,11 +297,31 @@ class AWSCredentialsManager:
         return session
     
     def _create_sso_session(self, profile: AWSProfile) -> boto3.Session:
-        """Create SSO session using AWS CLI profile"""
+        """Create SSO session using AWS CLI profile with token refresh handling"""
         # For SSO, we rely on AWS CLI profile configuration
         # User must run `aws configure sso --profile {profile.name}` first
-        session = boto3.Session(profile_name=profile.name, region_name=profile.region)
-        return session
+        try:
+            session = boto3.Session(profile_name=profile.name, region_name=profile.region)
+            # Test the session to ensure tokens are valid
+            sts = session.client('sts')
+            sts.get_caller_identity()
+            return session
+        except ClientError as e:
+            if 'Token has expired' in str(e) or 'UnauthorizedOperation' in str(e):
+                # Clear cached session and attempt token refresh
+                if profile.name in self._session_cache:
+                    del self._session_cache[profile.name]
+                
+                # Attempt to refresh SSO token using AWS CLI
+                success = self._refresh_sso_token(profile.name)
+                if success:
+                    # Retry with refreshed token
+                    session = boto3.Session(profile_name=profile.name, region_name=profile.region)
+                    return session
+                else:
+                    raise Exception(f"SSO token refresh failed for profile '{profile.name}'. Please run: aws sso login --profile {profile.name}")
+            else:
+                raise
     
     def _create_assume_role_session(self, profile: AWSProfile) -> boto3.Session:
         """Create AssumeRole session"""
@@ -319,6 +348,19 @@ class AWSCredentialsManager:
         )
         
         return session
+    
+    def _refresh_sso_token(self, profile_name: str) -> bool:
+        """Attempt to refresh SSO token using AWS CLI"""
+        try:
+            result = subprocess.run(
+                ['aws', 'sso', 'login', '--profile', profile_name],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            return result.returncode == 0
+        except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+            return False
     
     def _create_access_key_session(self, profile: AWSProfile) -> boto3.Session:
         """Create session with stored access keys"""

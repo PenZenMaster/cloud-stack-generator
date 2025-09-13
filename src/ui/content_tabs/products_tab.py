@@ -10,10 +10,9 @@ Author: Cloud Stack Generator Team
 """
 
 import csv
-import json
 import os
 import chardet
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple
 from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
@@ -30,18 +29,15 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QHeaderView,
     QAbstractItemView,
-    QSplitter,
     QFrame,
     QProgressBar,
-    QSpinBox,
-    QDoubleSpinBox,
 )
-from PyQt6.QtGui import QFont, QAction, QPixmap, QIcon
-from PyQt6.QtCore import Qt, pyqtSignal, QThread, QTimer
+from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt, pyqtSignal
 from ..components.base_tab import BaseTab
 
 # Import error logging
-from ...utils import log_error_dialog, log_file_operation_error, log_validation_error
+from ...utils import log_file_operation_error
 
 
 class ValidationResult:
@@ -680,7 +676,7 @@ class ProductsTab(BaseTab):
 
                 # Show comprehensive validation results
                 if validation_errors:
-                    msg = f"❌ CSV Validation Failed!\n\n"
+                    msg = "❌ CSV Validation Failed!\n\n"
                     msg += f"• Total rows: {row_count}\n"
                     msg += f"• Valid products: {valid_products}\n"
                     msg += f"• Errors: {len(validation_errors)}\n"
@@ -702,7 +698,7 @@ class ProductsTab(BaseTab):
                     self._update_import_status(f"❌ Validation failed - {len(validation_errors)} errors found")
                     
                 elif validation_warnings:
-                    msg = f"⚠️ CSV Validation Passed with Warnings!\n\n"
+                    msg = "⚠️ CSV Validation Passed with Warnings!\n\n"
                     msg += f"• Total rows: {row_count}\n"
                     msg += f"• Valid products: {valid_products}\n"
                     msg += f"• Warnings: {len(validation_warnings)}\n"
@@ -719,7 +715,7 @@ class ProductsTab(BaseTab):
                     self._update_import_status(f"⚠️ Valid CSV with {len(validation_warnings)} warnings - {valid_products} products ready")
                     
                 else:
-                    msg = f"✅ CSV Validation Successful!\n\n"
+                    msg = "✅ CSV Validation Successful!\n\n"
                     msg += f"• Total rows: {row_count}\n"
                     msg += f"• Valid products: {valid_products}\n"
                     msg += f"• Required columns: {', '.join(required_columns)} ✅\n"
@@ -799,7 +795,7 @@ class ProductsTab(BaseTab):
             self.import_progress.hide()
 
             # Show import results
-            msg = f"Import completed!\n\n"
+            msg = "Import completed!\n\n"
             msg += f"• Successfully imported: {len(imported_products)} products\n"
 
             if warnings:
@@ -1227,9 +1223,9 @@ class ProductsTab(BaseTab):
         result = self.validate_data()
 
         if result.is_valid:
-            msg = f"✅ Products validation passed!\n\n"
+            msg = "✅ Products validation passed!\n\n"
             msg += f"• Total products: {len(self.products)}\n"
-            msg += f"• All products have valid data\n"
+            msg += "• All products have valid data\n"
 
             if result.warnings:
                 msg += f"• Warnings: {len(result.warnings)}\n"
@@ -1246,7 +1242,7 @@ class ProductsTab(BaseTab):
             else:
                 QMessageBox.information(self, "Validation Success", msg)
         else:
-            msg = f"❌ Products validation failed!\n\n"
+            msg = "❌ Products validation failed!\n\n"
             msg += f"• Total products: {len(self.products)}\n"
             msg += f"• Errors: {len(result.errors)}\n"
 

@@ -19,7 +19,6 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QMenuBar,
-    QMenu,
     QMessageBox,
     QFileDialog,
     QTextEdit,
@@ -29,7 +28,7 @@ from PyQt6.QtWidgets import (
     QProgressBar,
 )
 from PyQt6.QtGui import QAction, QFont
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal
 
 # Import our modules - fixed import paths
 from core.config_parser import ConfigParser, ConfigValidationError

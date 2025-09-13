@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
     QSpinBox,
 )
 from PyQt6.QtGui import QFont
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 import re
 from typing import Optional, Dict, Any
 

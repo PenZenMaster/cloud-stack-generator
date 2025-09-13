@@ -89,18 +89,18 @@ class TestS3Manager:
         """Test SOP-compliant cache settings"""
         # HTML files - short cache
         html_settings = self.manager.cache_settings['html']
-        assert html_settings['Cache-Control'] == 'max-age=300,public'
-        assert html_settings['Content-Type'] == 'text/html'
+        assert html_settings['CacheControl'] == 'max-age=300,public'
+        assert html_settings['ContentType'] == 'text/html'
         
         # JSON files - long cache  
         json_settings = self.manager.cache_settings['json']
-        assert json_settings['Cache-Control'] == 'max-age=86400,public'
-        assert json_settings['Content-Type'] == 'application/json'
+        assert json_settings['CacheControl'] == 'max-age=86400,public'
+        assert json_settings['ContentType'] == 'application/json'
         
         # CSS files - long cache
         css_settings = self.manager.cache_settings['css']
-        assert css_settings['Cache-Control'] == 'max-age=86400,public'
-        assert css_settings['Content-Type'] == 'text/css'
+        assert css_settings['CacheControl'] == 'max-age=86400,public'
+        assert css_settings['ContentType'] == 'text/css'
     
     def test_set_session(self):
         """Test setting boto3 session"""
@@ -213,7 +213,7 @@ class TestS3Manager:
         success, message = self.manager.configure_public_website("test-bucket")
         
         assert success is True
-        assert "http://test-bucket.s3-website-us-west-2.amazonaws.com" in message
+        assert "http://test-bucket.s3-website.us-west-2.amazonaws.com" in message
         
         # Verify all configuration calls were made
         mock_s3.put_public_access_block.assert_called_once()
@@ -308,7 +308,7 @@ class TestS3Manager:
         
         url = self.manager.get_website_url("test-bucket")
         
-        assert url == "http://test-bucket.s3-website-us-west-2.amazonaws.com"
+        assert url == "http://test-bucket.s3-website.us-west-2.amazonaws.com"
     
     @patch('boto3.Session')
     def test_get_website_url_us_east_1(self, mock_session):
@@ -389,22 +389,22 @@ class TestS3Manager:
         """Test getting file metadata for HTML files"""
         metadata = self.manager._get_file_metadata("html")
         
-        assert metadata['Cache-Control'] == 'max-age=300,public'
-        assert metadata['Content-Type'] == 'text/html'
+        assert metadata['CacheControl'] == 'max-age=300,public'
+        assert metadata['ContentType'] == 'text/html'
     
     def test_get_file_metadata_css(self):
         """Test getting file metadata for CSS files"""
         metadata = self.manager._get_file_metadata("css")
         
-        assert metadata['Cache-Control'] == 'max-age=86400,public'
-        assert metadata['Content-Type'] == 'text/css'
+        assert metadata['CacheControl'] == 'max-age=86400,public'
+        assert metadata['ContentType'] == 'text/css'
     
     def test_get_file_metadata_unknown(self):
         """Test getting file metadata for unknown file types"""
         metadata = self.manager._get_file_metadata("unknown")
         
-        assert metadata['Cache-Control'] == 'max-age=86400,public'
-        assert metadata['Content-Type'] == 'application/octet-stream'
+        assert metadata['CacheControl'] == 'max-age=86400,public'
+        assert metadata['ContentType'] == 'application/octet-stream'
     
     def test_matches_pattern(self):
         """Test file pattern matching for excludes"""
@@ -441,9 +441,13 @@ class TestS3Manager:
         assert is_valid is False
         assert "consecutive periods" in message
     
-    def test_validate_bucket_name_wrong_prefix(self):
-        """Test bucket name validation - invalid format (should use periods which are invalid)"""
+    def test_validate_bucket_name_with_periods(self):
+        """Test bucket name validation - periods are allowed but not consecutive periods"""
+        # Single periods are allowed in S3 bucket names
         is_valid, message = self.manager.validate_bucket_name("invalid.bucket.name")
+        assert is_valid is True
         
+        # But consecutive periods are not allowed
+        is_valid, message = self.manager.validate_bucket_name("invalid..bucket..name")
         assert is_valid is False
-        assert "SOP pattern" in message
+        assert "consecutive periods" in message

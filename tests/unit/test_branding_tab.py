@@ -166,8 +166,8 @@ class TestBrandingTab(unittest.TestCase):
     def test_05_validation_empty_required_fields(self):
         """Test validation with empty required fields"""
         # Clear required data
-        self.branding_tab.branding_inputs["primary_color"].setText("")
-        self.branding_tab.branding_inputs["secondary_color"].setText("")
+        self.branding_tab.branding_inputs["primary"].setText("")
+        self.branding_tab.branding_inputs["secondary"].setText("")
 
         # Validate
         result = self.branding_tab.validate_data()

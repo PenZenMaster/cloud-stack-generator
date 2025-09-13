@@ -7,9 +7,7 @@ Generates CSS from branding configuration with responsive design
 and professional styling.
 """
 
-from typing import Dict, Any, List
 from ..config.models import ClientConfig, BrandingConfig
-import colorsys
 
 
 class CSSGenerator:
@@ -279,23 +277,23 @@ p {{
 
     def _generate_color_scheme_styles(self, branding: BrandingConfig) -> str:
         """Generate color scheme styles based on branding"""
-        return f"""/* Color Scheme */
-body {{
+        return """/* Color Scheme */
+body {
     background-color: var(--white);
     color: var(--gray-800);
-}}
+}
 
-.header, .navbar {{
+.header, .navbar {
     background-color: var(--primary-color);
     color: var(--white);
-}}
+}
 
-.footer {{
+.footer {
     background-color: var(--secondary-dark);
     color: var(--white);
-}}
+}
 
-.button-primary {{
+.button-primary {
     background-color: var(--primary-color);
     color: var(--white);
     border-radius: var(--border-radius);
@@ -304,13 +302,13 @@ body {{
     padding: var(--spacing-sm) var(--spacing-lg);
     font-weight: 600;
     transition: background 0.2s;
-}}
+}
 
-.button-primary:hover, .button-primary:focus {{
+.button-primary:hover, .button-primary:focus {
     background-color: var(--primary-dark);
-}}
+}
 
-.button-secondary {{
+.button-secondary {
     background-color: var(--secondary-color);
     color: var(--white);
     border-radius: var(--border-radius);
@@ -319,31 +317,31 @@ body {{
     padding: var(--spacing-sm) var(--spacing-lg);
     font-weight: 600;
     transition: background 0.2s;
-}}
+}
 
-.button-secondary:hover, .button-secondary:focus {{
+.button-secondary:hover, .button-secondary:focus {
     background-color: var(--secondary-dark);
-}}
+}
 
-.alert-success {{
+.alert-success {
     background-color: var(--success);
     color: var(--white);
-}}
+}
 
-.alert-warning {{
+.alert-warning {
     background-color: var(--warning);
     color: var(--white);
-}}
+}
 
-.alert-error {{
+.alert-error {
     background-color: var(--error);
     color: var(--white);
-}}
+}
 
-.alert-info {{
+.alert-info {
     background-color: var(--info);
     color: var(--white);
-}}
+}
 """
 
     def _generate_layout_styles(self) -> str:
@@ -375,68 +373,68 @@ body {{
 
     def _generate_component_styles(self, branding: BrandingConfig) -> str:
         """Generate component-specific styles"""
-        return f"""/* Component Styles */
+        return """/* Component Styles */
 
 /* Header Styles */
-header {{
+header {
     background: var(--primary-color);
     color: white;
     padding: var(--spacing-lg) 0;
-}}
+}
 
-.header-content {{
+.header-content {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
     display: flex;
     justify-content: space-between;
     align-items: center;
-}}
+}
 
-.logo-container {{
+.logo-container {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-}}
+}
 
-.logo-image {{
+.logo-image {
     height: 60px;
     width: auto;
-}}
+}
 
-.company-name {{
+.company-name {
     font-size: var(--font-size-xl);
     font-weight: bold;
-}}
+}
 
 /* Navigation Styles */
-nav ul {{
+nav ul {
     display: flex;
     list-style: none;
     margin: 0;
     padding: 0;
     gap: var(--spacing-lg);
-}}
+}
 
-nav a {{
+nav a {
     color: white;
     text-decoration: none;
     font-weight: 500;
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--border-radius);
     transition: background-color 0.2s;
-}}
+}
 
-nav a:hover {{
+nav a:hover {
     background-color: rgba(255, 255, 255, 0.1);
-}}
+}
 
 /* Modern Dropdown Navigation Styles */
-.has-dropdown {{
+.has-dropdown {
     position: relative;
-}}
+}
 
-.dropdown {{
+.dropdown {
     display: none;
     position: absolute;
     top: 100%;
@@ -449,13 +447,13 @@ nav a:hover {{
     padding: 8px 0;
     list-style: none;
     margin: 0;
-}}
+}
 
-.dropdown li {{
+.dropdown li {
     margin: 0;
-}}
+}
 
-.dropdown a {{
+.dropdown a {
     display: block;
     padding: 10px 16px;
     color: #333;
@@ -464,37 +462,37 @@ nav a:hover {{
     transition: background-color 0.3s ease;
     border: none;
     white-space: nowrap;
-}}
+}
 
-.dropdown a:hover {{
+.dropdown a:hover {
     background-color: #f8f9fa;
-}}
+}
 
-.dropdown a.current-location {{
+.dropdown a.current-location {
     background-color: #fff3cd;
     color: #856404;
     font-weight: 600;
-}}
+}
 
-.dropdown a.current-location:hover {{
+.dropdown a.current-location:hover {
     background-color: #ffeaa7;
-}}
+}
 
 /* Grid Layout for Dropdowns with 4+ Items */
-.dropdown.grid-layout {{
+.dropdown.grid-layout {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     max-width: 720px; /* 4 columns max */
     min-width: 400px;
     gap: 0;
     padding: 0;
-}}
+}
 
-.dropdown.grid-layout li {{
+.dropdown.grid-layout li {
     margin: 0;
-}}
+}
 
-.dropdown.grid-layout a {{
+.dropdown.grid-layout a {
     padding: 8px 12px;
     text-align: center;
     font-size: 0.85rem;
@@ -502,28 +500,28 @@ nav a:hover {{
     background-color: #fff3cd;
     color: #856404;
     margin: 0;
-}}
+}
 
-.dropdown.grid-layout a:hover {{
+.dropdown.grid-layout a:hover {
     background-color: #ffeaa7;
-}}
+}
 
-.dropdown.grid-layout a.current-location {{
+.dropdown.grid-layout a.current-location {
     background-color: #f8d7da;
     color: #721c24;
-}}
+}
 
 /* Show dropdown on hover */
-.has-dropdown:hover .dropdown {{
+.has-dropdown:hover .dropdown {
     display: flex;
-}}
+}
 
-.has-dropdown:hover .dropdown.grid-layout {{
+.has-dropdown:hover .dropdown.grid-layout {
     display: grid;
-}}
+}
 
 /* Legacy dropdown support for backward compatibility */
-.dropdown-content {{
+.dropdown-content {
     display: none;
     position: absolute;
     background-color: white;
@@ -535,9 +533,9 @@ nav a:hover {{
     left: 0;
     padding: 8px 0;
     margin: 0;
-}}
+}
 
-.dropdown-content a {{
+.dropdown-content a {
     color: #333;
     padding: 10px 16px;
     display: block;
@@ -546,39 +544,39 @@ nav a:hover {{
     font-size: 0.9rem;
     transition: background-color 0.3s ease;
     text-decoration: none;
-}}
+}
 
-.dropdown-content a:hover {{
+.dropdown-content a:hover {
     background-color: #f8f9fa;
-}}
+}
 
 /* Hero Section */
-.hero {{
+.hero {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
     padding: var(--spacing-3xl) 0;
     text-align: center;
-}}
+}
 
-.hero-content {{
+.hero-content {
     max-width: 800px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
-}}
+}
 
-.hero h1 {{
+.hero h1 {
     font-size: var(--font-size-3xl);
     margin-bottom: var(--spacing-lg);
     font-weight: bold;
-}}
+}
 
-.hero-subtitle {{
+.hero-subtitle {
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-xl);
     opacity: 0.9;
-}}
+}
 
-.cta-button {{
+.cta-button {
     display: inline-block;
     background: white;
     color: var(--primary-color);
@@ -587,55 +585,55 @@ nav a:hover {{
     text-decoration: none;
     font-weight: bold;
     transition: transform 0.2s;
-}}
+}
 
-.cta-button:hover {{
+.cta-button:hover {
     transform: translateY(-2px);
-}}
+}
 
 /* Footer Styles */
-footer {{
+footer {
     background: var(--gray-800);
     color: white;
     padding: var(--spacing-xl) 0;
     margin-top: auto;
-}}
+}
 
-.footer-container {{
+.footer-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
-}}
+}
 
-.footer-content {{
+.footer-content {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-xl);
     margin-bottom: var(--spacing-xl);
-}}
+}
 
-.footer-section h3 {{
+.footer-section h3 {
     margin-bottom: var(--spacing-md);
     color: var(--secondary-color);
-}}
+}
 
-.footer-section a {{
+.footer-section a {
     color: white;
     text-decoration: none;
     display: block;
     margin-bottom: var(--spacing-sm);
-}}
+}
 
-.footer-section a:hover {{
+.footer-section a:hover {
     color: var(--secondary-color);
-}}
+}
 
-.social-links {{
+.social-links {
     display: flex;
     gap: var(--spacing-md);
-}}
+}
 
-.social-links a {{
+.social-links a {
     display: inline-block !important;
     background: var(--primary-color);
     width: 40px;
@@ -644,58 +642,58 @@ footer {{
     text-align: center;
     line-height: 40px;
     margin-bottom: 0 !important;
-}}
+}
 
-.map-container {{
+.map-container {
     border-radius: var(--border-radius);
     overflow: hidden;
-}}
+}
 
-.map-container iframe {{
+.map-container iframe {
     width: 100%;
     height: 300px;
     border: 0;
-}}
+}
 
-.footer-bottom {{
+.footer-bottom {
     border-top: 1px solid var(--gray-600);
     padding-top: var(--spacing-lg);
     text-align: center;
-}}
+}
 
 /* Content Sections */
-.content-section {{
+.content-section {
     padding: var(--spacing-xl) 0;
-}}
+}
 
-.content-section .container {{
+.content-section .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
-}}
+}
 
-.content-section h2 {{
+.content-section h2 {
     color: var(--primary-color);
     margin-bottom: var(--spacing-lg);
-}}
+}
 
-.why-choose-item {{
+.why-choose-item {
     margin-bottom: var(--spacing-lg);
-}}
+}
 
-.why-choose-item h3 {{
+.why-choose-item h3 {
     color: var(--secondary-color);
     margin-bottom: var(--spacing-sm);
-}}
+}
 
 /* Legacy component styles for compatibility */
-.card {{
+.card {
     background: white;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     padding: var(--spacing-lg);
     border: 1px solid var(--gray-200);
-}}
+}
 """
 
     def _generate_responsive_styles(self) -> str:

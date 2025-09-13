@@ -85,7 +85,7 @@ def main():
         elif o in ('-v', '--verbose'):
             verbose = True
         elif o in ('--newline',):
-            if not a.upper() in ('CRLF', 'LF'):
+            if a.upper() not in ('CRLF', 'LF'):
                 usage()
                 return
             spec_newline = dict(CRLF='\r\n', LF='\n')[a.upper()]

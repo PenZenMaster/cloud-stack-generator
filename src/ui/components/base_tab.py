@@ -11,8 +11,6 @@ Author: Cloud Stack Generator Team
 
 from PyQt6.QtWidgets import (
     QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
     QLabel,
     QFrame,
     QTabWidget,
@@ -20,8 +18,8 @@ from PyQt6.QtWidgets import (
     QSizePolicy,
 )
 from PyQt6.QtCore import pyqtSignal, QTimer, Qt
-from PyQt6.QtGui import QFont, QPalette
-from typing import Dict, Any, List, Tuple, Optional, Protocol
+from PyQt6.QtGui import QFont
+from typing import Dict, Any, List, Optional, Protocol
 
 # Import the new layout system
 from ..layouts import (

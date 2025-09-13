@@ -19,8 +19,6 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QPushButton,
     QGroupBox,
-    QSpacerItem,
-    QSizePolicy,
     QScrollArea,
     QFrame,
     QMessageBox,
@@ -29,8 +27,8 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,
     QTableWidgetItem,
 )
-from PyQt6.QtCore import Qt, QUrl
-from PyQt6.QtGui import QFont, QDesktopServices
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
 from typing import Dict, Any, List, Tuple
 from .base_tab import BaseTab, ValidationResult
 import re
@@ -542,7 +540,7 @@ class BusinessTab(BaseTab):
                 msgbox.setIcon(QMessageBox.Icon.Information)
                 msgbox.exec()
         else:
-            msg = f"❌ Business validation failed!\n\n"
+            msg = "❌ Business validation failed!\n\n"
             msg += f"• Errors: {len(result.errors)}\n"
 
             if result.warnings:

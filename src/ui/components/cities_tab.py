@@ -9,11 +9,10 @@ Date: 2025-08-15
 Author: Cloud Stack Generator Team
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any
 from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
-    QGridLayout,
     QLabel,
     QLineEdit,
     QTextEdit,
@@ -33,7 +32,6 @@ from ..dialogs.city_embed_dialog import CityEmbedDialog
 from ..dialogs.enhanced_city_embed_dialog import EnhancedCityEmbedDialog
 
 # Import error logging
-from ...utils import log_validation_error
 
 # Import Wikipedia API
 try:

@@ -7,9 +7,8 @@ Manages website generation process and integrates with the UI
 for progress tracking and user feedback.
 """
 
-from typing import Optional, Callable
+from typing import Optional
 from PyQt6.QtCore import QObject, pyqtSignal, QThread
-from pathlib import Path
 import traceback
 
 from .page_generator import PageGenerator, GenerationResult

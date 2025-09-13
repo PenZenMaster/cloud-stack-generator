@@ -4,25 +4,18 @@ Stores sensitive keys outside of main configuration files
 """
 
 from PyQt6.QtWidgets import (
-    QWidget,
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
     QGroupBox,
-    QTextEdit,
     QMessageBox,
     QFrame,
 )
-from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtGui import QFont
 from typing import Dict, Any
-import json
-from pathlib import Path
 
 from .base_tab import BaseTab, ValidationResult
-from ..layouts import ScalableLayout, ResponsiveSection, StandardFormLayout
 
 
 class APIKeysTab(BaseTab):

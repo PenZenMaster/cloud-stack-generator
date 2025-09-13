@@ -14,10 +14,9 @@ Author: Cloud Stack Generator Team
 """
 
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QFormLayout,
+    QWidget, QVBoxLayout, QHBoxLayout, QFormLayout,
     QPushButton, QListWidget, QListWidgetItem, QTextEdit, QLineEdit,
-    QLabel, QGroupBox, QScrollArea, QFrame, QTabWidget, QComboBox,
-    QMessageBox, QDialog, QDialogButtonBox, QSplitter, QHeaderView
+    QLabel, QGroupBox, QScrollArea, QFrame, QTabWidget, QMessageBox, QDialog, QDialogButtonBox
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject
 from PyQt6.QtGui import QFont
@@ -902,7 +901,7 @@ class EnhancedCitiesTab(BaseTab):
             
             reply = QMessageBox.question(
                 self, "Remove FAQ",
-                f"Are you sure you want to remove this FAQ item?",
+                "Are you sure you want to remove this FAQ item?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
             

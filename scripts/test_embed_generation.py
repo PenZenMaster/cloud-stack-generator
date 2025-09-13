@@ -11,7 +11,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from core.generators.city_page_generator import CityPageGenerator
 from core.config.parser import ConfigParser
-from core.config.models import CityPageConfig
 
 
 def test_embed_generation():

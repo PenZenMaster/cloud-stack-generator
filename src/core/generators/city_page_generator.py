@@ -21,12 +21,10 @@ Version: 3.1.0
 Last Updated: 2025-08-29
 """
 
-import os
 import re
-import urllib.parse
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from pathlib import Path
-from jinja2 import Template, Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
 
 from ..config.models import ClientConfig, CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
 
@@ -123,7 +121,7 @@ class CityPageGenerator:
             secondary_keywords=[city_name.lower(), f"{self.config.business.industry.lower()} services", "local business"],
             about_city=f"{city_name} is a vibrant community known for its architectural diversity and rich heritage. " +
                       f"The city presents unique opportunities and challenges for {self.config.business.industry.lower()} projects, " +
-                      f"requiring specialized knowledge of local building codes, climate considerations, and architectural styles. " +
+                      "requiring specialized knowledge of local building codes, climate considerations, and architectural styles. " +
                       f"Our team at {self.config.business.business_name} understands these local nuances and delivers solutions " +
                       f"that complement {city_name}'s distinctive character while meeting the highest standards of quality and durability.",
             city_image=CityImageConfig(

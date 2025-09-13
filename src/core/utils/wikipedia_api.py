@@ -120,7 +120,7 @@ class WikipediaAPI:
         # If no thumbnail available, try to construct a reasonable fallback
         # but this should rarely be reached with real Wikipedia API calls
         safe_city = self.normalize_city_name(city)
-        fallback_url = f"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/No-image-available.svg/1280px-No-image-available.svg.png"
+        fallback_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/No-image-available.svg/1280px-No-image-available.svg.png"
         fallback_source = f"https://en.wikipedia.org/wiki/{safe_city}"
         fallback_attribution = f"No image available for {city}"
         
@@ -186,7 +186,6 @@ class WikipediaAPI:
         
         # Clean up and format the Wikipedia extract
         # Remove any parenthetical pronunciations at the start
-        import re
         extract = re.sub(r'^\([^)]*\)\s*', '', extract)
         
         # Limit to reasonable length (400-600 words)

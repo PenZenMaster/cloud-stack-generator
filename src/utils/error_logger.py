@@ -10,7 +10,6 @@ Author: Cloud Stack Generator Team
 """
 
 import logging
-import os
 import traceback
 import sys
 from datetime import datetime

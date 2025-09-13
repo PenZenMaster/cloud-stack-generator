@@ -82,29 +82,29 @@ class S3Manager:
         # SOP file type mappings for caching
         self.cache_settings = {
             # HTML files - short cache (5 minutes)
-            'html': {'Cache-Control': 'max-age=300,public', 'Content-Type': 'text/html'},
-            'htm': {'Cache-Control': 'max-age=300,public', 'Content-Type': 'text/html'},
+            'html': {'CacheControl': 'max-age=300,public', 'ContentType': 'text/html'},
+            'htm': {'CacheControl': 'max-age=300,public', 'ContentType': 'text/html'},
             
             # Data files - longer cache (1 day)
-            'json': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'application/json'},
-            'csv': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'text/csv'},
-            'xlsx': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},
+            'json': {'CacheControl': 'max-age=86400,public', 'ContentType': 'application/json'},
+            'csv': {'CacheControl': 'max-age=86400,public', 'ContentType': 'text/csv'},
+            'xlsx': {'CacheControl': 'max-age=86400,public', 'ContentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},
             
             # Static assets - long cache (1 day)
-            'css': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'text/css'},
-            'js': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'application/javascript'},
-            'png': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'image/png'},
-            'jpg': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'image/jpeg'},
-            'jpeg': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'image/jpeg'},
-            'gif': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'image/gif'},
-            'webp': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'image/webp'},
-            'svg': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'image/svg+xml'},
-            'ico': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'image/x-icon'},
+            'css': {'CacheControl': 'max-age=86400,public', 'ContentType': 'text/css'},
+            'js': {'CacheControl': 'max-age=86400,public', 'ContentType': 'application/javascript'},
+            'png': {'CacheControl': 'max-age=86400,public', 'ContentType': 'image/png'},
+            'jpg': {'CacheControl': 'max-age=86400,public', 'ContentType': 'image/jpeg'},
+            'jpeg': {'CacheControl': 'max-age=86400,public', 'ContentType': 'image/jpeg'},
+            'gif': {'CacheControl': 'max-age=86400,public', 'ContentType': 'image/gif'},
+            'webp': {'CacheControl': 'max-age=86400,public', 'ContentType': 'image/webp'},
+            'svg': {'CacheControl': 'max-age=86400,public', 'ContentType': 'image/svg+xml'},
+            'ico': {'CacheControl': 'max-age=86400,public', 'ContentType': 'image/x-icon'},
             
             # Documents and other files
-            'txt': {'Cache-Control': 'max-age=300,public', 'Content-Type': 'text/plain'},
-            'xml': {'Cache-Control': 'max-age=300,public', 'Content-Type': 'application/xml'},
-            'pdf': {'Cache-Control': 'max-age=86400,public', 'Content-Type': 'application/pdf'},
+            'txt': {'CacheControl': 'max-age=300,public', 'ContentType': 'text/plain'},
+            'xml': {'CacheControl': 'max-age=300,public', 'ContentType': 'application/xml'},
+            'pdf': {'CacheControl': 'max-age=86400,public', 'ContentType': 'application/pdf'},
         }
     
     def set_session(self, session: boto3.Session):
@@ -159,7 +159,8 @@ class S3Manager:
             Tuple[bool, str]: (success, message)
         """
         try:
-            s3 = self._get_s3_client()
+            # Create region-specific S3 client to ensure bucket is created in correct region
+            s3 = self.session.client('s3', region_name=region)
             
             # Validate bucket name follows SOP pattern
             if not re.match(r'^[a-z0-9][a-z0-9-]*[a-z0-9]$', bucket_name):
@@ -192,10 +193,11 @@ class S3Manager:
         self, 
         bucket_name: str,
         index_document: str = "index.html",
-        error_document: str = "404.html"
+        error_document: str = "404.html",
+        enable_https: bool = True
     ) -> Tuple[bool, str]:
         """
-        Configure bucket for public static website hosting (SOP Mode A).
+        Configure bucket for public static website hosting with HTTPS support (SOP Mode A).
         
         Args:
             bucket_name: S3 bucket name
@@ -206,7 +208,13 @@ class S3Manager:
             Tuple[bool, str]: (success, message)
         """
         try:
-            s3 = self._get_s3_client()
+            # First get the bucket's actual region to use correct client
+            s3_default = self._get_s3_client()
+            location = s3_default.get_bucket_location(Bucket=bucket_name)
+            bucket_region = location.get('LocationConstraint') or 'us-east-1'
+            
+            # Create region-specific client for the bucket's region
+            s3 = self.session.client('s3', region_name=bucket_region)
             
             # Step 1: Disable Block Public Access (SOP section 8.2)
             s3.put_public_access_block(
@@ -245,16 +253,81 @@ class S3Manager:
                 }
             )
             
-            # Get bucket region for website URL
-            try:
-                location = s3.get_bucket_location(Bucket=bucket_name)
-                region = location.get('LocationConstraint') or 'us-east-1'
-            except Exception:
-                region = 'us-east-1'
+            # Use the bucket region we already detected
+            region = bucket_region
             
-            website_url = f"http://{bucket_name}.s3-website-{region}.amazonaws.com"
-            
-            return True, f"Public website configured. URL: {website_url}"
+            # Generate website URL - prefer HTTPS via CloudFront if enabled
+            if enable_https:
+                try:
+                    # Step 4: Create CloudFront distribution for HTTPS support
+                    cloudfront = self.session.client('cloudfront')
+                    
+                    # S3 website endpoint as origin
+                    if region == 'us-east-1':
+                        origin_domain = f"{bucket_name}.s3-website-{region}.amazonaws.com"
+                    else:
+                        origin_domain = f"{bucket_name}.s3-website.{region}.amazonaws.com"
+                    
+                    distribution_config = {
+                        'CallerReference': f"{bucket_name}-{int(datetime.now().timestamp())}",
+                        'Comment': f'HTTPS distribution for {bucket_name}',
+                        'DefaultRootObject': index_document,
+                        'Origins': {
+                            'Quantity': 1,
+                            'Items': [{
+                                'Id': f'{bucket_name}-origin',
+                                'DomainName': origin_domain,
+                                'CustomOriginConfig': {
+                                    'HTTPPort': 80,
+                                    'HTTPSPort': 443,
+                                    'OriginProtocolPolicy': 'http-only'  # S3 website endpoint only supports HTTP
+                                }
+                            }]
+                        },
+                        'DefaultCacheBehavior': {
+                            'TargetOriginId': f'{bucket_name}-origin',
+                            'ViewerProtocolPolicy': 'redirect-to-https',  # Force HTTPS
+                            'TrustedSigners': {
+                                'Enabled': False,
+                                'Quantity': 0
+                            },
+                            'ForwardedValues': {
+                                'QueryString': False,
+                                'Cookies': {
+                                    'Forward': 'none'
+                                }
+                            },
+                            'MinTTL': 0,
+                            'DefaultTTL': 86400,
+                            'MaxTTL': 31536000
+                        },
+                        'Enabled': True,
+                        'PriceClass': 'PriceClass_100'  # Use only North America and Europe for cost optimization
+                    }
+                    
+                    response = cloudfront.create_distribution(DistributionConfig=distribution_config)
+                    distribution_domain = response['Distribution']['DomainName']
+                    website_url = f"https://{distribution_domain}"
+                    
+                    return True, f"HTTPS website configured via CloudFront. URL: {website_url} (may take 10-15 minutes to deploy)"
+                    
+                except Exception as cf_error:
+                    # Fallback to HTTP if CloudFront fails
+                    print(f"CloudFront setup failed, falling back to HTTP: {cf_error}")
+                    if region == 'us-east-1':
+                        website_url = f"http://{bucket_name}.s3-website-{region}.amazonaws.com"
+                    else:
+                        website_url = f"http://{bucket_name}.s3-website.{region}.amazonaws.com"
+                    
+                    return True, f"Website configured with HTTP (HTTPS setup failed). URL: {website_url}"
+            else:
+                # HTTP-only mode
+                if region == 'us-east-1':
+                    website_url = f"http://{bucket_name}.s3-website-{region}.amazonaws.com"
+                else:
+                    website_url = f"http://{bucket_name}.s3-website.{region}.amazonaws.com"
+                
+                return True, f"HTTP website configured. URL: {website_url}"
             
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code', 'Unknown')
@@ -372,15 +445,46 @@ class S3Manager:
         except Exception as e:
             return UploadResult(False, f"Upload failed: {str(e)}")
     
-    def get_website_url(self, bucket_name: str, region: str = None) -> Optional[str]:
-        """Get S3 static website URL"""
+    def get_website_url(self, bucket_name: str, region: str = None, prefer_https: bool = True) -> Optional[str]:
+        """Get website URL, preferring HTTPS CloudFront URL if available"""
         try:
-            if not region:
-                s3 = self._get_s3_client()
-                location = s3.get_bucket_location(Bucket=bucket_name)
-                region = location.get('LocationConstraint') or 'us-east-1'
+            # First try to find existing CloudFront distribution for this bucket
+            if prefer_https:
+                try:
+                    cloudfront = self.session.client('cloudfront')
+                    distributions = cloudfront.list_distributions()
+                    
+                    # Always auto-detect the actual bucket region for S3 URL
+                    s3 = self._get_s3_client()
+                    location = s3.get_bucket_location(Bucket=bucket_name)
+                    region = location.get('LocationConstraint') or 'us-east-1'
+                    
+                    # S3 website endpoint pattern
+                    if region == 'us-east-1':
+                        s3_origin = f"{bucket_name}.s3-website-{region}.amazonaws.com"
+                    else:
+                        s3_origin = f"{bucket_name}.s3-website.{region}.amazonaws.com"
+                    
+                    # Look for distribution pointing to this bucket
+                    for dist in distributions.get('DistributionList', {}).get('Items', []):
+                        for origin in dist.get('Origins', {}).get('Items', []):
+                            if origin.get('DomainName') == s3_origin:
+                                # Found CloudFront distribution
+                                return f"https://{dist['DomainName']}"
+                    
+                except Exception as cf_error:
+                    print(f"CloudFront lookup failed: {cf_error}")
             
-            return f"http://{bucket_name}.s3-website-{region}.amazonaws.com"
+            # Fallback to S3 website URL (HTTP only)
+            s3 = self._get_s3_client()
+            location = s3.get_bucket_location(Bucket=bucket_name)
+            region = location.get('LocationConstraint') or 'us-east-1'
+            
+            # Generate S3 website URL based on region
+            if region == 'us-east-1':
+                return f"http://{bucket_name}.s3-website-{region}.amazonaws.com"
+            else:
+                return f"http://{bucket_name}.s3-website.{region}.amazonaws.com"
             
         except Exception as e:
             print(f"Error getting website URL: {e}")
@@ -450,8 +554,8 @@ class S3Manager:
         # Default for unknown file types
         content_type, _ = mimetypes.guess_type(f"file.{file_ext}")
         return {
-            'Cache-Control': 'max-age=86400,public',
-            'Content-Type': content_type or 'application/octet-stream'
+            'CacheControl': 'max-age=86400,public',
+            'ContentType': content_type or 'application/octet-stream'
         }
     
     def _matches_pattern(self, filename: str, pattern: str) -> bool:
@@ -471,16 +575,7 @@ class S3Manager:
         if '..' in bucket_name:
             return False, "Bucket name cannot contain consecutive periods"
         
-        # SOP-specific convention check (relaxed to allow client-specific names)
-        # Allow bucket names that follow business naming patterns
-        sop_patterns = [
-            r'^client-website-',      # Original SOP pattern
-            r'^[a-z0-9]+-website',    # Business-website pattern
-            r'^[a-z0-9-]+-[a-z0-9-]+$'  # General business pattern (like salvo-metal-works-fabrication)
-        ]
-        
-        pattern_match = any(re.match(pattern, bucket_name) for pattern in sop_patterns)
-        if not pattern_match:
-            return False, "Bucket name should follow SOP patterns: 'client-website-*', 'business-website', or business-specific naming"
+        # SOP allows any valid bucket name - users should replace 'client-website-*' with their preferred naming convention
+        # Only enforce AWS S3 bucket naming rules, not specific patterns
         
         return True, "Bucket name is valid"

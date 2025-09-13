@@ -11,7 +11,6 @@ Author: Cloud Stack Generator Team
 
 from PyQt6.QtWidgets import (
     QVBoxLayout,
-    QHBoxLayout,
     QGridLayout,
     QGroupBox,
     QScrollArea,
@@ -20,9 +19,8 @@ from PyQt6.QtWidgets import (
     QSizePolicy,
     QSpacerItem
 )
-from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QFont
-from typing import Optional, Union, Tuple
+from PyQt6.QtCore import Qt
+from typing import Optional, Tuple
 
 
 class ScalableLayout(QVBoxLayout):

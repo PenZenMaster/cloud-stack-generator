@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 import jinja2
 from datetime import datetime
-from ..config.models import ClientConfig, BusinessConfig, ContactConfig, BrandingConfig
+from ..config.models import ClientConfig
 
 
 class HTMLGenerator:

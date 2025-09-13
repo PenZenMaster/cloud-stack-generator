@@ -9,7 +9,6 @@ Date: 2025-08-11
 Author: Cloud Stack Generator Team
 """
 
-import json
 from typing import Dict, Any, List, Tuple, Optional
 from PyQt6.QtWidgets import (
     QVBoxLayout,
@@ -27,13 +26,10 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QAbstractItemView,
     QFrame,
-    QSpinBox,
-    QCheckBox,
     QTabWidget,
     QWidget,
-    QSplitter,
 )
-from PyQt6.QtGui import QFont, QAction
+from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from ..components.base_tab import BaseTab
 
@@ -1032,7 +1028,7 @@ class ServicesTab(BaseTab):
         # Check for duplicate question
         if any(f.question.lower() == faq.question.lower() for f in self.faqs):
             QMessageBox.warning(
-                self, "Duplicate Question", f"FAQ with this question already exists"
+                self, "Duplicate Question", "FAQ with this question already exists"
             )
             return
 
@@ -1334,10 +1330,10 @@ class ServicesTab(BaseTab):
         result = self.validate_data()
 
         if result.is_valid:
-            msg = f"✅ Services & FAQ validation passed!\n\n"
+            msg = "✅ Services & FAQ validation passed!\n\n"
             msg += f"• Services: {len(self.services)}\n"
             msg += f"• FAQs: {len(self.faqs)}\n"
-            msg += f"• All data is valid\n"
+            msg += "• All data is valid\n"
 
             if result.warnings:
                 msg += f"• Warnings: {len(result.warnings)}\n"
@@ -1354,7 +1350,7 @@ class ServicesTab(BaseTab):
             else:
                 QMessageBox.information(self, "Validation Success", msg)
         else:
-            msg = f"❌ Services & FAQ validation failed!\n\n"
+            msg = "❌ Services & FAQ validation failed!\n\n"
             msg += f"• Services: {len(self.services)}\n"
             msg += f"• FAQs: {len(self.faqs)}\n"
             msg += f"• Errors: {len(result.errors)}\n"

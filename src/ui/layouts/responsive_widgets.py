@@ -15,11 +15,10 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QPushButton,
     QApplication,
-    QSizePolicy,
-    QScrollBar
+    QSizePolicy
 )
 from PyQt6.QtCore import Qt, QSize, pyqtSignal
-from PyQt6.QtGui import QFont, QPalette, QColor
+from PyQt6.QtGui import QPalette, QColor
 from typing import Optional
 
 

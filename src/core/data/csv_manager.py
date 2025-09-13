@@ -10,8 +10,7 @@ Author: Cloud Stack Generator Team
 
 import pandas as pd
 import os
-from typing import List, Tuple, Dict, Any, Optional
-from pathlib import Path
+from typing import List, Tuple, Optional
 from dataclasses import dataclass, field
 from ..config.models import ProductConfig, ServiceConfig
 
@@ -484,6 +483,6 @@ class CSVManager:
             encoding = self.detect_csv_encoding(file_path)
             df = pd.read_csv(file_path, encoding=encoding, nrows=max_rows)
             return df, encoding
-        except Exception as e:
+        except Exception:
             # Return empty dataframe on error
             return pd.DataFrame(), "utf-8"

@@ -26,13 +26,16 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from typing import Dict, Any, Optional, List
+from pathlib import Path
 import subprocess
 import platform
 
 from .base_tab import BaseTab
+from .progress_widget import ProgressWidget
 from ...core.aws.credentials import AWSCredentialsManager, AuthMethod
 from ...core.aws.s3_manager import S3Manager, UploadProgress, UploadResult
 from ...core.config.client_aws_config import ClientAWSConfig, get_client_aws_manager
+from ...utils.error_logger import log_error_dialog
 
 
 class AWSProfileDialog(QDialog):
@@ -259,6 +262,133 @@ class AWSProfileDialog(QDialog):
         }
 
 
+class BucketRefreshWorker(QThread):
+    """Background worker for bucket list refresh operations"""
+    
+    progress_updated = pyqtSignal(str)
+    finished = pyqtSignal(list, str)  # buckets, profile_name
+    error_occurred = pyqtSignal(str, str, Exception)  # error_message, profile_name, exception
+    
+    def __init__(self, credentials_manager, s3_manager, profile_name: str):
+        super().__init__()
+        self.credentials_manager = credentials_manager
+        self.s3_manager = s3_manager
+        self.profile_name = profile_name
+    
+    def run(self):
+        """Execute bucket refresh in background"""
+        try:
+            self.progress_updated.emit("Connecting to AWS...")
+            
+            # Get AWS session for the profile
+            session = self.credentials_manager._get_session(self.profile_name)
+            if not session:
+                self.error_occurred.emit("Could not create AWS session for the selected profile", self.profile_name, None)
+                return
+            
+            self.progress_updated.emit("Retrieving bucket list...")
+            
+            # Set session and get buckets
+            self.s3_manager.set_session(session)
+            
+            # Get all client buckets with SOP compliance indicators
+            buckets = self.credentials_manager.list_client_buckets(self.profile_name, show_all=True)
+            
+            self.progress_updated.emit("Processing bucket list...")
+            
+            # Emit success with buckets
+            self.finished.emit(buckets, self.profile_name)
+            
+        except Exception as e:
+            error_message = f"Failed to retrieve bucket list: {str(e)}"
+            self.error_occurred.emit(error_message, self.profile_name, e)
+
+
+class ConnectionTestWorker(QThread):
+    """Background worker for AWS connection testing"""
+    
+    progress_updated = pyqtSignal(str)
+    test_completed = pyqtSignal(bool, str, dict)  # success, message, identity
+    error_occurred = pyqtSignal(str, Exception)  # error_message, exception
+    
+    def __init__(self, credentials_manager, profile_name: str):
+        super().__init__()
+        self.credentials_manager = credentials_manager
+        self.profile_name = profile_name
+    
+    def run(self):
+        """Execute connection test in background"""
+        try:
+            self.progress_updated.emit("Validating AWS profile credentials...")
+            
+            # Step 1: Validate profile
+            is_valid, message, identity = self.credentials_manager.validate_profile(self.profile_name)
+            
+            if is_valid:
+                account = identity.get('account', 'Unknown')
+                region = identity.get('region', 'Unknown')
+                
+                self.progress_updated.emit(f"Connected to AWS Account: {account}")
+                self.progress_updated.emit(f"Profile region: {region}")
+                
+                # Step 2: Test S3 permissions
+                self.progress_updated.emit("Testing S3 permissions...")
+                s3_permissions = self._test_s3_permissions()
+                
+                self.progress_updated.emit("Connection test completed successfully!")
+                
+                # Build detailed success message with permissions
+                success_message = (
+                    f"Successfully connected to AWS\n\n"
+                    f"Account: {account}\n"
+                    f"Region: {region}\n"
+                    f"Profile: {self.profile_name}\n\n"
+                    f"S3 Permissions:\n"
+                    f"{s3_permissions}"
+                )
+                
+                self.test_completed.emit(True, success_message, identity)
+            else:
+                self.progress_updated.emit(f"Connection failed: {message}")
+                self.test_completed.emit(False, message, {})
+                
+        except Exception as e:
+            error_message = f"Connection test failed: {str(e)}"
+            self.error_occurred.emit(error_message, e)
+    
+    def _test_s3_permissions(self) -> str:
+        """Test S3 permissions for the given profile and return a summary"""
+        try:
+            # Get AWS session for the profile
+            session = self.credentials_manager._get_session(self.profile_name)
+            if not session:
+                return "ERROR: Could not create AWS session"
+            
+            s3 = session.client('s3')
+            
+            permissions = []
+            
+            # Test list buckets
+            try:
+                s3.list_buckets()
+                permissions.append("✓ List Buckets: PASS")
+            except Exception as e:
+                permissions.append(f"✗ List Buckets: FAIL ({str(e)[:50]}...)")
+            
+            # Test create bucket (dry run)
+            try:
+                # We can't actually test bucket creation without creating one
+                # Just check if we have the permission structure
+                permissions.append("✓ Create Bucket: AVAILABLE (untested)")
+            except Exception:
+                permissions.append("✗ Create Bucket: UNKNOWN")
+            
+            return "\n".join(permissions)
+            
+        except Exception as e:
+            return f"ERROR: S3 permission test failed: {str(e)}"
+
+
 class DeploymentWorker(QThread):
     """Background worker for deployment operations"""
     
@@ -295,6 +425,9 @@ class CloudTab(BaseTab):
         self.current_client_aws_config: Optional[ClientAWSConfig] = None
         self.current_business_name: str = ""
         self.current_domain: str = ""
+        
+        # Flag to prevent bucket clearing during client context loading
+        self._loading_client_context: bool = False
         
         # UI components
         self.profile_combo = None
@@ -369,6 +502,11 @@ class CloudTab(BaseTab):
         self.profile_status_label.setStyleSheet("color: #666;")
         layout.addWidget(self.profile_status_label, 2, 0, 1, 3)
         
+        # Connection test progress widget
+        self.connection_progress = ProgressWidget()
+        self.connection_progress.set_status_height(60)  # Smaller height for this context
+        layout.addWidget(self.connection_progress, 3, 0, 1, 3)
+        
         group.setLayout(layout)
         
         # Connect signals
@@ -425,6 +563,11 @@ class CloudTab(BaseTab):
         self.refresh_directories_button.setToolTip("Refresh directory list from selected bucket")
         directory_layout.addWidget(self.refresh_directories_button)
         
+        self.create_directory_button = QPushButton("Create")
+        self.create_directory_button.setMaximumWidth(80)
+        self.create_directory_button.setToolTip("Create a new directory in the selected bucket")
+        directory_layout.addWidget(self.create_directory_button)
+        
         layout.addLayout(directory_layout, 1, 1, 1, 2)
         
         # Region
@@ -447,6 +590,7 @@ class CloudTab(BaseTab):
         self.create_bucket_button.clicked.connect(self.create_s3_bucket)
         self.refresh_buckets_button.clicked.connect(self.refresh_bucket_list)
         self.refresh_directories_button.clicked.connect(self.refresh_directory_list)
+        self.create_directory_button.clicked.connect(self.create_directory)
         self.bucket_combo.currentTextChanged.connect(self.on_bucket_selection_changed)
         self.bucket_combo.lineEdit().textChanged.connect(self.on_bucket_name_changed)
         self.directory_combo.currentTextChanged.connect(self.on_directory_selection_changed)
@@ -699,7 +843,7 @@ class CloudTab(BaseTab):
         
         # Handle empty string profile name
         if profile_name == "":
-            self.log_status(f"Debug: Empty profile name detected - not triggering auto-save")
+            self.log_status("Debug: Empty profile name detected - not triggering auto-save")
             self.profile_status_label.setText("No profile selected")
             self.profile_combo.setToolTip("Select an AWS profile for cloud deployment")
             self.configure_sso_button.setEnabled(False)
@@ -716,8 +860,17 @@ class CloudTab(BaseTab):
             self.profile_combo.setToolTip(tooltip_text)
             # Enable Configure SSO button only for SSO profiles
             self.configure_sso_button.setEnabled(profile.auth_method == AuthMethod.SSO)
-            # Automatically populate bucket list for the selected profile
-            self._populate_buckets_for_profile_silently(profile_name)
+            # Only reset bucket list if not loading client context (preserve user selections)
+            if not getattr(self, '_loading_client_context', False):
+                if self.bucket_combo is not None:
+                    self.bucket_combo.clear()
+                    self.bucket_combo.addItem("No buckets found")
+                    self.bucket_combo.setCurrentText("No buckets found")
+                    self.log_status(f"Profile '{profile_name}' selected. Click 'Refresh' next to Bucket Name to load S3 buckets.")
+                else:
+                    self.log_status(f"Profile '{profile_name}' selected. UI not fully initialized yet.")
+            else:
+                self.log_status(f"Profile '{profile_name}' restored from client context.")
             self.update_deploy_button_state()
             # Auto-save client AWS config
             self.log_status(f"Debug: Triggering auto-save for profile '{profile_name}'")
@@ -819,33 +972,63 @@ class CloudTab(BaseTab):
             return current_text
     
     def test_aws_connection(self):
-        """Test AWS connection for selected profile"""
+        """Test AWS connection for selected profile with progress indication"""
         profile_name = self.profile_combo.currentText()
         if profile_name == "No profiles configured":
             QMessageBox.warning(self, "No Profile", "Please create an AWS profile first")
             return
         
-        is_valid, message, identity = self.credentials_manager.validate_profile(profile_name)
+        # Check if already running
+        if hasattr(self, '_connection_test_worker') and self._connection_test_worker.isRunning():
+            return
         
-        if is_valid:
-            account = identity.get('account', 'Unknown')
-            region = identity.get('region', 'Unknown')
-            QMessageBox.information(
-                self, 
-                "Connection Successful", 
-                f"Successfully connected to AWS\n\n"
-                f"Account: {account}\n"
-                f"Region: {region}\n"
-                f"Profile: {profile_name}"
-            )
+        # Show progress and disable button
+        self.connection_progress.show_progress("Testing AWS connection...", indeterminate=True)
+        self.test_connection_button.setEnabled(False)
+        
+        # Create and start worker thread
+        self._connection_test_worker = ConnectionTestWorker(
+            self.credentials_manager, profile_name
+        )
+        self._connection_test_worker.progress_updated.connect(self.connection_progress.update_status)
+        self._connection_test_worker.test_completed.connect(self._on_connection_test_completed)
+        self._connection_test_worker.error_occurred.connect(self._on_connection_test_error)
+        self._connection_test_worker.start()
+    
+    def _on_connection_test_completed(self, success: bool, message: str, identity: dict):
+        """Handle connection test completion"""
+        try:
+            # Hide progress before showing dialog
+            self.connection_progress.hide_progress()
             
-            # Update S3 manager with validated session
-            session = self.credentials_manager.get_active_session()
-            if session:
-                self.s3_manager.set_session(session)
+            if success:
+                QMessageBox.information(self, "Connection Successful", message)
+                
+                # Update S3 manager with validated session
+                session = self.credentials_manager.get_active_session()
+                if session:
+                    self.s3_manager.set_session(session)
+            else:
+                QMessageBox.warning(self, "Connection Failed", f"AWS connection failed:\n\n{message}")
+        
+        finally:
+            # Re-enable button
+            self.test_connection_button.setEnabled(True)
+    
+    def _on_connection_test_error(self, error_message: str, exception: Exception):
+        """Handle connection test error"""
+        try:
+            self.connection_progress.update_status(f"Error: {error_message}")
             
-        else:
-            QMessageBox.warning(self, "Connection Failed", f"AWS connection failed:\n\n{message}")
+            # Hide progress before showing dialog
+            self.connection_progress.hide_progress()
+            
+            QMessageBox.critical(self, "Connection Test Error", error_message)
+        
+        finally:
+            # Re-enable button
+            self.test_connection_button.setEnabled(True)
+    
     
     def on_bucket_name_changed(self):
         """Handle bucket name change"""
@@ -868,7 +1051,7 @@ class CloudTab(BaseTab):
         self.on_aws_config_changed()
     
     def refresh_bucket_list(self):
-        """Refresh the list of available S3 buckets"""
+        """Refresh the list of available S3 buckets with progress indication"""
         profile_name = self.profile_combo.currentText()
         
         if not profile_name or profile_name == "No profiles configured":
@@ -881,20 +1064,36 @@ class CloudTab(BaseTab):
                               f"Profile '{profile_name}' not found.")
             return
         
+        # Check if already running
+        if hasattr(self, '_bucket_refresh_worker') and self._bucket_refresh_worker.isRunning():
+            return
+        
+        # Show progress and disable button
+        if not hasattr(self, 'bucket_progress'):
+            self.bucket_progress = ProgressWidget()
+            self.bucket_progress.set_status_height(80)
+            # Insert after bucket section - find parent layout
+            for i in range(self.layout().count()):
+                item = self.layout().itemAt(i)
+                if hasattr(item.widget(), 'title') and 'Bucket' in item.widget().title():
+                    self.layout().insertWidget(i + 1, self.bucket_progress)
+                    break
+        
+        self.bucket_progress.show_progress("Refreshing bucket list...", indeterminate=True)
+        self.refresh_buckets_button.setEnabled(False)
+        
+        # Create and start worker thread
+        self._bucket_refresh_worker = BucketRefreshWorker(
+            self.credentials_manager, self.s3_manager, profile_name
+        )
+        self._bucket_refresh_worker.progress_updated.connect(self.bucket_progress.update_status)
+        self._bucket_refresh_worker.finished.connect(self._on_bucket_refresh_finished)
+        self._bucket_refresh_worker.error_occurred.connect(self._on_bucket_refresh_error)
+        self._bucket_refresh_worker.start()
+    
+    def _on_bucket_refresh_finished(self, buckets, profile_name):
+        """Handle bucket refresh completion"""
         try:
-            # Get AWS session for the profile
-            session = self.credentials_manager._get_session(profile_name)
-            if not session:
-                QMessageBox.warning(self, "Session Error", 
-                                  "Could not create AWS session for the selected profile.")
-                return
-            
-            # Set session and get buckets
-            self.s3_manager.set_session(session)
-            
-            # Get all client buckets with SOP compliance indicators
-            buckets = self.credentials_manager.list_client_buckets(profile_name, show_all=True)
-            
             # Store current selection
             current_bucket = self.bucket_combo.currentText()
             
@@ -907,11 +1106,11 @@ class CloudTab(BaseTab):
                     bucket_name = bucket['name']
                     if bucket.get('sop_compliant', False):
                         # Mark SOP-compliant buckets with a prefix
-                        display_name = f"✓ {bucket_name}"
+                        display_name = f"[+] {bucket_name}"
                         sop_compliant_count += 1
                     else:
                         # Show non-SOP buckets with a different indicator
-                        display_name = f"• {bucket_name}"
+                        display_name = f"[-] {bucket_name}"
                     
                     self.bucket_combo.addItem(display_name)
                     # Store the actual bucket name as item data
@@ -923,14 +1122,39 @@ class CloudTab(BaseTab):
                         self.bucket_combo.setCurrentIndex(i)
                         break
                 
+                self.bucket_progress.update_status(f"Found {len(buckets)} buckets ({sop_compliant_count} SOP-compliant)")
                 self.log_status(f"Found {len(buckets)} buckets ({sop_compliant_count} SOP-compliant)")
             else:
                 self.bucket_combo.addItem("No buckets found")
+                self.bucket_progress.update_status("No buckets found in AWS account")
                 self.log_status("No buckets found in AWS account")
-                
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to retrieve bucket list: {str(e)}")
-            self.log_status(f"Error retrieving buckets: {str(e)}")
+        
+        finally:
+            # Hide progress and re-enable button
+            self.bucket_progress.hide_progress()
+            self.refresh_buckets_button.setEnabled(True)
+    
+    def _on_bucket_refresh_error(self, error_message, profile_name, exception):
+        """Handle bucket refresh error"""
+        try:
+            self.bucket_progress.update_status(f"Error: {error_message}")
+            QMessageBox.critical(self, "Error", f"Failed to retrieve bucket list:\n\n{error_message}")
+            self.log_status(f"Error retrieving buckets: {error_message}")
+            
+            # Log to error log file
+            log_error_dialog(
+                title="Bucket Retrieval Error",
+                message=error_message,
+                context=f"Retrieving bucket list for profile '{profile_name}'",
+                component="CloudTab.refresh_bucket_list",
+                exception=exception,
+                user_action="Refreshing S3 bucket list"
+            )
+        
+        finally:
+            # Hide progress and re-enable button
+            self.bucket_progress.hide_progress()
+            self.refresh_buckets_button.setEnabled(True)
     
     def refresh_directory_list(self):
         """Refresh the list of directories in the selected bucket"""
@@ -994,17 +1218,171 @@ class CloudTab(BaseTab):
             self.log_status(f"Found {len(directories)} directories in bucket '{bucket_name}'")
                 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to retrieve directory list: {str(e)}")
+            error_message = f"Failed to retrieve directory list: {str(e)}"
+            QMessageBox.critical(self, "Error", error_message)
             self.log_status(f"Error retrieving directories: {str(e)}")
+            
+            # Log to error log file
+            log_error_dialog(
+                title="Directory Retrieval Error", 
+                message=error_message,
+                context=f"Retrieving directory list for bucket '{bucket_name}'",
+                component="CloudTab.refresh_directory_list",
+                exception=e,
+                user_action="Refreshing S3 directory list"
+            )
+    
+    def create_directory(self):
+        """Create a new directory in the selected bucket"""
+        bucket_name = self._get_actual_bucket_name()
+        profile_name = self.profile_combo.currentText()
+        
+        if not bucket_name or bucket_name == "No buckets found":
+            QMessageBox.warning(self, "No Bucket Selected", 
+                              "Please select a bucket first.")
+            return
+        
+        if not profile_name or profile_name == "No profiles configured":
+            QMessageBox.warning(self, "No Profile Selected", 
+                              "Please select an AWS profile first.")
+            return
+        
+        # Get directory name from user
+        from PyQt6.QtWidgets import QInputDialog, QLineEdit
+        directory_name, ok = QInputDialog.getText(
+            self, 
+            'Create Directory', 
+            'Enter directory name:\n(e.g., "images" or "css/fonts")',
+            QLineEdit.EchoMode.Normal,
+            ""
+        )
+        
+        if not ok or not directory_name.strip():
+            return
+        
+        # Clean and validate directory name
+        directory_name = directory_name.strip()
+        
+        # Ensure directory ends with '/' for S3 consistency
+        if not directory_name.endswith('/'):
+            directory_name += '/'
+        
+        # Validate directory name
+        if not self._validate_directory_name(directory_name):
+            QMessageBox.warning(self, "Invalid Directory Name", 
+                              "Directory name contains invalid characters.\n"
+                              "Use only letters, numbers, hyphens, underscores, and forward slashes.")
+            return
+        
+        try:
+            # Get AWS session for the profile
+            session = self.credentials_manager._get_session(profile_name)
+            if not session:
+                QMessageBox.warning(self, "Session Error", 
+                                  "Could not create AWS session for the selected profile.")
+                return
+            
+            # Set session and create directory
+            self.s3_manager.set_session(session)
+            
+            # Create directory by uploading a placeholder object
+            # S3 doesn't have true directories, so we create a placeholder file
+            placeholder_key = directory_name + ".keep"
+            
+            try:
+                # Upload empty placeholder to create directory structure
+                s3_client = session.client('s3')
+                s3_client.put_object(
+                    Bucket=bucket_name,
+                    Key=placeholder_key,
+                    Body=b'',
+                    ContentType='application/octet-stream'
+                )
+                
+                self.log_status(f"Created directory '{directory_name}' in bucket '{bucket_name}'")
+                
+                # Add to directory combo if not already there
+                if directory_name not in [self.directory_combo.itemText(i) for i in range(self.directory_combo.count())]:
+                    self.directory_combo.addItem(directory_name)
+                    
+                # Select the newly created directory
+                self.directory_combo.setCurrentText(directory_name)
+                
+                QMessageBox.information(self, "Directory Created", 
+                                      f"Directory '{directory_name}' created successfully in bucket '{bucket_name}'")
+                
+                # Refresh the directory list to show the new directory
+                self.refresh_directory_list()
+                
+            except Exception as s3_error:
+                error_msg = str(s3_error)
+                
+                # Provide more helpful error messages for common issues
+                if "AccessDenied" in error_msg:
+                    if "s3:PutObject" in error_msg:
+                        friendly_msg = f"Permission denied: Your AWS profile doesn't have write access to bucket '{bucket_name}'.\n\nPlease check your S3 bucket permissions or contact your AWS administrator."
+                    else:
+                        friendly_msg = f"Access denied to bucket '{bucket_name}'.\n\nPlease check your AWS permissions or contact your AWS administrator."
+                elif "NoSuchBucket" in error_msg:
+                    friendly_msg = f"Bucket '{bucket_name}' does not exist or is not accessible."
+                elif "InvalidBucketName" in error_msg:
+                    friendly_msg = f"Invalid bucket name '{bucket_name}'. Please check the bucket name."
+                else:
+                    friendly_msg = f"S3 operation failed: {error_msg}"
+                
+                raise Exception(friendly_msg)
+                
+        except Exception as e:
+            error_message = f"Failed to create directory: {str(e)}"
+            QMessageBox.critical(self, "Error", error_message)
+            self.log_status(f"Error creating directory: {str(e)}")
+            
+            # Log to error log file
+            log_error_dialog(
+                title="Directory Creation Error",
+                message=error_message,
+                context=f"Creating directory '{directory_name}' in bucket '{bucket_name}'",
+                component="CloudTab.create_directory",
+                exception=e,
+                user_action="Creating a new directory in S3 bucket"
+            )
+    
+    def _validate_directory_name(self, directory_name: str) -> bool:
+        """Validate directory name for S3 compatibility"""
+        import re
+        
+        # Remove trailing slash for validation
+        name_to_validate = directory_name.rstrip('/')
+        
+        if not name_to_validate:
+            return False
+        
+        # S3 key naming conventions
+        # Allow: letters, numbers, hyphens, underscores, periods, forward slashes
+        # Avoid: spaces, special characters that could cause issues
+        if not re.match(r'^[a-zA-Z0-9._/-]+$', name_to_validate):
+            return False
+        
+        # Additional checks
+        if name_to_validate.startswith('/') or '//' in name_to_validate:
+            return False
+            
+        return True
     
     def on_bucket_selection_changed(self, bucket_name: str):
         """Handle bucket selection change"""
         self.on_bucket_name_changed()
         
-        # Reset directory list when bucket changes
+        # Reset to default directory without auto-refreshing (for performance)
+        # User can manually click Refresh if they want to see existing directories
         self.directory_combo.clear()
         self.directory_combo.addItem("/ (root)")
         self.directory_combo.setCurrentText("/ (root)")
+        
+        # Log that directories need manual refresh if user wants to see existing ones
+        actual_bucket_name = self._get_actual_bucket_name()
+        if actual_bucket_name and actual_bucket_name != "No buckets found":
+            self.log_status(f"Bucket '{actual_bucket_name}' selected. Click 'Refresh' to load existing directories.")
         
         # Update status
         if bucket_name and bucket_name != "No buckets found":
@@ -1094,8 +1472,8 @@ class CloudTab(BaseTab):
                         if dir_reply == QMessageBox.StandardButton.No:
                             return
                 
-                # Configure the existing bucket for static website hosting
-                success, message = self.s3_manager.configure_public_website(bucket_name)
+                # Configure the existing bucket for HTTPS static website hosting
+                success, message = self.s3_manager.configure_public_website(bucket_name, enable_https=True)
                 if success:
                     self.log_status(f"Configured existing bucket '{bucket_name}' for static hosting")
                     QMessageBox.information(self, "Success", 
@@ -1109,8 +1487,20 @@ class CloudTab(BaseTab):
                 success, message = self.s3_manager.create_bucket(bucket_name, region)
                 if success:
                     self.log_status(f"Created new bucket '{bucket_name}' in region '{region}'")
-                    QMessageBox.information(self, "Success", 
-                                          f"Bucket '{bucket_name}' created successfully!")
+                    
+                    # Configure new bucket for HTTPS static website hosting
+                    self.log_status(f"Configuring bucket '{bucket_name}' for HTTPS website hosting...")
+                    config_success, config_message = self.s3_manager.configure_public_website(bucket_name, enable_https=True)
+                    
+                    if config_success:
+                        self.log_status(f"HTTPS website hosting configured for '{bucket_name}'")
+                        QMessageBox.information(self, "Success", 
+                                              f"Bucket '{bucket_name}' created and configured with HTTPS support!\n\n{config_message}")
+                    else:
+                        self.log_status(f"Warning: Website configuration failed: {config_message}")
+                        QMessageBox.warning(self, "Configuration Warning", 
+                                          f"Bucket '{bucket_name}' created successfully, but website configuration failed:\n\n{config_message}")
+                    
                     self.refresh_bucket_list()
                 else:
                     QMessageBox.critical(self, "Creation Failed", message)
@@ -1161,15 +1551,30 @@ class CloudTab(BaseTab):
     
     def start_deployment(self):
         """Start website deployment"""
-        # This would be called by the main window after website generation
-        # For now, show a placeholder message
-        QMessageBox.information(
-            self,
-            "Deployment Ready",
-            "Cloud deployment tab is ready!\n\n"
-            "This will be integrated with the website generation process "
-            "in the main application window."
-        )
+        # Get the local website path
+        local_path = self.local_path_input.text().strip()
+        
+        if not local_path:
+            QMessageBox.warning(
+                self,
+                "No Website to Deploy",
+                "No website has been generated yet.\n\n"
+                "Please generate a website first using the main application, "
+                "then return to this tab to deploy it."
+            )
+            return
+        
+        if not Path(local_path).exists():
+            QMessageBox.warning(
+                self,
+                "Website Not Found",
+                f"The website directory does not exist:\n{local_path}\n\n"
+                "Please regenerate the website first."
+            )
+            return
+        
+        # Deploy the website
+        self.deploy_website(local_path)
     
     def deploy_website(self, website_path: str):
         """Deploy generated website to cloud"""
@@ -1232,7 +1637,7 @@ class CloudTab(BaseTab):
             # Get website URL
             bucket_name = self._get_actual_bucket_name()
             region = self.region_combo.currentText()
-            website_url = self.s3_manager.get_website_url(bucket_name, region)
+            website_url = self.s3_manager.get_website_url(bucket_name, region, prefer_https=True)
             
             if website_url:
                 self.website_url_label.setText(f'<a href="{website_url}">View Website: {website_url}</a>')
@@ -1367,25 +1772,32 @@ class CloudTab(BaseTab):
         self.current_business_name = business_name
         self.current_domain = domain
         
-        # Refresh profiles first to ensure combo is populated
-        self.refresh_profiles()
+        # Set flag to prevent bucket clearing during context reload
+        self._loading_client_context = True
         
-        # Load existing client AWS config or create default
-        self.current_client_aws_config = self.aws_config_manager.load_client_aws_config(
-            business_name, domain
-        )
-        
-        if self.current_client_aws_config is None:
-            # Create default config for new client
-            self.current_client_aws_config = self.aws_config_manager.create_default_config(
+        try:
+            # Refresh profiles first to ensure combo is populated
+            self.refresh_profiles()
+            
+            # Load existing client AWS config or create default
+            self.current_client_aws_config = self.aws_config_manager.load_client_aws_config(
                 business_name, domain
             )
-            self.log_status(f"Created new AWS configuration for {business_name}")
-        else:
-            self.log_status(f"Loaded AWS configuration for {business_name}")
-        
-        # Update UI with client's AWS settings
-        self._load_client_aws_config_to_ui()
+            
+            if self.current_client_aws_config is None:
+                # Create default config for new client
+                self.current_client_aws_config = self.aws_config_manager.create_default_config(
+                    business_name, domain
+                )
+                self.log_status(f"Created new AWS configuration for {business_name}")
+            else:
+                self.log_status(f"Loaded AWS configuration for {business_name}")
+            
+            # Update UI with client's AWS settings
+            self._load_client_aws_config_to_ui()
+        finally:
+            # Always clear the flag
+            self._loading_client_context = False
     
     def _load_client_aws_config_to_ui(self):
         """Load client AWS configuration into UI components"""
@@ -1393,6 +1805,11 @@ class CloudTab(BaseTab):
             return
         
         config = self.current_client_aws_config
+        
+        # Preserve current UI selections to avoid clearing user's work
+        current_bucket = self.bucket_combo.currentText()
+        current_directory = self.directory_combo.currentText()
+        current_region = self.region_combo.currentText()
         
         # Set AWS profile
         if config.aws_profile:
@@ -1404,16 +1821,16 @@ class CloudTab(BaseTab):
             else:
                 self.log_status(f"Warning: AWS profile '{config.aws_profile}' not found in available profiles")
         
-        # Set bucket name
-        if config.bucket_name:
+        # Only restore bucket name if user hasn't selected one
+        if config.bucket_name and (not current_bucket or current_bucket in ["No buckets found", ""]):
             self.bucket_combo.setCurrentText(config.bucket_name)
         
-        # Set directory
-        if config.directory:
+        # Only restore directory if user hasn't selected one
+        if config.directory and (not current_directory or current_directory in ["/ (root)", ""]):
             self.directory_combo.setCurrentText(config.directory)
         
-        # Set region
-        if config.bucket_region:
+        # Only restore region if user hasn't selected one
+        if config.bucket_region and (not current_region or current_region == ""):
             index = self.region_combo.findText(config.bucket_region)
             if index >= 0:
                 self.region_combo.setCurrentIndex(index)

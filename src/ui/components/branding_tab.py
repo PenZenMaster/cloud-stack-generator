@@ -22,20 +22,17 @@ from PyQt6.QtWidgets import (
     QFrame,
     QGroupBox,
     QColorDialog,
-    QSpacerItem,
-    QSizePolicy,
     QFileDialog,
     QMessageBox,
     QWidget,
     QScrollArea,
 )
-from PyQt6.QtGui import QFont, QColor, QPalette
+from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtCore import Qt, pyqtSignal
 from .base_tab import BaseTab, ValidationResult
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 
 # Import error logging
-from ...utils import log_validation_error
 
 
 class BrandingTab(BaseTab):
@@ -448,16 +445,22 @@ class BrandingTab(BaseTab):
         finally:
             self._finish_loading()
 
+    def get_required_fields(self) -> List[str]:
+        """Get list of required field names for validation"""
+        return ["primary_color", "secondary_color", "font_family"]
+    
     def validate_data(self) -> ValidationResult:
         """Validate branding configuration"""
         result = ValidationResult()
         
-        config_data = self.get_config_data()
-        colors = config_data.get("colors", {})
+        # Validate required color fields by checking actual input values
+        primary_color = ""
+        secondary_color = ""
         
-        # Validate required color fields
-        primary_color = colors.get("primary_color", "")
-        secondary_color = colors.get("secondary_color", "")
+        if "primary" in self.branding_inputs:
+            primary_color = self.branding_inputs["primary"].text().strip()
+        if "secondary" in self.branding_inputs:
+            secondary_color = self.branding_inputs["secondary"].text().strip()
         
         if not primary_color or not re.match(r'^#[0-9A-Fa-f]{6}$', primary_color):
             result.add_error("Primary color is required and must be a valid hex color", "primary")

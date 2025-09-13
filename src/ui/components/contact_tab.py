@@ -12,7 +12,6 @@ Author: Cloud Stack Generator Team
 import re
 from PyQt6.QtWidgets import (
     QVBoxLayout,
-    QHBoxLayout,
     QGridLayout,
     QLabel,
     QLineEdit,
@@ -20,14 +19,12 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QFrame,
     QGroupBox,
-    QSpacerItem,
-    QSizePolicy,
     QScrollArea,
 )
-from PyQt6.QtGui import QFont, QPalette
+from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from .base_tab import BaseTab, ValidationResult
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any
 
 
 class ContactTab(BaseTab):
