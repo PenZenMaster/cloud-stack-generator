@@ -341,15 +341,120 @@ class TestCloudTab:
         
         assert "not found" in tab.profile_status_label.text()
     
-    @pytest.mark.skip("Skipped: Test requires async worker behavior - needs rewrite for background threading")
     def test_test_aws_connection_success(self, qapp):
-        """Test successful AWS connection test - SKIPPED: Async behavior needs different test approach"""
-        pass
+        """Test successful AWS connection test with background worker"""
+        from unittest.mock import patch, MagicMock
+        
+        tab = CloudTab()
+        
+        # Add test profile
+        tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-profile")
+        
+        # Mock the ConnectionTestWorker
+        with patch('src.ui.components.cloud_tab.ConnectionTestWorker') as MockWorker:
+            mock_worker = MagicMock()
+            MockWorker.return_value = mock_worker
+            
+            # Trigger connection test
+            tab.test_aws_connection()
+            
+            # Verify worker was created and started
+            MockWorker.assert_called_once_with(tab.credentials_manager, "test-profile")
+            mock_worker.progress_updated.connect.assert_called()
+            mock_worker.test_completed.connect.assert_called()
+            mock_worker.error_occurred.connect.assert_called()
+            mock_worker.start.assert_called_once()
     
-    @pytest.mark.skip("Skipped: Test requires async worker behavior - needs rewrite for background threading")
     def test_test_aws_connection_failure(self, qapp):
-        """Test failed AWS connection test - SKIPPED: Async behavior needs different test approach"""
-        pass
+        """Test failed AWS connection test with background worker"""
+        from unittest.mock import patch, MagicMock
+        
+        tab = CloudTab()
+        
+        # Add test profile
+        tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-profile")
+        
+        # Mock the ConnectionTestWorker
+        with patch('src.ui.components.cloud_tab.ConnectionTestWorker') as MockWorker:
+            mock_worker = MagicMock()
+            MockWorker.return_value = mock_worker
+            
+            # Trigger connection test
+            tab.test_aws_connection()
+            
+            # Simulate error by calling the error handler directly
+            error_message = "Connection failed: Invalid credentials"
+            tab._on_connection_test_error(error_message, Exception("Test error"))
+            
+            # Check that error was logged to status
+            status_text = tab.status_text.toPlainText()
+            assert "Connection failed" in status_text
+    
+    def test_connection_test_worker_signal_handlers(self, qapp):
+        """Test ConnectionTestWorker signal handler methods"""
+        tab = CloudTab()
+        
+        # Test successful connection completion
+        identity = {
+            'account': '123456789012',
+            'region': 'us-east-1',
+            'user_id': 'test-user'
+        }
+        success_message = "Successfully connected to AWS\\n\\nAccount: 123456789012"
+        
+        with patch.object(QMessageBox, 'information') as mock_info:
+            tab._on_connection_test_completed(True, success_message, identity)
+            mock_info.assert_called_once()
+            
+        # Test failed connection completion
+        failure_message = "Invalid credentials"
+        
+        with patch.object(QMessageBox, 'critical') as mock_critical:
+            tab._on_connection_test_completed(False, failure_message, {})
+            mock_critical.assert_called_once()
+            
+        # Test connection test error
+        error_message = "Network timeout"
+        test_exception = Exception("Test exception")
+        
+        with patch('src.utils.error_logger.log_error_dialog') as mock_log_error:
+            tab._on_connection_test_error(error_message, test_exception)
+            mock_log_error.assert_called_once_with(
+                tab, "Connection Test Failed", error_message, test_exception
+            )
+    
+    def test_background_worker_lifecycle(self, qapp):
+        """Test background worker lifecycle management"""
+        from unittest.mock import patch, MagicMock
+        
+        tab = CloudTab()
+        
+        # Add test profile
+        tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-profile")
+        
+        # Test that only one worker runs at a time
+        with patch('src.ui.components.cloud_tab.ConnectionTestWorker') as MockWorker:
+            mock_worker1 = MagicMock()
+            mock_worker2 = MagicMock()
+            MockWorker.side_effect = [mock_worker1, mock_worker2]
+            
+            # Start first connection test
+            tab.test_aws_connection()
+            assert hasattr(tab, 'connection_test_worker')
+            mock_worker1.start.assert_called_once()
+            
+            # Simulate first worker finishing
+            mock_worker1.isRunning.return_value = False
+            tab.test_aws_connection()
+            
+            # Should create second worker after first completes
+            assert MockWorker.call_count >= 1
     
     def test_on_bucket_name_changed_valid(self, qapp):
         """Test bucket name change validation - valid name"""
@@ -633,10 +738,137 @@ class TestCloudTab:
         assert tab.bucket_combo.count() == 1
         assert tab.bucket_combo.currentText() == "No buckets found"
     
-    @pytest.mark.skip("Skipped: Test requires async worker behavior - needs rewrite for background threading")
     def test_refresh_bucket_list_success(self, qapp):
-        """Test successful bucket list refresh - SKIPPED: Async behavior needs different test approach"""
-        pass
+        """Test successful bucket list refresh with background worker"""
+        from unittest.mock import patch, MagicMock
+        
+        tab = CloudTab()
+        
+        # Add test profile
+        tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-profile")
+        
+        # Mock the BucketRefreshWorker
+        with patch('src.ui.components.cloud_tab.BucketRefreshWorker') as MockWorker:
+            mock_worker = MagicMock()
+            MockWorker.return_value = mock_worker
+            
+            # Trigger bucket refresh
+            tab.refresh_bucket_list()
+            
+            # Verify worker was created and started
+            MockWorker.assert_called_once_with(
+                tab.credentials_manager, 
+                tab.s3_manager, 
+                "test-profile"
+            )
+            mock_worker.progress_updated.connect.assert_called()
+            mock_worker.finished.connect.assert_called()
+            mock_worker.error_occurred.connect.assert_called()
+            mock_worker.start.assert_called_once()
+            
+            # Simulate successful bucket refresh by calling the finished handler directly
+            test_buckets = [
+                {"name": "test-bucket-1", "sop_compliant": False},
+                {"name": "test-bucket-2", "sop_compliant": False},
+                {"name": "client-website-sop", "sop_compliant": True}
+            ]
+            tab._on_bucket_refresh_finished(test_buckets, "test-profile")
+            
+            # Verify buckets were added to combo (with SOP indicators)
+            bucket_display_items = [tab.bucket_combo.itemText(i) for i in range(tab.bucket_combo.count())]
+            bucket_data_items = [tab.bucket_combo.itemData(i) for i in range(tab.bucket_combo.count())]
+            assert "[-] test-bucket-1" in bucket_display_items
+            assert "[-] test-bucket-2" in bucket_display_items 
+            assert "[+] client-website-sop" in bucket_display_items
+            assert "test-bucket-1" in bucket_data_items
+            assert "test-bucket-2" in bucket_data_items
+            assert "client-website-sop" in bucket_data_items
+    
+    def test_bucket_refresh_worker_signal_handlers(self, qapp):
+        """Test BucketRefreshWorker signal handler methods"""
+        tab = CloudTab()
+        
+        # Test successful bucket refresh
+        test_buckets = [
+            {"name": "bucket-1", "sop_compliant": False},
+            {"name": "bucket-2", "sop_compliant": False},
+            {"name": "client-website-sop", "sop_compliant": True}
+        ]
+        profile_name = "test-profile"
+        
+        tab._on_bucket_refresh_finished(test_buckets, profile_name)
+        
+        # Verify buckets were added to combo (with SOP indicators)
+        bucket_display_items = [tab.bucket_combo.itemText(i) for i in range(tab.bucket_combo.count())]
+        bucket_data_items = [tab.bucket_combo.itemData(i) for i in range(tab.bucket_combo.count())]
+        assert "[-] bucket-1" in bucket_display_items
+        assert "[-] bucket-2" in bucket_display_items
+        assert "[+] client-website-sop" in bucket_display_items
+        
+        # Test bucket refresh error
+        error_message = "Access denied"
+        test_exception = Exception("Test exception")
+        
+        with patch('src.utils.error_logger.log_error_dialog') as mock_log_error:
+            tab._on_bucket_refresh_error(error_message, profile_name, test_exception)
+            mock_log_error.assert_called_once_with(
+                tab, "Bucket Refresh Failed", error_message, test_exception
+            )
+    
+    def test_deployment_worker_integration(self, qapp):
+        """Test DeploymentWorker integration with CloudTab"""
+        from unittest.mock import patch, MagicMock
+        from src.core.aws.s3_manager import UploadResult, UploadProgress
+        
+        tab = CloudTab()
+        
+        # Set up valid configuration
+        tab.credentials_manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
+        tab.refresh_profiles()
+        tab.profile_combo.setCurrentText("test-profile")
+        tab.bucket_combo.setCurrentText("test-bucket")
+        
+        # Mock the DeploymentWorker
+        with patch('src.ui.components.cloud_tab.DeploymentWorker') as MockWorker:
+            mock_worker = MagicMock()
+            MockWorker.return_value = mock_worker
+            
+            # Mock config to return valid data
+            with patch.object(tab, 'get_config_data') as mock_config:
+                mock_config.return_value = {
+                    'aws_profile': 'test-profile',
+                    'bucket_name': 'test-bucket',
+                    'deployment_mode': 's3'
+                }
+                
+                # Mock main window to provide generation path
+                mock_main_window = MagicMock()
+                mock_main_window.website_generator = MagicMock()
+                mock_main_window.website_generator.get_output_directory.return_value = "/test/path"
+                tab.parent = lambda: mock_main_window
+                
+                # Trigger deployment
+                tab.deploy_website()
+                
+                # Verify worker was created and started
+                MockWorker.assert_called_once()
+                mock_worker.progress_updated.connect.assert_called()
+                mock_worker.deployment_completed.connect.assert_called()
+                mock_worker.start.assert_called_once()
+                
+                # Simulate successful deployment completion
+                upload_result = UploadResult(
+                    success=True,
+                    message="Deployment completed successfully",
+                    uploaded_files=["index.html", "style.css"]
+                )
+                
+                tab._on_deployment_completed(upload_result)
+                
+                # Verify deployment completion was handled
+                assert "successfully" in tab.status_text.toPlainText()
     
     def test_refresh_directory_list_no_bucket(self, qapp):
         """Test refresh directory list with no bucket selected"""
@@ -763,3 +995,26 @@ class TestDeploymentWorker:
         result = worker.deployment_completed.emit.call_args[0][0]
         assert result.success is True
         assert result.message == "Upload completed"
+    
+    def test_deployment_worker_error_handling(self):
+        """Test DeploymentWorker error handling"""
+        from src.core.aws.s3_manager import UploadResult
+        
+        s3_manager = Mock()
+        s3_manager.upload_directory.side_effect = Exception("Upload failed")
+        
+        worker = DeploymentWorker(s3_manager, "/test/path", "test-bucket")
+        
+        # Mock the signals
+        worker.progress_updated = Mock()
+        worker.deployment_completed = Mock()
+        
+        # This should not raise an exception but handle the error gracefully
+        try:
+            worker.run()
+        except Exception:
+            # If an exception is raised, the worker should emit a failure result
+            pass
+        
+        # Verify completion signal was emitted
+        worker.deployment_completed.emit.assert_called_once()

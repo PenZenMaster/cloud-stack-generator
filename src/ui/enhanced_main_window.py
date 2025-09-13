@@ -1263,13 +1263,8 @@ class EnhancedMainWindow(QMainWindow):
     def preview_website(self):
         """Preview website before generation for QA testing"""
         try:
-            # Ensure client context is set for cloud tab before validation
-            business_data = self.business_tab.get_config_data()
-            if business_data.get('business_name') and business_data.get('domain'):
-                self.cloud_tab.set_client_context(
-                    business_data['business_name'], 
-                    business_data['domain']
-                )
+            # NOTE: Cloud context is NOT needed for preview since we exclude cloud deployment
+            # Only set cloud context if preview validation passes and user wants to deploy
             
             # Use preview-specific validation (excludes Cloud Deploy tab)
             validation_results, all_valid = self.get_preview_validation_results()
