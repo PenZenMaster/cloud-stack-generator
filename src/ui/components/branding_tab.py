@@ -46,6 +46,10 @@ class BrandingTab(BaseTab):
     # Default colors
     DEFAULT_PRIMARY = "#007bff"
     DEFAULT_SECONDARY = "#6c757d"
+    DEFAULT_BODY_BACKGROUND = "#ffffff"
+    DEFAULT_BODY_TEXT = "#333333"
+    DEFAULT_FOOTER_BACKGROUND = "#2c3e50"
+    DEFAULT_FOOTER_TEXT = "#ffffff"
 
     # Web-safe fonts
     WEB_FONTS = [
@@ -68,6 +72,10 @@ class BrandingTab(BaseTab):
         self.current_colors = {
             "primary": self.DEFAULT_PRIMARY,
             "secondary": self.DEFAULT_SECONDARY,
+            "body_background": self.DEFAULT_BODY_BACKGROUND,
+            "body_text": self.DEFAULT_BODY_TEXT,
+            "footer_background": self.DEFAULT_FOOTER_BACKGROUND,
+            "footer_text": self.DEFAULT_FOOTER_TEXT,
         }
         self.has_changes = False
         super().__init__(parent)
@@ -89,6 +97,7 @@ class BrandingTab(BaseTab):
         self._create_color_section(content_layout)
         self._create_font_section(content_layout)
         self._create_logo_section(content_layout)
+        self._create_template_section(content_layout)
         self._create_preview_section(content_layout)
         
         # Add validation button
@@ -138,14 +147,18 @@ class BrandingTab(BaseTab):
 
         # Color form in group box
         color_group = QGroupBox()
-        color_group.setMaximumHeight(150)
+        color_group.setMaximumHeight(350)
         color_layout = QGridLayout()
         color_layout.setSpacing(15)
 
-        # Color fields
+        # Color fields with updated names and new options
         colors = [
-            ("Primary Color", "primary", "Main brand color for headers and highlights"),
-            ("Secondary Color", "secondary", "Supporting color for accents and backgrounds"),
+            ("Header Background Color 1", "primary", "Primary gradient color for header background"),
+            ("Header Background Color 2", "secondary", "Secondary gradient color for header background"),
+            ("Body Background Color", "body_background", "Background color for main content areas"),
+            ("Body Text Color", "body_text", "Text color for main content"),
+            ("Footer Background Color", "footer_background", "Background color for footer section"),
+            ("Footer Text Color", "footer_text", "Text color for footer content"),
         ]
 
         for row, (label_text, color_key, description) in enumerate(colors):
@@ -272,6 +285,62 @@ class BrandingTab(BaseTab):
         logo_group.setLayout(logo_layout)
         parent_layout.addWidget(logo_group)
 
+    def _create_template_section(self, parent_layout: QVBoxLayout):
+        """Create template selection section"""
+        # Section header
+        header = QLabel("Website Templates")
+        header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
+        parent_layout.addWidget(header)
+
+        # Template selection group
+        template_group = QGroupBox()
+        template_group.setMaximumHeight(120)
+        template_layout = QVBoxLayout()
+        template_layout.setSpacing(10)
+
+        # Template selection
+        template_container = QHBoxLayout()
+        
+        # Label
+        template_label = QLabel("* Page Template Style:")
+        template_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        template_container.addWidget(template_label)
+        
+        # Template selection combo
+        self.template_combo = QComboBox()
+        self.template_combo.setFont(QFont("Arial", 10))
+        self.template_combo.setMinimumHeight(30)
+        
+        # Template options
+        templates = [
+            ("basic", "Basic Template - Clean and simple design"),
+            ("enhanced", "Enhanced Template - Rich content with advanced features"),
+            ("seo_authority", "SEO Authority Template - Maximum optimization and content depth")
+        ]
+        
+        for value, description in templates:
+            self.template_combo.addItem(description, value)
+        
+        # Store reference for easy access
+        self.branding_inputs["template_style"] = self.template_combo
+        
+        # Connect change signal
+        self.template_combo.currentTextChanged.connect(self._emit_config_changed)
+        
+        template_container.addWidget(self.template_combo)
+        template_layout.addLayout(template_container)
+        
+        # Template description
+        template_description = QLabel("Choose the template style that best fits your business needs. This affects the layout and features of your city pages.")
+        template_description.setFont(QFont("Arial", 9))
+        template_description.setStyleSheet("color: #666666; padding: 5px 0;")
+        template_description.setWordWrap(True)
+        template_layout.addWidget(template_description)
+
+        template_group.setLayout(template_layout)
+        parent_layout.addWidget(template_group)
+
     def _create_preview_section(self, parent_layout: QVBoxLayout):
         """Create live preview section"""
         # Section header
@@ -381,13 +450,20 @@ class BrandingTab(BaseTab):
         return {
             "colors": {
                 "primary_color": self.current_colors.get("primary", self.DEFAULT_PRIMARY),
-                "secondary_color": self.current_colors.get("secondary", self.DEFAULT_SECONDARY)
+                "secondary_color": self.current_colors.get("secondary", self.DEFAULT_SECONDARY),
+                "body_background_color": self.current_colors.get("body_background", self.DEFAULT_BODY_BACKGROUND),
+                "body_text_color": self.current_colors.get("body_text", self.DEFAULT_BODY_TEXT),
+                "footer_background_color": self.current_colors.get("footer_background", self.DEFAULT_FOOTER_BACKGROUND),
+                "footer_text_color": self.current_colors.get("footer_text", self.DEFAULT_FOOTER_TEXT)
             },
             "typography": {
                 "font_family": self.branding_inputs["font_family"].currentText() if "font_family" in self.branding_inputs else "Arial, sans-serif"
             },
             "logo": {
                 "logo_url": self.branding_inputs["logo_url"].text() if "logo_url" in self.branding_inputs else ""
+            },
+            "template": {
+                "template_style": self.branding_inputs["template_style"].currentData() if "template_style" in self.branding_inputs else "basic"
             }
         }
 
@@ -424,6 +500,28 @@ class BrandingTab(BaseTab):
                                 border-radius: 4px;
                             }}
                         """)
+                
+                # Handle new color fields
+                color_mappings = [
+                    ("body_background_color", "body_background"),
+                    ("body_text_color", "body_text"), 
+                    ("footer_background_color", "footer_background"),
+                    ("footer_text_color", "footer_text")
+                ]
+                
+                for config_key, internal_key in color_mappings:
+                    if config_key in colors:
+                        self.current_colors[internal_key] = colors[config_key]
+                        if internal_key in self.branding_inputs:
+                            self.branding_inputs[internal_key].setText(colors[config_key])
+                        if internal_key in self.preview_labels:
+                            self.preview_labels[internal_key].setStyleSheet(f"""
+                                QLabel {{
+                                    background-color: {colors[config_key]};
+                                    border: 2px solid #ccc;
+                                    border-radius: 4px;
+                                }}
+                            """)
             
             # Set font data
             if "typography" in data:
@@ -438,6 +536,17 @@ class BrandingTab(BaseTab):
                 logo_url = data["logo"].get("logo_url", "")
                 if "logo_url" in self.branding_inputs:
                     self.branding_inputs["logo_url"].setText(logo_url)
+            
+            # Set template data
+            if "template" in data:
+                template_style = data["template"].get("template_style", "basic")
+                if "template_style" in self.branding_inputs:
+                    template_combo = self.branding_inputs["template_style"]
+                    # Find index by data value
+                    for i in range(template_combo.count()):
+                        if template_combo.itemData(i) == template_style:
+                            template_combo.setCurrentIndex(i)
+                            break
             
             # Update preview
             self._update_preview()

@@ -86,7 +86,7 @@ client:
   branding:
     primary_color: '#bf062f'
     secondary_color: '#fe9e1f'
-    font_family: Arial, sans-serif
+    font_family: Georgia, serif
     logo_url: https://salvometalworks.com/wp-content/uploads/2024/10/Salvo_RGB_FullColor_Logo-2048x742.png
   social_media:
     facebook: https://www.facebook.com/SalvoMetalWorks

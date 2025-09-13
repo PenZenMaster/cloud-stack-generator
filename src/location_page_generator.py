@@ -23,19 +23,23 @@ Comments:
 import os
 import csv
 import urllib.parse
+
 # from slugify import slugify  # Optional external dependency
-# from jinja2 import Template  # Optional external dependency  
+from jinja2 import Template  # Optional external dependency
+
 # from dotenv import load_dotenv  # Optional external dependency
+
 
 # Simple slugify replacement
 def slugify(text):
     """Simple slugify function"""
     text = text.lower()
-    text = text.replace(' ', '-')
-    text = text.replace(',', '')
-    text = text.replace(' illinois', '')
-    text = text.replace(' il', '')
-    return text.strip('-')
+    text = text.replace(" ", "-")
+    text = text.replace(",", "")
+    text = text.replace(" illinois", "")
+    text = text.replace(" il", "")
+    return text.strip("-")
+
 
 # Load environment variables from .env
 # load_dotenv()  # Optional external dependency
