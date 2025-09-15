@@ -231,6 +231,10 @@ class ConfigParser:
         return BrandingConfig(
             primary_color=branding_data.get("primary_color", "#007bff"),
             secondary_color=branding_data.get("secondary_color", "#6c757d"),
+            body_background_color=branding_data.get("body_background_color", "#ffffff"),
+            body_text_color=branding_data.get("body_text_color", "#333333"),
+            footer_background_color=branding_data.get("footer_background_color", "#2c3e50"),
+            footer_text_color=branding_data.get("footer_text_color", "#ffffff"),
             font_family=branding_data.get("font_family", "Arial, sans-serif"),
             logo_url=branding_data.get("logo_url", ""),
         )
@@ -525,6 +529,10 @@ class ConfigParser:
                 "branding": {
                     "primary_color": config.branding.primary_color,
                     "secondary_color": config.branding.secondary_color,
+                    "body_background_color": config.branding.body_background_color,
+                    "body_text_color": config.branding.body_text_color,
+                    "footer_background_color": config.branding.footer_background_color,
+                    "footer_text_color": config.branding.footer_text_color,
                     "font_family": config.branding.font_family,
                     "logo_url": config.branding.logo_url,
                 },

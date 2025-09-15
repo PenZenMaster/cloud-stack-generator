@@ -155,21 +155,7 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="site-header">
-        <nav class="navbar">
-            <div class="container">
-                <div class="nav-brand">
-                    <a href="{{ home_url }}">{{ business_name }}</a>
-                </div>
-                <div class="nav-menu">
-                    <a href="{{ home_url }}">Home</a>
-                    <a href="{{ services_url }}">Services</a>
-                    <a href="{{ about_url }}">About</a>
-                    <a href="{{ contact_url }}">Contact</a>
-                </div>
-            </div>
-        </nav>
-    </header>
+    {% include 'components/header.html' %}
 
     <!-- Hero Section -->
     <section class="hero-section">
@@ -362,34 +348,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="site-footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>{{ business_name }}</h3>
-                    <p>Professional {{ service_category.lower() }} services in {{ location }} and surrounding areas.</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Services</h3>
-                    <ul>
-                        {% for service in services[:5] %}
-                        <li>{{ service.name if service.name else service }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3>Contact Info</h3>
-                    <p>{{ phone }}</p>
-                    <p>{{ email }}</p>
-                    <p>{{ hq_address }}</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; {{ current_year }} {{ business_name }}. All rights reserved.</p>
-                <p>Serving {{ location }} and surrounding communities with pride.</p>
-            </div>
-        </div>
-    </footer>
+    {% include 'components/footer.html' %}
 
     <!-- Scripts -->
     <script>

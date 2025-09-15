@@ -40,6 +40,7 @@ class HTMLGenerator:
             env.filters["format_price"] = self._format_price
             env.filters["slugify"] = self._slugify
             env.filters["truncate_words"] = self._truncate_words
+            env.filters["date"] = self._date_filter
 
             return env
         except Exception as e:
@@ -555,6 +556,22 @@ class HTMLGenerator:
         if len(words) <= count:
             return text
         return " ".join(words[:count]) + "..."
+        
+    def _date_filter(self, date_input, format_str="%Y-%m-%d"):
+        """Format date string - supports 'now' keyword for current date"""
+        from datetime import datetime
+        
+        if isinstance(date_input, str) and date_input.lower() == "now":
+            return datetime.now().strftime(format_str)
+        elif isinstance(date_input, datetime):
+            return date_input.strftime(format_str)
+        else:
+            # Try to parse string as date
+            try:
+                date_obj = datetime.fromisoformat(str(date_input))
+                return date_obj.strftime(format_str)
+            except:
+                return str(date_input)
 
     def _generate_company_story(self, config: ClientConfig) -> str:
         """Generate company story for about page"""

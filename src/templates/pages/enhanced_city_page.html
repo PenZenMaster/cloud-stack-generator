@@ -69,39 +69,7 @@
 </head>
 <body>
   <!-- Header -->
-  <header>
-    <div class="wrap">
-      <div class="topbar">
-        <div class="brand">
-          <div class="badge" aria-hidden="true">
-            {% if business.business_name|length >= 2 %}
-              {{ business.business_name.split()[0][0] }}{{ business.business_name.split()[-1][0] if business.business_name.split()|length > 1 else business.business_name[1] }}
-            {% else %}
-              {{ business.business_name[:2] }}
-            {% endif %}
-          </div>
-          <div>
-            <strong>{{ business.business_name }}</strong><br/>
-            <span class="small">{{ business.description or "Excellence in Service" }}</span>
-          </div>
-        </div>
-        <nav aria-label="Primary">
-          <a href="/">Home</a>
-          <a href="/products/">Products</a>
-          <a href="/locations/">Locations</a>
-          <a href="/contact/">Contact</a>
-        </nav>
-      </div>
-      <div class="hero inner">
-        <div class="crumbs">
-          {% for crumb in city_page.breadcrumbs %}
-            {% if not loop.last %}{{ crumb }} › {% else %}{{ crumb }}{% endif %}
-          {% endfor %}
-        </div>
-        <h1>{{ city_page.hero_title }}</h1>
-      </div>
-    </div>
-  </header>
+  {% include 'components/header.html' %}
 
   <main class="wrap">
     <!-- City Info (Wikipedia left, Image right) -->
@@ -230,11 +198,7 @@
   </main>
 
   <!-- Footer -->
-  <footer>
-    <div class="wrap">
-      <p class="small">© 2025 {{ business.business_name }} · {{ business.description or "Excellence in Service" }}</p>
-    </div>
-  </footer>
+  {% include 'components/footer.html' %}
 
   <!-- JSON-LD Schema -->
   <script type="application/ld+json">

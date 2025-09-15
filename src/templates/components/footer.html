@@ -1,0 +1,54 @@
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-info">
+                <h3 class="footer-brand">{{ business.business_name }}</h3>
+                <p class="footer-description">{% if business.description %}{{ business.description[:150] }}{% if business.description|length > 150 %}...{% endif %}{% else %}Professional {{ business.industry }} services you can trust.{% endif %}</p>
+                
+                <!-- Contact Information -->
+                <div class="footer-contact">
+                    {% if contact.phone %}
+                    <p><strong>Phone:</strong> <a href="tel:{{ contact.phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ contact.phone }}</a></p>
+                    {% endif %}
+                    {% if contact.email %}
+                    <p><strong>Email:</strong> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+                    {% endif %}
+                    {% if contact.address.street %}
+                    <p><strong>Address:</strong> {{ contact.address.street }}, {{ contact.address.city }}, {{ contact.address.state }} {{ contact.address.zip_code }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Social Media Links -->
+                {% if social_media %}
+                <div class="footer-social">
+                    {% if social_media.facebook %}
+                    <a href="{{ social_media.facebook }}" target="_blank" rel="noopener" aria-label="Facebook">Facebook</a>
+                    {% endif %}
+                    {% if social_media.linkedin %}
+                    <a href="{{ social_media.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
+                    {% endif %}
+                    {% if social_media.instagram %}
+                    <a href="{{ social_media.instagram }}" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
+                    {% endif %}
+                    {% if social_media.youtube %}
+                    <a href="{{ social_media.youtube }}" target="_blank" rel="noopener" aria-label="YouTube">YouTube</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Google Business Profile Map Embed -->
+            {% if google_business_profile.embed_code %}
+            <div class="footer-map">
+                <h4>Visit Our Location</h4>
+                <div class="map-container">
+                    {{ google_business_profile.embed_code|safe }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Copyright -->
+        <div class="footer-bottom">
+            <p>&copy; {{ "now"|date("%Y") }} {{ business.business_name }}. All rights reserved. | <a href="privacy-policy.html">Privacy Policy</a></p>
+        </div>
+    </footer>

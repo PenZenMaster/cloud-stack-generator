@@ -271,6 +271,10 @@ class BrandingConfig:
 
     primary_color: str = "#007bff"
     secondary_color: str = "#6c757d"
+    body_background_color: str = "#ffffff"
+    body_text_color: str = "#333333"
+    footer_background_color: str = "#2c3e50"
+    footer_text_color: str = "#ffffff"
     font_family: str = "Arial, sans-serif"
     logo_url: str = ""
 
@@ -278,6 +282,10 @@ class BrandingConfig:
         """Validate color formats"""
         self._validate_color(self.primary_color, "primary_color")
         self._validate_color(self.secondary_color, "secondary_color")
+        self._validate_color(self.body_background_color, "body_background_color")
+        self._validate_color(self.body_text_color, "body_text_color")
+        self._validate_color(self.footer_background_color, "footer_background_color")
+        self._validate_color(self.footer_text_color, "footer_text_color")
 
     def _validate_color(self, color: str, field_name: str):
         """Validate hex color format"""

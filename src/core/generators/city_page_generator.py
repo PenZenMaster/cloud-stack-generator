@@ -44,6 +44,7 @@ class CityPageGenerator:
         # Add custom filters
         self.jinja_env.filters['markdown_basic'] = self._markdown_basic_filter
         self.jinja_env.filters['slugify'] = self._slugify_filter
+        self.jinja_env.filters['date'] = self._date_filter
         
     def generate_city_page(self, city_page: CityPageConfig, output_dir: str) -> str:
         """Generate a single enhanced city page using Jinja2 templates"""
@@ -433,3 +434,19 @@ class CityPageGenerator:
         text = text.replace(' illinois', '')
         text = text.replace(' il', '')
         return text.strip('-')
+        
+    def _date_filter(self, date_input, format_str="%Y-%m-%d"):
+        """Format date string - supports 'now' keyword for current date"""
+        from datetime import datetime
+        
+        if isinstance(date_input, str) and date_input.lower() == "now":
+            return datetime.now().strftime(format_str)
+        elif isinstance(date_input, datetime):
+            return date_input.strftime(format_str)
+        else:
+            # Try to parse string as date
+            try:
+                date_obj = datetime.fromisoformat(str(date_input))
+                return date_obj.strftime(format_str)
+            except:
+                return str(date_input)

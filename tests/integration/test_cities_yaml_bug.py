@@ -25,7 +25,7 @@ class TestCitiesYAMLBug:
     
     def test_reproduce_yaml_not_updating_bug(self, tmp_path):
         """Reproduce the exact bug: Cities data not being saved to YAML"""
-        from src.core.config.models import ClientConfig, BusinessConfig, ContactConfig, BrandingConfig
+        from src.core.config.models import ClientConfig, BusinessConfig, ContactConfig, BrandingConfig, AddressConfig
         from src.core.config.parser import ConfigParser
         
         # Step 1: Create a basic config (simulating existing business data)
@@ -38,7 +38,12 @@ class TestCitiesYAMLBug:
             contact=ContactConfig(
                 name="Bug Test Contact",
                 phone="555-BUG-TEST",
-                address="123 Bug St, Test City, ST 12345",
+                address=AddressConfig(
+                    street="123 Bug St",
+                    city="Test City",
+                    state="ST",
+                    zip_code="12345"
+                ),
                 email="bug@test.com"
             ),
             branding=BrandingConfig(
@@ -113,7 +118,7 @@ class TestCitiesYAMLBug:
         assert loaded_config.seo_content == config.seo_content, "seo_content not preserved"
         assert loaded_config.google_maps.cities == config.google_maps.cities, "google_maps not preserved"
         
-        print("\\n✓ Bug test PASSED: Cities data is properly saved and loaded")
+        print("\\n+ Bug test PASSED: Cities data is properly saved and loaded")
     
     def test_parser_generate_yaml_dict_includes_cities(self):
         """Test that ConfigParser.generate_yaml_dict includes cities data"""
@@ -247,4 +252,4 @@ class TestCitiesYAMLBug:
         assert final_config.target_cities == ["Added City 1", "Added City 2"]
         assert final_config.seo_content == {"added_field": "added_value"}
         
-        print("\\n✓ Existing file update test PASSED")
+        print("\\n+ Existing file update test PASSED")

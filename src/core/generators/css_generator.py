@@ -116,15 +116,29 @@ body {
         secondary_light = self._lighten_color(branding.secondary_color, 0.1)
         secondary_dark = self._darken_color(branding.secondary_color, 0.1)
         
+        # Get new color values with fallbacks
+        body_bg_color = getattr(branding, 'body_background_color', '#ffffff')
+        body_text_color = getattr(branding, 'body_text_color', '#333333')
+        footer_bg_color = getattr(branding, 'footer_background_color', '#2c3e50')
+        footer_text_color = getattr(branding, 'footer_text_color', '#ffffff')
+        
         return f"""/* CSS Custom Properties for Branding */
 :root {{
-    /* Brand Colors */
-    --primary-color: {branding.primary_color};
+    /* Header Colors (renamed from Brand Colors) */
+    --header-bg-color-1: {branding.primary_color};
+    --header-bg-color-2: {branding.secondary_color};
+    --primary-color: {branding.primary_color}; /* Keep for backward compatibility */
+    --secondary-color: {branding.secondary_color}; /* Keep for backward compatibility */
     --primary-light: {primary_light};
     --primary-dark: {primary_dark};
-    --secondary-color: {branding.secondary_color};
     --secondary-light: {secondary_light};
     --secondary-dark: {secondary_dark};
+    
+    /* New Body and Footer Colors */
+    --body-bg-color: {body_bg_color};
+    --body-text-color: {body_text_color};
+    --footer-bg-color: {footer_bg_color};
+    --footer-text-color: {footer_text_color};
     
     /* Typography */
     --font-family: {branding.font_family};
@@ -279,18 +293,32 @@ p {{
         """Generate color scheme styles based on branding"""
         return """/* Color Scheme */
 body {
-    background-color: var(--white);
-    color: var(--gray-800);
+    background-color: var(--body-bg-color);
+    color: var(--body-text-color);
 }
 
-.header, .navbar {
-    background-color: var(--primary-color);
-    color: var(--white);
+/* Header with gradient from header-bg-color-1 to header-bg-color-2 */
+header, .header, .navbar {
+    background: linear-gradient(135deg, var(--header-bg-color-1), var(--header-bg-color-2));
+    color: white;
 }
 
-.footer {
-    background-color: var(--secondary-dark);
-    color: var(--white);
+/* Footer with new footer colors */
+footer, .footer {
+    background-color: var(--footer-bg-color);
+    color: var(--footer-text-color);
+}
+
+/* Footer links inherit footer text color */
+footer a, .footer a {
+    color: var(--footer-text-color);
+    opacity: 0.8;
+    text-decoration: none;
+}
+
+footer a:hover, .footer a:hover {
+    opacity: 1;
+    text-decoration: underline;
 }
 
 .button-primary {
