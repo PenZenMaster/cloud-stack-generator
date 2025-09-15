@@ -265,17 +265,17 @@ class PageGenerator:
             ("about.html", "about page", self.html_generator.generate_about_page),
             ("contact.html", "contact page", self.html_generator.generate_contact_page),
             ("faq.html", "FAQ page", self.html_generator.generate_faq_page),
+            ("privacy-policy.html", "privacy policy page", self.html_generator.generate_privacy_page),
         ]
 
-        # Add services overview page if services exist
-        if config.services:
-            pages.append(
-                (
-                    "services.html",
-                    "services page",
-                    self.html_generator.generate_services_page,
-                )
+        # Add services overview page (always generate to match navigation)
+        pages.append(
+            (
+                "services.html",
+                "services page",
+                self.html_generator.generate_services_page,
             )
+        )
 
         # Add products overview page if products exist
         if config.products:

@@ -100,9 +100,12 @@ class HTMLGenerator:
         """Generate services overview page"""
         template_data = self._prepare_template_data(config)
 
+        # Handle case where services might be empty or None
+        services = getattr(config, 'services', None) or []
+
         # Group services by category
         services_by_category = {}
-        for service in config.services:
+        for service in services:
             category = service.category or "General Services"
             if category not in services_by_category:
                 services_by_category[category] = []
@@ -114,8 +117,9 @@ class HTMLGenerator:
                 "page_description": f"Professional {config.business.industry.lower()} services offered by {config.business.business_name}",
                 "page_type": "services",
                 "services_by_category": services_by_category,
-                "total_services": len(config.services),
+                "total_services": len(services),
                 "service_categories": list(services_by_category.keys()),
+                "has_services": len(services) > 0,
             }
         )
 
@@ -229,6 +233,21 @@ class HTMLGenerator:
         )
 
         return self._render_template("pages/faq.html", template_data)
+
+    def generate_privacy_page(self, config: ClientConfig) -> str:
+        """Generate privacy policy page"""
+        template_data = self._prepare_template_data(config)
+
+        template_data.update(
+            {
+                "page_title": f"Privacy Policy - {config.business.business_name}",
+                "page_description": f"Privacy policy for {config.business.business_name}",
+                "page_type": "privacy",
+                "current_year": "2024",  # This will be handled by template data later
+            }
+        )
+
+        return self._render_template("pages/privacy-policy.html", template_data)
 
     def _prepare_template_data(self, config: ClientConfig) -> Dict[str, Any]:
         """Prepare common template data for all pages"""
@@ -499,12 +518,14 @@ class HTMLGenerator:
     def _get_fallback_content(self, template_name: str, data: Dict[str, Any]) -> str:
         """Get content for fallback templates"""
         business = data.get("business")
+        products = data.get("products", [])
+        services = data.get("services", [])
 
-        if "homepage" in template_name:
+        if "homepage" in template_name or "index" in template_name:
             return f"""
             <h1>Welcome to {business.business_name if business else 'Our Business'}</h1>
             <p>Professional {business.industry if business else 'services'} you can trust.</p>
-            <h2>Our Services</h2>
+            <h2>Our {'Products' if products else 'Services'}</h2>
             <p>We offer comprehensive {business.industry.lower() if business else 'business'} solutions.</p>
             """
         elif "about" in template_name:
@@ -519,6 +540,51 @@ class HTMLGenerator:
             {f'<p><strong>Phone:</strong> {contact.phone}</p>' if contact and contact.phone else ''}
             {f'<p><strong>Email:</strong> {contact.email}</p>' if contact and contact.email else ''}
             {f'<p><strong>Address:</strong> {contact.address.to_single_line()}</p>' if contact and contact.address.street else ''}
+            """
+        elif "services" in template_name:
+            if services:
+                service_list = '\n'.join([f'<li>{service.name if hasattr(service, "name") else str(service)}</li>' for service in services[:10]])
+                return f"""
+                <h1>Our Services</h1>
+                <p>We offer the following professional services:</p>
+                <ul>{service_list}</ul>
+                """
+            else:
+                return f"""
+                <h1>Services</h1>
+                <p>We provide professional {business.industry.lower() if business else 'business'} services. Please contact us for more information about our capabilities.</p>
+                """
+        elif "products" in template_name:
+            if products:
+                product_list = '\n'.join([f'<li>{product.name if hasattr(product, "name") else str(product)}</li>' for product in products[:10]])
+                return f"""
+                <h1>Our Products</h1>
+                <p>We offer high-quality products including:</p>
+                <ul>{product_list}</ul>
+                """
+            else:
+                return f"""
+                <h1>Products</h1>
+                <p>We provide quality {business.industry.lower() if business else 'business'} products. Please contact us for our current catalog.</p>
+                """
+        elif "faq" in template_name:
+            faqs = data.get("faqs", [])
+            if faqs:
+                faq_content = '\n'.join([f'<div><h3>{faq.question if hasattr(faq, "question") else str(faq)}</h3><p>{faq.answer if hasattr(faq, "answer") else "Please contact us for more information."}</p></div>' for faq in faqs[:5]])
+                return f"""
+                <h1>Frequently Asked Questions</h1>
+                {faq_content}
+                """
+            else:
+                return f"""
+                <h1>Frequently Asked Questions</h1>
+                <p>Have questions about our {business.industry.lower() if business else 'services'}? Contact us and we'll be happy to help!</p>
+                """
+        elif "privacy" in template_name:
+            return f"""
+            <h1>Privacy Policy</h1>
+            <p>At {business.business_name if business else 'our company'}, we respect your privacy and are committed to protecting your personal information.</p>
+            <p>Last updated: {data.get('current_year', '2024')}</p>
             """
         else:
             return f"<h1>{data.get('page_title', 'Page')}</h1><p>Content for this page is being generated.</p>"
