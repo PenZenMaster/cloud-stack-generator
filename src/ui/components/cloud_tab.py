@@ -72,9 +72,9 @@ class AWSProfileDialog(QDialog):
         auth_layout = QVBoxLayout()
         
         self.auth_button_group = QButtonGroup()
-        self.sso_radio = QRadioButton("AWS SSO (Recommended)")
-        self.sso_radio.setChecked(True)
-        self.access_keys_radio = QRadioButton("Access Keys")
+        self.sso_radio = QRadioButton("AWS SSO")
+        self.access_keys_radio = QRadioButton("Access Keys (Recommended)")
+        self.access_keys_radio.setChecked(True)
         
         self.auth_button_group.addButton(self.sso_radio, 0)
         self.auth_button_group.addButton(self.access_keys_radio, 1)
@@ -117,12 +117,35 @@ class AWSProfileDialog(QDialog):
         self.configure_sso_button.setToolTip("Open terminal to configure AWS SSO")
         self.configure_sso_button.clicked.connect(self.configure_sso_cli)
         self.config_layout.addWidget(self.configure_sso_button, 3, 0, 1, 2)
-        
+
+        # Access Key fields (initially hidden)
+        self.config_layout.addWidget(QLabel("Access Key ID:"), 4, 0)
+        self.access_key_input = QLineEdit()
+        self.access_key_input.setPlaceholderText("AKIA...")
+        self.access_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.config_layout.addWidget(self.access_key_input, 4, 1)
+
+        self.config_layout.addWidget(QLabel("Secret Access Key:"), 5, 0)
+        self.secret_key_input = QLineEdit()
+        self.secret_key_input.setPlaceholderText("Enter your secret access key")
+        self.secret_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.config_layout.addWidget(self.secret_key_input, 5, 1)
+
+        # Show/Hide password button for access keys
+        self.show_keys_button = QPushButton("👁")
+        self.show_keys_button.setMaximumWidth(30)
+        self.show_keys_button.setToolTip("Show/Hide Access Keys")
+        self.show_keys_button.clicked.connect(self.toggle_key_visibility)
+        self.config_layout.addWidget(self.show_keys_button, 4, 2)
+
         self.config_group.setLayout(self.config_layout)
         layout.addWidget(self.config_group)
         
         # Connect signals
         self.auth_button_group.buttonClicked.connect(self.on_auth_method_changed)
+
+        # Initialize UI state based on default selection
+        self.on_auth_method_changed()
         
         # Dialog buttons
         button_box = QDialogButtonBox(
@@ -136,9 +159,40 @@ class AWSProfileDialog(QDialog):
     
     def on_auth_method_changed(self):
         """Handle authentication method change"""
-        # For now, keep SSO fields visible for both methods
-        # Access key configuration would be handled through secure storage
-        pass
+        is_sso = self.sso_radio.isChecked()
+
+        # Show/hide SSO fields
+        self.sso_url_input.setVisible(is_sso)
+        self.sso_region_combo.setVisible(is_sso)
+        self.configure_sso_button.setVisible(is_sso)
+
+        # Show/hide Access Key fields
+        self.access_key_input.setVisible(not is_sso)
+        self.secret_key_input.setVisible(not is_sso)
+        self.show_keys_button.setVisible(not is_sso)
+
+        # Update labels visibility
+        for i in range(self.config_layout.rowCount()):
+            item = self.config_layout.itemAtPosition(i, 0)
+            if item and item.widget():
+                label = item.widget()
+                if isinstance(label, QLabel):
+                    text = label.text()
+                    if "SSO" in text:
+                        label.setVisible(is_sso)
+                    elif "Access Key" in text or "Secret" in text:
+                        label.setVisible(not is_sso)
+
+    def toggle_key_visibility(self):
+        """Toggle visibility of access keys"""
+        if self.access_key_input.echoMode() == QLineEdit.EchoMode.Password:
+            self.access_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.secret_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.show_keys_button.setText("🙈")
+        else:
+            self.access_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self.secret_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self.show_keys_button.setText("👁")
     
     def configure_sso_cli(self):
         """Open terminal to configure AWS SSO"""
@@ -251,15 +305,27 @@ class AWSProfileDialog(QDialog):
     def get_profile_data(self) -> Dict[str, Any]:
         """Get profile configuration data"""
         auth_method = AuthMethod.SSO if self.sso_radio.isChecked() else AuthMethod.ACCESS_KEYS
-        
-        return {
+
+        data = {
             'name': self.profile_name_input.text().strip(),
             'description': self.description_input.text().strip(),
             'auth_method': auth_method,
-            'sso_start_url': self.sso_url_input.text().strip(),
-            'sso_region': self.sso_region_combo.currentText(),
             'region': self.region_combo.currentText()
         }
+
+        # Add method-specific data
+        if auth_method == AuthMethod.SSO:
+            data.update({
+                'sso_start_url': self.sso_url_input.text().strip(),
+                'sso_region': self.sso_region_combo.currentText()
+            })
+        else:  # ACCESS_KEYS
+            data.update({
+                'access_key_id': self.access_key_input.text().strip(),
+                'secret_access_key': self.secret_key_input.text().strip()
+            })
+
+        return data
 
 
 class BucketRefreshWorker(QThread):
@@ -727,11 +793,31 @@ class CloudTab(BaseTab):
                     sso_region=profile_data['sso_region'],
                     region=profile_data['region']
                 )
-            else:
+            else:  # ACCESS_KEYS
+                # Validate access key credentials are provided
+                if not profile_data.get('access_key_id') or not profile_data.get('secret_access_key'):
+                    QMessageBox.warning(self, "Missing Credentials",
+                                      "Access Key ID and Secret Access Key are required for Access Key authentication.")
+                    return
+
                 profile = self.credentials_manager.add_access_key_profile(
                     name=profile_data['name'],
                     region=profile_data['region']
                 )
+
+                # Store the access keys securely
+                from ...core.security.api_key_manager import APIKeyManager
+                api_key_manager = APIKeyManager()
+                success = api_key_manager.set_aws_credentials(
+                    profile_name=profile_data['name'],
+                    access_key_id=profile_data['access_key_id'],
+                    secret_access_key=profile_data['secret_access_key']
+                )
+
+                if not success:
+                    QMessageBox.critical(self, "Storage Error",
+                                       "Failed to securely store AWS credentials. Please try again.")
+                    return
             
             profile.description = profile_data['description']
             

@@ -364,10 +364,27 @@ class AWSCredentialsManager:
     
     def _create_access_key_session(self, profile: AWSProfile) -> boto3.Session:
         """Create session with stored access keys"""
-        # Access keys would be retrieved from secure storage
-        # For now, fall back to default credential chain
-        session = boto3.Session(region_name=profile.region)
-        return session
+        from ..security.api_key_manager import APIKeyManager
+
+        api_key_manager = APIKeyManager()
+        credentials = api_key_manager.get_aws_credentials(profile.name)
+
+        if not credentials:
+            raise ValueError(f"No AWS credentials found for profile '{profile.name}'. Please reconfigure the profile with your Access Key and Secret Key.")
+
+        session = boto3.Session(
+            aws_access_key_id=credentials['access_key_id'],
+            aws_secret_access_key=credentials['secret_access_key'],
+            region_name=profile.region
+        )
+
+        # Validate the credentials work
+        try:
+            sts = session.client('sts')
+            identity = sts.get_caller_identity()
+            return session
+        except Exception as e:
+            raise ValueError(f"Invalid AWS credentials for profile '{profile.name}': {str(e)}")
     
     def export_profiles(self) -> Dict[str, Any]:
         """Export profiles configuration (without sensitive data)"""
