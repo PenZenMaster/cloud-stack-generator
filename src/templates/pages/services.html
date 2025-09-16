@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ business.industry }} Services - {{ business.business_name }}</title>
+    <meta name="description" content="Explore our comprehensive {{ business.industry.lower() }} services at {{ business.business_name }}. Professional solutions tailored to your needs.">
+    <meta name="keywords" content="{{ business.industry.lower() }} services, {{ business.business_name.lower() }}, professional services, {{ contact.address.city.lower() if contact.address.city else '' }}">
+    <meta name="author" content="{{ business.business_name }}">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{{ business.industry }} Services - {{ business.business_name }}">
+    <meta property="og:description" content="Professional {{ business.industry.lower() }} services from {{ business.business_name }}. Quality solutions for your needs.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ business.domain }}/services.html">
+    {% if branding.logo_url %}<meta property="og:image" content="{{ branding.logo_url }}">{% endif %}
+
+    <link rel="canonical" href="{{ business.domain }}/services.html">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    {% include 'components/header.html' %}
+
+    <main>
+        <!-- Services Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Our {{ business.industry }} Services</h1>
+                <p class="hero-subtitle">{% if business.service_overview %}{{ business.service_overview }}{% else %}Discover our comprehensive range of {{ business.industry.lower() }} services designed to meet your unique needs. From consultation to completion, we deliver excellence in every project.{% endif %}</p>
+                <a href="contact.html" class="cta-button">Get a Custom Quote</a>
+            </div>
+        </section>
+
+        <!-- Services Introduction -->
+        <section class="content-section">
+            <div class="container">
+                <h2>Professional {{ business.industry }} Solutions</h2>
+                <p>At {{ business.business_name }}, we offer a complete range of {{ business.industry.lower() }} services {% if contact.address.city %}in {{ contact.address.city }}, {{ contact.address.state }} and surrounding areas{% endif %}. Our experienced team combines traditional expertise with modern techniques to deliver exceptional results that exceed expectations.</p>
+
+                {% if business.service_philosophy %}
+                <p>{{ business.service_philosophy }}</p>
+                {% else %}
+                <p>Every project begins with understanding your vision and requirements. We work closely with you throughout the process, ensuring transparent communication, quality craftsmanship, and timely completion. Our commitment to excellence has made us a trusted partner for both residential and commercial clients.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Services Grid -->
+        {% if services %}
+        <section class="content-section">
+            <div class="container">
+                <h2>Our Service Offerings</h2>
+                <div class="services-grid">
+                    {% for service in services %}
+                    <div class="service-card">
+                        {% if service.image_url %}
+                        <img src="{{ service.image_url }}" alt="{{ service.name if service.name else service }}" class="service-image">
+                        {% else %}
+                        <img src="https://via.placeholder.com/400x300?text={{ (service.name if service.name else service)|urlencode }}" alt="{{ service.name if service.name else service }}" class="service-image">
+                        {% endif %}
+                        <div class="service-card-content">
+                            <h3>{{ service.name if service.name else service }}</h3>
+                            <p class="service-description">
+                                {% if service.description %}
+                                {{ service.description }}
+                                {% else %}
+                                Professional {{ (service.name if service.name else service).lower() }} services delivered with precision and attention to detail. Our skilled team ensures quality results that meet your specific requirements.
+                                {% endif %}
+                            </p>
+
+                            {% if service.features %}
+                            <div class="service-features">
+                                <h4>Key Features:</h4>
+                                <ul>
+                                    {% for feature in service.features[:4] %}
+                                    <li>{{ feature }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <div class="service-actions">
+                                <a href="services/{{ (service.name if service.name else service)|slugify }}.html" class="btn btn-primary">Learn More</a>
+                                <a href="contact.html" class="btn btn-secondary">Get Quote</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Service Process -->
+        <section class="content-section">
+            <div class="container">
+                <h2>Our Service Process</h2>
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <h3>Consultation</h3>
+                        <p>We begin with a thorough consultation to understand your needs, timeline, and budget. Our experts assess your project and provide professional recommendations.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <h3>Planning & Design</h3>
+                        <p>Our team develops a detailed plan and design that aligns with your vision. We ensure all specifications meet industry standards and your requirements.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <h3>Execution</h3>
+                        <p>With careful attention to detail, our skilled professionals execute the project using quality materials and proven techniques for lasting results.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <h3>Completion & Follow-up</h3>
+                        <p>We ensure your complete satisfaction with the finished project and provide ongoing support as needed. Quality assurance is our priority.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Choose Our Services -->
+        <section class="content-section">
+            <div class="container">
+                <h2>Why Choose {{ business.business_name }}?</h2>
+                <div class="service-benefits">
+                    <div class="benefit-item">
+                        <h3>Expert Craftsmanship</h3>
+                        <p>Our team brings years of experience and expertise to every project, ensuring the highest standards of quality and professionalism.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Quality Materials</h3>
+                        <p>We use only premium materials and proven techniques to ensure durability and long-lasting results for all our services.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Customer Satisfaction</h3>
+                        <p>Your satisfaction is our priority. We work closely with you throughout the process to ensure your vision becomes reality.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Competitive Pricing</h3>
+                        <p>We offer transparent, competitive pricing with detailed estimates so you know exactly what to expect from start to finish.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Service Areas -->
+        {% if contact.address.city %}
+        <section class="content-section">
+            <div class="container">
+                <h2>Service Areas</h2>
+                <p>{{ business.business_name }} proudly serves {{ contact.address.city }}, {{ contact.address.state }} and the surrounding communities. Our central location allows us to efficiently serve clients throughout the region while maintaining the personal touch that comes with being a local business.</p>
+
+                {% if business.service_area_description %}
+                <p>{{ business.service_area_description }}</p>
+                {% else %}
+                <p>Whether you're a homeowner, business owner, or contractor, we have the expertise and capacity to handle projects of all sizes. Contact us today to discuss how we can help with your {{ business.industry.lower() }} needs.</p>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Call to Action -->
+        <section class="content-section">
+            <div class="container">
+                <div class="services-cta">
+                    <h2>Ready to Get Started?</h2>
+                    <p>Contact {{ business.business_name }} today for a consultation and detailed quote for your {{ business.industry.lower() }} project. Our team is ready to bring your vision to life with professional service and exceptional results.</p>
+                    <div class="cta-actions">
+                        <a href="contact.html" class="btn btn-primary">Request Quote</a>
+                        {% if contact.phone %}<a href="tel:{{ contact.phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" class="btn btn-secondary">Call Now</a>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    {% include 'components/footer.html' %}
+
+    <script>
+        // Enhanced dropdown functionality - Following specification
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownItems = document.querySelectorAll('.has-dropdown');
+            let resizeTimeoutId;
+
+            dropdownItems.forEach(function(dropdownItem) {
+                const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                const dropdown = dropdownItem.querySelector('.dropdown');
+                let timeoutId;
+
+                if (trigger && dropdown) {
+                    // Initialize dropdown state
+                    dropdown.style.display = 'none';
+                    trigger.setAttribute('aria-expanded', 'false');
+
+                    // Desktop hover behavior
+                    dropdownItem.addEventListener('mouseenter', function() {
+                        clearTimeout(timeoutId);
+                        dropdown.style.display = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+                        trigger.setAttribute('aria-expanded', 'true');
+                    });
+
+                    dropdownItem.addEventListener('mouseleave', function() {
+                        timeoutId = setTimeout(function() {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }, 200);
+                    });
+
+                    // Mobile/touch click behavior
+                    trigger.addEventListener('click', function(e) {
+                        // On mobile, use click to toggle
+                        if (window.innerWidth <= 768) {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            const displayType = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+
+                            // Close all other dropdowns first
+                            dropdownItems.forEach(function(other) {
+                                if (other !== dropdownItem) {
+                                    const otherDropdown = other.querySelector('.dropdown');
+                                    const otherTrigger = other.querySelector('a[aria-haspopup="true"]');
+                                    if (otherDropdown) otherDropdown.style.display = 'none';
+                                    if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+
+                            // Toggle current dropdown
+                            dropdown.style.display = isVisible ? 'none' : displayType;
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        }
+                    });
+
+                    // Keyboard navigation support
+                    trigger.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            dropdown.style.display = isVisible ? 'none' : (dropdown.classList.contains('grid-layout') ? 'grid' : 'flex');
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        } else if (e.key === 'Escape') {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                            trigger.focus();
+                        }
+                    });
+                }
+            });
+
+            // Close all dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.has-dropdown')) {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown) dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+
+            // Handle window resize for responsive behavior with debouncing
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeoutId);
+                resizeTimeoutId = setTimeout(function() {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown && window.innerWidth > 768) {
+                            dropdown.style.display = 'none';
+                            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -190,8 +190,10 @@
 
         {% if business.service_area_description %}
         <section class="content-section">
-            <h2>Our Service Area</h2>
-            <p>{{ business.service_area_description }}</p>
+            <div class="container">
+                <h2>Our Service Area</h2>
+                <p>{{ business.service_area_description }}</p>
+            </div>
         </section>
         {% elif contact.address.city %}
         <section class="content-section">
@@ -208,14 +210,16 @@
 
         {% if business.company_stats %}
         <section class="content-section">
-            <h2>Our Track Record</h2>
-            <div class="stats-grid">
-                {% for stat, value in business.company_stats.items() %}
-                <div class="stat-item">
-                    <h3>{{ value }}</h3>
-                    <p>{{ stat|title }}</p>
+            <div class="container">
+                <h2>Our Track Record</h2>
+                <div class="stats-grid">
+                    {% for stat, value in business.company_stats.items() %}
+                    <div class="stat-item">
+                        <h3>{{ value }}</h3>
+                        <p>{{ stat|title }}</p>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </section>
         {% endif %}
@@ -227,13 +231,17 @@
         // Enhanced dropdown functionality - Following specification
         document.addEventListener('DOMContentLoaded', function() {
             const dropdownItems = document.querySelectorAll('.has-dropdown');
-            
+            let resizeTimeoutId;
+
             dropdownItems.forEach(function(dropdownItem) {
                 const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
                 const dropdown = dropdownItem.querySelector('.dropdown');
                 let timeoutId;
-                
+
                 if (trigger && dropdown) {
+                    // Initialize dropdown state
+                    dropdown.style.display = 'none';
+                    trigger.setAttribute('aria-expanded', 'false');
                     // Desktop hover behavior
                     dropdownItem.addEventListener('mouseenter', function() {
                         clearTimeout(timeoutId);
@@ -254,7 +262,8 @@
                         if (window.innerWidth <= 768) {
                             e.preventDefault();
                             const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
-                            
+                            const displayType = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+
                             // Close all other dropdowns first
                             dropdownItems.forEach(function(other) {
                                 if (other !== dropdownItem) {
@@ -264,9 +273,9 @@
                                     if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
                                 }
                             });
-                            
+
                             // Toggle current dropdown
-                            dropdown.style.display = isVisible ? 'none' : 'flex';
+                            dropdown.style.display = isVisible ? 'none' : displayType;
                             trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
                         }
                     });
@@ -299,16 +308,19 @@
                 }
             });
             
-            // Handle window resize for responsive behavior
+            // Handle window resize for responsive behavior with debouncing
             window.addEventListener('resize', function() {
-                dropdownItems.forEach(function(dropdownItem) {
-                    const dropdown = dropdownItem.querySelector('.dropdown');
-                    const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
-                    if (dropdown && window.innerWidth > 768) {
-                        dropdown.style.display = 'none';
-                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
-                    }
-                });
+                clearTimeout(resizeTimeoutId);
+                resizeTimeoutId = setTimeout(function() {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown && window.innerWidth > 768) {
+                            dropdown.style.display = 'none';
+                            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                }, 150);
             });
         });
     </script>

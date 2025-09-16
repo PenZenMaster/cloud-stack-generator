@@ -8,23 +8,23 @@
             </div>
             <nav class="main-nav" role="navigation">
                 <ul class="menu">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="{{ base_path | default('') }}index.html">Home</a></li>
                     {% if services %}
                     <li class="has-dropdown">
-                        <a href="services.html" aria-haspopup="true" aria-expanded="false">Services ▾</a>
+                        <a href="{{ base_path | default('') }}services.html" aria-haspopup="true" aria-expanded="false">Services ▾</a>
                         <ul class="dropdown">
                             {% for service in services[:7] %}
-                            <li><a href="services/{{ service.name|slugify }}.html">{{ service.name if service.name else service }}</a></li>
+                            <li><a href="{{ base_path | default('') }}services/{{ service.name|slugify }}.html">{{ service.name if service.name else service }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
                     {% endif %}
                     {% if products %}
                     <li class="has-dropdown">
-                        <a href="products.html" aria-haspopup="true" aria-expanded="false">Products ▾</a>
+                        <a href="{{ base_path | default('') }}products.html" aria-haspopup="true" aria-expanded="false">Products ▾</a>
                         <ul class="dropdown grid-layout">
                             {% for product in products[:7] %}
-                            <li><a href="products/{{ product.name|slugify }}.html">{{ product.name if product.name else product }}</a></li>
+                            <li><a href="{{ base_path | default('') }}products/{{ product.name|slugify }}.html">{{ product.name if product.name else product }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
@@ -34,17 +34,17 @@
                         <a href="#locations" aria-haspopup="true" aria-expanded="false">Service Area ▾</a>
                         <ul class="dropdown grid-layout">
                             {% for city_page in city_pages %}
-                            <li><a href="locations/{{ city_page.slug }}.html">{{ city_page.city_name }}</a></li>
+                            <li><a href="{{ base_path | default('') }}locations/{{ city_page.slug }}.html">{{ city_page.city_name }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
                     {% endif %}
-                    <li><a href="faq.html">FAQ</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="{{ base_path | default('') }}faq.html">FAQ</a></li>
+                    <li><a href="{{ base_path | default('') }}contact.html">Contact</a></li>
                     <li class="has-dropdown">
-                        <a href="about.html" aria-haspopup="true" aria-expanded="false">About ▾</a>
+                        <a href="{{ base_path | default('') }}about.html" aria-haspopup="true" aria-expanded="false">About ▾</a>
                         <ul class="dropdown">
-                            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                            <li><a href="{{ base_path | default('') }}privacy-policy.html">Privacy Policy</a></li>
                         </ul>
                     </li>
                 </ul>

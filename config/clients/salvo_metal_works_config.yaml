@@ -382,11 +382,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Bellwood Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.86449999999999!3d41.8889!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBellwood+Public+Library+123+Main+St,+Bellwood,+Illinois
+      embed_url: https://www.google.com/maps/search/Bellwood+Public+Library+123+Main+St,+Bellwood,+Illinois
     - name: Bellwood Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8845!3d41.868900000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBellwood+Community+Park+456+Park+Ave,+Bellwood,+Illinois
+      embed_url: https://www.google.com/maps/search/Bellwood+Community+Park+456+Park+Ave,+Bellwood,+Illinois
     - name: Bellwood Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8795!3d41.883900000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBellwood+Historical+Museum+789+Heritage+Blvd,+Bellwood,+Illinois
+      embed_url: https://www.google.com/maps/search/Bellwood+Historical+Museum+789+Heritage+Blvd,+Bellwood,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -441,11 +441,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Oak Park Illinois Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.77449999999999!3d41.894999999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Illinois+Public+Library+123+Main+St,+Oak+Park+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Park+Illinois+Public+Library+123+Main+St,+Oak+Park+Illinois
     - name: Oak Park Illinois Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7945!3d41.875!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Illinois+Community+Park+456+Park+Ave,+Oak+Park+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Park+Illinois+Community+Park+456+Park+Ave,+Oak+Park+Illinois
     - name: Oak Park Illinois Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.78949999999999!3d41.89!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Illinois+Historical+Museum+789+Heritage+Blvd,+Oak+Park+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Park+Illinois+Historical+Museum+789+Heritage+Blvd,+Oak+Park+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -502,11 +502,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Berwyn Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7837!3d41.860299999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBerwyn+Public+Library+123+Main+St,+Berwyn,+Illinois
+      embed_url: https://www.google.com/maps/search/Berwyn+Public+Library+123+Main+St,+Berwyn,+Illinois
     - name: Berwyn Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8037!3d41.8403!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBerwyn+Community+Park+456+Park+Ave,+Berwyn,+Illinois
+      embed_url: https://www.google.com/maps/search/Berwyn+Community+Park+456+Park+Ave,+Berwyn,+Illinois
     - name: Berwyn Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7987!3d41.8553!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBerwyn+Historical+Museum+789+Heritage+Blvd,+Berwyn,+Illinois
+      embed_url: https://www.google.com/maps/search/Berwyn+Historical+Museum+789+Heritage+Blvd,+Berwyn,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -561,11 +561,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Bridgeview Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7948!3d41.7631!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBridgeview+Public+Library+123+Main+St,+Bridgeview,+Illinois
+      embed_url: https://www.google.com/maps/search/Bridgeview+Public+Library+123+Main+St,+Bridgeview,+Illinois
     - name: Bridgeview Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8148!3d41.743100000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBridgeview+Community+Park+456+Park+Ave,+Bridgeview,+Illinois
+      embed_url: https://www.google.com/maps/search/Bridgeview+Community+Park+456+Park+Ave,+Bridgeview,+Illinois
     - name: Bridgeview Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8098!3d41.758100000000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBridgeview+Historical+Museum+789+Heritage+Blvd,+Bridgeview,+Illinois
+      embed_url: https://www.google.com/maps/search/Bridgeview+Historical+Museum+789+Heritage+Blvd,+Bridgeview,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -621,11 +621,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Brookfield Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8412!3d41.834199999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBrookfield+Public+Library+123+Main+St,+Brookfield,+Illinois
+      embed_url: https://www.google.com/maps/search/Brookfield+Public+Library+123+Main+St,+Brookfield,+Illinois
     - name: Brookfield Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.86120000000001!3d41.8142!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBrookfield+Community+Park+456+Park+Ave,+Brookfield,+Illinois
+      embed_url: https://www.google.com/maps/search/Brookfield+Community+Park+456+Park+Ave,+Brookfield,+Illinois
     - name: Brookfield Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8562!3d41.8292!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBrookfield+Historical+Museum+789+Heritage+Blvd,+Brookfield,+Illinois
+      embed_url: https://www.google.com/maps/search/Brookfield+Historical+Museum+789+Heritage+Blvd,+Brookfield,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -682,11 +682,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Burbank Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.76899999999999!3d41.749199999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBurbank+Public+Library+123+Main+St,+Burbank,+Illinois
+      embed_url: https://www.google.com/maps/search/Burbank+Public+Library+123+Main+St,+Burbank,+Illinois
     - name: Burbank Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.789!3d41.7292!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBurbank+Community+Park+456+Park+Ave,+Burbank,+Illinois
+      embed_url: https://www.google.com/maps/search/Burbank+Community+Park+456+Park+Ave,+Burbank,+Illinois
     - name: Burbank Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.78399999999999!3d41.7442!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sBurbank+Historical+Museum+789+Heritage+Blvd,+Burbank,+Illinois
+      embed_url: https://www.google.com/maps/search/Burbank+Historical+Museum+789+Heritage+Blvd,+Burbank,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -743,11 +743,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Cicero Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7439!3d41.855599999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sCicero+Public+Library+123+Main+St,+Cicero,+Illinois
+      embed_url: https://www.google.com/maps/search/Cicero+Public+Library+123+Main+St,+Cicero,+Illinois
     - name: Cicero Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7639!3d41.8356!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sCicero+Community+Park+456+Park+Ave,+Cicero,+Illinois
+      embed_url: https://www.google.com/maps/search/Cicero+Community+Park+456+Park+Ave,+Cicero,+Illinois
     - name: Cicero Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7589!3d41.8506!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sCicero+Historical+Museum+789+Heritage+Blvd,+Cicero,+Illinois
+      embed_url: https://www.google.com/maps/search/Cicero+Historical+Museum+789+Heritage+Blvd,+Cicero,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -803,11 +803,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Elmwood Park Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.79809999999999!3d41.9308!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sElmwood+Park+Public+Library+123+Main+St,+Elmwood+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Elmwood+Park+Public+Library+Elmwood+Park+Illinois
     - name: Elmwood Park Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8181!3d41.9108!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sElmwood+Park+Community+Park+456+Park+Ave,+Elmwood+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Elmwood+Park+Community+Park+Elmwood+Park+Illinois
     - name: Elmwood Park Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81309999999999!3d41.9258!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sElmwood+Park+Historical+Museum+789+Heritage+Blvd,+Elmwood+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Elmwood+Park+Historical+Museum+Elmwood+Park+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -865,11 +865,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Evanston Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.6777!3d42.055099999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sEvanston+Public+Library+123+Main+St,+Evanston,+Illinois
+      embed_url: https://www.google.com/maps/search/Evanston+Public+Library+123+Main+St,+Evanston,+Illinois
     - name: Evanston Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.69770000000001!3d42.0351!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sEvanston+Community+Park+456+Park+Ave,+Evanston,+Illinois
+      embed_url: https://www.google.com/maps/search/Evanston+Community+Park+456+Park+Ave,+Evanston,+Illinois
     - name: Evanston Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.6927!3d42.0501!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sEvanston+Historical+Museum+789+Heritage+Blvd,+Evanston,+Illinois
+      embed_url: https://www.google.com/maps/search/Evanston+Historical+Museum+789+Heritage+Blvd,+Evanston,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -928,11 +928,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Forest Park Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.80369999999999!3d41.889199999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sForest+Park+Public+Library+123+Main+St,+Forest+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Forest+Park+Public+Library+123+Main+St,+Forest+Park,+Illinois
     - name: Forest Park Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8237!3d41.8692!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sForest+Park+Community+Park+456+Park+Ave,+Forest+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Forest+Park+Community+Park+456+Park+Ave,+Forest+Park,+Illinois
     - name: Forest Park Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81869999999999!3d41.8842!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sForest+Park+Historical+Museum+789+Heritage+Blvd,+Forest+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Forest+Park+Historical+Museum+789+Heritage+Blvd,+Forest+Park,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -988,11 +988,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Franklin Park Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8548!3d41.939699999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sFranklin+Park+Public+Library+123+Main+St,+Franklin+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Franklin+Park+Public+Library+123+Main+St,+Franklin+Park,+Illinois
     - name: Franklin Park Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.87480000000001!3d41.9197!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sFranklin+Park+Community+Park+456+Park+Ave,+Franklin+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Franklin+Park+Community+Park+456+Park+Ave,+Franklin+Park,+Illinois
     - name: Franklin Park Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8698!3d41.9347!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sFranklin+Park+Historical+Museum+789+Heritage+Blvd,+Franklin+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Franklin+Park+Historical+Museum+789+Heritage+Blvd,+Franklin+Park,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1048,11 +1048,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Harwood Heights Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.79809999999999!3d41.9767!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sHarwood+Heights+Public+Library+123+Main+St,+Harwood+Heights,+Illinois
+      embed_url: https://www.google.com/maps/search/Harwood+Heights+Public+Library+123+Main+St,+Harwood+Heights,+Illinois
     - name: Harwood Heights Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8181!3d41.956700000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sHarwood+Heights+Community+Park+456+Park+Ave,+Harwood+Heights,+Illinois
+      embed_url: https://www.google.com/maps/search/Harwood+Heights+Community+Park+456+Park+Ave,+Harwood+Heights,+Illinois
     - name: Harwood Heights Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81309999999999!3d41.971700000000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sHarwood+Heights+Historical+Museum+789+Heritage+Blvd,+Harwood+Heights,+Illinois
+      embed_url: https://www.google.com/maps/search/Harwood+Heights+Historical+Museum+789+Heritage+Blvd,+Harwood+Heights,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1109,11 +1109,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Lincolnwood Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7187!3d42.018899999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLincolnwood+Public+Library+123+Main+St,+Lincolnwood,+Illinois
+      embed_url: https://www.google.com/maps/search/Lincolnwood+Public+Library+123+Main+St,+Lincolnwood,+Illinois
     - name: Lincolnwood Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.73870000000001!3d41.9989!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLincolnwood+Community+Park+456+Park+Ave,+Lincolnwood,+Illinois
+      embed_url: https://www.google.com/maps/search/Lincolnwood+Community+Park+456+Park+Ave,+Lincolnwood,+Illinois
     - name: Lincolnwood Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7337!3d42.0139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLincolnwood+Historical+Museum+789+Heritage+Blvd,+Lincolnwood,+Illinois
+      embed_url: https://www.google.com/maps/search/Lincolnwood+Historical+Museum+789+Heritage+Blvd,+Lincolnwood,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1168,11 +1168,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Lyons Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.80839999999999!3d41.8231!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLyons+Public+Library+123+Main+St,+Lyons,+Illinois
+      embed_url: https://www.google.com/maps/search/Lyons+Public+Library+123+Main+St,+Lyons,+Illinois
     - name: Lyons Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8284!3d41.8031!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLyons+Community+Park+456+Park+Ave,+Lyons,+Illinois
+      embed_url: https://www.google.com/maps/search/Lyons+Community+Park+456+Park+Ave,+Lyons,+Illinois
     - name: Lyons Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.82339999999999!3d41.8181!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sLyons+Historical+Museum+789+Heritage+Blvd,+Lyons,+Illinois
+      embed_url: https://www.google.com/maps/search/Lyons+Historical+Museum+789+Heritage+Blvd,+Lyons,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1228,11 +1228,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Maywood Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8337!3d41.889199999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMaywood+Public+Library+123+Main+St,+Maywood,+Illinois
+      embed_url: https://www.google.com/maps/search/Maywood+Public+Library+123+Main+St,+Maywood,+Illinois
     - name: Maywood Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8537!3d41.8692!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMaywood+Community+Park+456+Park+Ave,+Maywood,+Illinois
+      embed_url: https://www.google.com/maps/search/Maywood+Community+Park+456+Park+Ave,+Maywood,+Illinois
     - name: Maywood Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8487!3d41.8842!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMaywood+Historical+Museum+789+Heritage+Blvd,+Maywood,+Illinois
+      embed_url: https://www.google.com/maps/search/Maywood+Historical+Museum+789+Heritage+Blvd,+Maywood,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1287,11 +1287,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Melrose Park Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.84809999999999!3d41.9092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMelrose+Park+Public+Library+123+Main+St,+Melrose+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Melrose+Park+Public+Library+123+Main+St,+Melrose+Park,+Illinois
     - name: Melrose Park Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8681!3d41.8892!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMelrose+Park+Community+Park+456+Park+Ave,+Melrose+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Melrose+Park+Community+Park+456+Park+Ave,+Melrose+Park,+Illinois
     - name: Melrose Park Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.86309999999999!3d41.9042!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sMelrose+Park+Historical+Museum+789+Heritage+Blvd,+Melrose+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Melrose+Park+Historical+Museum+789+Heritage+Blvd,+Melrose+Park,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1348,11 +1348,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Norridge Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81729999999999!3d41.9725!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sNorridge+Public+Library+123+Main+St,+Norridge,+Illinois
+      embed_url: https://www.google.com/maps/search/Norridge+Public+Library+123+Main+St,+Norridge,+Illinois
     - name: Norridge Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8373!3d41.9525!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sNorridge+Community+Park+456+Park+Ave,+Norridge,+Illinois
+      embed_url: https://www.google.com/maps/search/Norridge+Community+Park+456+Park+Ave,+Norridge,+Illinois
     - name: Norridge Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.83229999999999!3d41.9675!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sNorridge+Historical+Museum+789+Heritage+Blvd,+Norridge,+Illinois
+      embed_url: https://www.google.com/maps/search/Norridge+Historical+Museum+789+Heritage+Blvd,+Norridge,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1409,11 +1409,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Oak Lawn Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7431!3d41.7297!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Lawn+Public+Library+123+Main+St,+Oak+Lawn,+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Lawn+Public+Library+123+Main+St,+Oak+Lawn,+Illinois
     - name: Oak Lawn Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.76310000000001!3d41.709700000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Lawn+Community+Park+456+Park+Ave,+Oak+Lawn,+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Lawn+Community+Park+456+Park+Ave,+Oak+Lawn,+Illinois
     - name: Oak Lawn Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7581!3d41.724700000000006!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Lawn+Historical+Museum+789+Heritage+Blvd,+Oak+Lawn,+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Lawn+Historical+Museum+789+Heritage+Blvd,+Oak+Lawn,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1472,11 +1472,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Oak Park Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.77449999999999!3d41.894999999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Public+Library+123+Main+St,+Oak+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Park+Public+Library+123+Main+St,+Oak+Park,+Illinois
     - name: Oak Park Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7945!3d41.875!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Community+Park+456+Park+Ave,+Oak+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Park+Community+Park+456+Park+Ave,+Oak+Park,+Illinois
     - name: Oak Park Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.78949999999999!3d41.89!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sOak+Park+Historical+Museum+789+Heritage+Blvd,+Oak+Park,+Illinois
+      embed_url: https://www.google.com/maps/search/Oak+Park+Historical+Museum+789+Heritage+Blvd,+Oak+Park,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1534,11 +1534,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Park Ridge Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.83059999999999!3d42.0212!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sPark+Ridge+Public+Library+123+Main+St,+Park+Ridge,+Illinois
+      embed_url: https://www.google.com/maps/search/Park+Ridge+Public+Library+123+Main+St,+Park+Ridge,+Illinois
     - name: Park Ridge Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8506!3d42.001200000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sPark+Ridge+Community+Park+456+Park+Ave,+Park+Ridge,+Illinois
+      embed_url: https://www.google.com/maps/search/Park+Ridge+Community+Park+456+Park+Ave,+Park+Ridge,+Illinois
     - name: Park Ridge Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.84559999999999!3d42.016200000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sPark+Ridge+Historical+Museum+789+Heritage+Blvd,+Park+Ridge,+Illinois
+      embed_url: https://www.google.com/maps/search/Park+Ridge+Historical+Museum+789+Heritage+Blvd,+Park+Ridge,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1596,11 +1596,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: River Forest Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.80369999999999!3d41.9092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Forest+Public+Library+123+Main+St,+River+Forest,+Illinois
+      embed_url: https://www.google.com/maps/search/River+Forest+Public+Library+123+Main+St,+River+Forest,+Illinois
     - name: River Forest Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8237!3d41.8892!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Forest+Community+Park+456+Park+Ave,+River+Forest,+Illinois
+      embed_url: https://www.google.com/maps/search/River+Forest+Community+Park+456+Park+Ave,+River+Forest,+Illinois
     - name: River Forest Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.81869999999999!3d41.9042!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Forest+Historical+Museum+789+Heritage+Blvd,+River+Forest,+Illinois
+      embed_url: https://www.google.com/maps/search/River+Forest+Historical+Museum+789+Heritage+Blvd,+River+Forest,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1655,11 +1655,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: River Grove Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.82809999999999!3d41.9392!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Grove+Public+Library+123+Main+St,+River+Grove,+Illinois
+      embed_url: https://www.google.com/maps/search/River+Grove+Public+Library+123+Main+St,+River+Grove,+Illinois
     - name: River Grove Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8481!3d41.919200000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Grove+Community+Park+456+Park+Ave,+River+Grove,+Illinois
+      embed_url: https://www.google.com/maps/search/River+Grove+Community+Park+456+Park+Ave,+River+Grove,+Illinois
     - name: River Grove Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.84309999999999!3d41.934200000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiver+Grove+Historical+Museum+789+Heritage+Blvd,+River+Grove,+Illinois
+      embed_url: https://www.google.com/maps/search/River+Grove+Historical+Museum+789+Heritage+Blvd,+River+Grove,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1717,11 +1717,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Riverside Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.80839999999999!3d41.8431!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiverside+Public+Library+123+Main+St,+Riverside,+Illinois
+      embed_url: https://www.google.com/maps/search/Riverside+Public+Library+123+Main+St,+Riverside,+Illinois
     - name: Riverside Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8284!3d41.823100000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiverside+Community+Park+456+Park+Ave,+Riverside,+Illinois
+      embed_url: https://www.google.com/maps/search/Riverside+Community+Park+456+Park+Ave,+Riverside,+Illinois
     - name: Riverside Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.82339999999999!3d41.838100000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sRiverside+Historical+Museum+789+Heritage+Blvd,+Riverside,+Illinois
+      embed_url: https://www.google.com/maps/search/Riverside+Historical+Museum+789+Heritage+Blvd,+Riverside,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1777,11 +1777,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Skokie Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7234!3d42.0434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSkokie+Public+Library+123+Main+St,+Skokie,+Illinois
+      embed_url: https://www.google.com/maps/search/Skokie+Public+Library+123+Main+St,+Skokie,+Illinois
     - name: Skokie Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.74340000000001!3d42.0234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSkokie+Community+Park+456+Park+Ave,+Skokie,+Illinois
+      embed_url: https://www.google.com/maps/search/Skokie+Community+Park+456+Park+Ave,+Skokie,+Illinois
     - name: Skokie Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.7384!3d42.0384!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSkokie+Historical+Museum+789+Heritage+Blvd,+Skokie,+Illinois
+      embed_url: https://www.google.com/maps/search/Skokie+Historical+Museum+789+Heritage+Blvd,+Skokie,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including
@@ -1837,11 +1837,11 @@ client:
     seo_content_body: ''
     places_of_interest:
     - name: Summit Public Library
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8065!3d41.7986!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSummit+Public+Library+123+Main+St,+Summit,+Illinois
+      embed_url: https://www.google.com/maps/search/Summit+Public+Library+123+Main+St,+Summit,+Illinois
     - name: Summit Community Park
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.82650000000001!3d41.778600000000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSummit+Community+Park+456+Park+Ave,+Summit,+Illinois
+      embed_url: https://www.google.com/maps/search/Summit+Community+Park+456+Park+Ave,+Summit,+Illinois
     - name: Summit Historical Museum
-      embed_url: https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.0!2d-87.8215!3d41.793600000000005!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2sSummit+Historical+Museum+789+Heritage+Blvd,+Summit,+Illinois
+      embed_url: https://www.google.com/maps/search/Summit+Historical+Museum+789+Heritage+Blvd,+Summit,+Illinois
     city_faq:
     - question: What types of architectural metal fabrication services are available?
       answer: Salvo Metal Works offers comprehensive architectural metalwork including

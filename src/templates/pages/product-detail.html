@@ -1,11 +1,33 @@
-{% include 'components/header.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - {{ business.business_name }}</title>
+    <meta name="description" content="{% if product.description %}{{ product.description[:150] }}{% if product.description|length > 150 %}...{% endif %}{% else %}{{ product.name }} from {{ business.business_name }}. High-quality products for your needs.{% endif %}">
+    <meta name="keywords" content="{{ product.name|lower }}, {{ business.business_name|lower }}, {{ business.industry|lower }}">
+    <meta name="author" content="{{ business.business_name }}">
+    <meta name="robots" content="index, follow">
 
-<main>
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{{ product.name }} - {{ business.business_name }}">
+    <meta property="og:description" content="{% if product.description %}{{ product.description[:150] }}{% if product.description|length > 150 %}...{% endif %}{% else %}{{ product.name }} from {{ business.business_name }}{% endif %}">
+    <meta property="og:type" content="product">
+    <meta property="og:url" content="{{ business.domain }}/products/{{ product.name|slugify }}.html">
+    {% if product.image_url %}<meta property="og:image" content="{{ product.image_url }}">{% endif %}
+
+    <link rel="canonical" href="{{ business.domain }}/products/{{ product.name|slugify }}.html">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    {% include 'components/header.html' %}
+
+    <main>
     <div class="container">
         <div class="product-detail">
             <div class="breadcrumb">
-                <a href="index.html">Home</a> >
-                <a href="products.html">Products</a> >
+                <a href="../index.html">Home</a> >
+                <a href="../products.html">Products</a> >
                 {{ product.name }}
             </div>
 
@@ -91,10 +113,109 @@
             <div class="contact-cta">
                 <h2>Interested in {{ product.name }}?</h2>
                 <p>Contact {{ business.business_name }} today for pricing and availability.</p>
-                <a href="contact.html" class="btn btn-primary">Contact Us Now</a>
+                <a href="../contact.html" class="btn btn-primary">Contact Us Now</a>
             </div>
         </div>
     </div>
 </main>
 
 {% include 'components/footer.html' %}
+
+    <script>
+        // Enhanced dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownItems = document.querySelectorAll('.has-dropdown');
+            let resizeTimeoutId;
+
+            dropdownItems.forEach(function(dropdownItem) {
+                const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                const dropdown = dropdownItem.querySelector('.dropdown');
+                let timeoutId;
+
+                if (trigger && dropdown) {
+                    // Initialize dropdown state
+                    dropdown.style.display = 'none';
+                    trigger.setAttribute('aria-expanded', 'false');
+
+                    // Desktop hover behavior
+                    dropdownItem.addEventListener('mouseenter', function() {
+                        clearTimeout(timeoutId);
+                        dropdown.style.display = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+                        trigger.setAttribute('aria-expanded', 'true');
+                    });
+
+                    dropdownItem.addEventListener('mouseleave', function() {
+                        timeoutId = setTimeout(function() {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }, 200);
+                    });
+
+                    // Mobile/touch click behavior
+                    trigger.addEventListener('click', function(e) {
+                        if (window.innerWidth <= 768) {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            const displayType = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+
+                            // Close all other dropdowns first
+                            dropdownItems.forEach(function(other) {
+                                if (other !== dropdownItem) {
+                                    const otherDropdown = other.querySelector('.dropdown');
+                                    const otherTrigger = other.querySelector('a[aria-haspopup="true"]');
+                                    if (otherDropdown) otherDropdown.style.display = 'none';
+                                    if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+
+                            dropdown.style.display = isVisible ? 'none' : displayType;
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        }
+                    });
+
+                    // Keyboard navigation support
+                    trigger.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            dropdown.style.display = isVisible ? 'none' : (dropdown.classList.contains('grid-layout') ? 'grid' : 'flex');
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        } else if (e.key === 'Escape') {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                            trigger.focus();
+                        }
+                    });
+                }
+            });
+
+            // Close all dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.has-dropdown')) {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown) dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+
+            // Handle window resize for responsive behavior with debouncing
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeoutId);
+                resizeTimeoutId = setTimeout(function() {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown && window.innerWidth > 768) {
+                            dropdown.style.display = 'none';
+                            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,22 +1,10 @@
     <footer class="footer">
         <div class="footer-content">
-            <div class="footer-info">
+            <!-- Column 1: Company Info -->
+            <div class="footer-column footer-info">
                 <h3 class="footer-brand">{{ business.business_name }}</h3>
                 <p class="footer-description">{% if business.description %}{{ business.description[:150] }}{% if business.description|length > 150 %}...{% endif %}{% else %}Professional {{ business.industry }} services you can trust.{% endif %}</p>
-                
-                <!-- Contact Information -->
-                <div class="footer-contact">
-                    {% if contact.phone %}
-                    <p><strong>Phone:</strong> <a href="tel:{{ contact.phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ contact.phone }}</a></p>
-                    {% endif %}
-                    {% if contact.email %}
-                    <p><strong>Email:</strong> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
-                    {% endif %}
-                    {% if contact.address.street %}
-                    <p><strong>Address:</strong> {{ contact.address.street }}, {{ contact.address.city }}, {{ contact.address.state }} {{ contact.address.zip_code }}</p>
-                    {% endif %}
-                </div>
-                
+
                 <!-- Social Media Links -->
                 {% if social_media %}
                 <div class="footer-social">
@@ -35,14 +23,43 @@
                 </div>
                 {% endif %}
             </div>
-            
-            <!-- Google Business Profile Map Embed -->
+
+            <!-- Column 2: Contact Information -->
+            <div class="footer-column footer-contact">
+                <h4>Contact Information</h4>
+                {% if contact.phone %}
+                <p><strong>Phone:</strong> <a href="tel:{{ contact.phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ contact.phone }}</a></p>
+                {% endif %}
+                {% if contact.email %}
+                <p><strong>Email:</strong> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+                {% endif %}
+                {% if contact.address.street %}
+                <p><strong>Address:</strong> {{ contact.address.street }}, {{ contact.address.city }}, {{ contact.address.state }} {{ contact.address.zip_code }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Column 3: Google Business Profile Map or Quick Links -->
             {% if google_business_profile.embed_code %}
-            <div class="footer-map">
+            <div class="footer-column footer-map">
                 <h4>Visit Our Location</h4>
                 <div class="map-container">
                     {{ google_business_profile.embed_code|safe }}
                 </div>
+            </div>
+            {% else %}
+            <div class="footer-column footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="about.html">About</a></li>
+                    {% if services %}
+                    <li><a href="services.html">Services</a></li>
+                    {% endif %}
+                    {% if products %}
+                    <li><a href="products.html">Products</a></li>
+                    {% endif %}
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                </ul>
             </div>
             {% endif %}
         </div>
