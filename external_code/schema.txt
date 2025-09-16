@@ -1,0 +1,72 @@
+<script type="application/ld+json"> {
+ "@context": "https://schema.org",
+ "@graph": [
+ {
+ "@type": "LocalBusiness",
+ "@id": "https://salvometalworks.com/#business",
+ "name": "Salvo Metal Works",
+ "description": "Salvo Metal Works designs and fabricates custom architectural metal products including cupolas, dormers, finials, leader boxes, roof vents, and snow guards.",
+ "url": "https://salvometalworks.com/",
+ "telephone": "(866) 713-3396",
+ "email": "info@salvometalworks.com",
+ "priceRange": "$$$",
+ "image": "https://salvometalworks.com/wp-content/uploads/2024/10/cropped-Salvo_CMYK_FullColor_Logo_Icon-180x180.png",
+ "logo": "https://salvometalworks.com/wp-content/uploads/2024/10/cropped-Salvo_CMYK_FullColor_Logo_Icon-180x180.png",
+ "address": {
+ "@type": "PostalAddress",
+ "streetAddress": "566 W 5th Ave",
+ "addressLocality": "Naperville",
+ "addressRegion": "IL",
+ "postalCode": "60563",
+ "addressCountry": "US"
+ },
+ "geo": {
+ "@type": "GeoCoordinates",
+ "latitude": 41.6785,
+ "longitude": -88.1553
+ },
+ "sameAs": [
+ "https://www.facebook.com/SalvoMetalWorks",
+ "https://www.pinterest.com/salvometalworks/",
+ "https://www.linkedin.com/company/salvometalworks",
+ "https://www.youtube.com/@salvometalworks"
+ ],
+ "knowsAbout": [
+ "https://en.wikipedia.org/wiki/Cupola",
+ "https://en.wikipedia.org/wiki/Dormer",
+ "https://en.wikipedia.org/wiki/Finial",
+ "https://en.wikipedia.org/wiki/Box_gutter",
+ "https://en.wikipedia.org/wiki/Ventilation",
+ "https://en.wikipedia.org/wiki/Snow_guard"
+ ]
+ },
+ {
+ "@type": "WebSite",
+ "@id": "https://salvometalworks.com/#website",
+ "url": "https://salvometalworks.com/",
+ "name": "Salvo Metal Works",
+ "publisher": {
+ "@id": "https://salvometalworks.com/#business"
+ },
+ "inLanguage": "en"
+ },
+ {
+ "@type": "WebPage",
+ "@id": "https://salvometalworks.com/#webpage",
+ "url": "https://salvometalworks.com/",
+ "name": "Salvo Metal Works – Custom Architectural Metal Fabrication",
+ "description": "Experts in custom copper and metalwork for residential and commercial architectural features. Located in Naperville, IL.",
+ "inLanguage": "en",
+ "isPartOf": {
+ "@id": "https://salvometalworks.com/#website"
+ },
+ "about": {
+ "@id": "https://salvometalworks.com/#business"
+ },
+ "primaryImageOfPage": {
+ "@type": "ImageObject",
+ "url": "https://salvometalworks.com/wp-content/uploads/2024/10/salvo-metal-works-banner.jpg"
+ }
+ }
+ ]
+} </script>

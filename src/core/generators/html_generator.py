@@ -374,25 +374,158 @@ class HTMLGenerator:
         return []
 
     def _generate_organization_schema(self, config: ClientConfig) -> Dict[str, Any]:
-        """Generate JSON-LD schema for organization"""
-        schema = {
-            "@context": "https://schema.org",
-            "@type": "Organization",
+        """Generate comprehensive JSON-LD @graph schema with Wikipedia entities"""
+        # Generate @graph structure with proper entity linking
+        graph = []
+
+        # Main business entity
+        business_schema = {
+            "@type": "LocalBusiness",
+            "@id": f"{config.business.domain}#business",
             "name": config.business.business_name,
+            "description": getattr(config.business, 'description', f"Professional {config.business.industry} services"),
             "url": config.business.domain,
-            "description": f"Professional {config.business.industry} services",
         }
 
-        if config.contact.address.street:
-            schema["address"] = config.contact.address.street
-
+        # Add contact information
         if config.contact.phone:
-            schema["telephone"] = config.contact.phone
-
+            business_schema["telephone"] = config.contact.phone
         if config.contact.email:
-            schema["email"] = config.contact.email
+            business_schema["email"] = config.contact.email
 
-        return schema
+        # Add address with proper PostalAddress structure
+        if config.contact.address and config.contact.address.street:
+            business_schema["address"] = {
+                "@type": "PostalAddress",
+                "streetAddress": config.contact.address.street,
+                "addressLocality": config.contact.address.city,
+                "addressRegion": config.contact.address.state,
+                "postalCode": config.contact.address.zip_code,
+                "addressCountry": config.contact.address.country or "US"
+            }
+
+        # Add geo coordinates if available
+        if hasattr(config, 'geo_coordinates') and config.geo_coordinates:
+            business_schema["geo"] = {
+                "@type": "GeoCoordinates",
+                "latitude": str(config.geo_coordinates.get('latitude', '')),
+                "longitude": str(config.geo_coordinates.get('longitude', ''))
+            }
+
+        # Add logo and images
+        if hasattr(config, 'branding') and hasattr(config.branding, 'logo_url') and config.branding.logo_url:
+            business_schema["logo"] = config.branding.logo_url
+            business_schema["image"] = config.branding.logo_url
+
+        # Add social media links
+        social_links = self._get_social_links(config)
+        if social_links:
+            business_schema["sameAs"] = [link["url"] for link in social_links]
+
+        # Add industry-specific Wikipedia entities for knowsAbout
+        business_schema["knowsAbout"] = self._generate_industry_wikipedia_entities(config.business.industry)
+
+        graph.append(business_schema)
+
+        # Website entity
+        website_schema = {
+            "@type": "WebSite",
+            "@id": f"{config.business.domain}#website",
+            "url": config.business.domain,
+            "name": config.business.business_name,
+            "publisher": {"@id": f"{config.business.domain}#business"},
+            "inLanguage": "en"
+        }
+        graph.append(website_schema)
+
+        # Main page entity
+        webpage_schema = {
+            "@type": "WebPage",
+            "@id": f"{config.business.domain}#webpage",
+            "url": config.business.domain,
+            "name": f"{config.business.business_name} - {getattr(config.business, 'tagline', config.business.industry)}",
+            "description": getattr(config.business, 'description', f"Professional {config.business.industry} services"),
+            "inLanguage": "en",
+            "isPartOf": {"@id": f"{config.business.domain}#website"},
+            "about": {"@id": f"{config.business.domain}#business"}
+        }
+
+        # Add primary image if available
+        if hasattr(config, 'branding') and hasattr(config.branding, 'logo_url') and config.branding.logo_url:
+            webpage_schema["primaryImageOfPage"] = {
+                "@type": "ImageObject",
+                "url": config.branding.logo_url
+            }
+
+        graph.append(webpage_schema)
+
+        return {
+            "@context": "https://schema.org",
+            "@graph": graph
+        }
+
+    def _generate_industry_wikipedia_entities(self, industry: str) -> List[str]:
+        """Generate Wikipedia URLs for industry-related topics"""
+        industry_mappings = {
+            "Construction": [
+                "https://en.wikipedia.org/wiki/Construction",
+                "https://en.wikipedia.org/wiki/Building",
+                "https://en.wikipedia.org/wiki/Architecture"
+            ],
+            "Metal Fabrication": [
+                "https://en.wikipedia.org/wiki/Metal_fabrication",
+                "https://en.wikipedia.org/wiki/Metalworking",
+                "https://en.wikipedia.org/wiki/Copper",
+                "https://en.wikipedia.org/wiki/Architectural_metalwork"
+            ],
+            "Roofing": [
+                "https://en.wikipedia.org/wiki/Roof",
+                "https://en.wikipedia.org/wiki/Roofing_material",
+                "https://en.wikipedia.org/wiki/Building_envelope"
+            ],
+            "HVAC": [
+                "https://en.wikipedia.org/wiki/HVAC",
+                "https://en.wikipedia.org/wiki/Ventilation_(architecture)",
+                "https://en.wikipedia.org/wiki/Air_conditioning"
+            ]
+        }
+
+        # Default fallback based on industry keywords
+        industry_lower = industry.lower()
+        if "metal" in industry_lower or "fabrication" in industry_lower:
+            return industry_mappings.get("Metal Fabrication", [])
+        elif "construction" in industry_lower or "building" in industry_lower:
+            return industry_mappings.get("Construction", [])
+        elif "roofing" in industry_lower or "roof" in industry_lower:
+            return industry_mappings.get("Roofing", [])
+        elif "hvac" in industry_lower or "heating" in industry_lower:
+            return industry_mappings.get("HVAC", [])
+
+        return industry_mappings.get(industry, [])
+
+    def _generate_product_wikipedia_entities(self, product_name: str) -> List[str]:
+        """Generate Wikipedia URLs for product-related topics"""
+        product_mappings = {
+            "cupola": "https://en.wikipedia.org/wiki/Cupola",
+            "finial": "https://en.wikipedia.org/wiki/Finial",
+            "dormer": "https://en.wikipedia.org/wiki/Dormer",
+            "roof vent": "https://en.wikipedia.org/wiki/Ventilation",
+            "chimney": "https://en.wikipedia.org/wiki/Chimney",
+            "shroud": "https://en.wikipedia.org/wiki/Chimney",
+            "leader box": "https://en.wikipedia.org/wiki/Box_gutter",
+            "gutter": "https://en.wikipedia.org/wiki/Rain_gutter",
+            "snow guard": "https://en.wikipedia.org/wiki/Snow_guard",
+            "weathervane": "https://en.wikipedia.org/wiki/Weather_vane"
+        }
+
+        entities = []
+        product_lower = product_name.lower()
+
+        for keyword, wikipedia_url in product_mappings.items():
+            if keyword in product_lower:
+                entities.append(wikipedia_url)
+
+        return entities
 
     def _generate_service_schema(self, service, config: ClientConfig) -> Dict[str, Any]:
         """Generate JSON-LD schema for service"""
@@ -418,22 +551,55 @@ class HTMLGenerator:
         return schema
 
     def _generate_product_schema(self, product, config: ClientConfig) -> Dict[str, Any]:
-        """Generate JSON-LD schema for product"""
+        """Generate enhanced JSON-LD schema for product with Wikipedia entities"""
         schema = {
             "@context": "https://schema.org",
             "@type": "Product",
+            "@id": f"{config.business.domain}/products/{getattr(product, 'slug', product.name.lower().replace(' ', '-'))}#product",
             "name": product.name,
             "description": product.description,
-            "sku": product.sku,
-            "manufacturer": {
+            "category": "Architectural Metalwork",
+            "brand": {
                 "@type": "Organization",
+                "@id": f"{config.business.domain}#business",
                 "name": config.business.business_name,
-                "url": config.business.domain,
+                "url": config.business.domain
             },
+            "itemCondition": "https://schema.org/NewCondition"
         }
 
-        if product.image_url:
-            schema["image"] = product.image_url
+        # Add SKU if available
+        if hasattr(product, "sku") and product.sku:
+            schema["sku"] = product.sku
+            schema["mpn"] = product.sku
+
+        # Add material information if available
+        if hasattr(product, "material") and product.material:
+            schema["material"] = product.material
+
+        # Add product images
+        if hasattr(product, "image_url") and product.image_url:
+            schema["image"] = [product.image_url]
+
+        # Add Wikipedia entities for isSimilarTo
+        wikipedia_entities = self._generate_product_wikipedia_entities(product.name)
+        if wikipedia_entities:
+            schema["isSimilarTo"] = wikipedia_entities
+
+        # Add pricing information
+        if hasattr(product, "price") and product.price:
+            schema["offers"] = {
+                "@type": "Offer",
+                "price": str(product.price),
+                "priceCurrency": "USD",
+                "availability": "https://schema.org/InStock",
+                "url": f"{config.business.domain}/products/{getattr(product, 'slug', product.name.lower().replace(' ', '-'))}",
+                "seller": {
+                    "@type": "Organization",
+                    "name": config.business.business_name,
+                    "url": config.business.domain
+                }
+            }
 
         return schema
 

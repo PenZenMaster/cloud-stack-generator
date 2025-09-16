@@ -36,7 +36,8 @@ client:
     \ enhance the built environment through meticulous design, premium materials,\
     \ and relentless attention to detail\u2014delivered on time, to spec, and built\
     \ to outlast the roof beneath it."
-  service_guarantee: ''
+  service_guarantee: We stand behind all of our work and offer an industry-leading
+    customer satisfaction pledge.
   service_area_description: Serving the greater Chicagoland area and beyond with bespoke
     architectural metal fabrication
   why_choose_us:
@@ -56,8 +57,7 @@ client:
     description: From initial consultation and planning through completion and follow-up,
       we provide comprehensive service that makes the process smooth and stress-free
       for our clients.
-  company_stats:
-    RoofingDirect snapshot: 4.7/5
+  company_stats: {}
   contact:
     name: Customer Service
     phone: +1-866-713-3396
