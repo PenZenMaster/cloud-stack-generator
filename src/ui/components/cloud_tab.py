@@ -469,13 +469,25 @@ class DeploymentWorker(QThread):
     
     def run(self):
         """Execute deployment in background"""
-        # Set up progress callback
-        self.s3_manager.set_progress_callback(self.progress_updated.emit)
-        
-        # Upload directory
-        result = self.s3_manager.upload_directory(self.local_path, self.bucket_name)
-        
-        self.deployment_completed.emit(result)
+        try:
+            # Set up progress callback
+            self.s3_manager.set_progress_callback(self.progress_updated.emit)
+
+            # Upload directory
+            result = self.s3_manager.upload_directory(self.local_path, self.bucket_name)
+
+            self.deployment_completed.emit(result)
+        except Exception as e:
+            # Create a failure result and emit it
+            from src.core.aws.s3_manager import UploadResult
+            error_result = UploadResult(
+                success=False,
+                message=f"Deployment failed: {str(e)}",
+                website_url="",
+                uploaded_files=0,
+                failed_files=0
+            )
+            self.deployment_completed.emit(error_result)
 
 
 class CloudTab(BaseTab):
