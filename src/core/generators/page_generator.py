@@ -518,23 +518,24 @@ class PageGenerator:
         return sitemap_content
 
     def _generate_robots_txt(self, config: ClientConfig) -> str:
-        """Generate robots.txt"""
+        """Generate robots.txt with CloudFront SEO protection"""
         base_url = config.business.domain.rstrip("/")
-        return f"""User-agent: *
-Allow: /
 
-# Sitemap
+        # CloudStack SEO Strategy: Block all CloudFront indexing
+        # Since this robots.txt will be served from CloudFront, we block everything
+        # The canonical domain should have its own robots.txt that allows indexing
+        robots_content = f"""# CloudStack SEO Protection
+# This robots.txt blocks CloudFront indexing to prevent duplicate content issues
+# Canonical domain: {base_url}
+
+User-agent: *
+Disallow: /
+
+# Sitemap reference (points to canonical domain)
 Sitemap: {base_url}/sitemap.xml
-
-# Disallow admin areas (if any)
-Disallow: /admin/
-Disallow: /private/
-
-# Allow search engines to crawl CSS and JS
-Allow: /css/
-Allow: /js/
-Allow: /images/
 """
+
+        return robots_content
 
     def _generate_basic_js(self) -> str:
         """Generate basic JavaScript functionality"""

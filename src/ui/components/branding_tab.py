@@ -286,53 +286,27 @@ class BrandingTab(BaseTab):
         parent_layout.addWidget(logo_group)
 
     def _create_template_section(self, parent_layout: QVBoxLayout):
-        """Create template selection section"""
+        """Create template info section - simplified to show current template"""
         # Section header
-        header = QLabel("Website Templates")
+        header = QLabel("Website Template")
         header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
         parent_layout.addWidget(header)
 
-        # Template selection group
+        # Template info group
         template_group = QGroupBox()
         template_group.setMaximumHeight(120)
         template_layout = QVBoxLayout()
         template_layout.setSpacing(10)
 
-        # Template selection
-        template_container = QHBoxLayout()
-        
-        # Label
-        template_label = QLabel("* Page Template Style:")
-        template_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        template_container.addWidget(template_label)
-        
-        # Template selection combo
-        self.template_combo = QComboBox()
-        self.template_combo.setFont(QFont("Arial", 10))
-        self.template_combo.setMinimumHeight(30)
-        
-        # Template options
-        templates = [
-            ("basic", "Basic Template - Clean and simple design"),
-            ("enhanced", "Enhanced Template - Rich content with advanced features"),
-            ("seo_authority", "SEO Authority Template - Maximum optimization and content depth")
-        ]
-        
-        for value, description in templates:
-            self.template_combo.addItem(description, value)
-        
-        # Store reference for easy access
-        self.branding_inputs["template_style"] = self.template_combo
-        
-        # Connect change signal
-        self.template_combo.currentTextChanged.connect(self._emit_config_changed)
-        
-        template_container.addWidget(self.template_combo)
-        template_layout.addLayout(template_container)
-        
+        # Current template info
+        template_info = QLabel("Current Template: SEO Authority - Maximum optimization and content depth")
+        template_info.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        template_info.setStyleSheet("color: #2c5aa0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;")
+        template_layout.addWidget(template_info)
+
         # Template description
-        template_description = QLabel("Choose the template style that best fits your business needs. This affects the layout and features of your city pages.")
+        template_description = QLabel("This template provides comprehensive SEO optimization with rich content features for city pages. Template selection and customization will be available in future updates.")
         template_description.setFont(QFont("Arial", 9))
         template_description.setStyleSheet("color: #666666; padding: 5px 0;")
         template_description.setWordWrap(True)
@@ -462,9 +436,7 @@ class BrandingTab(BaseTab):
             "logo": {
                 "logo_url": self.branding_inputs["logo_url"].text() if "logo_url" in self.branding_inputs else ""
             },
-            "template": {
-                "template_style": self.branding_inputs["template_style"].currentData() if "template_style" in self.branding_inputs else "basic"
-            }
+            # Note: Template system will be redesigned in future updates
         }
 
     def set_config_data(self, data: Dict[str, Any]):
@@ -537,16 +509,7 @@ class BrandingTab(BaseTab):
                 if "logo_url" in self.branding_inputs:
                     self.branding_inputs["logo_url"].setText(logo_url)
             
-            # Set template data
-            if "template" in data:
-                template_style = data["template"].get("template_style", "basic")
-                if "template_style" in self.branding_inputs:
-                    template_combo = self.branding_inputs["template_style"]
-                    # Find index by data value
-                    for i in range(template_combo.count()):
-                        if template_combo.itemData(i) == template_style:
-                            template_combo.setCurrentIndex(i)
-                            break
+            # Template data handling removed - template system will be redesigned
             
             # Update preview
             self._update_preview()
