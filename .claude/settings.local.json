@@ -7,7 +7,8 @@
       "Bash(npm --version)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Read(C:\\Users\\georg\\.config\\ccstatusline/**)",
-      "Bash(ruff check:*)"
+      "Bash(ruff check:*)",
+      "Bash(pytest:*)"
     ],
     "deny": [],
     "ask": []

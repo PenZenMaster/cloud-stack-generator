@@ -73,6 +73,7 @@ config/api_keys.json
 config/api_keys.*.json
 *.key
 *.secret
+awg-cloud-credentials.json
 
 # Temporary files
 *.tmp

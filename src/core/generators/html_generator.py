@@ -202,6 +202,7 @@ class HTMLGenerator:
                 "product": product,
                 "related_products": related_products,
                 "product_schema": self._generate_product_schema(product, config),
+                "base_path": "../",  # Product pages are in subdirectory
             }
         )
 

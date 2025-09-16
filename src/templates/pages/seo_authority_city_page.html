@@ -963,7 +963,13 @@
                     {% for place in city_page.places_of_interest %}
                     <div class="poi-card">
                         {% if place.embed_url %}
-                        <iframe src="{{ place.embed_url }}" title="{{ place.name }} - {{ city_page.city_name }}" loading="lazy"></iframe>
+                            {% if place.embed_url.startswith('https://www.google.com/maps/embed') %}
+                            <iframe src="{{ place.embed_url }}" title="{{ place.name }} - {{ city_page.city_name }}" loading="lazy"></iframe>
+                            {% else %}
+                            <div class="poi-link-container">
+                                <a href="{{ place.embed_url }}" target="_blank" rel="noopener" class="poi-map-link">📍 View {{ place.name }} on Google Maps</a>
+                            </div>
+                            {% endif %}
                         {% endif %}
                         <div class="poi-card-content">
                             <h5>{{ place.name }}</h5>

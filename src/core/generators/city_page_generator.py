@@ -141,19 +141,19 @@ class CityPageGenerator:
             places_of_interest=[
                 PlaceOfInterest(
                     name=f"{city_name} Downtown",
-                    embed_url=f"https://www.google.com/maps?q={city_name}+Downtown&output=embed"
+                    embed_url=self._generate_maps_embed(f"{city_name} Downtown")
                 ),
                 PlaceOfInterest(
-                    name=f"{city_name} Historic District", 
-                    embed_url=f"https://www.google.com/maps?q={city_name}+Historic+District&output=embed"
+                    name=f"{city_name} Historic District",
+                    embed_url=self._generate_maps_embed(f"{city_name} Historic District")
                 ),
                 PlaceOfInterest(
                     name=f"{city_name} Main Street",
-                    embed_url=f"https://www.google.com/maps?q={city_name}+Main+Street&output=embed"
+                    embed_url=self._generate_maps_embed(f"{city_name} Main Street")
                 ),
                 PlaceOfInterest(
                     name=f"{city_name} City Hall",
-                    embed_url=f"https://www.google.com/maps?q={city_name}+City+Hall&output=embed"
+                    embed_url=self._generate_maps_embed(f"{city_name} City Hall")
                 )
             ],
             city_faq=[
@@ -179,7 +179,7 @@ class CityPageGenerator:
                 )
             ],
             featured_products=[service.slug for service in self.config.services[:7]] if self.config.services else [],
-            city_map_embed=f"https://www.google.com/maps?q={city_name},{state}&output=embed",
+            city_map_embed=self._generate_maps_embed(f"{city_name}, {state}"),
             service_area_note=f"Service Area: {city_name} and surrounding communities."
         )
     
@@ -250,7 +250,8 @@ class CityPageGenerator:
             'current_date': current_date,
             
             # Template utilities
-            'css_file': '/css/main.css',
+            'css_file': '../css/style.css',
+            'base_path': '../',
             
             # SEO and schema data
             'schema_data': self._build_schema_data(city_page)
@@ -450,3 +451,28 @@ class CityPageGenerator:
                 return date_obj.strftime(format_str)
             except:
                 return str(date_input)
+
+    def _generate_maps_embed(self, location: str) -> str:
+        """Generate Google Maps embed URL using the new embed API format
+
+        Args:
+            location: The location to search for (e.g., "Chicago Downtown", "Evanston, IL")
+
+        Returns:
+            Google Maps embed URL or fallback search URL
+        """
+        import os
+
+        # Get API key from environment variable if available
+        api_key = os.getenv('GOOGLE_MAPS_API_KEY')
+
+        # Clean location string for URL encoding
+        location_encoded = location.replace(' ', '+').replace(',', '%2C')
+
+        if api_key:
+            # Use Google Maps Embed API with user's API key
+            return f"https://www.google.com/maps/embed/v1/place?key={api_key}&q={location_encoded}"
+        else:
+            # Fallback to basic search URL (no embed) for when no API key is available
+            # This will show a link instead of an embedded map
+            return f"https://www.google.com/maps/search/{location_encoded}"

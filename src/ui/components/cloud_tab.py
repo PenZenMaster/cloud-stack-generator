@@ -1517,28 +1517,34 @@ class CloudTab(BaseTab):
         bucket_name = self._get_actual_bucket_name()
         directory = self.directory_combo.currentText().strip()
         region = self.region_combo.currentText()
-        
+
         if profile_name == "No profiles configured":
             QMessageBox.warning(self, "No Profile", "Please select an AWS profile first")
             return
-        
+
         if not bucket_name:
             QMessageBox.warning(self, "No Bucket Name", "Please enter a bucket name")
             return
-        
+
         # Validate bucket name
         is_valid, message = self.s3_manager.validate_bucket_name(bucket_name)
         if not is_valid:
             QMessageBox.warning(self, "Invalid Bucket Name", message)
             return
-        
+
         # Set active profile and session
         if not self.credentials_manager.set_active_profile(profile_name):
             QMessageBox.warning(self, "Profile Error", "Failed to activate AWS profile")
             return
-        
+
         session = self.credentials_manager.get_active_session()
         self.s3_manager.set_session(session)
+
+        # Show progress indicator and wait cursor
+        self.setCursor(Qt.CursorShape.WaitCursor)
+        self.create_bucket_button.setEnabled(False)
+        self.create_bucket_button.setText("Creating...")
+        QApplication.processEvents()  # Update UI immediately
         
         # Check if bucket already exists and get confirmation
         try:
@@ -1607,10 +1613,16 @@ class CloudTab(BaseTab):
                     self.refresh_bucket_list()
                 else:
                     QMessageBox.critical(self, "Creation Failed", message)
-                    
+
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to process bucket: {str(e)}")
             self.log_status(f"Error processing bucket: {str(e)}")
+
+        finally:
+            # Restore UI state
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+            self.create_bucket_button.setEnabled(True)
+            self.create_bucket_button.setText("Create Bucket")
     
     def check_directory_exists(self, bucket_name: str, directory: str) -> bool:
         """Check if directory exists in bucket"""
