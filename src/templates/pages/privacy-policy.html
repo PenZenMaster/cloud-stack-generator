@@ -1,0 +1,54 @@
+{% include 'components/header.html' %}
+
+<main>
+    <div class="container">
+        <div class="privacy-policy-content">
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last updated: {{ current_year }}</p>
+
+            <h2>Information We Collect</h2>
+            <p>At {{ business.business_name }}, we respect your privacy and are committed to protecting your personal information. We may collect the following types of information:</p>
+            <ul>
+                <li>Contact information such as name, email address, and phone number</li>
+                <li>Information about your interests in our {{ business.industry.lower() }} services</li>
+                <li>Communication preferences</li>
+            </ul>
+
+            <h2>How We Use Your Information</h2>
+            <p>We use the information we collect to:</p>
+            <ul>
+                <li>Provide and improve our {{ business.industry.lower() }} services</li>
+                <li>Respond to your inquiries and requests</li>
+                <li>Send you updates about our services (with your consent)</li>
+                <li>Comply with legal obligations</li>
+            </ul>
+
+            <h2>Information Sharing</h2>
+            <p>We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:</p>
+            <ul>
+                <li>With your explicit consent</li>
+                <li>To comply with legal requirements</li>
+                <li>To protect our rights and safety</li>
+            </ul>
+
+            <h2>Data Security</h2>
+            <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+
+            <h2>Contact Us</h2>
+            <p>If you have any questions about this Privacy Policy, please contact us:</p>
+            <div class="contact-info">
+                {% if contact.phone %}
+                <p><strong>Phone:</strong> {{ contact.phone }}</p>
+                {% endif %}
+                {% if contact.email %}
+                <p><strong>Email:</strong> {{ contact.email }}</p>
+                {% endif %}
+                {% if contact.address.street %}
+                <p><strong>Address:</strong> {{ contact.address.to_single_line() }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include 'components/footer.html' %}

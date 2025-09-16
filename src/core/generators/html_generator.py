@@ -257,6 +257,7 @@ class HTMLGenerator:
             "branding": config.branding,
             "services": config.services,
             "products": config.products,
+            "google_business_profile": getattr(config, 'google_business_profile', None),
             "current_year": datetime.now().year,
             "generation_date": datetime.now().strftime("%Y-%m-%d"),
             "site_url": config.business.domain,

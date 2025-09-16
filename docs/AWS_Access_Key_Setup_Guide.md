@@ -11,7 +11,9 @@ No more token expiration! Set up your AWS credentials once and generate websites
 ### Option A: Create New User (Recommended)
 1. **Log into AWS Console** → Go to **IAM** → **Users**
 2. **Create User** → Enter name like "website-deployer"
-3. **Set Permissions** → Attach policy: `AmazonS3FullAccess`
+3. **Set Permissions** → Attach policies:
+   - `AmazonS3FullAccess` (required for S3 buckets)
+   - `CloudFrontFullAccess` (optional - for CDN acceleration)
 4. **Create Access Key** → Choose "Application running outside AWS"
 5. **Copy & Save**:
    - ✅ **Access Key ID**: `AKIA...` (20 characters)
@@ -90,6 +92,12 @@ No more token expiration! Set up your AWS credentials once and generate websites
 ### **"Access Denied"**
 - ✅ User needs `AmazonS3FullAccess` or custom S3 policy
 - ✅ Check bucket policies don't block your account
+
+### **CloudFront Errors**
+- ❌ **"not authorized to perform: cloudfront:CreateDistribution"**
+- ✅ **Solution**: Add `CloudFrontFullAccess` policy to your IAM user
+- ℹ️ **Note**: CloudFront is optional - websites work with S3-only hosting
+- ℹ️ **Alternative**: Disable CloudFront in deployment settings if not needed
 
 ---
 

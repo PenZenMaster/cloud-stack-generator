@@ -1,0 +1,100 @@
+{% include 'components/header.html' %}
+
+<main>
+    <div class="container">
+        <div class="product-detail">
+            <div class="breadcrumb">
+                <a href="index.html">Home</a> >
+                <a href="products.html">Products</a> >
+                {{ product.name }}
+            </div>
+
+            <div class="product-hero">
+                <div class="product-image">
+                    {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="main-product-image">
+                    {% else %}
+                    <div class="placeholder-image">
+                        <span>{{ product.name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="product-info">
+                    <h1>{{ product.name }}</h1>
+
+                    {% if product.category %}
+                    <p class="product-category">Category: {{ product.category }}</p>
+                    {% endif %}
+
+                    {% if product.price %}
+                    <p class="product-price">Price: {{ product.price }}</p>
+                    {% endif %}
+
+                    <div class="product-description">
+                        {% if product.description %}
+                        <p>{{ product.description }}</p>
+                        {% else %}
+                        <p>High-quality {{ product.name.lower() }} from {{ business.business_name }}. Contact us for more details about this product.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-actions">
+                        <a href="contact.html" class="btn btn-primary">Get Quote</a>
+                        <a href="contact.html" class="btn btn-secondary">Ask Questions</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-details-section">
+                <h2>Product Details</h2>
+                {% if product.specifications %}
+                <div class="specifications">
+                    <h3>Specifications</h3>
+                    <ul>
+                        {% for spec in product.specifications %}
+                        <li>{{ spec }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if product.features %}
+                <div class="features">
+                    <h3>Features</h3>
+                    <ul>
+                        {% for feature in product.features %}
+                        <li>{{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="related-products">
+                <h2>Related Products</h2>
+                <div class="products-grid">
+                    {% for related_product in products %}
+                        {% if related_product.name != product.name %}
+                        <div class="product-card">
+                            {% if related_product.image_url %}
+                            <img src="{{ related_product.image_url }}" alt="{{ related_product.name }}">
+                            {% endif %}
+                            <h3>{{ related_product.name }}</h3>
+                            <a href="products/{{ related_product.name|slugify }}.html" class="btn btn-sm">View Details</a>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="contact-cta">
+                <h2>Interested in {{ product.name }}?</h2>
+                <p>Contact {{ business.business_name }} today for pricing and availability.</p>
+                <a href="contact.html" class="btn btn-primary">Contact Us Now</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include 'components/footer.html' %}
