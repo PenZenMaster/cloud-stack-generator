@@ -29,20 +29,28 @@ When asked for changes in this repo:
 
 ### ▶️ `AWG start`
 
-**Goal:** Prime context at the start of a session.
+**Goal:** Prime context at the start of a session efficiently.
 **Claude should:**
 
-1. Read, if present (otherwise create stubs):
+1. **Read session context files** (in priority order, stop when sufficient context achieved):
 
-   * `docs/AWG-Project-Plan.md`
-   * Latest `docs/archive/checkpoints/CheckPoint-*.md`
-   * `docs/projectStatus.md`
-2. Post a **kickoff note** with:
+   * `docs/SESSION_CONTEXT.md` (primary context source)
+   * `docs/HANDOFF_SUMMARY.md` (session transition details)
+   * Latest `docs/archive/checkpoints/CheckPoint-*.md` (detailed checkpoint)
+   * `docs/projectStatus.md` (overall project status)
+   * Only if context incomplete: `docs/AWG-Project-Plan.md` (partial read with offset/limit)
 
-   * **Last session wins** (bullets)
-   * **What remains this sprint** (bullets)
-   * **Today’s plan** (1–3 concrete steps)
-3. Confirm Git branch/status and whether working tree is clean.
+2. **Post a kickoff note** with:
+
+   * **Last session wins** (3-5 key accomplishments)
+   * **Current sprint status** (progress, blockers, next milestones)
+   * **Today's priority plan** (1-3 concrete actionable steps)
+   * **Critical alerts** (any blockers, failing tests, or urgent issues)
+
+3. **Confirm environment status**:
+   * Git branch/status and working tree state
+   * Any uncommitted changes or merge conflicts
+   * Dependencies and build status if relevant
 
 ### 💾 `AWG checkpoint`
 
@@ -72,12 +80,32 @@ When asked for changes in this repo:
 
 ### ⏹️ `AWG shutdown`
 
-**Goal:** End a session cleanly and **always** checkpoint.
+**Goal:** End a session cleanly with comprehensive context capture for next session startup.
 **Claude should:**
 
-1. Run **AWG checkpoint** (mandatory).
-2. Ensure all changes are pushed; echo branch, commit hash, and tag if created.
-3. Post “Shutdown complete” with **3 bullets** for the next session.
+1. **Create Enhanced Context Capture**:
+   - Generate `docs/SESSION_CONTEXT.md` with:
+     * **Current Sprint Summary** (goals, status, achievements)
+     * **Active Work Items** (in-progress tasks with details)
+     * **Recent Major Accomplishments** (last 3-5 significant features/fixes)
+     * **Critical Path Items** (blocking issues, dependencies)
+     * **Technical Architecture Status** (current system state, known issues)
+     * **Quality Gate Status** (test coverage, build status, lint status)
+     * **Next Session Action Plan** (prioritized 1-3 concrete steps)
+
+2. **Run Standard AWG checkpoint** (mandatory).
+
+3. **Create Session Handoff Summary**:
+   - Generate `docs/HANDOFF_SUMMARY.md` with:
+     * **Project Status Overview** (where we are in overall plan)
+     * **Current Git State** (branch, uncommitted changes, merge conflicts)
+     * **Environment Status** (dependencies, config, known env issues)
+     * **User Context** (recent requests, pending decisions, feedback status)
+     * **Risk Assessment** (technical debt, potential blockers)
+
+4. **Ensure all changes are pushed**; echo branch, commit hash, and tag if created.
+
+5. **Post "Shutdown complete"** with **3 priority bullets** for next session startup.
 
 ---
 
