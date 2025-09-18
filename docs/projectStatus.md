@@ -101,14 +101,20 @@
 
 ## 📋 NEXT SESSION WORK ITEMS
 
-### **🚨 PRIORITY #1: Restore Test Coverage**
-- Rewrite async-dependent UI tests for background worker patterns
-- Implement proper QThread mocking for cloud tab and connection tests
-- Restore test coverage from current 60% to target 80%+
+### **🚨 PRIORITY #1: Template System Overhaul**
+- Build template selection system with live preview capabilities
+- Implement template import/export functionality
+- Create WYSIWYG template editor integration
+- Support for Basic, Enhanced, and SEO Authority template variants
 
 ### **🚨 PRIORITY #2: Preview Website Validation Bug**
 - Fix preview website requiring AWS validation when it shouldn't need deployment setup
 - Restore QA testing workflow functionality
+
+### **🚨 PRIORITY #3: Test Coverage Restoration**
+- Implement proper QThread mocking for cloud tab and connection tests
+- Restore test coverage from current 63.85% to target 80%+
+- Fix hanging UI interaction tests
 
 ### **Ready for Next Phase: Content Quality and Real API Integration**
 - 🔧 **Real Google Maps API Integration** - Replace mock data with live Places API calls
