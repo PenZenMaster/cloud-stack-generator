@@ -90,7 +90,7 @@ client:
     body_text_color: '#333333'
     footer_background_color: '#2c3e50'
     footer_text_color: '#ffffff'
-    font_family: Helvetica, sans-serif
+    font_family: Georgia, serif
     logo_url: https://salvometalworks.com/wp-content/uploads/2024/10/Salvo_RGB_FullColor_Logo-2048x742.png
   social_media:
     facebook: https://www.facebook.com/SalvoMetalWorks

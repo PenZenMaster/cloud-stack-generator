@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ city_page.title }} | {{ business.business_name }}</title>
+    <meta name="description" content="{{ city_page.meta_description }}">
+    <meta name="keywords" content="{{ city_page.primary_keyword }}{% if city_page.secondary_keywords %}, {{ city_page.secondary_keywords|join(', ') }}{% endif %}">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{{ city_page.title }}">
+    <meta property="og:description" content="{{ city_page.meta_description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ page_url }}">
+    {% if city_page.city_image.image_url %}
+    <meta property="og:image" content="{{ city_page.city_image.image_url }}">
+    {% endif %}
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ city_page.title }}">
+    <meta name="twitter:description" content="{{ city_page.meta_description }}">
+
+    <!-- CSS Styles -->
+    <style>
+        :root {
+            --primary-color: {{ branding.primary_color or '#2c3e50' }};
+            --secondary-color: {{ branding.secondary_color or '#3498db' }};
+            --accent-color: {{ branding.accent_color or '#e74c3c' }};
+            --text-color: #333333;
+            --background-color: #ffffff;
+            --light-background: #f8f9fa;
+            --border-color: #dee2e6;
+            --font-family: {{ branding.font_family or 'Arial' }}, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        {% if branding.logo_url %}
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+        {% endif %}
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .contact-quick {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .contact-quick a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .contact-quick a:hover {
+            opacity: 0.8;
+        }
+
+        /* Navigation */
+        nav {
+            background-color: rgba(255,255,255,0.1);
+            padding: 0.75rem 0;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23f0f0f0" width="1200" height="600"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999" font-size="24">City Background</text></svg>');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Main Content */
+        main {
+            padding: 3rem 0;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .content-section {
+            margin-bottom: 3rem;
+        }
+
+        .content-section h3 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .content-section p, .content-section div {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--light-background);
+            padding: 2rem;
+            border-radius: 8px;
+            height: fit-content;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* City Image */
+        .city-image {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .city-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .image-caption {
+            font-style: italic;
+            color: #666;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .service-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        /* FAQ Section */
+        .faq-item {
+            background: white;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .faq-question {
+            background-color: var(--light-background);
+            padding: 1rem 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .faq-answer {
+            padding: 1rem 1.5rem;
+            line-height: 1.6;
+        }
+
+        /* Places of Interest */
+        .places-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .place-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .place-card h4 {
+            padding: 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            margin: 0;
+        }
+
+        .place-map {
+            height: 200px;
+        }
+
+        .place-map iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .contact-item {
+            text-align: center;
+        }
+
+        .contact-item h4 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .contact-item a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .contact-quick {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .places-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .hero {
+                padding: 2rem 0;
+            }
+
+            .hero h2 {
+                font-size: 1.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            main {
+                padding: 2rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    {% if branding.logo_url %}
+                    <img src="{{ branding.logo_url }}" alt="{{ business.business_name }} Logo">
+                    {% endif %}
+                    <h1>{{ business.business_name }}</h1>
+                </div>
+                <div class="contact-quick">
+                    <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>
+                    <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                </div>
+            </div>
+        </div>
+        <nav>
+            <div class="container">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/services">Services</a></li>
+                    <li><a href="/products">Products</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h2>{{ city_page.hero_title or ('Professional ' + business.industry + ' in ' + city_page.city_name) }}</h2>
+            <p>{{ city_page.meta_description }}</p>
+            <a href="/contact" class="cta-button">Get Free Quote</a>
+        </div>
+    </section>
+
+    <main>
+        <div class="container">
+            <div class="content-grid">
+                <div class="main-content">
+                    {% if city_page.about_city %}
+                    <section class="content-section">
+                        <h3>About {{ city_page.city_name }}</h3>
+                        <p>{{ city_page.about_city }}</p>
+                    </section>
+                    {% endif %}
+
+                    {% if city_page.city_image.image_url or city_page.city_image.embed_code %}
+                    <section class="city-image">
+                        {% if city_page.city_image.embed_code %}
+                            {{ city_page.city_image.embed_code | safe }}
+                        {% elif city_page.city_image.image_url %}
+                            <img src="{{ city_page.city_image.image_url }}"
+                                 alt="{{ city_page.city_image.alt_text or ('View of ' + city_page.city_name) }}">
+                            {% if city_page.city_image.caption %}
+                            <p class="image-caption">{{ city_page.city_image.caption }}</p>
+                            {% endif %}
+                        {% endif %}
+                    </section>
+                    {% endif %}
+
+                    {% if city_page.seo_content_body %}
+                    <section class="content-section">
+                        <h3>{{ city_page.seo_content_title or ('Our ' + business.industry + ' Services') }}</h3>
+                        <div>{{ city_page.seo_content_body | safe }}</div>
+                    </section>
+                    {% endif %}
+
+                    {% if services %}
+                    <section class="content-section">
+                        <h3>Our Services in {{ city_page.city_name }}</h3>
+                        <div class="services-grid">
+                            {% for service in services %}
+                            <div class="service-card">
+                                <h4>{{ service.name }}</h4>
+                                <p>{{ service.description }}</p>
+                                {% if service.features %}
+                                <ul>
+                                    {% for feature in service.features %}
+                                    <li>{{ feature }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if city_page.places_of_interest %}
+                    <section class="content-section">
+                        <h3>Points of Interest in {{ city_page.city_name }}</h3>
+                        <div class="places-grid">
+                            {% for place in city_page.places_of_interest %}
+                            <div class="place-card">
+                                <h4>{{ place.name }}</h4>
+                                {% if place.embed_url %}
+                                <div class="place-map">
+                                    <iframe src="{{ place.embed_url }}"
+                                            loading="lazy"
+                                            referrerpolicy="no-referrer-when-downgrade">
+                                    </iframe>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {% if city_page.city_faq %}
+                    <section class="content-section">
+                        <h3>Frequently Asked Questions</h3>
+                        {% for faq in city_page.city_faq %}
+                        <div class="faq-item">
+                            <div class="faq-question">{{ faq.question }}</div>
+                            <div class="faq-answer">{{ faq.answer }}</div>
+                        </div>
+                        {% endfor %}
+                    </section>
+                    {% endif %}
+                </div>
+
+                <aside class="sidebar">
+                    <h4>Contact Information</h4>
+                    <p><strong>{{ business.business_name }}</strong></p>
+                    <p>{{ contact.address.street }}<br>
+                       {{ contact.address.city }}, {{ contact.address.state }} {{ contact.address.zip_code }}</p>
+                    <p><strong>Phone:</strong> <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></p>
+                    <p><strong>Email:</strong> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+
+                    {% if business.hours %}
+                    <h4>Business Hours</h4>
+                    <p>{{ business.hours }}</p>
+                    {% endif %}
+
+                    {% if city_page.service_area_note %}
+                    <h4>Service Area</h4>
+                    <p>{{ city_page.service_area_note }}</p>
+                    {% endif %}
+
+                    {% if products and products|length > 0 %}
+                    <h4>Featured Products</h4>
+                    {% for product in products[:3] %}
+                    <p><strong>{{ product.name }}</strong><br>
+                       {{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                    {% endfor %}
+                    {% endif %}
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <section class="contact-section">
+        <div class="container">
+            <h3 style="text-align: center; margin-bottom: 2rem;">Ready to Get Started?</h3>
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <h4>Call Us</h4>
+                    <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>
+                </div>
+                <div class="contact-item">
+                    <h4>Email Us</h4>
+                    <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                </div>
+                <div class="contact-item">
+                    <h4>Visit Us</h4>
+                    <p>{{ contact.address.street }}<br>
+                       {{ contact.address.city }}, {{ contact.address.state }}</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; {{ current_year }} {{ business.business_name }}. All rights reserved.</p>
+            <p>Serving {{ city_page.city_name }}, {{ city_page.state }} and surrounding areas.</p>
+        </div>
+    </footer>
+
+    <!-- JSON-LD Schema Markup -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "{{ business.business_name }}",
+        "description": "{{ business.description or city_page.meta_description }}",
+        "url": "{{ page_url }}",
+        "telephone": "{{ contact.phone }}",
+        "email": "{{ contact.email }}",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ contact.address.street }}",
+            "addressLocality": "{{ contact.address.city }}",
+            "addressRegion": "{{ contact.address.state }}",
+            "postalCode": "{{ contact.address.zip_code }}",
+            "addressCountry": "{{ contact.address.country or 'US' }}"
+        },
+        "areaServed": {
+            "@type": "City",
+            "name": "{{ city_page.city_name }}",
+            "addressRegion": "{{ city_page.state }}"
+        }{% if services %},
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "{{ business.industry }} Services",
+            "itemListElement": [
+                {% for service in services %}
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "{{ service.name }}",
+                        "description": "{{ service.description }}"
+                    }
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ]
+        }{% endif %}
+    }
+    </script>
+</body>
+</html>
