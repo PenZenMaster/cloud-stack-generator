@@ -1,0 +1,48 @@
+{
+  "id": "basic_city",
+  "name": "Basic City Page",
+  "description": "Clean, simple city page template with essential features and responsive design. Perfect for straightforward local business websites.",
+  "type": "city_page",
+  "variant": "basic",
+  "version": "1.0.0",
+  "author": "Cloud Stack Generator Team",
+  "created_date": "2025-09-18",
+  "last_modified": "2025-09-18",
+  "preview_image": "previews/basic_city_preview.png",
+  "template_file": "pages/basic_city_page.html",
+  "required_data": [
+    "city_page.city_name",
+    "city_page.title",
+    "business.business_name",
+    "contact.phone",
+    "contact.email"
+  ],
+  "optional_data": [
+    "city_page.meta_description",
+    "city_page.hero_title",
+    "city_page.about_city",
+    "city_page.seo_content_title",
+    "city_page.seo_content_body",
+    "city_page.city_faq",
+    "services"
+  ],
+  "features": [
+    "Clean and simple design",
+    "Responsive mobile layout",
+    "Essential contact information",
+    "Services listing",
+    "FAQ section support",
+    "Basic SEO optimization",
+    "Fast loading",
+    "Easy customization"
+  ],
+  "compatibility": {
+    "min_version": "2.0.0",
+    "supports_city_pages": true,
+    "supports_wikipedia": false,
+    "supports_google_maps": false,
+    "supports_schema_markup": false,
+    "supports_responsive_design": true,
+    "supports_seo_optimization": true
+  }
+}

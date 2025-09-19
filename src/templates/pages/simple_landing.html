@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title or (business.business_name + ' - ' + business.industry) }}</title>
+    <meta name="description" content="{{ page.meta_description or business.description }}">
+
+    <style>
+        :root {
+            --primary: {{ branding.primary_color or '#007bff' }};
+            --secondary: {{ branding.secondary_color or '#6c757d' }};
+            --accent: {{ branding.accent_color or '#28a745' }};
+            --font: {{ branding.font_family or 'Arial' }}, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 0;
+            background: #f8f9fa;
+        }
+
+        .features h2 {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary);
+            font-size: 2.5rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* Contact Section */
+        .contact {
+            padding: 4rem 0;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+        }
+
+        .contact h2 {
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .contact-item h4 {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .contact-item a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-content p {
+                font-size: 1.1rem;
+            }
+
+            .contact-info {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .features h2, .contact h2 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .features, .contact {
+                padding: 2rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>{{ page.hero_title or business.business_name }}</h1>
+                <p>{{ page.hero_subtitle or business.description or ('Professional ' + business.industry + ' Services') }}</p>
+                <a href="#contact" class="btn">{{ page.cta_text or 'Get Started Today' }}</a>
+            </div>
+        </div>
+    </section>
+
+    {% if services and services|length > 0 %}
+    <!-- Features/Services Section -->
+    <section class="features">
+        <div class="container">
+            <h2>{{ page.services_title or 'Our Services' }}</h2>
+            <div class="features-grid">
+                {% for service in services[:6] %}
+                <div class="feature-card">
+                    <h3>{{ service.name }}</h3>
+                    <p>{{ service.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <h2>{{ page.contact_title or 'Get In Touch' }}</h2>
+            <p>{{ page.contact_subtitle or 'Ready to get started? Contact us today for a free consultation.' }}</p>
+
+            <div class="contact-info">
+                <div class="contact-item">
+                    <h4>Call Us</h4>
+                    <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>
+                </div>
+                <div class="contact-item">
+                    <h4>Email Us</h4>
+                    <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                </div>
+                {% if contact.address %}
+                <div class="contact-item">
+                    <h4>Visit Us</h4>
+                    <p>{{ contact.address.city }}, {{ contact.address.state }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- JSON-LD Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "{{ business.business_name }}",
+        "description": "{{ business.description }}",
+        {% if business.website_url %}"url": "{{ business.website_url }}",{% endif %}
+        "telephone": "{{ contact.phone }}",
+        "email": "{{ contact.email }}"
+        {% if contact.address %},
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "{{ contact.address.city }}",
+            "addressRegion": "{{ contact.address.state }}",
+            "addressCountry": "{{ contact.address.country or 'US' }}"
+        }
+        {% endif %}
+    }
+    </script>
+</body>
+</html>

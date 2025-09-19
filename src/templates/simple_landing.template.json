@@ -1,0 +1,89 @@
+{
+  "id": "simple_landing",
+  "name": "Simple Landing Page",
+  "description": "Clean, conversion-focused landing page template perfect for lead generation and business promotion. Features a full-screen hero, services showcase, and prominent contact section.",
+  "type": "landing_page",
+  "variant": "basic",
+  "version": "1.0.0",
+  "author": "Cloud Stack Generator Team",
+  "created_date": "2025-09-18",
+  "last_modified": "2025-09-18",
+  "preview_image": "previews/simple_landing_preview.png",
+  "template_file": "pages/simple_landing.html",
+  "required_data": [
+    "business.business_name",
+    "business.industry",
+    "contact.phone",
+    "contact.email"
+  ],
+  "optional_data": [
+    "page.title",
+    "page.meta_description",
+    "page.hero_title",
+    "page.hero_subtitle",
+    "page.cta_text",
+    "page.services_title",
+    "page.contact_title",
+    "page.contact_subtitle",
+    "business.description",
+    "business.website_url",
+    "contact.address.city",
+    "contact.address.state",
+    "contact.address.country",
+    "branding.primary_color",
+    "branding.secondary_color",
+    "branding.accent_color",
+    "branding.font_family",
+    "services"
+  ],
+  "features": [
+    "Single-page design for maximum focus",
+    "Full-screen hero section with strong CTA",
+    "Services/features grid layout",
+    "Prominent contact information",
+    "Mobile-first responsive design",
+    "Fast loading with minimal dependencies",
+    "Clean, modern aesthetic",
+    "Smooth scrolling navigation",
+    "Call-to-action optimization",
+    "Lead generation focused",
+    "Cross-browser compatible",
+    "Schema.org Organization markup",
+    "CSS custom properties for theming",
+    "Hover effects and animations",
+    "SEO optimized structure"
+  ],
+  "compatibility": {
+    "min_version": "2.0.0",
+    "supports_city_pages": false,
+    "supports_wikipedia": false,
+    "supports_google_maps": false,
+    "supports_schema_markup": true,
+    "supports_responsive_design": true,
+    "supports_seo_optimization": true,
+    "supports_contact_forms": false,
+    "supports_ecommerce": false,
+    "supports_multilingual": false,
+    "use_cases": [
+      "Business landing pages",
+      "Service promotion",
+      "Lead generation",
+      "Campaign landing pages",
+      "Simple business websites"
+    ],
+    "target_audience": [
+      "Small businesses",
+      "Service providers",
+      "Freelancers",
+      "Consultants",
+      "Local businesses"
+    ],
+    "optimization_features": [
+      "Single page load",
+      "Inline CSS",
+      "Minimal JavaScript",
+      "Optimized images",
+      "Fast rendering"
+    ]
+  }
+}

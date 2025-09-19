@@ -110,7 +110,7 @@ class WikipediaAPI:
             # Test each URL to find working image
             for test_url in potential_urls:
                 if self.validate_image_url(test_url):
-                    source_url = page_info.get("content_urls", {}).get("desktop", {}).get("page", "")
+                    source_url = page_info.get("page_url", "")
                     attribution = f"Wikipedia - {page_info.get('title', city)}"
                     return test_url, source_url, attribution
                     

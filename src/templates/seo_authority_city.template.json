@@ -1,0 +1,53 @@
+{
+  "id": "seo_authority_city",
+  "name": "SEO Authority City Page",
+  "description": "Comprehensive SEO-optimized city page template with rich content features, schema markup, and local business optimization. Ideal for maximum search engine visibility and user engagement.",
+  "type": "city_page",
+  "variant": "seo_authority",
+  "version": "2.1.0",
+  "author": "Cloud Stack Generator Team",
+  "created_date": "2025-08-15",
+  "last_modified": "2025-09-18",
+  "preview_image": "previews/seo_authority_city_preview.png",
+  "template_file": "pages/seo_authority_city_page.html",
+  "required_data": [
+    "city_page.city_name",
+    "city_page.title",
+    "business.business_name",
+    "contact.phone",
+    "contact.email"
+  ],
+  "optional_data": [
+    "city_page.city_image",
+    "city_page.places_of_interest",
+    "city_page.city_faq",
+    "city_page.seo_content_body",
+    "city_page.meta_description",
+    "city_page.primary_keyword",
+    "city_page.hero_title",
+    "city_page.about_city"
+  ],
+  "features": [
+    "Advanced SEO optimization",
+    "Schema.org structured data markup",
+    "Local business information integration",
+    "Places of interest with Google Maps embeds",
+    "FAQ sections for enhanced content",
+    "Wikipedia image embeds with attribution",
+    "Responsive mobile-first design",
+    "Social media meta tags",
+    "Open Graph protocol support",
+    "Rich snippets optimization",
+    "Local SEO best practices",
+    "High content depth (800+ words)"
+  ],
+  "compatibility": {
+    "min_version": "2.0.0",
+    "supports_city_pages": true,
+    "supports_wikipedia": true,
+    "supports_google_maps": true,
+    "supports_schema_markup": true,
+    "supports_responsive_design": true,
+    "supports_seo_optimization": true
+  }
+}

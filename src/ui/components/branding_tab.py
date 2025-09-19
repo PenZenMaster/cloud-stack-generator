@@ -286,34 +286,59 @@ class BrandingTab(BaseTab):
         parent_layout.addWidget(logo_group)
 
     def _create_template_section(self, parent_layout: QVBoxLayout):
-        """Create template info section - simplified to show current template"""
+        """Create enhanced template selection section"""
         # Section header
         header = QLabel("Website Template")
         header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
         parent_layout.addWidget(header)
 
-        # Template info group
+        # Template selection group
         template_group = QGroupBox()
-        template_group.setMaximumHeight(120)
         template_layout = QVBoxLayout()
         template_layout.setSpacing(10)
 
         # Current template info
-        template_info = QLabel("Current Template: SEO Authority - Maximum optimization and content depth")
-        template_info.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        template_info.setStyleSheet("color: #2c5aa0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;")
-        template_layout.addWidget(template_info)
+        self.current_template_info = QLabel("Loading template information...")
+        self.current_template_info.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.current_template_info.setStyleSheet("color: #2c5aa0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;")
+        template_layout.addWidget(self.current_template_info)
 
         # Template description
-        template_description = QLabel("This template provides comprehensive SEO optimization with rich content features for city pages. Template selection and customization will be available in future updates.")
-        template_description.setFont(QFont("Arial", 9))
-        template_description.setStyleSheet("color: #666666; padding: 5px 0;")
-        template_description.setWordWrap(True)
-        template_layout.addWidget(template_description)
+        self.template_description = QLabel("Select a template to customize your website's appearance and features.")
+        self.template_description.setFont(QFont("Arial", 9))
+        self.template_description.setStyleSheet("color: #666666; padding: 5px 0;")
+        self.template_description.setWordWrap(True)
+        template_layout.addWidget(self.template_description)
+
+        # Template selection button
+        button_layout = QHBoxLayout()
+
+        self.select_template_btn = QPushButton("Choose Template...")
+        self.select_template_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.select_template_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """)
+        self.select_template_btn.clicked.connect(self._open_template_selection)
+        button_layout.addWidget(self.select_template_btn)
+
+        button_layout.addStretch()
+        template_layout.addLayout(button_layout)
 
         template_group.setLayout(template_layout)
         parent_layout.addWidget(template_group)
+
+        # Initialize template system
+        self._initialize_template_system()
 
     def _create_preview_section(self, parent_layout: QVBoxLayout):
         """Create live preview section"""
@@ -554,3 +579,85 @@ class BrandingTab(BaseTab):
     def connect_signals(self):
         """Connect UI signals"""
         pass
+
+    def _initialize_template_system(self):
+        """Initialize the template system"""
+        try:
+            import sys
+            from pathlib import Path
+
+            # Add the src directory to the Python path for imports
+            src_path = str(Path(__file__).parent.parent.parent)
+            if src_path not in sys.path:
+                sys.path.insert(0, src_path)
+
+            from core.templates.template_manager import TemplateManager
+            self.template_manager = TemplateManager()
+            self.selected_template_id = "seo_authority_city"  # Default template
+            self._update_template_display()
+        except Exception as e:
+            print(f"Error initializing template system: {e}")
+            self.current_template_info.setText("Error loading template system")
+
+    def _update_template_display(self):
+        """Update the template information display"""
+        if hasattr(self, 'template_manager') and self.template_manager:
+            template_metadata = self.template_manager.get_template_by_id(self.selected_template_id)
+            if template_metadata:
+                self.current_template_info.setText(
+                    f"Current Template: {template_metadata.name} - {template_metadata.variant.value.title()}"
+                )
+                self.template_description.setText(template_metadata.description)
+            else:
+                self.current_template_info.setText("Template not found")
+        else:
+            self.current_template_info.setText("Template system not available")
+
+    def _open_template_selection(self):
+        """Open the template selection dialog"""
+        try:
+            import sys
+            from pathlib import Path
+
+            # Add the src directory to the Python path for imports
+            src_path = str(Path(__file__).parent.parent.parent)
+            if src_path not in sys.path:
+                sys.path.insert(0, src_path)
+
+            from ui.dialogs.template_selection_dialog import TemplateSelectionDialog
+
+            dialog = TemplateSelectionDialog(self.selected_template_id, self)
+            dialog.template_selected.connect(self._on_template_selected)
+
+            if dialog.exec() == TemplateSelectionDialog.DialogCode.Accepted:
+                selected_id = dialog.get_selected_template_id()
+                if selected_id and selected_id != self.selected_template_id:
+                    self._on_template_selected(selected_id)
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Template Selection Error",
+                f"Failed to open template selection dialog:\\n{str(e)}"
+            )
+
+    def _on_template_selected(self, template_id: str):
+        """Handle template selection"""
+        self.selected_template_id = template_id
+        self._update_template_display()
+        self._emit_config_changed()
+
+        # Show confirmation
+        if hasattr(self, 'template_manager') and self.template_manager:
+            template_metadata = self.template_manager.get_template_by_id(template_id)
+            if template_metadata:
+                QMessageBox.information(
+                    self,
+                    "Template Selected",
+                    f"Template '{template_metadata.name}' has been selected.\\n\\n"
+                    f"This template will be used for generating city pages and other content."
+                )
+
+    def get_selected_template_id(self) -> str:
+        """Get the currently selected template ID"""
+        return getattr(self, 'selected_template_id', 'seo_authority_city')
