@@ -331,6 +331,24 @@ class BrandingTab(BaseTab):
         self.select_template_btn.clicked.connect(self._open_template_selection)
         button_layout.addWidget(self.select_template_btn)
 
+        # Template editor button
+        self.edit_template_btn = QPushButton("Edit Template...")
+        self.edit_template_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.edit_template_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #e74c3c;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #c0392b;
+            }
+        """)
+        self.edit_template_btn.clicked.connect(self._open_template_editor)
+        button_layout.addWidget(self.edit_template_btn)
+
         button_layout.addStretch()
         template_layout.addLayout(button_layout)
 
@@ -661,3 +679,118 @@ class BrandingTab(BaseTab):
     def get_selected_template_id(self) -> str:
         """Get the currently selected template ID"""
         return getattr(self, 'selected_template_id', 'seo_authority_city')
+
+    def _open_template_editor(self):
+        """Open WYSIWYG template editor"""
+        try:
+            import sys
+            from pathlib import Path
+
+            # Add the src directory to the Python path for imports
+            src_path = str(Path(__file__).parent.parent.parent)
+            if src_path not in sys.path:
+                sys.path.insert(0, src_path)
+
+            # Try the full editor first, fallback to simple editor
+            try:
+                from ui.dialogs.template_editor_dialog import TemplateEditorDialog
+                editor_class = TemplateEditorDialog
+                editor_type = "Advanced"
+            except Exception as e:
+                print(f"Advanced editor not available: {e}")
+                from ui.dialogs.simple_template_editor import SimpleTemplateEditor
+                editor_class = SimpleTemplateEditor
+                editor_type = "Simple"
+
+            # Get current template ID or None for new template
+            template_id = getattr(self, 'selected_template_id', None)
+
+            dialog = editor_class(self, template_id)
+
+            # Connect signals
+            dialog.template_saved.connect(self._on_template_saved)
+            dialog.template_created.connect(self._on_template_created)
+
+            # Show info about editor type
+            if editor_type == "Simple":
+                QMessageBox.information(
+                    self,
+                    "Template Editor",
+                    "Opening simplified template editor.\n\n"
+                    "Some advanced features may not be available, but core editing functionality is preserved."
+                )
+
+            # Show dialog
+            dialog.exec()
+
+        except Exception as e:
+            # Log the error to error log
+            import traceback
+            error_msg = f"Template Editor Error: {str(e)}\n{traceback.format_exc()}"
+
+            # Try to write to error log
+            try:
+                from pathlib import Path
+                log_file = Path("logs/error_log.txt")
+                log_file.parent.mkdir(exist_ok=True)
+
+                with open(log_file, "a", encoding="utf-8") as f:
+                    from datetime import datetime
+                    f.write(f"\n[{datetime.now()}] TEMPLATE EDITOR ERROR:\n")
+                    f.write(error_msg)
+                    f.write("\n" + "="*50 + "\n")
+            except Exception as log_error:
+                print(f"Failed to log error: {log_error}")
+
+            # Show error to user
+            QMessageBox.critical(
+                self,
+                "Template Editor Error",
+                f"Failed to open template editor:\n{str(e)}\n\n"
+                f"Error details have been logged to logs/error_log.txt\n\n"
+                f"Please ensure all dependencies are installed."
+            )
+
+    def _on_template_saved(self, template_id: str):
+        """Handle template saved event"""
+        try:
+            # Refresh template information if it's the current template
+            if template_id == getattr(self, 'selected_template_id', None):
+                self._update_template_display()
+
+                # Emit configuration change
+                self._emit_config_changed()
+
+            # Show success message
+            if hasattr(self, 'template_manager') and self.template_manager:
+                template_metadata = self.template_manager.get_template_by_id(template_id)
+                template_name = template_metadata.name if template_metadata else template_id
+                QMessageBox.information(
+                    self,
+                    "Template Saved",
+                    f"Template '{template_name}' saved successfully!"
+                )
+
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Error updating template information: {str(e)}")
+
+    def _on_template_created(self, template_id: str):
+        """Handle new template created event"""
+        try:
+            # Update the selected template to the new one
+            self.selected_template_id = template_id
+            self._update_template_display()
+            self._emit_config_changed()
+
+            # Show success message
+            if hasattr(self, 'template_manager') and self.template_manager:
+                template_metadata = self.template_manager.get_template_by_id(template_id)
+                template_name = template_metadata.name if template_metadata else template_id
+                QMessageBox.information(
+                    self,
+                    "Template Created",
+                    f"New template '{template_name}' created and selected successfully!"
+                )
+
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Error handling new template: {str(e)}")
