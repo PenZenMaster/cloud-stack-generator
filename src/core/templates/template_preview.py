@@ -1,6 +1,6 @@
 """
 Template Preview System
-Path: E:\\projects\\cloud-stack-generator\\src\\core\\templates\\template_preview.py
+Path: E:/projects/cloud-stack-generator/src/core/templates/template_preview.py
 
 Description:
 Generates preview HTML for templates with sample data to allow users
