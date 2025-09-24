@@ -398,3 +398,53 @@ class TemplatePreviewGenerator:
         except Exception as e:
             print(f"Error generating template comparison: {e}")
             return None
+
+    def generate_preview(self, template_content: str, sample_data: dict) -> 'TemplatePreviewResult':
+        """
+        Generate preview HTML from template content and sample data
+
+        Args:
+            template_content: Jinja2 template content
+            sample_data: Data to render template with
+
+        Returns:
+            TemplatePreviewResult with success status and rendered HTML or error details
+        """
+        try:
+            import jinja2
+            import sys
+            from pathlib import Path
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+            from utils.error_classification import classify_and_handle_error
+
+            # Create Jinja2 environment
+            env = jinja2.Environment(
+                loader=jinja2.DictLoader({'template': template_content}),
+                autoescape=jinja2.select_autoescape(['html', 'xml'])
+            )
+
+            # Render template
+            template = env.get_template('template')
+            rendered_html = template.render(sample_data)
+
+            return TemplatePreviewResult(True, rendered_html)
+
+        except Exception as e:
+            # Template rendering error - classify as interface warning
+            classification = classify_and_handle_error(
+                exception=e,
+                context="Preview generation",
+                user_action="Generating template preview",
+                component="TemplatePreviewGenerator"
+            )
+
+            return TemplatePreviewResult(False, "", classification)
+
+
+class TemplatePreviewResult:
+    """Result object for template preview operations"""
+
+    def __init__(self, success: bool, html_content: str = "", error_classification=None):
+        self.success = success
+        self.html_content = html_content
+        self.error_classification = error_classification
