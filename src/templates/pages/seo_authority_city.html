@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   {{ city_page.title }} | {{ business.business_name }}
+  </title>
+  <meta content="{{ city_page.meta_description }}" name="description"/>
+  <meta content="{{ city_page.primary_keyword }}{% if city_page.secondary_keywords %}, {{ city_page.secondary_keywords|join(', ') }}{% endif %}" name="keywords"/>
+  <!-- Open Graph Meta Tags -->
+  <meta content="{{ city_page.title }}" property="og:title"/>
+  <meta content="{{ city_page.meta_description }}" property="og:description"/>
+  <meta content="website" property="og:type"/>
+  <meta content="{{ page_url }}" property="og:url"/>
+  <meta content="{{ city_page.city_image.image_url }}" property="og:image"/>
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+   {
+        "@context": "https://schema.org",
+        "@type": ["WebPage", "LocalBusiness"],
+        "name": "{{ business.business_name }}",
+        "description": "{{ city_page.meta_description }}",
+        "url": "{{ page_url }}",
+        "areaServed": {
+            "@type": "City",
+            "name": "{{ city_page.city_name }}",
+            "addressRegion": "{{ city_page.state }}"
+        },
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ contact.address.street }}",
+            "addressLocality": "{{ contact.address.city }}",
+            "addressRegion": "{{ contact.address.state }}",
+            "postalCode": "{{ contact.address.zip_code }}",
+            "addressCountry": "{{ contact.address.country }}"
+        },
+        "telephone": "{{ contact.phone }}",
+        "email": "{{ contact.email }}",
+        "serviceType": [{% for service in services %}"{{ service.name }}"{% if not loop.last %}, {% endif %}{% endfor %}],
+        "priceRange": "$$",
+        "openingHours": "{{ business.hours | default('Mo-Fr 08:00-17:00') }}",
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "{{ business.industry }} Services",
+            "itemListElement": [
+                {% for service in services %}
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Service",
+                        "name": "{{ service.name }}",
+                        "description": "{{ service.description | default('Professional ' + service.name.lower() + ' services in ' + city_page.city_name) }}"
+                    }
+                }{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ]
+        }
+    }
+  </script>
+  <!-- FAQ Schema (if FAQ content exists) -->
+  {% if city_page.city_faq %}
+  <script type="application/ld+json">
+   {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {% for faq in city_page.city_faq %}
+            {
+                "@type": "Question",
+                "name": "{{ faq.question }}",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "{{ faq.answer }}"
+                }
+            }{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        ]
+    }
+  </script>
+  {% endif %}
+  <!-- CSS -->
+  <link href="{{ css_file }}" rel="stylesheet"/>
+  <style>
+   :root {
+            --primary-color: {{ branding.primary_color }};
+            --secondary-color: {{ branding.secondary_color }};
+            --accent-color: {{ branding.accent_color }};
+            --text-dark: #1a202c;
+            --text-muted: #4a5568;
+            --bg-light: #f7fafc;
+            --border-light: #e2e8f0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: {{ branding.font_family }}, 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            margin: 0;
+            background: var(--bg-light);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .site-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+
+        /* Navigation Styles - Following Dropdown Menu Specification */
+        .main-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 0;
+        }
+
+        .menu > li {
+            position: relative;
+        }
+
+        .menu > li > a {
+            display: block;
+            padding: 12px 18px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .menu > li > a:hover,
+        .menu > li > a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Dropdown Styles - Semantic HTML Structure */
+        .has-dropdown {
+            position: relative;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            border-radius: 0 0 6px 6px;
+            padding: 8px 0;
+            list-style: none;
+            margin: 0;
+        }
+
+        .dropdown li {
+            margin: 0;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: 10px 16px;
+            color: #333;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+            border: none;
+        }
+
+        .dropdown a:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown a.current-location {
+            background-color: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .dropdown a.current-location:hover {
+            background-color: #ffeaa7;
+        }
+
+        /* Grid Layout for Dropdowns with 4+ Items */
+        .dropdown.grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            max-width: 720px; /* 4 columns max */
+            min-width: 400px;
+            gap: 0;
+            padding: 0;
+        }
+
+        .dropdown.grid-layout li {
+            margin: 0;
+        }
+
+        .dropdown.grid-layout a {
+            padding: 8px 12px;
+            text-align: center;
+            font-size: 0.85rem;
+            border: 1px solid #dee2e6;
+            background-color: #fff3cd;
+            color: #856404;
+            margin: 0;
+        }
+
+        .dropdown.grid-layout a:hover {
+            background-color: #ffeaa7;
+        }
+
+        .dropdown.grid-layout a.current-location {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Show dropdown on hover */
+        .has-dropdown:hover .dropdown {
+            display: flex;
+        }
+
+        .has-dropdown:hover .dropdown.grid-layout {
+            display: grid;
+        }
+
+        /* Accessible focus states */
+        .menu a:focus,
+        .dropdown a:focus {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        /* Mobile responsive navigation */
+        @media (max-width: 768px) {
+            .menu {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .dropdown {
+                position: static;
+                display: flex;
+                flex-direction: column;
+                box-shadow: none;
+                background-color: rgba(255, 255, 255, 0.1);
+                margin-top: 0;
+                border-radius: 0;
+                min-width: auto;
+            }
+            
+            .dropdown.grid-layout {
+                display: flex;
+                flex-direction: column;
+                grid-template-columns: none;
+                min-width: auto;
+                max-width: none;
+            }
+            
+            .dropdown.grid-layout a {
+                text-align: left;
+                border: none;
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+            
+            .dropdown.grid-layout a:hover,
+            .dropdown a:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+            
+            .has-dropdown:hover .dropdown {
+                display: flex;
+            }
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            padding: 3rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-section h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero-section .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Main Content */
+        .main-content {
+            background: white;
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 20px;
+        }
+
+        /* Article Layout */
+        .article-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .article-header h2 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .article-meta {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .main-article {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .sidebar-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Wikipedia Image Integration */
+        .city-showcase {
+            margin: 2rem 0 3rem;
+            text-align: center;
+        }
+
+        .city-showcase .wikipedia-embed {
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .city-showcase .wikipedia-embed img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .city-showcase .image-caption {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin: 3rem 0;
+            padding: 2rem 0;
+        }
+
+        .content-section h3 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .content-section h4 {
+            font-size: 1.4rem;
+            color: var(--text-dark);
+            margin: 2rem 0 1rem;
+        }
+
+        .content-section p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        /* Service Areas */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .service-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .service-card h5 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Local Areas */
+        .neighborhoods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .neighborhood-tag {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Places of Interest */
+        .poi-section {
+            margin: 3rem 0;
+        }
+
+        .poi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .poi-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .poi-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .poi-card iframe {
+            width: 100%;
+            height: 250px;
+            border: none;
+        }
+
+        .poi-card-content {
+            padding: 1rem;
+        }
+
+        .poi-card h5 {
+            margin: 0 0 0.5rem;
+            color: var(--primary-color);
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            margin: 3rem 0;
+        }
+
+        .faq-item {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary-color);
+            border: none;
+            width: 100%;
+            text-align: left;
+            transition: background 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: var(--border-light);
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Internal Links */
+        .internal-links {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+
+        .internal-links h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .internal-links a {
+            display: block;
+            padding: 0.75rem 1rem;
+            background: white;
+            color: var(--primary-color);
+            text-decoration: none;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-color);
+            transition: all 0.3s ease;
+        }
+
+        .internal-links a:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .additional-cities {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .additional-cities h5 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .additional-cities p {
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .additional-cities a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .additional-cities a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+
+        /* Contact CTA */
+        .contact-cta {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .contact-cta h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-cta p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .contact-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .contact-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .contact-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Footer */
+        .site-footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section a {
+            color: #cbd5e0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-color);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .map-container {
+            margin-top: 1rem;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 200px;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #4a5568;
+            padding-top: 2rem;
+            text-align: center;
+            color: #a0aec0;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+            
+            .article-header h2 {
+                font-size: 2rem;
+            }
+            
+            .service-grid,
+            .poi-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .neighborhoods-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .contact-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .menu {
+                gap: 0;
+            }
+        }
+  </style>
+ </head>
+ <body>
+  <!-- Header -->
+  {% include 'components/header.html' %}
+  <!-- Main Content -->
+  <main class="main-content">
+   <div class="content-wrapper">
+    <!-- Article Header -->
+    <header class="article-header">
+     <h2>
+      {{ city_page.seo_content_title | default("Complete Guide to " + business.industry + " Services in " + city_page.city_name) }}
+     </h2>
+     <div class="article-meta">
+      Serving {{ city_page.city_name }}{% if city_page.state %}, {{ city_page.state }}{% endif %} | Updated {{ current_date }}
+     </div>
+    </header>
+    <!-- Wikipedia City Showcase -->
+    {% if city_page.city_image.embed_code %}
+    <section class="city-showcase">
+     {{ city_page.city_image.embed_code|safe }}
+    </section>
+    {% elif city_page.city_image.image_url %}
+    <section class="city-showcase">
+     <div class="wikipedia-embed">
+      <img alt="{{ city_page.city_image.alt_text | default('View of ' + city_page.city_name) }}" src="{{ city_page.city_image.image_url }}"/>
+      {% if city_page.city_image.caption %}
+      <p class="image-caption">
+       {{ city_page.city_image.caption }}
+      </p>
+      {% endif %}
+     </div>
+    </section>
+    {% endif %}
+    <!-- Content Grid -->
+    <div class="content-grid">
+     <!-- Main Article Content -->
+     <article class="main-article">
+      <!-- Introduction (150-200 words) -->
+      <section class="content-section">
+       <h3>
+        {{ business.industry }} Excellence in {{ city_page.city_name }}
+       </h3>
+       {% if city_page.about_city %}
+       <p>
+        {{ city_page.about_city }}
+       </p>
+       {% else %}
+       <p>
+        {{ city_page.city_name }} residents and business owners trust {{ business.business_name }} for comprehensive {{ business.industry.lower() }} solutions that combine local expertise with industry-leading practices. Our team understands the unique challenges and opportunities within the {{ city_page.city_name }} market, delivering personalized service that exceeds expectations.
+       </p>
+       <p>
+        Whether you're planning a residential project, managing commercial property, or need emergency services, our {{ city_page.city_name }} team provides the expertise and reliability you deserve. We've built our reputation on quality workmanship, transparent communication, and competitive pricing throughout the area.
+       </p>
+       {% endif %}
+      </section>
+      <!-- Comprehensive Services Section (200-250 words) -->
+      <section class="content-section">
+       <h3>
+        Comprehensive {{ business.industry }} Services for {{ city_page.city_name }}
+       </h3>
+       <p>
+        Our full-service approach ensures {{ city_page.city_name }} clients receive complete solutions from initial consultation through project completion. Each service is tailored to meet local building codes, climate considerations, and architectural styles common throughout the area.
+       </p>
+       <div class="service-grid">
+        {% for service in services %}
+        <div class="service-card">
+         <h5>
+          {{ service.name }}
+         </h5>
+         <p>
+          {{ service.description | default('Professional ' + service.name.lower() + ' services designed specifically for ' + city_page.city_name + ' properties and local requirements.') }}
+         </p>
+        </div>
+        {% endfor %}
+       </div>
+       <p>
+        Each project begins with a detailed assessment of your specific needs, local conditions, and budget considerations. Our {{ city_page.city_name }} team coordinates all aspects of the work, ensuring seamless execution and exceptional results that enhance your property value.
+       </p>
+      </section>
+      <!-- Local Area Expertise Section (150-200 words) -->
+      <section class="content-section">
+       <h3>
+        Deep Local Knowledge of {{ city_page.city_name }}
+       </h3>
+       {% if city_page.seo_content_body %}
+       <div>
+        {{ city_page.seo_content_body|markdown_basic|safe }}
+       </div>
+       {% else %}
+       <p>
+        Our {{ city_page.city_name }} expertise extends beyond technical skills to include comprehensive understanding of local regulations, permit requirements, and seasonal considerations. This knowledge ensures your project proceeds smoothly while meeting all applicable standards.
+       </p>
+       <p>
+        We've worked extensively throughout {{ city_page.city_name }}, developing relationships with local suppliers, understanding neighborhood characteristics, and adapting our services to local conditions. This experience translates into more efficient project completion and better long-term results for our clients.
+       </p>
+       <p>
+        From historic districts to new developments, our team navigates the unique aspects of each {{ city_page.city_name }} area with confidence and precision. We pride ourselves on being more than service providers – we're your local {{ business.industry.lower() }} partners.
+       </p>
+       {% endif %}
+      </section>
+      <!-- Areas We Serve Section (100-150 words) -->
+      <section class="content-section">
+       <h3>
+        {{ city_page.city_name }} Areas We Serve
+       </h3>
+       <p>
+        Our service area covers all {{ city_page.city_name }} neighborhoods and surrounding communities. We're familiar with the specific needs of each area and maintain the flexibility to serve both residential and commercial clients throughout the region.
+       </p>
+       {% if city_page.neighborhoods %}
+       <div class="neighborhoods-grid">
+        {% for neighborhood in city_page.neighborhoods.split(', ') %}
+        <div class="neighborhood-tag">
+         {{ neighborhood.strip() }}
+        </div>
+        {% endfor %}
+       </div>
+       {% else %}
+       <div class="neighborhoods-grid">
+        <div class="neighborhood-tag">
+         Downtown {{ city_page.city_name }}
+        </div>
+        <div class="neighborhood-tag">
+         {{ city_page.city_name }} Suburbs
+        </div>
+        <div class="neighborhood-tag">
+         Historic District
+        </div>
+        <div class="neighborhood-tag">
+         Business District
+        </div>
+        <div class="neighborhood-tag">
+         Residential Areas
+        </div>
+        <div class="neighborhood-tag">
+         Industrial Zone
+        </div>
+       </div>
+       {% endif %}
+       <p>
+        Contact us to confirm service availability in your specific {{ city_page.city_name }} location and discuss your project requirements with our local team.
+       </p>
+      </section>
+      <!-- Industry-Specific Expertise Section -->
+      {% if industry_sections %}
+      <section class="content-section">
+       <h3>
+        {{ industry_sections.expertise_title }}
+       </h3>
+       <p>
+        {{ industry_sections.expertise_content }}
+       </p>
+      </section>
+      <!-- Industry-Specific Specialization Section -->
+      <section class="content-section">
+       <h3>
+        {{ industry_sections.specialization_title }}
+       </h3>
+       <p>
+        {{ industry_sections.specialization_content }}
+       </p>
+      </section>
+      {% endif %}
+      <!-- Why Choose Us Section (150-200 words) -->
+      <section class="content-section">
+       <h3>
+        Why {{ city_page.city_name }} Chooses {{ business.business_name }}
+       </h3>
+       <h4>
+        Local Experience &amp; Expertise
+       </h4>
+       <p>
+        Years of experience serving {{ city_page.city_name }} have given us unmatched insight into local conditions, building codes, and client preferences. This expertise ensures efficient project execution and superior results.
+       </p>
+       <h4>
+        Quality Workmanship
+       </h4>
+       <p>
+        Every {{ city_page.city_name }} project reflects our commitment to excellence. We use premium materials, proven techniques, and thorough quality control processes to deliver results that stand the test of time.
+       </p>
+       <h4>
+        Transparent Communication
+       </h4>
+       <p>
+        Our {{ city_page.city_name }} clients appreciate our straightforward approach to project communication. We provide detailed estimates, regular updates, and clear explanations throughout the entire process.
+       </p>
+       <h4>
+        Competitive Pricing
+       </h4>
+       <p>
+        We offer competitive rates for all {{ business.industry.lower() }} services in {{ city_page.city_name }}, with transparent pricing and no hidden fees. Request a free quote to see the {{ business.business_name }} difference.
+       </p>
+      </section>
+     </article>
+     <!-- Sidebar -->
+     <aside class="sidebar">
+      <!-- Quick Contact -->
+      <div class="sidebar-card">
+       <h4>
+        Get Quote for {{ city_page.city_name }}
+       </h4>
+       <p>
+        <strong>
+         Phone:
+        </strong>
+        <a href="tel:{{ contact.phone }}">
+         {{ contact.phone }}
+        </a>
+       </p>
+       <p>
+        <strong>
+         Email:
+        </strong>
+        <a href="mailto:{{ contact.email }}">
+         {{ contact.email }}
+        </a>
+       </p>
+       <p>
+        Free estimates for all {{ city_page.city_name }} projects
+       </p>
+      </div>
+      <!-- Service Areas -->
+      <div class="sidebar-card">
+       <h4>
+        Service Coverage
+       </h4>
+       <p>
+        {{ city_page.city_name }} and surrounding areas
+       </p>
+       <p>
+        <small>
+         {{ city_page.service_area_note | default("Emergency services available") }}
+        </small>
+       </p>
+      </div>
+      <!-- Internal Links -->
+      <div class="sidebar-card">
+       <h4>
+        Popular Services
+       </h4>
+       {% for service in services[:5] %}
+       <p>
+        <a href="/services/{{ service.slug | default(service.name.lower().replace(' ', '-')) }}/">
+         {{ service.name }}
+        </a>
+       </p>
+       {% endfor %}
+      </div>
+     </aside>
+    </div>
+    <!-- Places of Interest -->
+    {% if city_page.places_of_interest %}
+    <section class="poi-section">
+     <h3>
+      {{ city_page.city_name }} Places of Interest
+     </h3>
+     <p>
+      While we work on your project, explore these notable {{ city_page.city_name }} locations and attractions.
+     </p>
+     <div class="poi-grid">
+      {% for place in city_page.places_of_interest %}
+      <div class="poi-card">
+       {% if place.embed_url %}
+                            {% if place.embed_url.startswith('https://www.google.com/maps/embed') %}
+       <iframe loading="lazy" src="{{ place.embed_url }}" title="{{ place.name }} - {{ city_page.city_name }}">
+       </iframe>
+       {% else %}
+       <div class="poi-link-container">
+        <a class="poi-map-link" href="{{ place.embed_url }}" rel="noopener" target="_blank">
+         📍 View {{ place.name }} on Google Maps
+        </a>
+       </div>
+       {% endif %}
+                        {% endif %}
+       <div class="poi-card-content">
+        <h5>
+         {{ place.name }}
+        </h5>
+        <p>
+         A notable {{ city_page.city_name }} landmark worth visiting during your project.
+        </p>
+       </div>
+      </div>
+      {% endfor %}
+     </div>
+    </section>
+    {% endif %}
+    <!-- FAQ Section -->
+    <section class="faq-section">
+     <h3>
+      Frequently Asked Questions - {{ city_page.city_name }} {{ business.industry }}
+     </h3>
+     {% if city_page.city_faq %}
+                {% for faq in city_page.city_faq %}
+     <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+       {{ faq.question }}
+      </button>
+      <div class="faq-answer" style="display: none;">
+       <p>
+        {{ faq.answer }}
+       </p>
+      </div>
+     </div>
+     {% endfor %}
+                {% else %}
+     <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+       Do you provide {{ business.industry.lower() }} services throughout {{ city_page.city_name }}?
+      </button>
+      <div class="faq-answer" style="display: none;">
+       <p>
+        Yes, {{ business.business_name }} provides comprehensive {{ business.industry.lower() }} services throughout {{ city_page.city_name }} and surrounding areas. Contact us to confirm service availability for your specific location.
+       </p>
+      </div>
+     </div>
+     <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+       How quickly can you respond to {{ city_page.city_name }} service requests?
+      </button>
+      <div class="faq-answer" style="display: none;">
+       <p>
+        We typically respond to {{ city_page.city_name }} service requests within 24 hours. Emergency services may be available depending on the situation and current schedule.
+       </p>
+      </div>
+     </div>
+     <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+       What makes your {{ city_page.city_name }} {{ business.industry.lower() }} services different?
+      </button>
+      <div class="faq-answer" style="display: none;">
+       <p>
+        Our deep local knowledge of {{ city_page.city_name }}, combined with years of experience and commitment to quality, sets us apart. We understand local conditions, regulations, and client preferences better than non-local competitors.
+       </p>
+      </div>
+     </div>
+     <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+       Do you offer free estimates for {{ city_page.city_name }} projects?
+      </button>
+      <div class="faq-answer" style="display: none;">
+       <p>
+        Yes, we provide free, detailed estimates for all {{ city_page.city_name }} projects. Contact us to schedule a consultation and receive your personalized quote.
+       </p>
+      </div>
+     </div>
+     {% endif %}
+    </section>
+    <!-- Strategic Internal Links Section -->
+    <section class="internal-links">
+     <h4>
+      Related {{ business.industry }} Resources
+     </h4>
+     <div class="links-grid">
+      {% for service in services %}
+      <a href="/services/{{ service.slug | default(service.name.lower().replace(' ', '-')) }}/">
+       {{ service.name }} Services
+      </a>
+      {% endfor %}
+                    
+                    {% if other_cities %}
+      <!-- Strategic City Interlinking -->
+      {% for other_city in other_cities[:4] %}
+      <a href="/{{ other_city.slug }}/">
+       {{ business.industry }} in {{ other_city.city_name }}
+      </a>
+      {% endfor %}
+                    {% endif %}
+      <a href="/locations/">
+       All Service Areas
+      </a>
+      <a href="/about/">
+       About {{ business.business_name }}
+      </a>
+      <a href="/contact/">
+       Contact Us
+      </a>
+     </div>
+     {% if other_cities and other_cities|length &gt; 4 %}
+     <!-- Additional City Links -->
+     <div class="additional-cities">
+      <h5>
+       We Also Serve:
+      </h5>
+      <p>
+       {% for other_city in other_cities[4:] %}
+       <a href="/{{ other_city.slug }}/">
+        {{ other_city.city_name }}
+       </a>
+       {% if not loop.last %}, {% endif %}
+                        {% endfor %}
+      </p>
+     </div>
+     {% endif %}
+    </section>
+    <!-- Contact CTA -->
+    <section class="contact-cta" id="contact">
+     <h3>
+      Ready to Start Your {{ city_page.city_name }} Project?
+     </h3>
+     <p>
+      Get a free, detailed quote for your {{ business.industry.lower() }} needs in {{ city_page.city_name }}. Our local team is ready to help you achieve outstanding results.
+     </p>
+     <div class="contact-buttons">
+      <a class="contact-button" href="tel:{{ contact.phone }}">
+       📞 Call {{ contact.phone }}
+      </a>
+      <a class="contact-button" href="mailto:{{ contact.email }}?subject={{ city_page.city_name }} {{ business.industry }} Quote Request">
+       📧 Email for Quote
+      </a>
+     </div>
+    </section>
+   </div>
+  </main>
+  <!-- Footer -->
+  {% include 'components/footer.html' %}
+  <!-- Scripts -->
+  <script>
+   // FAQ Toggle
+        function toggleFaq(button) {
+            const answer = button.nextElementSibling;
+            const isOpen = answer.style.display === 'block';
+            
+            // Close all FAQ answers
+            document.querySelectorAll('.faq-answer').forEach(answer => {
+                answer.style.display = 'none';
+            });
+            
+            // Open clicked FAQ if it was closed
+            if (!isOpen) {
+                answer.style.display = 'block';
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Enhanced dropdown functionality - Following specification
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownItems = document.querySelectorAll('.has-dropdown');
+            
+            dropdownItems.forEach(function(dropdownItem) {
+                const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                const dropdown = dropdownItem.querySelector('.dropdown');
+                let timeoutId;
+                
+                if (trigger && dropdown) {
+                    // Desktop hover behavior
+                    dropdownItem.addEventListener('mouseenter', function() {
+                        clearTimeout(timeoutId);
+                        dropdown.style.display = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+                        trigger.setAttribute('aria-expanded', 'true');
+                    });
+                    
+                    dropdownItem.addEventListener('mouseleave', function() {
+                        timeoutId = setTimeout(function() {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }, 200);
+                    });
+                    
+                    // Mobile/touch click behavior
+                    trigger.addEventListener('click', function(e) {
+                        // On mobile, use click to toggle
+                        if (window.innerWidth <= 768) {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            
+                            // Close all other dropdowns first
+                            dropdownItems.forEach(function(other) {
+                                if (other !== dropdownItem) {
+                                    const otherDropdown = other.querySelector('.dropdown');
+                                    const otherTrigger = other.querySelector('a[aria-haspopup="true"]');
+                                    if (otherDropdown) otherDropdown.style.display = 'none';
+                                    if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+                            
+                            // Toggle current dropdown
+                            dropdown.style.display = isVisible ? 'none' : 'flex';
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        }
+                    });
+                    
+                    // Keyboard navigation support
+                    trigger.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            dropdown.style.display = isVisible ? 'none' : (dropdown.classList.contains('grid-layout') ? 'grid' : 'flex');
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        } else if (e.key === 'Escape') {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                            trigger.focus();
+                        }
+                    });
+                }
+            });
+            
+            // Close all dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.has-dropdown')) {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown) dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+            
+            // Handle window resize for responsive behavior
+            window.addEventListener('resize', function() {
+                dropdownItems.forEach(function(dropdownItem) {
+                    const dropdown = dropdownItem.querySelector('.dropdown');
+                    const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                    if (dropdown && window.innerWidth > 768) {
+                        dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Apply animation to content sections
+        document.querySelectorAll('.content-section, .poi-card, .faq-item').forEach(element => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.transition = 'all 0.6s ease-out';
+            observer.observe(element);
+        });
+  </script>
+ </body>
+</html>

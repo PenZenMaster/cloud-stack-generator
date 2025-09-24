@@ -1,0 +1,52 @@
+{
+  "seo_authority_city": [
+    {
+      "backup_id": "seo_authority_city_20250923_182613_0fb0d6ac",
+      "template_id": "seo_authority_city",
+      "template_name": "SEO Authority City Page",
+      "version": "2.1.0",
+      "created_date": "2025-09-23T18:26:13.869841",
+      "created_by": "Cloud Stack Generator Team",
+      "description": "Automatic backup before save",
+      "file_hash": "d36a4275f6f82d47c4b0400e76538eb9",
+      "file_size": 47661,
+      "backup_type": "pre_edit"
+    },
+    {
+      "backup_id": "seo_authority_city_20250923_181836_0fb0d6ac",
+      "template_id": "seo_authority_city",
+      "template_name": "SEO Authority City Page",
+      "version": "2.1.0",
+      "created_date": "2025-09-23T18:18:36.871133",
+      "created_by": "Cloud Stack Generator Team",
+      "description": "Automatic backup before save",
+      "file_hash": "d36a4275f6f82d47c4b0400e76538eb9",
+      "file_size": 47661,
+      "backup_type": "pre_edit"
+    },
+    {
+      "backup_id": "seo_authority_city_20250923_181634_0fb0d6ac",
+      "template_id": "seo_authority_city",
+      "template_name": "SEO Authority City Page",
+      "version": "2.1.0",
+      "created_date": "2025-09-23T18:16:34.741290",
+      "created_by": "Cloud Stack Generator Team",
+      "description": "Automatic backup before save",
+      "file_hash": "d36a4275f6f82d47c4b0400e76538eb9",
+      "file_size": 47661,
+      "backup_type": "pre_edit"
+    },
+    {
+      "backup_id": "seo_authority_city_20250923_181434_0fb0d6ac",
+      "template_id": "seo_authority_city",
+      "template_name": "SEO Authority City Page",
+      "version": "2.1.0",
+      "created_date": "2025-09-23T18:14:34.763274",
+      "created_by": "Cloud Stack Generator Team",
+      "description": "Automatic backup before save",
+      "file_hash": "d36a4275f6f82d47c4b0400e76538eb9",
+      "file_size": 47661,
+      "backup_type": "pre_edit"
+    }
+  ]
+}

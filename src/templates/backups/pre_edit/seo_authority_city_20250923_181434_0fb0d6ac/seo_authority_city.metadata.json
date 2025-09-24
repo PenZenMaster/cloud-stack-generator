@@ -1,0 +1,40 @@
+{
+  "id": "seo_authority_city",
+  "name": "SEO Authority City Page",
+  "description": "Comprehensive SEO-optimized city page template with rich content features, schema markup, and local business optimization. Ideal for maximum search engine visibility and user engagement.",
+  "type": "TemplateType.CITY_PAGE",
+  "variant": "TemplateVariant.CUSTOM",
+  "version": "2.1.0",
+  "author": "Cloud Stack Generator Team",
+  "created_date": "2025-09-23",
+  "last_modified": "2025-09-23",
+  "preview_image": "previews/seo_authority_city_preview.png",
+  "template_file": "pages/seo_authority_city.html",
+  "required_data": [
+    "city_page.city_name",
+    "city_page.title",
+    "business.business_name",
+    "contact.phone",
+    "contact.email"
+  ],
+  "optional_data": [
+    "city_page.city_image",
+    "city_page.places_of_interest",
+    "city_page.city_faq",
+    "city_page.seo_content_body",
+    "city_page.meta_description",
+    "city_page.primary_keyword",
+    "city_page.hero_title",
+    "city_page.about_city"
+  ],
+  "features": [
+    "SEO Optimization",
+    "Local Business",
+    "Google Maps",
+    "Wikipedia"
+  ],
+  "compatibility": {
+    "min_version": "2.0.0",
+    "supports_responsive_design": true
+  }
+}
