@@ -407,3 +407,95 @@ class TemplateManager:
                 {"name": "Service 2", "description": "Quality service offering"}
             ]
         }
+
+    def save_template(self, template_id: str, template_content: str, metadata: TemplateMetadata, overwrite: bool = False) -> 'TemplateOperationResult':
+        """
+        Save a template with content and metadata
+
+        Args:
+            template_id: Unique identifier for the template
+            template_content: HTML content of the template
+            metadata: Template metadata object
+            overwrite: Whether to overwrite existing template
+
+        Returns:
+            TemplateOperationResult with success status and error details
+        """
+        try:
+            # Use absolute import to avoid relative import issues
+            import sys
+            from pathlib import Path
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+            from utils import log_ui_error
+
+            # Validate required fields
+            if not template_id or not template_id.strip():
+                return TemplateOperationResult(False, "Template ID is required")
+
+            if not metadata.name or not metadata.name.strip():
+                return TemplateOperationResult(False, "Template name is required for validation")
+
+            if not template_content or not template_content.strip():
+                return TemplateOperationResult(False, "Template content cannot be empty")
+
+            # Check if template already exists
+            template_file_path = self.templates_dir / metadata.template_file
+            if template_file_path.exists() and not overwrite:
+                return TemplateOperationResult(False, f"Template '{template_id}' already exists. Use overwrite=True to replace.")
+
+            # Ensure template directory exists
+            template_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Write template file
+            with open(template_file_path, 'w', encoding='utf-8') as f:
+                f.write(template_content)
+
+            # Save metadata
+            import json
+            metadata_path = template_file_path.with_suffix('.template.json')
+            with open(metadata_path, 'w', encoding='utf-8') as f:
+                # Convert metadata to dict for JSON serialization
+                metadata_dict = {
+                    'id': metadata.id,
+                    'name': metadata.name,
+                    'description': metadata.description,
+                    'type': metadata.type.value if hasattr(metadata.type, 'value') else str(metadata.type),
+                    'variant': metadata.variant.value if hasattr(metadata.variant, 'value') else str(metadata.variant),
+                    'version': metadata.version,
+                    'author': metadata.author,
+                    'created_date': metadata.created_date,
+                    'last_modified': metadata.last_modified,
+                    'template_file': metadata.template_file,
+                    'preview_image': metadata.preview_image,
+                    'required_data': metadata.required_data,
+                    'optional_data': metadata.optional_data,
+                    'features': metadata.features,
+                    'compatibility': metadata.compatibility
+                }
+                json.dump(metadata_dict, f, indent=2)
+
+            # Add to registry
+            self.templates_registry[template_id] = metadata
+
+            return TemplateOperationResult(True, "Template saved successfully")
+
+        except Exception as e:
+            # Log the error using enhanced error handler
+            try:
+                log_ui_error(
+                    widget_name="TemplateManager",
+                    action="save_template",
+                    error=e,
+                    user_action="Saving template"
+                )
+            except:
+                pass  # Fallback if error handler not available
+
+            return TemplateOperationResult(False, f"Error saving template: {str(e)}")
+
+
+class TemplateOperationResult:
+    """Result object for template operations"""
+    def __init__(self, success: bool, error_message: str = ""):
+        self.success = success
+        self.error_message = error_message
