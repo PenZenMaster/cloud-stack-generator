@@ -38,12 +38,20 @@ if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
 try:
-    from core.templates.template_manager import TemplateManager, TemplateType, TemplateMetadata
+    from core.templates.template_manager import TemplateManager, TemplateType, TemplateMetadata, TemplateVariant
     from core.templates.backup_manager import TemplateBackupManager
     CORE_AVAILABLE = True
 except ImportError:
     print("Core template modules not available")
     CORE_AVAILABLE = False
+
+# Import enhanced error handling
+try:
+    from ...utils import get_error_handler, handle_errors, safe_operation, log_ui_error
+    ERROR_HANDLING_AVAILABLE = True
+except ImportError:
+    print("Enhanced error handling not available")
+    ERROR_HANDLING_AVAILABLE = False
 
 
 class SimpleTemplateEditor(QDialog):
@@ -621,7 +629,17 @@ class SimpleTemplateEditor(QDialog):
             self.template_saved.emit(self.template_id)
 
         except Exception as e:
+            # Log error with enhanced error handler
+            if ERROR_HANDLING_AVAILABLE:
+                log_ui_error(
+                    widget_name="SimpleTemplateEditor",
+                    action="save_template",
+                    error=e,
+                    user_action="Saving template"
+                )
+
             QMessageBox.critical(self, "Save Error", f"Error saving template:\n{str(e)}")
+            self.status_label.setText(f"Save failed: {str(e)}")
 
     def _save_template_as(self):
         """Save template with a new name"""
@@ -672,7 +690,7 @@ class SimpleTemplateEditor(QDialog):
             name=self.template_name_edit.text(),
             description=self.template_description_edit.toPlainText(),
             type=TemplateType(self.template_type_combo.currentText()),
-            variant=TemplateVariant.CUSTOM if 'TemplateVariant' in globals() else 'custom',
+            variant=TemplateVariant.CUSTOM,
             version=self.template_version_edit.text(),
             author="Template Editor User",
             created_date=datetime.now().strftime('%Y-%m-%d'),

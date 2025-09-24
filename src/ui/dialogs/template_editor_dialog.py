@@ -52,9 +52,18 @@ src_path = str(Path(__file__).parent.parent.parent)
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
-from core.templates.template_manager import TemplateManager, TemplateType, TemplateMetadata
+from core.templates.template_manager import TemplateManager, TemplateType, TemplateMetadata, TemplateVariant
 from core.templates.template_preview import TemplatePreviewGenerator
 from core.templates.backup_manager import TemplateBackupManager
+
+# Import enhanced error handling
+try:
+    from ...utils import get_error_handler, handle_errors, safe_operation, log_ui_error
+    from ...utils.error_classification import classify_and_handle_error
+    ERROR_HANDLING_AVAILABLE = True
+except ImportError:
+    print("Enhanced error handling not available")
+    ERROR_HANDLING_AVAILABLE = False
 
 # Try to import backup selection dialog
 try:
@@ -873,9 +882,36 @@ class TemplateEditorDialog(QDialog):
             self.progress_bar.setVisible(False)
 
         except Exception as e:
-            self.status_label.setText(f"Preview error: {str(e)}")
+            self.status_label.setText(f"Preview generation failed: {str(e)}")
             self.progress_bar.setVisible(False)
-            QMessageBox.warning(self, "Preview Error", f"Error generating preview:\n{str(e)}")
+
+            # Use proper error classification for preview errors
+            if ERROR_HANDLING_AVAILABLE:
+                classification = classify_and_handle_error(
+                    exception=e,
+                    context="Preview generation",
+                    user_action="Generating template preview",
+                    component="TemplateEditor"
+                )
+
+                # Log the warning (previews are non-critical)
+                log_ui_error(
+                    widget_name="TemplateEditorDialog",
+                    action="generate_preview",
+                    error=e,
+                    user_action="Generating template preview"
+                )
+
+                # Show appropriate dialog with correct icon
+                msg_box = QMessageBox(self)
+                msg_box.setIcon(classification.dialog_icon)
+                msg_box.setWindowTitle(classification.title)
+                msg_box.setText(classification.message)
+                msg_box.setInformativeText(classification.user_action_suggestion)
+                msg_box.setDetailedText(f"Technical details: {classification.technical_details}")
+                msg_box.exec()
+            else:
+                QMessageBox.warning(self, "Preview Warning", f"Unable to generate preview:\n{str(e)}")
 
     def _generate_sample_data(self) -> Dict[str, Any]:
         """Generate sample data for preview"""
@@ -1056,7 +1092,17 @@ class TemplateEditorDialog(QDialog):
             self.template_saved.emit(self.template_id)
 
         except Exception as e:
+            # Log error with enhanced error handler
+            if ERROR_HANDLING_AVAILABLE:
+                log_ui_error(
+                    widget_name="TemplateEditorDialog",
+                    action="save_template",
+                    error=e,
+                    user_action="Saving template"
+                )
+
             QMessageBox.critical(self, "Save Error", f"Error saving template:\n{str(e)}")
+            self.status_label.setText(f"Save failed: {str(e)}")
 
     def _save_template_as(self):
         """Save template with a new name"""
@@ -1424,10 +1470,65 @@ class TemplateEditorDialog(QDialog):
             self.html_text_edit.setPlainText(formatted_html)
             self.status_label.setText("Code formatted")
 
-        except ImportError:
-            QMessageBox.warning(self, "Error", "BeautifulSoup4 is required for code formatting")
+        except ImportError as e:
+            # This is a configuration warning - missing dependency
+            if ERROR_HANDLING_AVAILABLE:
+                classification = classify_and_handle_error(
+                    exception=e,
+                    context="Format code operation",
+                    user_action="Formatting template HTML",
+                    component="TemplateEditor"
+                )
+
+                # Log the issue
+                log_ui_error(
+                    widget_name="TemplateEditorDialog",
+                    action="format_code_missing_dependency",
+                    error=e,
+                    user_action="Formatting template code"
+                )
+
+                # Show appropriate dialog
+                QMessageBox.warning(
+                    self,
+                    classification.title,
+                    f"{classification.message}\n\n{classification.user_action_suggestion}"
+                )
+            else:
+                QMessageBox.warning(self, "Configuration Warning", "BeautifulSoup4 is required for code formatting")
+
+            self.status_label.setText("Code formatting unavailable - missing dependency")
+
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Error formatting code: {str(e)}")
+            # This is a template parsing error
+            if ERROR_HANDLING_AVAILABLE:
+                classification = classify_and_handle_error(
+                    exception=e,
+                    context="Format code operation",
+                    user_action="Formatting template HTML",
+                    component="TemplateEditor"
+                )
+
+                # Log the error
+                log_ui_error(
+                    widget_name="TemplateEditorDialog",
+                    action="format_code_parsing_error",
+                    error=e,
+                    user_action="Formatting template code"
+                )
+
+                # Show appropriate dialog with correct icon
+                msg_box = QMessageBox(self)
+                msg_box.setIcon(classification.dialog_icon)
+                msg_box.setWindowTitle(classification.title)
+                msg_box.setText(classification.message)
+                msg_box.setInformativeText(classification.user_action_suggestion)
+                msg_box.setDetailedText(f"Technical details: {classification.technical_details}")
+                msg_box.exec()
+            else:
+                QMessageBox.critical(self, "Template Error", f"Error formatting code: {str(e)}")
+
+            self.status_label.setText(f"Code formatting failed: {str(e)}")
 
     def _open_template(self):
         """Open an existing template"""
