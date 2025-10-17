@@ -79,3 +79,4 @@ awg-cloud-credentials.json
 *.tmp
 *.bak
 awg-cloud-stack_accessKeys.csv
+SECURITY_ALERT.md
