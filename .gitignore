@@ -78,3 +78,4 @@ awg-cloud-credentials.json
 # Temporary files
 *.tmp
 *.bak
+awg-cloud-stack_accessKeys.csv
