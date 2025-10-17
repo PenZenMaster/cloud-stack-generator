@@ -365,12 +365,67 @@ class TestAWSCredentialsManager:
         """Test getting active session with active profile"""
         # Add and activate profile
         self.manager.add_sso_profile("test-profile", "https://test.awsapps.com/start")
-        
+
         with patch.object(self.manager, 'validate_profile', return_value=(True, "Valid", {})):
             self.manager.set_active_profile("test-profile")
-            
+
             session = self.manager.get_active_session()
             assert session is not None
+
+    @patch('boto3.Session')
+    def test_validate_profile_client_error(self, mock_session):
+        """Test profile validation with ClientError"""
+        from botocore.exceptions import ClientError
+
+        self.manager.add_sso_profile("test-error", "https://test.awsapps.com/start", "us-east-1")
+
+        # Mock session to raise ClientError
+        mock_sts = Mock()
+        error_response = {'Error': {'Code': 'AccessDenied'}}
+        mock_sts.get_caller_identity.side_effect = ClientError(error_response, 'GetCallerIdentity')
+        mock_session.return_value.client.return_value = mock_sts
+
+        is_valid, message, info = self.manager.validate_profile("test-error")
+
+        assert is_valid is False
+        assert "AccessDenied" in message
+        assert info == {}
+
+    @patch('boto3.Session')
+    def test_validate_profile_generic_exception(self, mock_session):
+        """Test profile validation with generic exception"""
+        self.manager.add_sso_profile("test-exception", "https://test.awsapps.com/start", "us-east-1")
+
+        # Mock session to raise generic exception
+        mock_sts = Mock()
+        mock_sts.get_caller_identity.side_effect = Exception("Unexpected error")
+        mock_session.return_value.client.return_value = mock_sts
+
+        is_valid, message, info = self.manager.validate_profile("test-exception")
+
+        assert is_valid is False
+        assert "Validation failed" in message
+        assert "Unexpected error" in message
+        assert info == {}
+
+
+    @patch('boto3.Session')
+    def test_set_active_profile_validation_failure(self, mock_session, capsys):
+        """Test set_active_profile with validation failure"""
+        from botocore.exceptions import NoCredentialsError
+
+        self.manager.add_sso_profile("test-invalid", "https://test.awsapps.com/start", "us-east-1")
+
+        # Mock session to raise NoCredentialsError
+        mock_sts = Mock()
+        mock_sts.get_caller_identity.side_effect = NoCredentialsError()
+        mock_session.return_value.client.return_value = mock_sts
+
+        result = self.manager.set_active_profile("test-invalid")
+
+        assert result is False
+        captured = capsys.readouterr()
+        assert "Cannot activate profile" in captured.out
 
 
 @pytest.mark.unit
@@ -440,5 +495,5 @@ region = eu-west-1
         mock_exists.return_value = False
         
         profiles = get_aws_config_profiles()
-        
+
         assert profiles == []
