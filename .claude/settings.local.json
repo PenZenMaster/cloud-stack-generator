@@ -9,7 +9,9 @@
       "Read(C:\\Users\\georg\\.config\\ccstatusline/**)",
       "Bash(ruff check:*)",
       "Bash(pytest:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git log:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
