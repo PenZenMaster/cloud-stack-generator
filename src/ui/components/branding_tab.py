@@ -87,23 +87,24 @@ class BrandingTab(BaseTab):
         scroll_area.setWidgetResizable(True)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        
+
         # Create content widget
         content_layout = QVBoxLayout()
         content_layout.setSpacing(20)
         content_layout.setContentsMargins(10, 10, 10, 10)
-        
+
         # Create sections
         self._create_color_section(content_layout)
         self._create_font_section(content_layout)
         self._create_logo_section(content_layout)
         self._create_template_section(content_layout)
         self._create_preview_section(content_layout)
-        
+
         # Add validation button
         validation_button = QPushButton("Validate Branding Configuration")
         validation_button.clicked.connect(self.validate_data)
-        validation_button.setStyleSheet("""
+        validation_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #e67e22;
                 color: white;
@@ -116,7 +117,8 @@ class BrandingTab(BaseTab):
             QPushButton:hover {
                 background-color: #d35400;
             }
-        """)
+        """
+        )
         validation_button.setMaximumWidth(300)
         content_layout.addWidget(validation_button)
 
@@ -126,15 +128,15 @@ class BrandingTab(BaseTab):
         # Create container widget
         container = QFrame()
         container.setLayout(content_layout)
-        
+
         # Set up scroll area
         scroll_area.setWidget(container)
-        
+
         # Main layout
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(scroll_area)
-        
+
         self.setLayout(main_layout)
 
     def _create_color_section(self, parent_layout: QVBoxLayout):
@@ -153,11 +155,27 @@ class BrandingTab(BaseTab):
 
         # Color fields with updated names and new options
         colors = [
-            ("Header Background Color 1", "primary", "Primary gradient color for header background"),
-            ("Header Background Color 2", "secondary", "Secondary gradient color for header background"),
-            ("Body Background Color", "body_background", "Background color for main content areas"),
+            (
+                "Header Background Color 1",
+                "primary",
+                "Primary gradient color for header background",
+            ),
+            (
+                "Header Background Color 2",
+                "secondary",
+                "Secondary gradient color for header background",
+            ),
+            (
+                "Body Background Color",
+                "body_background",
+                "Background color for main content areas",
+            ),
             ("Body Text Color", "body_text", "Text color for main content"),
-            ("Footer Background Color", "footer_background", "Background color for footer section"),
+            (
+                "Footer Background Color",
+                "footer_background",
+                "Background color for footer section",
+            ),
             ("Footer Text Color", "footer_text", "Text color for footer content"),
         ]
 
@@ -176,26 +194,32 @@ class BrandingTab(BaseTab):
             hex_input.setPlaceholderText("#FFFFFF")
             hex_input.setMaximumWidth(100)
             hex_input.setText(self.current_colors[color_key])
-            hex_input.textChanged.connect(lambda text, key=color_key: self._on_color_input_changed(key, text))
+            hex_input.textChanged.connect(
+                lambda text, key=color_key: self._on_color_input_changed(key, text)
+            )
             color_container.addWidget(hex_input)
 
             # Color preview
             color_preview = QLabel()
             color_preview.setMinimumSize(30, 30)
             color_preview.setMaximumSize(30, 30)
-            color_preview.setStyleSheet(f"""
+            color_preview.setStyleSheet(
+                f"""
                 QLabel {{
                     background-color: {self.current_colors[color_key]};
                     border: 2px solid #ccc;
                     border-radius: 4px;
                 }}
-            """)
+            """
+            )
             color_container.addWidget(color_preview)
 
             # Pick color button
             pick_button = QPushButton("Pick Color")
             pick_button.setMaximumWidth(80)
-            pick_button.clicked.connect(lambda checked, key=color_key: self._open_color_picker(key))
+            pick_button.clicked.connect(
+                lambda checked, key=color_key: self._open_color_picker(key)
+            )
             color_container.addWidget(pick_button)
 
             color_container.addStretch()
@@ -259,7 +283,7 @@ class BrandingTab(BaseTab):
 
         # Logo URL field with button
         url_container = QHBoxLayout()
-        
+
         logo_url_input = QLineEdit()
         logo_url_input.setFont(QFont("Arial", 10))
         logo_url_input.setPlaceholderText("Enter logo image URL or upload file")
@@ -274,7 +298,9 @@ class BrandingTab(BaseTab):
         logo_layout.addLayout(url_container)
 
         # Help text
-        help_label = QLabel("Upload a logo image (PNG, JPG, SVG recommended) or provide a URL. Logo will be displayed in the website header.")
+        help_label = QLabel(
+            "Upload a logo image (PNG, JPG, SVG recommended) or provide a URL. Logo will be displayed in the website header."
+        )
         help_label.setFont(QFont("Arial", 9))
         help_label.setStyleSheet("color: #666; font-style: italic;")
         help_label.setWordWrap(True)
@@ -301,11 +327,15 @@ class BrandingTab(BaseTab):
         # Current template info
         self.current_template_info = QLabel("Loading template information...")
         self.current_template_info.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        self.current_template_info.setStyleSheet("color: #2c5aa0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;")
+        self.current_template_info.setStyleSheet(
+            "color: #2c5aa0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;"
+        )
         template_layout.addWidget(self.current_template_info)
 
         # Template description
-        self.template_description = QLabel("Select a template to customize your website's appearance and features.")
+        self.template_description = QLabel(
+            "Select a template to customize your website's appearance and features."
+        )
         self.template_description.setFont(QFont("Arial", 9))
         self.template_description.setStyleSheet("color: #666666; padding: 5px 0;")
         self.template_description.setWordWrap(True)
@@ -316,7 +346,8 @@ class BrandingTab(BaseTab):
 
         self.select_template_btn = QPushButton("Choose Template...")
         self.select_template_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        self.select_template_btn.setStyleSheet("""
+        self.select_template_btn.setStyleSheet(
+            """
             QPushButton {
                 background-color: #3498db;
                 color: white;
@@ -327,14 +358,56 @@ class BrandingTab(BaseTab):
             QPushButton:hover {
                 background-color: #2980b9;
             }
-        """)
+        """
+        )
         self.select_template_btn.clicked.connect(self._open_template_selection)
         button_layout.addWidget(self.select_template_btn)
+
+        # Import template button
+        self.import_template_btn = QPushButton("Import Template...")
+        self.import_template_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.import_template_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #27ae60;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #2ecc71;
+            }
+        """
+        )
+        self.import_template_btn.clicked.connect(self._import_template)
+        button_layout.addWidget(self.import_template_btn)
+
+        # Export template button
+        self.export_template_btn = QPushButton("Export Current")
+        self.export_template_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.export_template_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #f39c12;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #e67e22;
+            }
+        """
+        )
+        self.export_template_btn.clicked.connect(self._export_current_template)
+        button_layout.addWidget(self.export_template_btn)
 
         # Template editor button
         self.edit_template_btn = QPushButton("Edit Template...")
         self.edit_template_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        self.edit_template_btn.setStyleSheet("""
+        self.edit_template_btn.setStyleSheet(
+            """
             QPushButton {
                 background-color: #e74c3c;
                 color: white;
@@ -345,7 +418,8 @@ class BrandingTab(BaseTab):
             QPushButton:hover {
                 background-color: #c0392b;
             }
-        """)
+        """
+        )
         self.edit_template_btn.clicked.connect(self._open_template_editor)
         button_layout.addWidget(self.edit_template_btn)
 
@@ -372,47 +446,53 @@ class BrandingTab(BaseTab):
         self.preview_widget.setMaximumHeight(60)
         self.preview_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._update_preview()
-        
+
         parent_layout.addWidget(self.preview_widget)
 
     def _on_color_input_changed(self, color_key: str, hex_value: str):
         """Handle color input changes"""
-        if re.match(r'^#[0-9A-Fa-f]{6}$', hex_value):
+        if re.match(r"^#[0-9A-Fa-f]{6}$", hex_value):
             self.current_colors[color_key] = hex_value
-            
+
             # Update preview
             if color_key in self.preview_labels:
-                self.preview_labels[color_key].setStyleSheet(f"""
+                self.preview_labels[color_key].setStyleSheet(
+                    f"""
                     QLabel {{
                         background-color: {hex_value};
                         border: 2px solid #ccc;
                         border-radius: 4px;
                     }}
-                """)
-            
+                """
+                )
+
             self._update_preview()
-        
+
         self._emit_config_changed()
 
     def _open_color_picker(self, color_key: str):
         """Open color picker dialog"""
         current_color = QColor(self.current_colors[color_key])
-        color = QColorDialog.getColor(current_color, self, f"Choose {color_key.title()} Color")
-        
+        color = QColorDialog.getColor(
+            current_color, self, f"Choose {color_key.title()} Color"
+        )
+
         if color.isValid():
             hex_color = color.name()
             self.current_colors[color_key] = hex_color
-            
+
             # Update input and preview
             self.branding_inputs[color_key].setText(hex_color)
-            self.preview_labels[color_key].setStyleSheet(f"""
+            self.preview_labels[color_key].setStyleSheet(
+                f"""
                 QLabel {{
                     background-color: {hex_color};
                     border: 2px solid #ccc;
                     border-radius: 4px;
                 }}
-            """)
-            
+            """
+            )
+
             self._update_preview()
             self._emit_config_changed()
 
@@ -420,9 +500,14 @@ class BrandingTab(BaseTab):
         """Update live preview"""
         primary_color = self.current_colors.get("primary", self.DEFAULT_PRIMARY)
         secondary_color = self.current_colors.get("secondary", self.DEFAULT_SECONDARY)
-        font_family = self.branding_inputs.get("font_family", {}).currentText() if "font_family" in self.branding_inputs else "Arial, sans-serif"
-        
-        self.preview_widget.setStyleSheet(f"""
+        font_family = (
+            self.branding_inputs.get("font_family", {}).currentText()
+            if "font_family" in self.branding_inputs
+            else "Arial, sans-serif"
+        )
+
+        self.preview_widget.setStyleSheet(
+            f"""
             QLabel {{
                 background: qlineargradient(
                     x1:0, y1:0, x2:1, y2:0,
@@ -437,7 +522,8 @@ class BrandingTab(BaseTab):
                 font-size: 14px;
                 font-weight: bold;
             }}
-        """)
+        """
+        )
 
     def _on_font_changed(self, value: str):
         """Handle font changes"""
@@ -451,33 +537,53 @@ class BrandingTab(BaseTab):
             self,
             "Select Logo File",
             "",
-            "Image Files (*.png *.jpg *.jpeg *.svg *.gif *.bmp)"
+            "Image Files (*.png *.jpg *.jpeg *.svg *.gif *.bmp)",
         )
-        
+
         if file_path:
             self.branding_inputs["logo_url"].setText(file_path)
             QMessageBox.information(
                 self,
                 "Logo Uploaded",
-                f"Logo file selected: {os.path.basename(file_path)}"
+                f"Logo file selected: {os.path.basename(file_path)}",
             )
 
     def get_config_data(self) -> Dict[str, Any]:
         """Get configuration data"""
         return {
             "colors": {
-                "primary_color": self.current_colors.get("primary", self.DEFAULT_PRIMARY),
-                "secondary_color": self.current_colors.get("secondary", self.DEFAULT_SECONDARY),
-                "body_background_color": self.current_colors.get("body_background", self.DEFAULT_BODY_BACKGROUND),
-                "body_text_color": self.current_colors.get("body_text", self.DEFAULT_BODY_TEXT),
-                "footer_background_color": self.current_colors.get("footer_background", self.DEFAULT_FOOTER_BACKGROUND),
-                "footer_text_color": self.current_colors.get("footer_text", self.DEFAULT_FOOTER_TEXT)
+                "primary_color": self.current_colors.get(
+                    "primary", self.DEFAULT_PRIMARY
+                ),
+                "secondary_color": self.current_colors.get(
+                    "secondary", self.DEFAULT_SECONDARY
+                ),
+                "body_background_color": self.current_colors.get(
+                    "body_background", self.DEFAULT_BODY_BACKGROUND
+                ),
+                "body_text_color": self.current_colors.get(
+                    "body_text", self.DEFAULT_BODY_TEXT
+                ),
+                "footer_background_color": self.current_colors.get(
+                    "footer_background", self.DEFAULT_FOOTER_BACKGROUND
+                ),
+                "footer_text_color": self.current_colors.get(
+                    "footer_text", self.DEFAULT_FOOTER_TEXT
+                ),
             },
             "typography": {
-                "font_family": self.branding_inputs["font_family"].currentText() if "font_family" in self.branding_inputs else "Arial, sans-serif"
+                "font_family": (
+                    self.branding_inputs["font_family"].currentText()
+                    if "font_family" in self.branding_inputs
+                    else "Arial, sans-serif"
+                )
             },
             "logo": {
-                "logo_url": self.branding_inputs["logo_url"].text() if "logo_url" in self.branding_inputs else ""
+                "logo_url": (
+                    self.branding_inputs["logo_url"].text()
+                    if "logo_url" in self.branding_inputs
+                    else ""
+                )
             },
             # Note: Template system will be redesigned in future updates
         }
@@ -485,7 +591,7 @@ class BrandingTab(BaseTab):
     def set_config_data(self, data: Dict[str, Any]):
         """Set configuration data"""
         self._start_loading()
-        
+
         try:
             # Set color data
             if "colors" in data:
@@ -495,49 +601,59 @@ class BrandingTab(BaseTab):
                     if "primary" in self.branding_inputs:
                         self.branding_inputs["primary"].setText(colors["primary_color"])
                     if "primary" in self.preview_labels:
-                        self.preview_labels["primary"].setStyleSheet(f"""
+                        self.preview_labels["primary"].setStyleSheet(
+                            f"""
                             QLabel {{
                                 background-color: {colors["primary_color"]};
                                 border: 2px solid #ccc;
                                 border-radius: 4px;
                             }}
-                        """)
-                
+                        """
+                        )
+
                 if "secondary_color" in colors:
                     self.current_colors["secondary"] = colors["secondary_color"]
                     if "secondary" in self.branding_inputs:
-                        self.branding_inputs["secondary"].setText(colors["secondary_color"])
+                        self.branding_inputs["secondary"].setText(
+                            colors["secondary_color"]
+                        )
                     if "secondary" in self.preview_labels:
-                        self.preview_labels["secondary"].setStyleSheet(f"""
+                        self.preview_labels["secondary"].setStyleSheet(
+                            f"""
                             QLabel {{
                                 background-color: {colors["secondary_color"]};
                                 border: 2px solid #ccc;
                                 border-radius: 4px;
                             }}
-                        """)
-                
+                        """
+                        )
+
                 # Handle new color fields
                 color_mappings = [
                     ("body_background_color", "body_background"),
-                    ("body_text_color", "body_text"), 
+                    ("body_text_color", "body_text"),
                     ("footer_background_color", "footer_background"),
-                    ("footer_text_color", "footer_text")
+                    ("footer_text_color", "footer_text"),
                 ]
-                
+
                 for config_key, internal_key in color_mappings:
                     if config_key in colors:
                         self.current_colors[internal_key] = colors[config_key]
                         if internal_key in self.branding_inputs:
-                            self.branding_inputs[internal_key].setText(colors[config_key])
+                            self.branding_inputs[internal_key].setText(
+                                colors[config_key]
+                            )
                         if internal_key in self.preview_labels:
-                            self.preview_labels[internal_key].setStyleSheet(f"""
+                            self.preview_labels[internal_key].setStyleSheet(
+                                f"""
                                 QLabel {{
                                     background-color: {colors[config_key]};
                                     border: 2px solid #ccc;
                                     border-radius: 4px;
                                 }}
-                            """)
-            
+                            """
+                            )
+
             # Set font data
             if "typography" in data:
                 font_family = data["typography"].get("font_family", "Arial, sans-serif")
@@ -545,51 +661,57 @@ class BrandingTab(BaseTab):
                     index = self.branding_inputs["font_family"].findText(font_family)
                     if index >= 0:
                         self.branding_inputs["font_family"].setCurrentIndex(index)
-            
+
             # Set logo data
             if "logo" in data:
                 logo_url = data["logo"].get("logo_url", "")
                 if "logo_url" in self.branding_inputs:
                     self.branding_inputs["logo_url"].setText(logo_url)
-            
+
             # Template data handling removed - template system will be redesigned
-            
+
             # Update preview
             self._update_preview()
-        
+
         finally:
             self._finish_loading()
 
     def get_required_fields(self) -> List[str]:
         """Get list of required field names for validation"""
         return ["primary_color", "secondary_color", "font_family"]
-    
+
     def validate_data(self) -> ValidationResult:
         """Validate branding configuration"""
         result = ValidationResult()
-        
+
         # Validate required color fields by checking actual input values
         primary_color = ""
         secondary_color = ""
-        
+
         if "primary" in self.branding_inputs:
             primary_color = self.branding_inputs["primary"].text().strip()
         if "secondary" in self.branding_inputs:
             secondary_color = self.branding_inputs["secondary"].text().strip()
-        
-        if not primary_color or not re.match(r'^#[0-9A-Fa-f]{6}$', primary_color):
-            result.add_error("Primary color is required and must be a valid hex color", "primary")
-        
-        if not secondary_color or not re.match(r'^#[0-9A-Fa-f]{6}$', secondary_color):
-            result.add_error("Secondary color is required and must be a valid hex color", "secondary")
-        
+
+        if not primary_color or not re.match(r"^#[0-9A-Fa-f]{6}$", primary_color):
+            result.add_error(
+                "Primary color is required and must be a valid hex color", "primary"
+            )
+
+        if not secondary_color or not re.match(r"^#[0-9A-Fa-f]{6}$", secondary_color):
+            result.add_error(
+                "Secondary color is required and must be a valid hex color", "secondary"
+            )
+
         # Check color contrast
         if primary_color and secondary_color:
             if primary_color.upper() == secondary_color.upper():
-                result.add_warning("Primary and secondary colors are identical - consider using different colors for better visual hierarchy")
-        
+                result.add_warning(
+                    "Primary and secondary colors are identical - consider using different colors for better visual hierarchy"
+                )
+
         return result
-    
+
     def get_tab_name(self) -> str:
         """Get tab name for title display"""
         return "Branding & Style"
@@ -610,6 +732,7 @@ class BrandingTab(BaseTab):
                 sys.path.insert(0, src_path)
 
             from core.templates.template_manager import TemplateManager
+
             self.template_manager = TemplateManager()
             self.selected_template_id = "seo_authority_city"  # Default template
             self._update_template_display()
@@ -619,8 +742,10 @@ class BrandingTab(BaseTab):
 
     def _update_template_display(self):
         """Update the template information display"""
-        if hasattr(self, 'template_manager') and self.template_manager:
-            template_metadata = self.template_manager.get_template_by_id(self.selected_template_id)
+        if hasattr(self, "template_manager") and self.template_manager:
+            template_metadata = self.template_manager.get_template_by_id(
+                self.selected_template_id
+            )
             if template_metadata:
                 self.current_template_info.setText(
                     f"Current Template: {template_metadata.name} - {template_metadata.variant.value.title()}"
@@ -656,7 +781,7 @@ class BrandingTab(BaseTab):
             QMessageBox.critical(
                 self,
                 "Template Selection Error",
-                f"Failed to open template selection dialog:\\n{str(e)}"
+                f"Failed to open template selection dialog:\\n{str(e)}",
             )
 
     def _on_template_selected(self, template_id: str):
@@ -666,19 +791,196 @@ class BrandingTab(BaseTab):
         self._emit_config_changed()
 
         # Show confirmation
-        if hasattr(self, 'template_manager') and self.template_manager:
+        if hasattr(self, "template_manager") and self.template_manager:
             template_metadata = self.template_manager.get_template_by_id(template_id)
             if template_metadata:
                 QMessageBox.information(
                     self,
                     "Template Selected",
                     f"Template '{template_metadata.name}' has been selected.\\n\\n"
-                    f"This template will be used for generating city pages and other content."
+                    f"This template will be used for generating city pages and other content.",
                 )
 
     def get_selected_template_id(self) -> str:
         """Get the currently selected template ID"""
-        return getattr(self, 'selected_template_id', 'seo_authority_city')
+        return getattr(self, "selected_template_id", "seo_authority_city")
+
+    def _import_template(self):
+        """Handle template import from branding tab"""
+        from PyQt6.QtWidgets import (
+            QFileDialog,
+            QProgressDialog,
+            QMessageBox,
+            QApplication,
+        )
+        from pathlib import Path
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import Template Package",
+            "",
+            "Template Packages (*.zip);;All Files (*)",
+        )
+
+        if not file_path:
+            return
+
+        # Show progress dialog
+        progress = QProgressDialog("Importing template...", "Cancel", 0, 0, self)
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.show()
+        QApplication.processEvents()
+
+        try:
+            # Import using the existing template system
+            import sys
+            from pathlib import Path
+
+            # Add the src directory to the Python path for imports
+            src_path = str(Path(__file__).parent.parent.parent)
+            if src_path not in sys.path:
+                sys.path.insert(0, src_path)
+
+            from core.templates.template_export import TemplateImporter
+
+            if hasattr(self, "template_manager") and self.template_manager:
+                importer = TemplateImporter(self.template_manager)
+                success, message, template_id = importer.import_template_package(
+                    Path(file_path)
+                )
+
+                progress.close()
+
+                if success:
+                    # Refresh template system
+                    self.template_manager.refresh_templates()
+                    self._update_template_display()
+
+                    QMessageBox.information(
+                        self,
+                        "Import Successful",
+                        f"Template imported successfully!\n\n{message}",
+                    )
+
+                    # Auto-select imported template
+                    if template_id:
+                        self.selected_template_id = template_id
+                        self._update_template_display()
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "Import Failed",
+                        f"Failed to import template:\n\n{message}",
+                    )
+            else:
+                progress.close()
+                QMessageBox.warning(self, "Error", "Template system not initialized.")
+
+        except Exception as e:
+            progress.close()
+            QMessageBox.critical(
+                self,
+                "Import Error",
+                f"An error occurred while importing the template:\n\n{str(e)}",
+            )
+
+        finally:
+            if progress.isVisible():
+                progress.close()
+
+    def _export_current_template(self):
+        """Handle template export from branding tab"""
+        from PyQt6.QtWidgets import (
+            QFileDialog,
+            QProgressDialog,
+            QMessageBox,
+            QApplication,
+        )
+        from pathlib import Path
+
+        current_template_id = self.get_selected_template_id()
+        if not current_template_id:
+            QMessageBox.warning(
+                self, "No Template", "No template is currently selected."
+            )
+            return
+
+        try:
+            # Get template metadata for default filename
+            if hasattr(self, "template_manager") and self.template_manager:
+                template_metadata = self.template_manager.get_template_by_id(
+                    current_template_id
+                )
+                if not template_metadata:
+                    QMessageBox.warning(self, "Error", "Template metadata not found.")
+                    return
+
+                # Create default filename
+                safe_name = (
+                    template_metadata.name.replace(" ", "_").replace("/", "_").lower()
+                )
+                default_name = f"{safe_name}_v{template_metadata.version}.zip"
+            else:
+                QMessageBox.warning(self, "Error", "Template system not initialized.")
+                return
+
+            file_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Export Template Package",
+                default_name,
+                "Template Packages (*.zip);;All Files (*)",
+            )
+
+            if not file_path:
+                return
+
+            # Show progress dialog
+            progress = QProgressDialog("Exporting template...", "Cancel", 0, 0, self)
+            progress.setWindowModality(Qt.WindowModality.WindowModal)
+            progress.show()
+            QApplication.processEvents()
+
+            # Import the exporter
+            import sys
+            from pathlib import Path
+
+            # Add the src directory to the Python path for imports
+            src_path = str(Path(__file__).parent.parent.parent)
+            if src_path not in sys.path:
+                sys.path.insert(0, src_path)
+
+            from core.templates.template_export import TemplateExporter
+
+            exporter = TemplateExporter(self.template_manager)
+            success = exporter.export_template_package(
+                current_template_id, Path(file_path)
+            )
+
+            progress.close()
+
+            if success:
+                QMessageBox.information(
+                    self,
+                    "Export Successful",
+                    f"Template '{template_metadata.name}' exported successfully!\n\n"
+                    f"Package saved to:\n{file_path}\n\n"
+                    f"You can now modify the template externally and re-import it.",
+                )
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Export Failed",
+                    "Failed to export template. Please check file permissions and try again.",
+                )
+
+        except Exception as e:
+            if "progress" in locals() and progress.isVisible():
+                progress.close()
+            QMessageBox.critical(
+                self,
+                "Export Error",
+                f"An error occurred while exporting the template:\n\n{str(e)}",
+            )
 
     def _open_template_editor(self):
         """Open WYSIWYG template editor"""
@@ -694,16 +996,18 @@ class BrandingTab(BaseTab):
             # Try the full editor first, fallback to simple editor
             try:
                 from ui.dialogs.template_editor_dialog import TemplateEditorDialog
+
                 editor_class = TemplateEditorDialog
                 editor_type = "Advanced"
             except Exception as e:
                 print(f"Advanced editor not available: {e}")
                 from ui.dialogs.simple_template_editor import SimpleTemplateEditor
+
                 editor_class = SimpleTemplateEditor
                 editor_type = "Simple"
 
             # Get current template ID or None for new template
-            template_id = getattr(self, 'selected_template_id', None)
+            template_id = getattr(self, "selected_template_id", None)
 
             dialog = editor_class(self, template_id)
 
@@ -717,7 +1021,7 @@ class BrandingTab(BaseTab):
                     self,
                     "Template Editor",
                     "Opening simplified template editor.\n\n"
-                    "Some advanced features may not be available, but core editing functionality is preserved."
+                    "Some advanced features may not be available, but core editing functionality is preserved.",
                 )
 
             # Show dialog
@@ -726,19 +1030,22 @@ class BrandingTab(BaseTab):
         except Exception as e:
             # Log the error to error log
             import traceback
+
             error_msg = f"Template Editor Error: {str(e)}\n{traceback.format_exc()}"
 
             # Try to write to error log
             try:
                 from pathlib import Path
+
                 log_file = Path("logs/error_log.txt")
                 log_file.parent.mkdir(exist_ok=True)
 
                 with open(log_file, "a", encoding="utf-8") as f:
                     from datetime import datetime
+
                     f.write(f"\n[{datetime.now()}] TEMPLATE EDITOR ERROR:\n")
                     f.write(error_msg)
-                    f.write("\n" + "="*50 + "\n")
+                    f.write("\n" + "=" * 50 + "\n")
             except Exception as log_error:
                 print(f"Failed to log error: {log_error}")
 
@@ -748,31 +1055,37 @@ class BrandingTab(BaseTab):
                 "Template Editor Error",
                 f"Failed to open template editor:\n{str(e)}\n\n"
                 f"Error details have been logged to logs/error_log.txt\n\n"
-                f"Please ensure all dependencies are installed."
+                f"Please ensure all dependencies are installed.",
             )
 
     def _on_template_saved(self, template_id: str):
         """Handle template saved event"""
         try:
             # Refresh template information if it's the current template
-            if template_id == getattr(self, 'selected_template_id', None):
+            if template_id == getattr(self, "selected_template_id", None):
                 self._update_template_display()
 
                 # Emit configuration change
                 self._emit_config_changed()
 
             # Show success message
-            if hasattr(self, 'template_manager') and self.template_manager:
-                template_metadata = self.template_manager.get_template_by_id(template_id)
-                template_name = template_metadata.name if template_metadata else template_id
+            if hasattr(self, "template_manager") and self.template_manager:
+                template_metadata = self.template_manager.get_template_by_id(
+                    template_id
+                )
+                template_name = (
+                    template_metadata.name if template_metadata else template_id
+                )
                 QMessageBox.information(
                     self,
                     "Template Saved",
-                    f"Template '{template_name}' saved successfully!"
+                    f"Template '{template_name}' saved successfully!",
                 )
 
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Error updating template information: {str(e)}")
+            QMessageBox.warning(
+                self, "Error", f"Error updating template information: {str(e)}"
+            )
 
     def _on_template_created(self, template_id: str):
         """Handle new template created event"""
@@ -783,13 +1096,17 @@ class BrandingTab(BaseTab):
             self._emit_config_changed()
 
             # Show success message
-            if hasattr(self, 'template_manager') and self.template_manager:
-                template_metadata = self.template_manager.get_template_by_id(template_id)
-                template_name = template_metadata.name if template_metadata else template_id
+            if hasattr(self, "template_manager") and self.template_manager:
+                template_metadata = self.template_manager.get_template_by_id(
+                    template_id
+                )
+                template_name = (
+                    template_metadata.name if template_metadata else template_id
+                )
                 QMessageBox.information(
                     self,
                     "Template Created",
-                    f"New template '{template_name}' created and selected successfully!"
+                    f"New template '{template_name}' created and selected successfully!",
                 )
 
         except Exception as e:

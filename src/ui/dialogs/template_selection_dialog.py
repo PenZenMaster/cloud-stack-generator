@@ -20,9 +20,22 @@ Comments:
 """
 
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton,
-    QScrollArea, QFrame, QTextEdit, QListWidget, QListWidgetItem,
-    QSplitter, QGroupBox, QMessageBox, QApplication, QWidget
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QGridLayout,
+    QLabel,
+    QPushButton,
+    QScrollArea,
+    QFrame,
+    QTextEdit,
+    QListWidget,
+    QListWidgetItem,
+    QSplitter,
+    QGroupBox,
+    QMessageBox,
+    QApplication,
+    QWidget,
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject, QSize
 from PyQt6.QtGui import QFont, QPixmap, QIcon
@@ -48,7 +61,7 @@ class TemplatePreviewWorker(QObject):
     """Worker for generating template previews in background"""
 
     finished = pyqtSignal(str, str)  # template_id, html_content
-    error = pyqtSignal(str, str)     # template_id, error_message
+    error = pyqtSignal(str, str)  # template_id, error_message
 
     def __init__(self, template_manager: TemplateManager, template_id: str):
         super().__init__()
@@ -105,18 +118,24 @@ class TemplateCard(QFrame):
         variant_label = QLabel(self.template_data["variant"].title())
         variant_label.setFont(QFont("Arial", 9))
         variant_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        variant_label.setStyleSheet("""
+        variant_label.setStyleSheet(
+            """
             background-color: #3498db;
             color: white;
             padding: 4px 8px;
             border-radius: 10px;
             font-weight: bold;
-        """)
+        """
+        )
         variant_label.setMaximumHeight(20)
         layout.addWidget(variant_label)
 
         # Description
-        description = self.template_data["description"][:100] + "..." if len(self.template_data["description"]) > 100 else self.template_data["description"]
+        description = (
+            self.template_data["description"][:100] + "..."
+            if len(self.template_data["description"]) > 100
+            else self.template_data["description"]
+        )
         desc_label = QLabel(description)
         desc_label.setFont(QFont("Arial", 9))
         desc_label.setWordWrap(True)
@@ -126,7 +145,9 @@ class TemplateCard(QFrame):
 
         # Features count
         features_count = len(self.template_data["features"])
-        features_label = QLabel(f"{features_count} Features • v{self.template_data['version']}")
+        features_label = QLabel(
+            f"{features_count} Features • v{self.template_data['version']}"
+        )
         features_label.setFont(QFont("Arial", 8))
         features_label.setStyleSheet("color: #999;")
         features_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -166,15 +187,18 @@ class TemplateCard(QFrame):
     def update_selection_state(self):
         """Update visual selection state"""
         if self.is_selected:
-            self.setStyleSheet("""
+            self.setStyleSheet(
+                """
                 TemplateCard {
                     border: 3px solid #2ecc71;
                     background-color: #e8f8f0;
                     border-radius: 8px;
                 }
-            """)
+            """
+            )
         else:
-            self.setStyleSheet("""
+            self.setStyleSheet(
+                """
                 TemplateCard {
                     border: 1px solid #ddd;
                     background-color: white;
@@ -184,7 +208,8 @@ class TemplateCard(QFrame):
                     border: 2px solid #3498db;
                     background-color: #f8f9fa;
                 }
-            """)
+            """
+            )
 
     def mousePressEvent(self, event):
         """Handle mouse press for selection"""
@@ -260,7 +285,8 @@ class TemplateSelectionDialog(QDialog):
 
         select_btn = QPushButton("Use Selected Template")
         select_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        select_btn.setStyleSheet("""
+        select_btn.setStyleSheet(
+            """
             QPushButton {
                 background-color: #27ae60;
                 color: white;
@@ -271,7 +297,8 @@ class TemplateSelectionDialog(QDialog):
             QPushButton:hover {
                 background-color: #2ecc71;
             }
-        """)
+        """
+        )
         select_btn.clicked.connect(self.accept_selection)
         button_layout.addWidget(select_btn)
 
@@ -364,7 +391,9 @@ class TemplateSelectionDialog(QDialog):
 
     def load_templates(self):
         """Load available templates into the UI"""
-        templates = self.template_manager.get_available_templates(TemplateType.CITY_PAGE)
+        templates = self.template_manager.get_available_templates(
+            TemplateType.CITY_PAGE
+        )
 
         row = 0
         col = 0
@@ -377,7 +406,7 @@ class TemplateSelectionDialog(QDialog):
                 "description": template.description,
                 "variant": template.variant.value,
                 "features": template.features,
-                "version": template.version
+                "version": template.version,
             }
 
             card = TemplateCard(template_data)
@@ -421,10 +450,14 @@ class TemplateSelectionDialog(QDialog):
 
     def update_template_details(self, template_metadata):
         """Update the template details panel"""
-        self.template_name_label.setText(f"{template_metadata.name} (v{template_metadata.version})")
+        self.template_name_label.setText(
+            f"{template_metadata.name} (v{template_metadata.version})"
+        )
         self.template_description.setPlainText(template_metadata.description)
 
-        features_text = "Features:\\n" + "\\n".join([f"• {feature}" for feature in template_metadata.features])
+        features_text = "Features:\\n" + "\\n".join(
+            [f"• {feature}" for feature in template_metadata.features]
+        )
         features_text += f"\\n\\nCompatibility:\\n"
         for key, value in template_metadata.compatibility.items():
             features_text += f"• {key.replace('_', ' ').title()}: {value}\\n"
@@ -445,7 +478,9 @@ class TemplateSelectionDialog(QDialog):
 
         # Create new worker thread
         self.preview_thread = QThread()
-        self.preview_worker = TemplatePreviewWorker(self.template_manager, self.selected_template_id)
+        self.preview_worker = TemplatePreviewWorker(
+            self.template_manager, self.selected_template_id
+        )
         self.preview_worker.moveToThread(self.preview_thread)
 
         # Connect signals
@@ -465,14 +500,18 @@ class TemplateSelectionDialog(QDialog):
         self.preview_btn.setEnabled(True)
         self.preview_btn.setText("Generate Preview")
         self.open_preview_btn.setEnabled(True)
-        self.preview_status.setText("Preview generated successfully! Click 'Open in Browser' to view.")
+        self.preview_status.setText(
+            "Preview generated successfully! Click 'Open in Browser' to view."
+        )
 
     def _on_preview_error(self, template_id: str, error_message: str):
         """Handle preview generation error"""
         self.preview_btn.setEnabled(True)
         self.preview_btn.setText("Generate Preview")
         self.preview_status.setText(f"Error generating preview: {error_message}")
-        QMessageBox.warning(self, "Preview Error", f"Failed to generate preview:\\n{error_message}")
+        QMessageBox.warning(
+            self, "Preview Error", f"Failed to generate preview:\\n{error_message}"
+        )
 
     def _cleanup_preview_worker(self):
         """Clean up preview worker thread"""
@@ -486,37 +525,168 @@ class TemplateSelectionDialog(QDialog):
 
     def open_preview_in_browser(self):
         """Open the generated preview in the default browser"""
-        if not hasattr(self, 'preview_html') or not self.preview_html:
+        if not hasattr(self, "preview_html") or not self.preview_html:
             return
 
         try:
             # Create temporary file
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".html", delete=False, encoding="utf-8"
+            ) as f:
                 f.write(self.preview_html)
                 temp_path = f.name
 
             # Open in browser
-            webbrowser.open(f'file://{temp_path}')
+            webbrowser.open(f"file://{temp_path}")
 
         except Exception as e:
-            QMessageBox.warning(self, "Preview Error", f"Failed to open preview in browser:\\n{str(e)}")
+            QMessageBox.warning(
+                self, "Preview Error", f"Failed to open preview in browser:\\n{str(e)}"
+            )
 
     def import_template(self):
         """Import a custom template"""
-        QMessageBox.information(self, "Import Template", "Template import functionality will be available in a future update.")
+        from PyQt6.QtWidgets import QFileDialog, QProgressDialog
+        from core.templates.template_export import TemplateImporter
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import Template Package",
+            "",
+            "Template Packages (*.zip);;All Files (*)",
+        )
+
+        if not file_path:
+            return
+
+        # Show progress dialog
+        progress = QProgressDialog("Importing template...", "Cancel", 0, 0, self)
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.show()
+        QApplication.processEvents()
+
+        try:
+            importer = TemplateImporter(self.template_manager)
+            success, message, template_id = importer.import_template_package(
+                Path(file_path)
+            )
+
+            progress.close()
+
+            if success:
+                # Refresh template list
+                self.template_manager.refresh_templates()
+                self.load_templates()
+
+                QMessageBox.information(
+                    self,
+                    "Import Successful",
+                    f"Template imported successfully!\n\n{message}",
+                )
+
+                # Auto-select imported template if available
+                if template_id and hasattr(self, "template_cards"):
+                    for card in self.template_cards:
+                        if card.template_id == template_id:
+                            self.on_template_selected(template_id)
+                            break
+            else:
+                QMessageBox.warning(
+                    self, "Import Failed", f"Failed to import template:\n\n{message}"
+                )
+
+        except Exception as e:
+            progress.close()
+            QMessageBox.critical(
+                self,
+                "Import Error",
+                f"An error occurred while importing the template:\n\n{str(e)}",
+            )
+
+        finally:
+            if progress.isVisible():
+                progress.close()
 
     def export_template(self):
         """Export the selected template"""
         if not self.selected_template_id:
-            QMessageBox.warning(self, "No Selection", "Please select a template to export.")
+            QMessageBox.warning(
+                self, "No Selection", "Please select a template to export."
+            )
             return
 
-        QMessageBox.information(self, "Export Template", f"Template export functionality will be available in a future update.\\n\\nSelected template: {self.selected_template_id}")
+        from PyQt6.QtWidgets import QFileDialog, QProgressDialog
+        from core.templates.template_export import TemplateExporter
+
+        # Get template metadata for default filename
+        template_metadata = self.template_manager.get_template_by_id(
+            self.selected_template_id
+        )
+        if not template_metadata:
+            QMessageBox.warning(self, "Error", "Template metadata not found.")
+            return
+
+        # Create default filename
+        safe_name = template_metadata.name.replace(" ", "_").replace("/", "_").lower()
+        default_name = f"{safe_name}_v{template_metadata.version}.zip"
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Template Package",
+            default_name,
+            "Template Packages (*.zip);;All Files (*)",
+        )
+
+        if not file_path:
+            return
+
+        # Show progress dialog
+        progress = QProgressDialog("Exporting template...", "Cancel", 0, 0, self)
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.show()
+        QApplication.processEvents()
+
+        try:
+            exporter = TemplateExporter(self.template_manager)
+            success = exporter.export_template_package(
+                self.selected_template_id, Path(file_path)
+            )
+
+            progress.close()
+
+            if success:
+                QMessageBox.information(
+                    self,
+                    "Export Successful",
+                    f"Template '{template_metadata.name}' exported successfully!\n\n"
+                    f"Package saved to:\n{file_path}\n\n"
+                    f"You can now modify the template externally and re-import it.",
+                )
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Export Failed",
+                    "Failed to export template. Please check file permissions and try again.",
+                )
+
+        except Exception as e:
+            progress.close()
+            QMessageBox.critical(
+                self,
+                "Export Error",
+                f"An error occurred while exporting the template:\n\n{str(e)}",
+            )
+
+        finally:
+            if progress.isVisible():
+                progress.close()
 
     def accept_selection(self):
         """Accept the selected template"""
         if not self.selected_template_id:
-            QMessageBox.warning(self, "No Selection", "Please select a template before proceeding.")
+            QMessageBox.warning(
+                self, "No Selection", "Please select a template before proceeding."
+            )
             return
 
         self.template_selected.emit(self.selected_template_id)
