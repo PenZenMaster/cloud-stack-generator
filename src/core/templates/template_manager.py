@@ -30,6 +30,7 @@ import jinja2
 
 class TemplateType(Enum):
     """Template type categories"""
+
     CITY_PAGE = "city_page"
     LANDING_PAGE = "landing_page"
     PRODUCT_PAGE = "product_page"
@@ -39,6 +40,7 @@ class TemplateType(Enum):
 
 class TemplateVariant(Enum):
     """Template style variants"""
+
     BASIC = "basic"
     ENHANCED = "enhanced"
     SEO_AUTHORITY = "seo_authority"
@@ -48,6 +50,7 @@ class TemplateVariant(Enum):
 @dataclass
 class TemplateMetadata:
     """Template metadata configuration"""
+
     id: str
     name: str
     description: str
@@ -65,31 +68,31 @@ class TemplateMetadata:
     compatibility: Dict[str, Any]
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'TemplateMetadata':
+    def from_dict(cls, data: Dict[str, Any]) -> "TemplateMetadata":
         """Create TemplateMetadata from dictionary"""
         return cls(
-            id=data.get('id', ''),
-            name=data.get('name', ''),
-            description=data.get('description', ''),
-            type=TemplateType(data.get('type', 'city_page')),
-            variant=TemplateVariant(data.get('variant', 'basic')),
-            version=data.get('version', '1.0.0'),
-            author=data.get('author', ''),
-            created_date=data.get('created_date', ''),
-            last_modified=data.get('last_modified', ''),
-            preview_image=data.get('preview_image', ''),
-            template_file=data.get('template_file', ''),
-            required_data=data.get('required_data', []),
-            optional_data=data.get('optional_data', []),
-            features=data.get('features', []),
-            compatibility=data.get('compatibility', {})
+            id=data.get("id", ""),
+            name=data.get("name", ""),
+            description=data.get("description", ""),
+            type=TemplateType(data.get("type", "city_page")),
+            variant=TemplateVariant(data.get("variant", "basic")),
+            version=data.get("version", "1.0.0"),
+            author=data.get("author", ""),
+            created_date=data.get("created_date", ""),
+            last_modified=data.get("last_modified", ""),
+            preview_image=data.get("preview_image", ""),
+            template_file=data.get("template_file", ""),
+            required_data=data.get("required_data", []),
+            optional_data=data.get("optional_data", []),
+            features=data.get("features", []),
+            compatibility=data.get("compatibility", {}),
         )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         data = asdict(self)
-        data['type'] = self.type.value
-        data['variant'] = self.variant.value
+        data["type"] = self.type.value
+        data["variant"] = self.variant.value
         return data
 
 
@@ -113,9 +116,9 @@ class TemplateManager:
             loader = jinja2.FileSystemLoader(str(self.templates_dir))
             self.jinja_env = jinja2.Environment(
                 loader=loader,
-                autoescape=jinja2.select_autoescape(['html', 'xml']),
+                autoescape=jinja2.select_autoescape(["html", "xml"]),
                 trim_blocks=True,
-                lstrip_blocks=True
+                lstrip_blocks=True,
             )
         except Exception as e:
             print(f"Error initializing Jinja environment: {e}")
@@ -140,10 +143,12 @@ class TemplateManager:
         if not self.templates_registry:
             self._create_default_metadata()
 
-    def _load_template_metadata(self, metadata_file: Path) -> Optional[TemplateMetadata]:
+    def _load_template_metadata(
+        self, metadata_file: Path
+    ) -> Optional[TemplateMetadata]:
         """Load template metadata from JSON file"""
         try:
-            with open(metadata_file, 'r', encoding='utf-8') as f:
+            with open(metadata_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
             return TemplateMetadata.from_dict(data)
         except Exception as e:
@@ -172,13 +177,13 @@ class TemplateManager:
                     "city_page.title",
                     "business.business_name",
                     "contact.phone",
-                    "contact.email"
+                    "contact.email",
                 ],
                 optional_data=[
                     "city_page.city_image",
                     "city_page.places_of_interest",
                     "city_page.city_faq",
-                    "city_page.seo_content_body"
+                    "city_page.seo_content_body",
                 ],
                 features=[
                     "Advanced SEO optimization",
@@ -188,18 +193,20 @@ class TemplateManager:
                     "FAQ sections",
                     "Wikipedia image embeds",
                     "Responsive design",
-                    "Social media meta tags"
+                    "Social media meta tags",
                 ],
                 compatibility={
                     "min_version": "2.0.0",
                     "supports_city_pages": True,
                     "supports_wikipedia": True,
-                    "supports_google_maps": True
-                }
+                    "supports_google_maps": True,
+                },
             )
             self.templates_registry[metadata.id] = metadata
 
-    def get_available_templates(self, template_type: Optional[TemplateType] = None) -> List[TemplateMetadata]:
+    def get_available_templates(
+        self, template_type: Optional[TemplateType] = None
+    ) -> List[TemplateMetadata]:
         """Get list of available templates, optionally filtered by type"""
         templates = list(self.templates_registry.values())
         if template_type:
@@ -210,7 +217,9 @@ class TemplateManager:
         """Get template metadata by ID"""
         return self.templates_registry.get(template_id)
 
-    def get_template_variants(self, template_type: TemplateType) -> List[TemplateVariant]:
+    def get_template_variants(
+        self, template_type: TemplateType
+    ) -> List[TemplateVariant]:
         """Get available variants for a template type"""
         variants = set()
         for template in self.templates_registry.values():
@@ -233,7 +242,9 @@ class TemplateManager:
             print(f"Error loading template {template_id}: {e}")
             return None
 
-    def validate_template_data(self, template_id: str, data: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    def validate_template_data(
+        self, template_id: str, data: Dict[str, Any]
+    ) -> Tuple[bool, List[str]]:
         """Validate that provided data meets template requirements"""
         metadata = self.get_template_by_id(template_id)
         if not metadata:
@@ -250,7 +261,7 @@ class TemplateManager:
 
     def _check_nested_field(self, data: Dict[str, Any], field_path: str) -> bool:
         """Check if a nested field exists in the data (e.g., 'city_page.city_name')"""
-        parts = field_path.split('.')
+        parts = field_path.split(".")
         current = data
 
         for part in parts:
@@ -260,7 +271,9 @@ class TemplateManager:
 
         return current is not None and str(current).strip() != ""
 
-    def create_template_metadata_file(self, metadata: TemplateMetadata, output_dir: Optional[Path] = None):
+    def create_template_metadata_file(
+        self, metadata: TemplateMetadata, output_dir: Optional[Path] = None
+    ):
         """Create a metadata file for a template"""
         if output_dir is None:
             output_dir = self.templates_dir
@@ -268,10 +281,12 @@ class TemplateManager:
         filename = f"{metadata.id}.template.json"
         filepath = output_dir / filename
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(metadata.to_dict(), f, indent=2, ensure_ascii=False)
 
-    def import_template(self, template_path: Path, metadata: Optional[TemplateMetadata] = None) -> bool:
+    def import_template(
+        self, template_path: Path, metadata: Optional[TemplateMetadata] = None
+    ) -> bool:
         """Import a template file and optionally its metadata"""
         try:
             if not template_path.exists():
@@ -286,10 +301,10 @@ class TemplateManager:
             target_dir.mkdir(parents=True, exist_ok=True)
 
             target_file = target_dir / template_path.name
-            with open(template_path, 'r', encoding='utf-8') as src:
+            with open(template_path, "r", encoding="utf-8") as src:
                 content = src.read()
 
-            with open(target_file, 'w', encoding='utf-8') as dst:
+            with open(target_file, "w", encoding="utf-8") as dst:
                 dst.write(content)
 
             # Update metadata with correct file path
@@ -308,7 +323,7 @@ class TemplateManager:
 
     def _generate_metadata_from_template(self, template_path: Path) -> TemplateMetadata:
         """Generate basic metadata from a template file"""
-        name = template_path.stem.replace('_', ' ').title()
+        name = template_path.stem.replace("_", " ").title()
         template_id = template_path.stem.lower()
 
         return TemplateMetadata(
@@ -326,7 +341,7 @@ class TemplateManager:
             required_data=[],
             optional_data=[],
             features=["Custom template"],
-            compatibility={}
+            compatibility={},
         )
 
     def export_template(self, template_id: str, export_dir: Path) -> bool:
@@ -345,10 +360,10 @@ class TemplateManager:
 
             # Copy template
             target_file = export_dir / source_file.name
-            with open(source_file, 'r', encoding='utf-8') as src:
+            with open(source_file, "r", encoding="utf-8") as src:
                 content = src.read()
 
-            with open(target_file, 'w', encoding='utf-8') as dst:
+            with open(target_file, "w", encoding="utf-8") as dst:
                 dst.write(content)
 
             # Export metadata
@@ -385,12 +400,12 @@ class TemplateManager:
                 "city_image": {
                     "image_url": "/images/sample-city.jpg",
                     "alt_text": "View of Sample City",
-                    "caption": "Sample City - A great place for business"
-                }
+                    "caption": "Sample City - A great place for business",
+                },
             },
             "business": {
                 "business_name": "Your Business Name",
-                "industry": "Professional Services"
+                "industry": "Professional Services",
             },
             "contact": {
                 "phone": "(555) 123-4567",
@@ -399,16 +414,25 @@ class TemplateManager:
                     "street": "123 Main St",
                     "city": "Sample City",
                     "state": "IL",
-                    "zip_code": "60601"
-                }
+                    "zip_code": "60601",
+                },
             },
             "services": [
-                {"name": "Service 1", "description": "Professional service description"},
-                {"name": "Service 2", "description": "Quality service offering"}
-            ]
+                {
+                    "name": "Service 1",
+                    "description": "Professional service description",
+                },
+                {"name": "Service 2", "description": "Quality service offering"},
+            ],
         }
 
-    def save_template(self, template_id: str, template_content: str, metadata: TemplateMetadata, overwrite: bool = False) -> 'TemplateOperationResult':
+    def save_template(
+        self,
+        template_id: str,
+        template_content: str,
+        metadata: TemplateMetadata,
+        overwrite: bool = False,
+    ) -> "TemplateOperationResult":
         """
         Save a template with content and metadata
 
@@ -425,6 +449,7 @@ class TemplateManager:
             # Use absolute import to avoid relative import issues
             import sys
             from pathlib import Path
+
             sys.path.insert(0, str(Path(__file__).parent.parent.parent))
             from utils import log_ui_error
 
@@ -433,44 +458,60 @@ class TemplateManager:
                 return TemplateOperationResult(False, "Template ID is required")
 
             if not metadata.name or not metadata.name.strip():
-                return TemplateOperationResult(False, "Template name is required for validation")
+                return TemplateOperationResult(
+                    False, "Template name is required for validation"
+                )
 
             if not template_content or not template_content.strip():
-                return TemplateOperationResult(False, "Template content cannot be empty")
+                return TemplateOperationResult(
+                    False, "Template content cannot be empty"
+                )
 
             # Check if template already exists
             template_file_path = self.templates_dir / metadata.template_file
             if template_file_path.exists() and not overwrite:
-                return TemplateOperationResult(False, f"Template '{template_id}' already exists. Use overwrite=True to replace.")
+                return TemplateOperationResult(
+                    False,
+                    f"Template '{template_id}' already exists. Use overwrite=True to replace.",
+                )
 
             # Ensure template directory exists
             template_file_path.parent.mkdir(parents=True, exist_ok=True)
 
             # Write template file
-            with open(template_file_path, 'w', encoding='utf-8') as f:
+            with open(template_file_path, "w", encoding="utf-8") as f:
                 f.write(template_content)
 
             # Save metadata
             import json
-            metadata_path = template_file_path.with_suffix('.template.json')
-            with open(metadata_path, 'w', encoding='utf-8') as f:
+
+            metadata_path = template_file_path.with_suffix(".template.json")
+            with open(metadata_path, "w", encoding="utf-8") as f:
                 # Convert metadata to dict for JSON serialization
                 metadata_dict = {
-                    'id': metadata.id,
-                    'name': metadata.name,
-                    'description': metadata.description,
-                    'type': metadata.type.value if hasattr(metadata.type, 'value') else str(metadata.type),
-                    'variant': metadata.variant.value if hasattr(metadata.variant, 'value') else str(metadata.variant),
-                    'version': metadata.version,
-                    'author': metadata.author,
-                    'created_date': metadata.created_date,
-                    'last_modified': metadata.last_modified,
-                    'template_file': metadata.template_file,
-                    'preview_image': metadata.preview_image,
-                    'required_data': metadata.required_data,
-                    'optional_data': metadata.optional_data,
-                    'features': metadata.features,
-                    'compatibility': metadata.compatibility
+                    "id": metadata.id,
+                    "name": metadata.name,
+                    "description": metadata.description,
+                    "type": (
+                        metadata.type.value
+                        if hasattr(metadata.type, "value")
+                        else str(metadata.type)
+                    ),
+                    "variant": (
+                        metadata.variant.value
+                        if hasattr(metadata.variant, "value")
+                        else str(metadata.variant)
+                    ),
+                    "version": metadata.version,
+                    "author": metadata.author,
+                    "created_date": metadata.created_date,
+                    "last_modified": metadata.last_modified,
+                    "template_file": metadata.template_file,
+                    "preview_image": metadata.preview_image,
+                    "required_data": metadata.required_data,
+                    "optional_data": metadata.optional_data,
+                    "features": metadata.features,
+                    "compatibility": metadata.compatibility,
                 }
                 json.dump(metadata_dict, f, indent=2)
 
@@ -486,16 +527,22 @@ class TemplateManager:
                     widget_name="TemplateManager",
                     action="save_template",
                     error=e,
-                    user_action="Saving template"
+                    user_action="Saving template",
                 )
-            except:
+            except Exception:
                 pass  # Fallback if error handler not available
 
             return TemplateOperationResult(False, f"Error saving template: {str(e)}")
 
+    def refresh_templates(self):
+        """Refresh template discovery and reload registry"""
+        self.templates_registry.clear()
+        self._discover_templates()
+
 
 class TemplateOperationResult:
     """Result object for template operations"""
+
     def __init__(self, success: bool, error_message: str = ""):
         self.success = success
         self.error_message = error_message
