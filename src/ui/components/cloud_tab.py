@@ -562,13 +562,17 @@ class CloudTab(BaseTab):
         
         # Profile management buttons
         self.new_profile_button = QPushButton("New Profile")
+        self.delete_profile_button = QPushButton("Delete Profile")
+        self.delete_profile_button.setToolTip("Delete the selected AWS profile")
+        self.delete_profile_button.setEnabled(False)  # Disabled until profile selected
         self.test_connection_button = QPushButton("Test Connection")
         self.configure_sso_button = QPushButton("Configure SSO")
         self.configure_sso_button.setToolTip("Configure AWS SSO for selected profile")
         self.configure_sso_button.setEnabled(False)  # Disabled until profile selected
-        
+
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.new_profile_button)
+        button_layout.addWidget(self.delete_profile_button)
         button_layout.addWidget(self.test_connection_button)
         button_layout.addWidget(self.configure_sso_button)
         button_layout.addStretch()
@@ -589,6 +593,7 @@ class CloudTab(BaseTab):
         
         # Connect signals
         self.new_profile_button.clicked.connect(self.create_new_profile)
+        self.delete_profile_button.clicked.connect(self.delete_profile)
         self.test_connection_button.clicked.connect(self.test_aws_connection)
         self.configure_sso_button.clicked.connect(self.configure_existing_profile_sso)
         self.profile_combo.currentTextChanged.connect(self.on_profile_changed)
@@ -840,13 +845,72 @@ class CloudTab(BaseTab):
             self.on_aws_config_changed()
             
             QMessageBox.information(
-                self, 
-                "Profile Created", 
+                self,
+                "Profile Created",
                 f"AWS profile '{profile_data['name']}' created successfully.\n\n"
                 "For SSO profiles, you'll need to run 'aws configure sso' in your terminal "
                 "with the same profile name to complete the setup."
             )
-    
+
+    def delete_profile(self):
+        """Delete the selected AWS profile with confirmation"""
+        profile_name = self.profile_combo.currentText()
+
+        # Validate selection
+        if not profile_name or profile_name == "No profiles configured":
+            QMessageBox.warning(self, "No Profile Selected", "Please select a profile to delete.")
+            return
+
+        # Confirm deletion
+        reply = QMessageBox.question(
+            self,
+            "Confirm Deletion",
+            f"Are you sure you want to delete the AWS profile '{profile_name}'?\n\n"
+            "This will remove the profile configuration and any stored credentials.\n"
+            "This action cannot be undone.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        try:
+            # Remove from credentials manager
+            if profile_name in self.credentials_manager.profiles:
+                del self.credentials_manager.profiles[profile_name]
+
+            # Remove stored credentials from secure storage
+            from ...core.security.api_key_manager import APIKeyManager
+            api_key_manager = APIKeyManager()
+            api_key_manager.remove_aws_credentials(profile_name)
+
+            # Refresh the UI
+            self.refresh_profiles()
+
+            # Clear bucket list if this was the active profile
+            if self.bucket_combo is not None:
+                self.bucket_combo.clear()
+                self.bucket_combo.addItem("No buckets found")
+
+            # Update status
+            self.profile_status_label.setText("Profile deleted")
+            self.log_status(f"Profile '{profile_name}' deleted successfully")
+
+            # Save updated configuration
+            self.on_aws_config_changed()
+
+            QMessageBox.information(
+                self,
+                "Profile Deleted",
+                f"AWS profile '{profile_name}' has been deleted successfully."
+            )
+
+        except Exception as e:
+            error_msg = f"Failed to delete profile '{profile_name}': {str(e)}"
+            self.log_status(f"Error: {error_msg}")
+            QMessageBox.critical(self, "Delete Error", error_msg)
+
     def configure_existing_profile_sso(self):
         """Configure AWS SSO for existing profile"""
         profile_name = self.profile_combo.currentText()
@@ -933,18 +997,20 @@ class CloudTab(BaseTab):
     def on_profile_changed(self, profile_name: str):
         """Handle profile selection change"""
         self.log_status(f"Debug: Profile changed to '{profile_name}'")
-        
+
         if profile_name == "No profiles configured":
             self.profile_status_label.setText("No profile selected")
             self.configure_sso_button.setEnabled(False)
+            self.delete_profile_button.setEnabled(False)
             return
-        
+
         # Handle empty string profile name
         if profile_name == "":
             self.log_status("Debug: Empty profile name detected - not triggering auto-save")
             self.profile_status_label.setText("No profile selected")
             self.profile_combo.setToolTip("Select an AWS profile for cloud deployment")
             self.configure_sso_button.setEnabled(False)
+            self.delete_profile_button.setEnabled(False)
             return
         
         if profile_name in self.credentials_manager.profiles:
@@ -958,6 +1024,8 @@ class CloudTab(BaseTab):
             self.profile_combo.setToolTip(tooltip_text)
             # Enable Configure SSO button only for SSO profiles
             self.configure_sso_button.setEnabled(profile.auth_method == AuthMethod.SSO)
+            # Enable Delete Profile button when a valid profile is selected
+            self.delete_profile_button.setEnabled(True)
             # Only reset bucket list if not loading client context (preserve user selections)
             if not getattr(self, '_loading_client_context', False):
                 if self.bucket_combo is not None:
@@ -977,6 +1045,7 @@ class CloudTab(BaseTab):
             self.profile_status_label.setText("Profile not found")
             self.profile_combo.setToolTip(f"Profile '{profile_name}' not found in credentials manager")
             self.configure_sso_button.setEnabled(False)
+            self.delete_profile_button.setEnabled(False)
             self.log_status(f"Debug: Profile '{profile_name}' not found in credentials manager")
     
     def _populate_buckets_for_profile_silently(self, profile_name: str):
