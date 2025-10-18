@@ -18,10 +18,13 @@ Last Modified Date:
 Comments:
 * v1.00 - Initial extraction from website_generator.py
 * Fixed missing _normalize_phone method bug from original code
+* v1.01 - Refactored to use centralized string_utils and html_utils
 """
 
-import re
 from typing import TYPE_CHECKING
+
+# Import utilities
+from ...utils.string_utils import normalize_phone, format_phone_display
 
 if TYPE_CHECKING:
     from ...config.models import ClientConfig
@@ -67,9 +70,9 @@ class FooterGenerator:
         # Add phone with proper formatting for link
         if phone := contact.phone:
             # Display the phone as originally entered, not the normalized version
-            display_phone = self._get_display_phone(phone)
+            display_phone = format_phone_display(phone)
             # Create tel link with normalized phone
-            normalized_phone = self._normalize_phone(phone)
+            normalized_phone = normalize_phone(phone)
             footer_content += f'                    <p>Phone: <a href="tel:{normalized_phone}">{display_phone}</a></p>\n'
 
         if contact.email:
@@ -137,67 +140,3 @@ class FooterGenerator:
         )
 
         return footer_content
-
-    def _normalize_phone(self, phone: str) -> str:
-        """
-        Normalize phone number for tel: links (remove all non-digits).
-
-        Args:
-            phone: Phone number string in any format
-
-        Returns:
-            Phone number with only digits (suitable for tel: link)
-        """
-        if not phone:
-            return ""
-        # Remove all non-digit characters for tel: link
-        return "".join(filter(str.isdigit, phone))
-
-    def _get_display_phone(self, phone: str) -> str:
-        """
-        Get proper display format for phone number.
-
-        Args:
-            phone: Phone number string in any format
-
-        Returns:
-            Formatted phone number for display (xxx) xxx-xxxx
-        """
-        if not phone:
-            return ""
-
-        # If phone looks like it's already formatted nicely, keep it
-        if "(" in phone and ")" in phone and "-" in phone:
-            return phone
-
-        # Extract digits and format for display
-        digits = "".join(filter(str.isdigit, phone))
-
-        if len(digits) == 10:
-            return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
-        elif len(digits) == 11 and digits.startswith("1"):
-            return f"({digits[1:4]}) {digits[4:7]}-{digits[7:]}"
-
-        return phone  # Return original if can't parse
-
-    def modify_iframe_size(self, iframe_code: str, width: int, height: int) -> str:
-        """
-        Modify iframe dimensions to specified size.
-
-        Args:
-            iframe_code: HTML iframe code
-            width: Desired width in pixels
-            height: Desired height in pixels
-
-        Returns:
-            Modified iframe HTML with new dimensions
-        """
-        # Replace width and height attributes
-        iframe_code = re.sub(r'width="[^"]*"', f'width="{width}"', iframe_code)
-        iframe_code = re.sub(r'height="[^"]*"', f'height="{height}"', iframe_code)
-
-        # Also replace in style attribute if present
-        iframe_code = re.sub(r"width:\s*\d+px", f"width: {width}px", iframe_code)
-        iframe_code = re.sub(r"height:\s*\d+px", f"height: {height}px", iframe_code)
-
-        return iframe_code

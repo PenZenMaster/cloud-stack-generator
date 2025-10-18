@@ -17,9 +17,13 @@ Last Modified Date:
 
 Comments:
 * v1.00 - Initial extraction from website_generator.py
+* v1.01 - Refactored to use centralized string_utils
 """
 
 from typing import TYPE_CHECKING
+
+# Import utilities
+from ...utils.string_utils import generate_city_slug
 
 if TYPE_CHECKING:
     from ...config.models import ClientConfig
@@ -57,7 +61,7 @@ class NavigationBuilder:
         # Add cities in 4-column grid format
         if hasattr(config, 'target_cities') and config.target_cities:
             for city in config.target_cities:
-                city_slug = self.generate_city_slug(city)
+                city_slug = generate_city_slug(city)
                 city_display = city.split(',')[0].strip()
 
                 # Highlight current city if on a city page
@@ -72,22 +76,3 @@ class NavigationBuilder:
         '''
 
         return nav_html
-
-    def generate_city_slug(self, city_name: str) -> str:
-        """
-        Generate URL slug from city name (matches location_page_generator pattern).
-
-        Args:
-            city_name: City name string (may include state)
-
-        Returns:
-            URL-friendly slug for the city
-        """
-        # Replicate slugify functionality from location_page_generator
-        slug = city_name.lower()
-        slug = slug.replace(' ', '-')      # Spaces to hyphens
-        slug = slug.replace(',', '')       # Remove commas
-        slug = slug.replace(' illinois', '')  # Remove state suffix
-        slug = slug.replace(' il', '')     # Remove abbreviated state
-        slug = slug.strip('-')            # Clean up trailing hyphens
-        return slug
