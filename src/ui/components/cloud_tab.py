@@ -930,21 +930,48 @@ class CloudTab(BaseTab):
                     api_key_manager.remove_aws_credentials(profile_name)
 
                 # Update/create profile with new data
-                if profile_data['auth_method'] == 'sso':
-                    self.credentials_manager.add_sso_profile(
+                if profile_data['auth_method'] == AuthMethod.SSO:
+                    profile = self.credentials_manager.add_sso_profile(
                         name=profile_data['name'],
                         sso_start_url=profile_data['sso_start_url'],
                         sso_region=profile_data['region'],
                         sso_account_id=profile_data.get('sso_account_id'),
                         sso_role_name=profile_data.get('sso_role_name')
                     )
-                else:
-                    self.credentials_manager.add_access_key_profile(
+                    profile.description = profile_data.get('description', '')
+                else:  # ACCESS_KEYS
+                    # Validate access key credentials are provided
+                    if not profile_data.get('access_key_id') or not profile_data.get('secret_access_key'):
+                        QMessageBox.warning(
+                            self,
+                            "Missing Credentials",
+                            "Access Key ID and Secret Access Key are required for Access Key authentication."
+                        )
+                        return
+
+                    profile = self.credentials_manager.add_access_key_profile(
                         name=profile_data['name'],
-                        access_key=profile_data['access_key'],
-                        secret_key=profile_data['secret_key'],
                         region=profile_data['region']
                     )
+
+                    # Store the access keys securely
+                    from ...core.security.api_key_manager import APIKeyManager
+                    api_key_manager = APIKeyManager()
+                    success = api_key_manager.set_aws_credentials(
+                        profile_name=profile_data['name'],
+                        access_key_id=profile_data['access_key_id'],
+                        secret_access_key=profile_data['secret_access_key']
+                    )
+
+                    if not success:
+                        QMessageBox.critical(
+                            self,
+                            "Storage Error",
+                            "Failed to securely store AWS credentials. Please try again."
+                        )
+                        return
+
+                    profile.description = profile_data.get('description', '')
 
                 # Refresh profiles
                 self.refresh_profiles()
