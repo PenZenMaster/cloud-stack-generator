@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import List, Optional
 from dataclasses import dataclass
 from .config.models import ClientConfig
+from .services.ai_content_service import AIContentService
+from .services.content_cache import ContentCache
 
 
 class GenerationError(Exception):
@@ -34,9 +36,14 @@ class GenerationResult:
 class WebsiteGenerator:
     """Generate static HTML websites from configuration"""
 
-    def __init__(self):
+    def __init__(self, use_ai: bool = True):
         self.output_dir: Optional[str] = None
         self.config: Optional[ClientConfig] = None
+
+        # Initialize AI services
+        self.use_ai = use_ai
+        self.ai_service = AIContentService() if use_ai else None
+        self.content_cache = ContentCache() if use_ai else None
 
     def generate(self, config: ClientConfig, output_dir: str) -> GenerationResult:
         """Generate website from configuration"""
@@ -59,10 +66,14 @@ class WebsiteGenerator:
                     city_file = self._generate_enhanced_city_page(city_page, config)
                     generated_files.append(city_file)
             elif hasattr(config, 'target_cities') and config.target_cities:
-                # Fallback to legacy target_cities using CityPageGenerator
+                # Fallback to legacy target_cities using CityPageGenerator with AI support
                 from .generators.city_page_generator import CityPageGenerator
-                city_generator = CityPageGenerator(config)
-                city_files = city_generator.generate_all_city_pages(output_dir)
+                city_generator = CityPageGenerator(
+                    config,
+                    ai_service=self.ai_service,
+                    cache=self.content_cache
+                )
+                city_files = city_generator.generate_all_city_pages(output_dir, use_ai=self.use_ai)
                 generated_files.extend(city_files)
 
             # Generate CSS file
@@ -83,10 +94,13 @@ class WebsiteGenerator:
         if not self.output_dir:
             raise GenerationError("Output directory not set")
 
-        # Use the new HTML generator with enhanced template
+        # Use the new HTML generator with enhanced template and AI support
         from .generators.html_generator import HTMLGenerator
-        html_generator = HTMLGenerator()
-        html_content = html_generator.generate_homepage(config)
+        html_generator = HTMLGenerator(
+            ai_service=self.ai_service,
+            cache=self.content_cache
+        )
+        html_content = html_generator.generate_homepage(config, use_ai=self.use_ai)
 
         file_path = os.path.join(self.output_dir, "index.html")
         with open(file_path, "w", encoding="utf-8") as f:

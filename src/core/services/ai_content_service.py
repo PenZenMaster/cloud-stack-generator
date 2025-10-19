@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from ...config.models import ClientConfig
 
 from ..config.env_config import OpenAIConfig
+from ..prompts.industry_prompts import IndustryPromptManager
 
 logger = logging.getLogger(__name__)
 
@@ -189,123 +190,27 @@ class AIContentService:
 
     def _build_home_page_prompt(self, context: Dict[str, Any]) -> str:
         """
-        Build a structured prompt for home page content generation.
+        Build industry-specific prompt for home page content generation.
 
         Args:
             context: Dictionary with business context
 
         Returns:
-            Formatted prompt string
+            Industry-customized prompt string
         """
-        services_list = "\n".join([
-            f"- {s['name']}: {s['description']}" for s in context['services']
-        ]) if context['services'] else "General industry services"
-
-        products_list = "\n".join([
-            f"- {p['name']}: {p['description']}" for p in context['products']
-        ]) if context['products'] else "No specific products listed"
-
-        why_choose_list = "\n".join([
-            f"- {reason}" for reason in context.get('why_choose_us', [])
-        ]) if context.get('why_choose_us') else "Not specified"
-
-        prompt = f"""You are a professional web content writer specializing in SEO-optimized business websites.
-
-Generate compelling, professional HTML content for a home page with the following specifications:
-
-BUSINESS INFORMATION:
-- Business Name: {context['business_name']}
-- Industry: {context['industry']}
-- Company Overview: {context.get('company_overview', 'Not provided')}
-- Tagline: {context.get('tagline', 'Not provided')}
-- Years in Business: {context.get('years_in_business', 'Not specified')}
-- Phone: {context.get('phone', '')}
-- Email: {context.get('email', '')}
-
-SERVICES:
-{services_list}
-
-PRODUCTS:
-{products_list}
-
-WHY CHOOSE US:
-{why_choose_list}
-
-SERVICE GUARANTEE:
-{context.get('service_guarantee', 'Not specified')}
-
-REQUIREMENTS:
-1. Generate ONLY the HTML content sections (no <html>, <head>, or <body> tags)
-2. Use semantic HTML5 with proper section tags
-3. Include these sections in order:
-   - Hero section with compelling headline and call-to-action
-   - About section introducing the business
-   - Why Choose Us section highlighting key benefits
-   - Services/Products showcase
-   - Contact section with phone and email
-4. Use appropriate CSS classes: hero, hero-overlay, hero-content, about-section, why-choose-us, services-grid, products-grid, contact-section
-5. Make content SEO-friendly with natural keyword usage
-6. Keep tone professional but engaging
-7. Include 2-3 clear calls-to-action
-8. Content should be 600-800 words total
-9. Use proper heading hierarchy (h1, h2, h3)
-
-OUTPUT FORMAT:
-Return ONLY the HTML sections, starting with <section> tags. No explanatory text before or after."""
-
-        return prompt
+        return IndustryPromptManager.build_home_page_prompt(context)
 
     def _build_city_page_prompt(self, context: Dict[str, Any]) -> str:
         """
-        Build a structured prompt for city page content generation.
+        Build industry-specific prompt for city page content generation.
 
         Args:
             context: Dictionary with business and city context
 
         Returns:
-            Formatted prompt string
+            Industry-customized prompt string
         """
-        services_list = "\n".join([
-            f"- {s['name']}: {s['description']}" for s in context['services']
-        ]) if context['services'] else "General industry services"
-
-        location = context['city']
-        if context.get('state'):
-            location += f", {context['state']}"
-
-        prompt = f"""You are a professional web content writer specializing in local SEO-optimized business websites.
-
-Generate compelling, localized HTML content for a city-specific service page with the following specifications:
-
-BUSINESS INFORMATION:
-- Business Name: {context['business_name']}
-- Industry: {context['industry']}
-- Target Location: {location}
-- Company Overview: {context.get('company_overview', 'Not provided')}
-
-SERVICES:
-{services_list}
-
-REQUIREMENTS:
-1. Generate ONLY the HTML content sections (no <html>, <head>, or <body> tags)
-2. Use semantic HTML5 with proper section tags
-3. Include these sections in order:
-   - Hero section emphasizing local service in {context['city']}
-   - Local expertise section (why they're the best choice in this city)
-   - Services section tailored to {context['city']} residents
-   - Call-to-action encouraging contact
-4. Use appropriate CSS classes: hero, hero-overlay, hero-text, content, services-grid
-5. Naturally incorporate location keywords: {context['city']}, local, area, community
-6. Emphasize local expertise and community commitment
-7. Keep tone professional and trustworthy
-8. Content should be 400-600 words
-9. Use proper heading hierarchy (h2, h3, h4)
-10. Include local trust signals (local knowledge, community service, etc.)
-
-OUTPUT FORMAT:
-Return ONLY the HTML sections, starting with <section> tags. No explanatory text before or after."""
-
-        return prompt
+        return IndustryPromptManager.build_city_page_prompt(context)
 
     def _call_openai(self, prompt: str, content_type: str = "content") -> str:
         """

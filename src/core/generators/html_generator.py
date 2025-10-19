@@ -12,17 +12,35 @@ from pathlib import Path
 import jinja2
 from datetime import datetime
 from ..config.models import ClientConfig
+from ..services.ai_content_service import AIContentService
+from ..services.content_cache import ContentCache
+from .content import HomeContentGenerator
 
 
 class HTMLGenerator:
     """Generates HTML pages from configuration data"""
 
-    def __init__(self, template_dir: str = None):
+    def __init__(
+        self,
+        template_dir: str = None,
+        ai_service: Optional[AIContentService] = None,
+        cache: Optional[ContentCache] = None
+    ):
         if template_dir is None:
             # Use absolute path relative to this file's location
             template_dir = Path(__file__).parent.parent.parent / "templates"
         self.template_dir = Path(template_dir)
         self.jinja_env = self._setup_jinja_environment()
+
+        # Initialize AI content generation
+        self.ai_service = ai_service or AIContentService()
+        self.cache = cache or ContentCache()
+
+        # Initialize content generators with AI support
+        self.home_gen = HomeContentGenerator(
+            ai_service=self.ai_service,
+            cache=self.cache
+        )
 
     def _setup_jinja_environment(self) -> Optional[jinja2.Environment]:
         """Setup Jinja2 environment with template loading"""
@@ -48,9 +66,16 @@ class HTMLGenerator:
             # Fallback to basic string templates
             return None
 
-    def generate_homepage(self, config: ClientConfig) -> str:
-        """Generate homepage HTML"""
+    def generate_homepage(self, config: ClientConfig, use_ai: bool = True) -> str:
+        """Generate homepage HTML with AI-powered content"""
         template_data = self._prepare_template_data(config)
+
+        # Use AI-powered content generation if available
+        if use_ai and self.home_gen.use_ai:
+            ai_content = self.home_gen.generate_enhanced_home_content(config, use_ai=True)
+            if ai_content:
+                template_data["ai_generated_content"] = ai_content
+
         template_data.update(
             {
                 "page_title": f"{config.business.business_name} - {config.business.industry}",
