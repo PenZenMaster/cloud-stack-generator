@@ -4,7 +4,8 @@ Path: E:/projects/cloud-stack-generator/src/core/generators/content/home_content
 
 Description:
 Generates HTML content for home/index pages. Extracted from website_generator.py
-to improve separation of concerns and maintainability.
+to improve separation of concerns and maintainability. Now supports AI-powered
+content generation with fallback to template-based generation.
 
 Author(s):
 Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
@@ -13,31 +14,75 @@ Created Date:
 2025-10-17
 
 Last Modified Date:
-2025-10-17
+2025-10-19
 
 Comments:
 * v1.00 - Initial extraction from website_generator.py
+* v1.01 - Added AI content generation integration with caching
 """
 
-from typing import TYPE_CHECKING
+import logging
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from ...config.models import ClientConfig
+    from ...services.ai_content_service import AIContentService
+    from ...services.content_cache import ContentCache
+
+logger = logging.getLogger(__name__)
 
 
 class HomeContentGenerator:
-    """Generates HTML content for home/index pages"""
+    """
+    Generates HTML content for home/index pages.
 
-    def __init__(self):
-        """Initialize the home content generator"""
-        pass
+    Supports both AI-powered and template-based content generation.
+    Uses caching to reduce API costs and improve performance.
+    """
 
-    def generate_basic_home_content(self, config: "ClientConfig") -> str:
+    def __init__(
+        self,
+        ai_service: Optional["AIContentService"] = None,
+        cache: Optional["ContentCache"] = None
+    ):
+        """
+        Initialize the home content generator.
+
+        Args:
+            ai_service: Optional AI content service for dynamic generation
+            cache: Optional cache manager for AI-generated content
+        """
+        self.ai_service = ai_service
+        self.cache = cache
+        self.use_ai = ai_service is not None and ai_service.is_available()
+
+    def generate_basic_home_content(self, config: "ClientConfig", use_ai: bool = True) -> str:
         """
         Create content for the home page with SEPARATE Services and Products sections.
 
         Args:
             config: Client configuration containing business, services, products data
+            use_ai: Whether to attempt AI generation (default True)
+
+        Returns:
+            HTML string for the home page content
+        """
+        # Try AI generation first if enabled
+        if use_ai and self.use_ai:
+            ai_content = self._generate_with_ai(config, use_enhanced=False)
+            if ai_content:
+                return ai_content
+
+        # Fall back to template-based generation
+        logger.debug("Using template-based home content generation")
+        return self._generate_template_basic(config)
+
+    def _generate_template_basic(self, config: "ClientConfig") -> str:
+        """
+        Template-based generation for basic home content.
+
+        Args:
+            config: Client configuration
 
         Returns:
             HTML string for the home page content
@@ -154,12 +199,33 @@ class HomeContentGenerator:
         content += "        </section>"
         return content
 
-    def generate_enhanced_home_content(self, config: "ClientConfig") -> str:
+    def generate_enhanced_home_content(self, config: "ClientConfig", use_ai: bool = True) -> str:
         """
         Create enhanced professional home page content using enhanced business data.
 
         Args:
             config: Client configuration with enhanced business data
+            use_ai: Whether to attempt AI generation (default True)
+
+        Returns:
+            HTML string for enhanced home page content
+        """
+        # Try AI generation first if enabled
+        if use_ai and self.use_ai:
+            ai_content = self._generate_with_ai(config, use_enhanced=True)
+            if ai_content:
+                return ai_content
+
+        # Fall back to template-based generation
+        logger.debug("Using template-based enhanced home content generation")
+        return self._generate_template_enhanced(config)
+
+    def _generate_template_enhanced(self, config: "ClientConfig") -> str:
+        """
+        Template-based generation for enhanced home content.
+
+        Args:
+            config: Client configuration
 
         Returns:
             HTML string for enhanced home page content
@@ -398,3 +464,53 @@ class HomeContentGenerator:
         </section>"""
 
         return content
+
+    def _generate_with_ai(self, config: "ClientConfig", use_enhanced: bool) -> Optional[str]:
+        """
+        Generate content using AI service with caching.
+
+        Args:
+            config: Client configuration
+            use_enhanced: Whether to use enhanced format
+
+        Returns:
+            AI-generated HTML content or None if generation fails
+        """
+        if not self.ai_service:
+            return None
+
+        # Build cache context
+        cache_context = {
+            'business_name': config.business.business_name,
+            'industry': config.business.industry,
+            'use_enhanced': use_enhanced,
+            'num_services': len(config.services),
+            'num_products': len(config.products)
+        }
+
+        # Check cache first
+        if self.cache and self.cache.is_enabled():
+            cached_content = self.cache.get('home_page', cache_context)
+            if cached_content:
+                logger.info("Using cached AI-generated home content")
+                return cached_content
+
+        # Generate with AI
+        try:
+            logger.info(f"Generating home content with AI (enhanced={use_enhanced})")
+            ai_content = self.ai_service.generate_home_content(config, use_enhanced=use_enhanced)
+
+            if ai_content:
+                # Cache the result
+                if self.cache and self.cache.is_enabled():
+                    self.cache.set('home_page', cache_context, ai_content, metadata={
+                        'business': config.business.business_name,
+                        'enhanced': use_enhanced
+                    })
+
+                return ai_content
+
+        except Exception as e:
+            logger.error(f"AI content generation failed: {e}")
+
+        return None
