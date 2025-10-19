@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QProgressBar,
+    QCheckBox,
 )
 from PyQt6.QtGui import QAction, QFont
 from PyQt6.QtCore import QThread, pyqtSignal
@@ -42,10 +43,11 @@ class GenerationWorker(QThread):
     progress = pyqtSignal(str)  # Progress message
     finished = pyqtSignal(bool, str, list)  # success, message, generated_files
 
-    def __init__(self, config_dict: dict, output_dir: str):
+    def __init__(self, config_dict: dict, output_dir: str, use_ai: bool = True):
         super().__init__()
         self.config_dict = config_dict
         self.output_dir = output_dir
+        self.use_ai = use_ai
 
     def run(self):
         """Run website generation in background thread"""
@@ -54,8 +56,9 @@ class GenerationWorker(QThread):
             parser = ConfigParser()
             config = parser.parse(self.config_dict)
 
-            self.progress.emit("Initializing website generator...")
-            generator = WebsiteGenerator()
+            ai_status = " with AI-powered content" if self.use_ai else " with template-based content"
+            self.progress.emit(f"Initializing website generator{ai_status}...")
+            generator = WebsiteGenerator(use_ai=self.use_ai)
 
             self.progress.emit("Generating HTML pages...")
             result = generator.generate(config, self.output_dir)
@@ -110,6 +113,17 @@ class GeneratorTab(QWidget):
         controls_layout.addWidget(self.browse_button)
 
         layout.addLayout(controls_layout)
+
+        # AI Content Generation Toggle
+        self.use_ai_checkbox = QCheckBox("Use AI-Generated Content (OpenAI)")
+        self.use_ai_checkbox.setChecked(True)  # Default enabled
+        self.use_ai_checkbox.setToolTip(
+            "Generate unique, industry-specific content using AI. "
+            "Falls back to templates if disabled or if AI service is unavailable. "
+            "Requires OpenAI API key in .env file."
+        )
+        self.use_ai_checkbox.setStyleSheet("padding: 8px; font-weight: bold;")
+        layout.addWidget(self.use_ai_checkbox)
 
         # Generate button
         self.generate_button = QPushButton("Generate Website")
@@ -198,7 +212,10 @@ class GeneratorTab(QWidget):
         self.log_text.clear()
         self.files_text.clear()
 
-        self.worker = GenerationWorker(config_dict, self.output_dir)
+        # Get AI preference from checkbox
+        use_ai = self.use_ai_checkbox.isChecked()
+
+        self.worker = GenerationWorker(config_dict, self.output_dir, use_ai=use_ai)
         self.worker.progress.connect(self.update_progress)
         self.worker.finished.connect(self.generation_finished)
         self.worker.start()
