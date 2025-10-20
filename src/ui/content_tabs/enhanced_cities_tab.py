@@ -524,9 +524,10 @@ class EnhancedCitiesTab(BaseTab):
         self.embed_code_edit.setFont(QFont("Courier", 9))
         self.embed_code_edit.setMaximumHeight(120)
         self.embed_code_edit.setPlaceholderText("Complete HTML embed code...")
-        # Load existing embed code if available
-        if hasattr(city_page.city_image, 'embed_code'):
-            self.embed_code_edit.setPlainText(city_page.city_image.embed_code)
+        # Load existing embed code - ensure attribute exists
+        if not hasattr(city_page.city_image, 'embed_code'):
+            city_page.city_image.embed_code = ''
+        self.embed_code_edit.setPlainText(city_page.city_image.embed_code)
         layout.addRow("Embed Code:", self.embed_code_edit)
         
         fields_group.setLayout(layout)
@@ -776,11 +777,16 @@ class EnhancedCitiesTab(BaseTab):
             self.current_city_page.city_image.caption = self.image_caption_edit.text().strip()
             self.current_city_page.city_image.credit = self.image_credit_edit.text().strip()
             self.current_city_page.city_image.source = self.image_source_edit.text().strip()
-            
-            # Store embed code if available
+
+            # Always store embed code
             if hasattr(self, 'embed_code_edit'):
                 embed_code = self.embed_code_edit.toPlainText().strip()
-                self.current_city_page.city_image.embed_code = embed_code
+            else:
+                embed_code = ''
+            # Ensure embed_code attribute exists
+            if not hasattr(self.current_city_page.city_image, 'embed_code'):
+                self.current_city_page.city_image.embed_code = ''
+            self.current_city_page.city_image.embed_code = embed_code
             
             # Refresh the list display
             self.refresh_city_list()
