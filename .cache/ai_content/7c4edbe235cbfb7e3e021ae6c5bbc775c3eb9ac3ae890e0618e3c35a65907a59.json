@@ -1,0 +1,18 @@
+{
+  "content_type": "home_page",
+  "content": "```html\n<section class=\"hero\">\n    <div class=\"hero-overlay\">\n        <div class=\"hero-content\">\n            <h1>Your Trusted Plumbing Experts</h1>\n            <p>Experience professional plumbing services that you can rely on.</p>\n            <a href=\"#contact\" class=\"cta-button\">Get Your Free Estimate Today!</a>\n        </div>\n    </div>\n</section>\n\n<section class=\"about-section\">\n    <h2>About Example Plumbing Co</h2>\n    <p>With over 15 years of experience in the plumbing industry, Example Plumbing Co has established itself as a leader in providing top-notch plumbing services. Our team of skilled professionals is dedicated to delivering high-quality workmanship and exceptional customer service. Whether you need routine maintenance or emergency repairs, we are here to help.</p>\n</section>\n\n<section class=\"why-choose-us\">\n    <h2>Why Choose Us?</h2>\n    <ul>\n        <li>Licensed and Insured: Rest assured that your plumbing needs are in capable hands.</li>\n        <li>24/7 Emergency Service: We're available around the clock to address any urgent plumbing issues.</li>\n        <li>Free Estimates: Get a clear understanding of your plumbing costs before we start any work.</li>\n    </ul>\n</section>\n\n<section class=\"services-grid\">\n    <h2>Our Services</h2>\n    <div class=\"service-item\">\n        <h3>Expert Pipe Repair Services</h3>\n        <p>Our experienced technicians are equipped to handle all types of pipe repairs, ensuring your plumbing system operates smoothly.</p>\n    </div>\n    <div class=\"service-item\">\n        <h3>Professional Drain Cleaning</h3>\n        <p>We offer thorough drain cleaning services that eliminate clogs and keep your plumbing flowing freely.</p>\n    </div>\n</section>\n\n<section class=\"products-grid\">\n    <h2>Our Products</h2>\n    <div class=\"product-item\">\n        <h3>High-Efficiency Water Heaters</h3>\n        <p>Upgrade your home with our high-efficiency water heaters, designed to save you energy and money while providing reliable hot water.</p>\n    </div>\n</section>\n\n<section class=\"contact-section\">\n    <h2>Contact Us</h2>\n    <p>Have questions or need our services? We're just a call or email away!</p>\n    <p>Phone: <a href=\"tel:555-1234\">555-1234</a></p>\n    <p>Email: <a href=\"mailto:info@example.com\">info@example.com</a></p>\n    <a href=\"#contact\" class=\"cta-button\">Contact Us Now!</a>\n</section>\n```",
+  "cached_at": "2025-10-19T14:30:50.010784",
+  "expires_at": "2025-10-26T14:30:50.010793",
+  "ttl_hours": 168,
+  "context": {
+    "business_name": "Example Plumbing Co",
+    "industry": "Plumbing",
+    "use_enhanced": true,
+    "num_services": 2,
+    "num_products": 1
+  },
+  "metadata": {
+    "business": "Example Plumbing Co",
+    "enhanced": true
+  }
+}

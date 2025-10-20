@@ -1,0 +1,20 @@
+{
+  "content_type": "city_page",
+  "content": "```html\n<section class=\"hero\">\n    <div class=\"hero-overlay\">\n        <div class=\"hero-text\">\n            <h1>Your Premier Portable Toilet Supplier in Washington, DC</h1>\n            <p>Providing clean and reliable restroom solutions for events and construction sites.</p>\n        </div>\n    </div>\n</section>\n\n<section class=\"local-expertise\">\n    <h2>Why Choose Clean Restroom Rental Virginia in Washington, DC?</h2>\n    <p>As a locally-owned business, we understand the unique needs of the Washington, DC community. Our expertise in providing Washington, DC portable toilets ensures that you receive the best service tailored specifically for your area. Our commitment to the highest cleanliness standards and timely delivery makes us the ideal choice for all your restroom rental needs.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Our Services for Washington, DC Residents and Businesses</h2>\n    <div class=\"services-grid\">\n        <h3>Washington, DC Restroom Rental</h3>\n        <p>Whether you need a single unit for a gathering or multiple units for a large event, we offer a variety of options to meet your needs efficiently and affordably.</p>\n\n        <h3>Washington, DC Construction Restrooms</h3>\n        <p>We provide reliable and clean construction restrooms that comply with all safety regulations, ensuring your site remains professional and sanitary.</p>\n\n        <h3>Washington, DC Event Facilities</h3>\n        <p>From outdoor festivals to corporate events, our porta potties are equipped to handle high traffic while maintaining the cleanliness your guests expect.</p>\n\n        <h3>ADA-Compliant Units</h3>\n        <p>Our ADA-compliant restroom options ensure accessibility for all guests, demonstrating our commitment to inclusivity in the Washington, DC community.</p>\n    </div>\n</section>\n\n<section class=\"content\">\n    <h2>Why Choose Us for Washington, DC Services</h2>\n    <p>At Clean Restroom Rental Virginia, our focus is on providing exceptional service to the Washington, DC area. Our units are regularly serviced, ensuring they are always clean and ready for use. We pride ourselves on fast response times and flexible rental options, making us the go-to choice for local businesses and residents alike.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Local Trust Signals and Community Commitment</h2>\n    <p>As a trusted local business, Clean Restroom Rental Virginia is dedicated to serving the Washington, DC community with integrity and reliability. We are committed to sustainability and responsible practices, ensuring that our services not only meet your needs but also support our local environment.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Get Started with Your Washington, DC Portable Toilet Rental Today!</h2>\n    <p>Ready to secure the best Washington, DC porta potty for your next event or construction project? Contact us now for a free quote and experience the Clean Restroom Rental Virginia difference. Our team is standing by to assist you with any inquiries and ensure prompt delivery to your location in Washington, DC!</p>\n    <p><strong>Call us today at <a href=\"tel:+12025551234\">202-555-1234</a> or fill out our online form to get started!</strong></p>\n</section>\n```",
+  "cached_at": "2025-10-20T08:56:22.319781",
+  "expires_at": "2025-10-27T08:56:22.319790",
+  "ttl_hours": 168,
+  "context": {
+    "business_name": "Clean Restroom Rental Virgina",
+    "industry": "Portable Toilet Supplier",
+    "city": "Washington, DC",
+    "state": "",
+    "num_services": 0,
+    "num_products": 10
+  },
+  "metadata": {
+    "business": "Clean Restroom Rental Virgina",
+    "city": "Washington, DC",
+    "state": null
+  }
+}

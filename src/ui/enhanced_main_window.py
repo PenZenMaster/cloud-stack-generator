@@ -778,7 +778,8 @@ class EnhancedMainWindow(QMainWindow):
                 alt_text=image_data.get("alt_text", ""),
                 caption=image_data.get("caption", ""),
                 credit=image_data.get("credit", ""),
-                source=image_data.get("source", "Wikipedia")
+                source=image_data.get("source", "Wikipedia"),
+                embed_code=image_data.get("embed_code", "")
             )
             
             # Create PlaceOfInterest objects

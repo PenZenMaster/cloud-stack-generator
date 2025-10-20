@@ -562,13 +562,21 @@ class CloudTab(BaseTab):
         
         # Profile management buttons
         self.new_profile_button = QPushButton("New Profile")
+        self.edit_profile_button = QPushButton("Edit Profile")
+        self.edit_profile_button.setToolTip("Edit the selected AWS profile")
+        self.edit_profile_button.setEnabled(False)  # Disabled until profile selected
+        self.delete_profile_button = QPushButton("Delete Profile")
+        self.delete_profile_button.setToolTip("Delete the selected AWS profile")
+        self.delete_profile_button.setEnabled(False)  # Disabled until profile selected
         self.test_connection_button = QPushButton("Test Connection")
         self.configure_sso_button = QPushButton("Configure SSO")
         self.configure_sso_button.setToolTip("Configure AWS SSO for selected profile")
         self.configure_sso_button.setEnabled(False)  # Disabled until profile selected
-        
+
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.new_profile_button)
+        button_layout.addWidget(self.edit_profile_button)
+        button_layout.addWidget(self.delete_profile_button)
         button_layout.addWidget(self.test_connection_button)
         button_layout.addWidget(self.configure_sso_button)
         button_layout.addStretch()
@@ -589,6 +597,8 @@ class CloudTab(BaseTab):
         
         # Connect signals
         self.new_profile_button.clicked.connect(self.create_new_profile)
+        self.edit_profile_button.clicked.connect(self.edit_profile)
+        self.delete_profile_button.clicked.connect(self.delete_profile)
         self.test_connection_button.clicked.connect(self.test_aws_connection)
         self.configure_sso_button.clicked.connect(self.configure_existing_profile_sso)
         self.profile_combo.currentTextChanged.connect(self.on_profile_changed)
@@ -840,13 +850,208 @@ class CloudTab(BaseTab):
             self.on_aws_config_changed()
             
             QMessageBox.information(
-                self, 
-                "Profile Created", 
+                self,
+                "Profile Created",
                 f"AWS profile '{profile_data['name']}' created successfully.\n\n"
                 "For SSO profiles, you'll need to run 'aws configure sso' in your terminal "
                 "with the same profile name to complete the setup."
             )
-    
+
+    def edit_profile(self):
+        """Edit the selected AWS profile"""
+        profile_name = self.profile_combo.currentText()
+
+        # Validate selection
+        if not profile_name or profile_name == "No profiles configured":
+            QMessageBox.warning(self, "No Profile Selected", "Please select a profile to edit.")
+            return
+
+        # Get current profile data
+        if profile_name not in self.credentials_manager.profiles:
+            QMessageBox.warning(self, "Profile Not Found", f"Profile '{profile_name}' not found.")
+            return
+
+        current_profile = self.credentials_manager.profiles[profile_name]
+        existing_profiles = [self.profile_combo.itemText(i) for i in range(self.profile_combo.count())]
+        existing_profiles.remove(profile_name)  # Remove current profile from list to allow keeping same name
+
+        # Create dialog
+        dialog = AWSProfileDialog(self, existing_profiles)
+        dialog.setWindowTitle(f"Edit Profile: {profile_name}")
+
+        # Pre-populate with current values
+        dialog.profile_name_input.setText(profile_name)
+        dialog.profile_name_input.setEnabled(True)  # Allow changing profile name
+
+        # Set authentication method
+        if current_profile.auth_method == AuthMethod.SSO:
+            dialog.sso_radio.setChecked(True)
+            dialog.on_auth_method_changed()
+            if hasattr(current_profile, 'sso_start_url'):
+                dialog.sso_url_input.setText(current_profile.sso_start_url or '')
+            if hasattr(current_profile, 'sso_account_id'):
+                dialog.sso_account_input.setText(current_profile.sso_account_id or '')
+            if hasattr(current_profile, 'sso_role_name'):
+                dialog.sso_role_input.setText(current_profile.sso_role_name or '')
+        else:
+            dialog.access_keys_radio.setChecked(True)
+            dialog.on_auth_method_changed()
+            # Note: We don't pre-populate access keys for security reasons
+            # User will need to re-enter them if changing
+
+        # Set region
+        if hasattr(current_profile, 'region'):
+            region_index = dialog.region_combo.findText(current_profile.region)
+            if region_index >= 0:
+                dialog.region_combo.setCurrentIndex(region_index)
+
+        # Show dialog
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            try:
+                profile_data = dialog.get_profile_data()
+                new_profile_name = profile_data['name']
+
+                # If profile name changed, delete old profile
+                if new_profile_name != profile_name:
+                    if new_profile_name in self.credentials_manager.profiles:
+                        QMessageBox.warning(
+                            self,
+                            "Profile Exists",
+                            f"A profile named '{new_profile_name}' already exists. Please choose a different name."
+                        )
+                        return
+
+                    # Remove old profile
+                    del self.credentials_manager.profiles[profile_name]
+
+                    # Remove stored credentials from secure storage
+                    from ...core.security.api_key_manager import APIKeyManager
+                    api_key_manager = APIKeyManager()
+                    api_key_manager.remove_aws_credentials(profile_name)
+
+                # Update/create profile with new data
+                if profile_data['auth_method'] == AuthMethod.SSO:
+                    profile = self.credentials_manager.add_sso_profile(
+                        name=profile_data['name'],
+                        sso_start_url=profile_data['sso_start_url'],
+                        sso_region=profile_data['region'],
+                        sso_account_id=profile_data.get('sso_account_id'),
+                        sso_role_name=profile_data.get('sso_role_name')
+                    )
+                    profile.description = profile_data.get('description', '')
+                else:  # ACCESS_KEYS
+                    # Validate access key credentials are provided
+                    if not profile_data.get('access_key_id') or not profile_data.get('secret_access_key'):
+                        QMessageBox.warning(
+                            self,
+                            "Missing Credentials",
+                            "Access Key ID and Secret Access Key are required for Access Key authentication."
+                        )
+                        return
+
+                    profile = self.credentials_manager.add_access_key_profile(
+                        name=profile_data['name'],
+                        region=profile_data['region']
+                    )
+
+                    # Store the access keys securely
+                    from ...core.security.api_key_manager import APIKeyManager
+                    api_key_manager = APIKeyManager()
+                    success = api_key_manager.set_aws_credentials(
+                        profile_name=profile_data['name'],
+                        access_key_id=profile_data['access_key_id'],
+                        secret_access_key=profile_data['secret_access_key']
+                    )
+
+                    if not success:
+                        QMessageBox.critical(
+                            self,
+                            "Storage Error",
+                            "Failed to securely store AWS credentials. Please try again."
+                        )
+                        return
+
+                    profile.description = profile_data.get('description', '')
+
+                # Refresh profiles
+                self.refresh_profiles()
+
+                # Select the updated profile
+                self.profile_combo.setCurrentText(new_profile_name)
+
+                self.log_status(f"AWS profile '{new_profile_name}' updated successfully")
+
+                QMessageBox.information(
+                    self,
+                    "Profile Updated",
+                    f"AWS profile '{profile_name}' has been updated successfully."
+                    + (f"\n\nProfile renamed to '{new_profile_name}'." if new_profile_name != profile_name else "")
+                )
+
+            except Exception as e:
+                error_msg = f"Failed to update profile: {str(e)}"
+                self.log_status(f"Error: {error_msg}")
+                QMessageBox.critical(self, "Update Error", error_msg)
+
+    def delete_profile(self):
+        """Delete the selected AWS profile with confirmation"""
+        profile_name = self.profile_combo.currentText()
+
+        # Validate selection
+        if not profile_name or profile_name == "No profiles configured":
+            QMessageBox.warning(self, "No Profile Selected", "Please select a profile to delete.")
+            return
+
+        # Confirm deletion
+        reply = QMessageBox.question(
+            self,
+            "Confirm Deletion",
+            f"Are you sure you want to delete the AWS profile '{profile_name}'?\n\n"
+            "This will remove the profile configuration and any stored credentials.\n"
+            "This action cannot be undone.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        try:
+            # Remove from credentials manager
+            if profile_name in self.credentials_manager.profiles:
+                del self.credentials_manager.profiles[profile_name]
+
+            # Remove stored credentials from secure storage
+            from ...core.security.api_key_manager import APIKeyManager
+            api_key_manager = APIKeyManager()
+            api_key_manager.remove_aws_credentials(profile_name)
+
+            # Refresh the UI
+            self.refresh_profiles()
+
+            # Clear bucket list if this was the active profile
+            if self.bucket_combo is not None:
+                self.bucket_combo.clear()
+                self.bucket_combo.addItem("No buckets found")
+
+            # Update status
+            self.profile_status_label.setText("Profile deleted")
+            self.log_status(f"Profile '{profile_name}' deleted successfully")
+
+            # Save updated configuration
+            self.on_aws_config_changed()
+
+            QMessageBox.information(
+                self,
+                "Profile Deleted",
+                f"AWS profile '{profile_name}' has been deleted successfully."
+            )
+
+        except Exception as e:
+            error_msg = f"Failed to delete profile '{profile_name}': {str(e)}"
+            self.log_status(f"Error: {error_msg}")
+            QMessageBox.critical(self, "Delete Error", error_msg)
+
     def configure_existing_profile_sso(self):
         """Configure AWS SSO for existing profile"""
         profile_name = self.profile_combo.currentText()
@@ -933,18 +1138,22 @@ class CloudTab(BaseTab):
     def on_profile_changed(self, profile_name: str):
         """Handle profile selection change"""
         self.log_status(f"Debug: Profile changed to '{profile_name}'")
-        
+
         if profile_name == "No profiles configured":
             self.profile_status_label.setText("No profile selected")
             self.configure_sso_button.setEnabled(False)
+            self.edit_profile_button.setEnabled(False)
+            self.delete_profile_button.setEnabled(False)
             return
-        
+
         # Handle empty string profile name
         if profile_name == "":
             self.log_status("Debug: Empty profile name detected - not triggering auto-save")
             self.profile_status_label.setText("No profile selected")
             self.profile_combo.setToolTip("Select an AWS profile for cloud deployment")
             self.configure_sso_button.setEnabled(False)
+            self.edit_profile_button.setEnabled(False)
+            self.delete_profile_button.setEnabled(False)
             return
         
         if profile_name in self.credentials_manager.profiles:
@@ -958,6 +1167,9 @@ class CloudTab(BaseTab):
             self.profile_combo.setToolTip(tooltip_text)
             # Enable Configure SSO button only for SSO profiles
             self.configure_sso_button.setEnabled(profile.auth_method == AuthMethod.SSO)
+            # Enable Edit and Delete Profile buttons when a valid profile is selected
+            self.edit_profile_button.setEnabled(True)
+            self.delete_profile_button.setEnabled(True)
             # Only reset bucket list if not loading client context (preserve user selections)
             if not getattr(self, '_loading_client_context', False):
                 if self.bucket_combo is not None:
@@ -977,6 +1189,7 @@ class CloudTab(BaseTab):
             self.profile_status_label.setText("Profile not found")
             self.profile_combo.setToolTip(f"Profile '{profile_name}' not found in credentials manager")
             self.configure_sso_button.setEnabled(False)
+            self.delete_profile_button.setEnabled(False)
             self.log_status(f"Debug: Profile '{profile_name}' not found in credentials manager")
     
     def _populate_buckets_for_profile_silently(self, profile_name: str):

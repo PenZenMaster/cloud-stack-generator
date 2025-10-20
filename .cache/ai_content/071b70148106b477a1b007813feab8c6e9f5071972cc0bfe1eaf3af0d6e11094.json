@@ -1,0 +1,20 @@
+{
+  "content_type": "city_page",
+  "content": "```html\n<section class=\"hero\">\n    <div class=\"hero-overlay\">\n        <div class=\"hero-text\">\n            <h1>Your Trusted Portable Toilet Supplier in Arlington, VA</h1>\n            <p>Clean Restroom Rental Virginia proudly serves Arlington, VA with the highest standards of cleanliness and timely service for all your portable toilet needs.</p>\n        </div>\n    </div>\n</section>\n\n<section class=\"local-expertise\">\n    <h2>Why Choose Clean Restroom Rental Virginia in Arlington, VA?</h2>\n    <p>As a local business dedicated to serving the Arlington, VA community, we understand the unique needs of our area. Our expertise in providing Arlington, VA portable toilets, porta potties, and restroom rentals sets us apart. We pride ourselves on our commitment to excellence, offering solutions tailored to both events and construction sites.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Our Services in Arlington, VA</h2>\n    <div class=\"services-grid\">\n        <h3>Portable Toilet Rentals</h3>\n        <p>We offer a variety of Arlington, VA porta potty options to meet your specific needs, from casual events to large gatherings.</p>\n\n        <h3>Event Facilities</h3>\n        <p>Our Arlington, VA event facilities are designed for comfort and convenience, ensuring your guests have a clean and accessible restroom experience.</p>\n\n        <h3>Construction Restrooms</h3>\n        <p>For construction projects, we provide Arlington, VA construction restrooms that meet industry standards and ensure compliance for your workforce.</p>\n\n        <h3>ADA-Compliant Units</h3>\n        <p>We offer ADA-compliant units to ensure accessibility for all guests at your Arlington, VA events and facilities.</p>\n    </div>\n</section>\n\n<section class=\"content\">\n    <h2>Why Choose Us for Arlington, VA Services</h2>\n    <p>We are committed to delivering the highest cleanliness standards and timely service to our valued customers in Arlington, VA. Our units are regularly serviced, ensuring that you receive the best possible experience. With fast response times and local availability, we are the optimal choice for your restroom rental needs.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Your Local Trust Signals</h2>\n    <p>As a proud member of the Arlington, VA community, we take our responsibility seriously. Our dedication to providing regularly serviced units and prompt customer support makes us the preferred portable toilet supplier in the area.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Get Started with Clean Restroom Rental Virginia</h2>\n    <p>If you're in need of portable toilets in Arlington, VA, look no further. Contact us today for a free quote and discover how we can serve your restroom rental needs. Experience the difference with Clean Restroom Rental Virginia—your partner for clean, reliable, and accessible restroom facilities in Arlington, VA!</p>\n    <p><strong>Call us now at (insert phone number) to learn more!</strong></p>\n</section>\n```",
+  "cached_at": "2025-10-20T08:57:50.300482",
+  "expires_at": "2025-10-27T08:57:50.300490",
+  "ttl_hours": 168,
+  "context": {
+    "business_name": "Clean Restroom Rental Virgina",
+    "industry": "Portable Toilet Supplier",
+    "city": "Arlington, VA",
+    "state": "",
+    "num_services": 0,
+    "num_products": 10
+  },
+  "metadata": {
+    "business": "Clean Restroom Rental Virgina",
+    "city": "Arlington, VA",
+    "state": null
+  }
+}

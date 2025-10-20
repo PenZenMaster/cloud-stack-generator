@@ -1,0 +1,20 @@
+{
+  "content_type": "city_page",
+  "content": "```html\n<section class=\"hero\">\n    <div class=\"hero-overlay\">\n        <div class=\"hero-text\">\n            <h1>Portable Toilet Supplier Services in Gainesville, VA</h1>\n            <p>Your trusted partner for clean and reliable restroom rentals in the Gainesville, VA area.</p>\n        </div>\n    </div>\n</section>\n\n<section class=\"local-expertise\">\n    <h2>Local Expertise You Can Trust</h2>\n    <p>At Clean Restroom Rental Virginia, we pride ourselves on being a local Gainesville, VA business. Our experienced professionals understand the unique needs of our community. We are dedicated to providing high-quality service delivery tailored specifically for our Gainesville, VA residents and businesses. With a focus on customer satisfaction, we ensure that our portable toilet solutions meet your requirements efficiently and effectively.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Our Services in Gainesville, VA</h2>\n    <div class=\"services-grid\">\n        <h3>Standard Portable Toilets</h3>\n        <p>Perfect for events, construction sites, and more, our standard portable toilets are cleaned and maintained to the highest standards.</p>\n        \n        <h3>Deluxe Portable Restrooms</h3>\n        <p>For those seeking a touch of luxury, our deluxe portable restrooms offer added amenities for special occasions.</p>\n        \n        <h3>Hand Washing Stations</h3>\n        <p>Ensure hygiene at your events with our convenient hand washing stations, available alongside our toilet rentals.</p>\n        \n        <h3>Event Packages</h3>\n        <p>Customized packages for events of any size in Gainesville, VA—let us handle your restroom needs so you can focus on your event.</p>\n    </div>\n</section>\n\n<section class=\"content\">\n    <h2>Why Choose Clean Restroom Rental Virginia?</h2>\n    <p>Choosing us means opting for competitive pricing without compromising quality. We understand the importance of reliable and timely service in Gainesville, VA. Our quick response times ensure that you receive the support you need, when you need it. Our commitment to excellence and customer care sets us apart in the portable toilet rental industry.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Local Trust Signals and Community Commitment</h2>\n    <p>As a proud member of the Gainesville, VA community, we are committed to serving our neighbors with integrity and reliability. Our team is comprised of experienced professionals who are dedicated to ensuring your satisfaction. With a strong focus on local service, we are always just a phone call away, ready to assist you with your portable restroom needs.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Get in Touch Today!</h2>\n    <p>Ready to rent a portable toilet in Gainesville, VA? Contact Clean Restroom Rental Virginia today for a free quote! Experience our quick response times and exceptional service tailored for your local needs. We look forward to serving you!</p>\n    <a href=\"contact.html\" class=\"btn\">Request a Quote</a>\n</section>\n```",
+  "cached_at": "2025-10-19T15:29:36.610497",
+  "expires_at": "2025-10-26T15:29:36.610505",
+  "ttl_hours": 168,
+  "context": {
+    "business_name": "Clean Restroom Rental Virgina",
+    "industry": "Portable toilet supplier",
+    "city": "Gainesville, VA",
+    "state": "",
+    "num_services": 0,
+    "num_products": 10
+  },
+  "metadata": {
+    "business": "Clean Restroom Rental Virgina",
+    "city": "Gainesville, VA",
+    "state": null
+  }
+}

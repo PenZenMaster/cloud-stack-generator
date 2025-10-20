@@ -21,14 +21,14 @@ Comments:
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton,
-    QTextEdit, QScrollArea, QFrame, QSplitter, QGroupBox, QMessageBox,
+    QTextEdit, QScrollArea, QSplitter, QGroupBox, QMessageBox,
     QTabWidget, QWidget, QLineEdit, QComboBox, QCheckBox, QSpinBox,
-    QFileDialog, QTreeWidget, QTreeWidgetItem, QApplication, QToolBar,
-    QMenu, QMenuBar, QStatusBar, QProgressBar, QInputDialog
+    QTreeWidget, QTreeWidgetItem, QToolBar,
+    QMenuBar, QStatusBar, QProgressBar, QInputDialog
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject, QTimer, QSize
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import (
-    QFont, QPixmap, QIcon, QAction, QTextCursor, QTextCharFormat,
+    QFont, QAction, QTextCharFormat,
     QColor, QSyntaxHighlighter, QTextDocument, QKeySequence
 )
 # Try to import QWebEngineView, fall back to QTextEdit if not available
@@ -762,7 +762,6 @@ class TemplateEditorDialog(QDialog):
 
     def _slugify_filter(self, text: str) -> str:
         """Convert text to URL-friendly slug"""
-        import re
         if not text:
             return ""
         slug = re.sub(r"[^\w\s-]", "", str(text).lower())
@@ -816,7 +815,7 @@ class TemplateEditorDialog(QDialog):
             sample_data = self._generate_sample_data()
 
             # Render template with sample data
-            from jinja2 import Template, Environment, DictLoader
+            from jinja2 import Environment, DictLoader
             # Load component templates for includes
             component_templates = self._load_component_templates()
             env = Environment(loader=DictLoader(component_templates))
@@ -1058,7 +1057,7 @@ class TemplateEditorDialog(QDialog):
             if not is_valid:
                 reply = QMessageBox.question(
                     self, "Validation Errors",
-                    f"Template has validation errors:\n\n" + "\n".join(errors) +
+                    "Template has validation errors:\n\n" + "\n".join(errors) +
                     "\n\nSave anyway?",
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
                 )
@@ -1190,7 +1189,7 @@ class TemplateEditorDialog(QDialog):
 
         # Try to parse as Jinja2 template
         try:
-            from jinja2 import Template, Environment, DictLoader
+            from jinja2 import Environment, DictLoader
             # Use DictLoader to avoid "no loader specified" warning
             env = Environment(loader=DictLoader({}))
             template = env.from_string(self.current_template_content)
@@ -1635,7 +1634,6 @@ class HTMLSyntaxHighlighter(QSyntaxHighlighter):
     def highlightBlock(self, text: str):
         """Apply syntax highlighting to a block of text"""
         for pattern, format in self.highlighting_rules:
-            import re
             for match in re.finditer(pattern, text):
                 start = match.start()
                 length = match.end() - start

@@ -141,6 +141,7 @@ class ProductsTab(BaseTab):
         "Food & Beverages",
         "Industrial",
         "Professional Services",
+        "Portable Toilet Supplier",
         "Custom Category",
     ]
 
@@ -1026,18 +1027,16 @@ class ProductsTab(BaseTab):
             )
 
     def _update_description_counter(self):
-        """Update description character counter"""
+        """Update description character counter with green (<=500) or red (>500)"""
         text = self.product_inputs["description"].toPlainText()
         count = len(text)
         self.desc_counter.setText(f"{count}/500")
 
-        # Color coding
+        # Color coding: Green if <=500, Red if >500
         if count > 500:
-            self.desc_counter.setStyleSheet("color: #e74c3c; font-weight: bold;")
-        elif count > 450:
-            self.desc_counter.setStyleSheet("color: #f39c12; font-weight: bold;")
+            self.desc_counter.setStyleSheet("color: #e74c3c; font-weight: bold;")  # Red
         else:
-            self.desc_counter.setStyleSheet("color: #7f8c8d;")
+            self.desc_counter.setStyleSheet("color: #27ae60; font-weight: bold;")  # Green
 
     def _update_import_status(self, message: str):
         """Update import status label"""
