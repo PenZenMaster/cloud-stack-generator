@@ -750,50 +750,58 @@ class EnhancedCitiesTab(BaseTab):
         self.remove_city_btn.setEnabled(False)
         self.duplicate_city_btn.setEnabled(False)
     
-    def save_current_city(self):
-        """Save the current city page"""
+    def _auto_save_current_city(self):
+        """Silently save current city data from UI to model (no user notification)"""
         if not self.current_city_page:
             return
-        
-        try:
-            # Update basic info
-            self.current_city_page.city_name = self.city_name_edit.text().strip()
-            self.current_city_page.state = self.state_edit.text().strip()
-            self.current_city_page.slug = self.slug_edit.text().strip()
-            self.current_city_page.title = self.title_edit.text().strip()
-            self.current_city_page.meta_description = self.meta_description_edit.toPlainText().strip()
-            self.current_city_page.primary_keyword = self.primary_keyword_edit.text().strip()
-            self.current_city_page.hero_title = self.hero_title_edit.text().strip()
-            self.current_city_page.service_area_note = self.service_area_note_edit.text().strip()
-            
-            # Update content
-            self.current_city_page.about_city = self.about_city_edit.toPlainText().strip()
-            self.current_city_page.seo_content_title = self.seo_title_edit.text().strip()
-            self.current_city_page.seo_content_body = self.seo_content_edit.toPlainText().strip()
-            
-            # Update image
-            self.current_city_page.city_image.image_url = self.image_url_edit.text().strip()
-            self.current_city_page.city_image.alt_text = self.image_alt_edit.text().strip()
-            self.current_city_page.city_image.caption = self.image_caption_edit.text().strip()
-            self.current_city_page.city_image.credit = self.image_credit_edit.text().strip()
-            self.current_city_page.city_image.source = self.image_source_edit.text().strip()
 
-            # Always store embed code
-            if hasattr(self, 'embed_code_edit'):
-                embed_code = self.embed_code_edit.toPlainText().strip()
-            else:
-                embed_code = ''
-            # Ensure embed_code attribute exists
-            if not hasattr(self.current_city_page.city_image, 'embed_code'):
-                self.current_city_page.city_image.embed_code = ''
-            self.current_city_page.city_image.embed_code = embed_code
-            
+        # Update basic info
+        self.current_city_page.city_name = self.city_name_edit.text().strip()
+        self.current_city_page.state = self.state_edit.text().strip()
+        self.current_city_page.slug = self.slug_edit.text().strip()
+        self.current_city_page.title = self.title_edit.text().strip()
+        self.current_city_page.meta_description = self.meta_description_edit.toPlainText().strip()
+        self.current_city_page.primary_keyword = self.primary_keyword_edit.text().strip()
+        self.current_city_page.hero_title = self.hero_title_edit.text().strip()
+        self.current_city_page.service_area_note = self.service_area_note_edit.text().strip()
+
+        # Update content
+        self.current_city_page.about_city = self.about_city_edit.toPlainText().strip()
+        self.current_city_page.seo_content_title = self.seo_title_edit.text().strip()
+        self.current_city_page.seo_content_body = self.seo_content_edit.toPlainText().strip()
+
+        # Update image
+        self.current_city_page.city_image.image_url = self.image_url_edit.text().strip()
+        self.current_city_page.city_image.alt_text = self.image_alt_edit.text().strip()
+        self.current_city_page.city_image.caption = self.image_caption_edit.text().strip()
+        self.current_city_page.city_image.credit = self.image_credit_edit.text().strip()
+        self.current_city_page.city_image.source = self.image_source_edit.text().strip()
+
+        # Always store embed code
+        if hasattr(self, 'embed_code_edit'):
+            embed_code = self.embed_code_edit.toPlainText().strip()
+        else:
+            embed_code = ''
+        # Ensure embed_code attribute exists
+        if not hasattr(self.current_city_page.city_image, 'embed_code'):
+            self.current_city_page.city_image.embed_code = ''
+        self.current_city_page.city_image.embed_code = embed_code
+
+    def save_current_city(self):
+        """Save the current city page with user notification"""
+        if not self.current_city_page:
+            return
+
+        try:
+            # Use auto-save helper to do the actual work
+            self._auto_save_current_city()
+
             # Refresh the list display
             self.refresh_city_list()
             self._emit_config_changed()
-            
+
             QMessageBox.information(self, "Success", f"City page '{self.current_city_page.city_name}' saved successfully.")
-            
+
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save city page: {str(e)}")
     
@@ -918,6 +926,13 @@ class EnhancedCitiesTab(BaseTab):
     
     def get_config_data(self) -> Dict[str, Any]:
         """Get city pages configuration data - BOTH FORMATS for compatibility"""
+        # Auto-save current city before getting data (ensures all UI changes are captured)
+        if self.current_city_page:
+            try:
+                self._auto_save_current_city()
+            except Exception:
+                pass  # Don't fail the save if auto-save has issues
+
         # Generate city_pages data (enhanced format)
         city_pages_data = [
             {
