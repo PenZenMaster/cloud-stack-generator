@@ -1,0 +1,20 @@
+{
+  "content_type": "city_page",
+  "content": "```html\n<section class=\"hero\">\n    <div class=\"hero-overlay\">\n        <div class=\"hero-text\">\n            <h1>Your Trusted Portable Toilet Supplier in Manassas, VA</h1>\n            <p>Clean Restroom Rental Virginia is dedicated to providing top-quality portable toilet solutions for events and construction sites in Manassas, VA.</p>\n        </div>\n    </div>\n</section>\n\n<section class=\"local-expertise\">\n    <h2>Local Expertise in Manassas, VA</h2>\n    <p>At Clean Restroom Rental Virginia, we pride ourselves on being a local business serving the Manassas, VA community. Our team of experienced professionals understands the unique needs of our neighbors and is committed to delivering exceptional service. Whether you're planning a local event or managing a construction project, we have the expertise to meet your portable restroom needs effectively.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Our Services in Manassas, VA</h2>\n    <div class=\"services-grid\">\n        <h3>Quality Portable Toilet Rentals</h3>\n        <p>We offer a wide range of portable toilet options designed to suit any occasion, from family gatherings to large festivals.</p>\n        \n        <h3>Handicap Accessible Units</h3>\n        <p>Our ADA-compliant units ensure that all guests have access to restroom facilities, providing comfort and convenience for everyone.</p>\n        \n        <h3>Construction Site Restrooms</h3>\n        <p>Reliable and timely portable toilet solutions for construction sites in and around Manassas, VA, keeping your workforce comfortable and compliant.</p>\n        \n        <h3>Event Services</h3>\n        <p>Planning an outdoor event? Let us help you with our clean and well-maintained portable restrooms that cater to your guests' needs.</p>\n    </div>\n</section>\n\n<section class=\"content\">\n    <h2>Why Choose Us for Your Manassas, VA Portable Toilet Needs?</h2>\n    <p>Choosing Clean Restroom Rental Virginia means opting for quality service delivery at competitive prices. Our commitment to customer satisfaction ensures that you receive not only the best products but also the utmost respect and professionalism. We understand the importance of reliable service, which is why we guarantee fast response times and local availability to serve the needs of our Manassas, VA customers promptly.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Local Trust Signals and Community Commitment</h2>\n    <p>As a proud member of the Manassas, VA community, we are dedicated to maintaining high standards of cleanliness and safety. Our experienced professionals are well-versed in local regulations and best practices, ensuring that we meet the expectations of our clients. We believe in building lasting relationships with our customers based on trust and reliability.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Get in Touch Today!</h2>\n    <p>Don't wait! If you're in need of portable toilet solutions in Manassas, VA, contact Clean Restroom Rental Virginia today for a free quote. Our friendly team is ready to assist you with all your rental needs. Experience the best in quality service and quick response times right here in your local area.</p>\n    <p><strong>Call us now at (123) 456-7890 or fill out our online form!</strong></p>\n</section>\n```",
+  "cached_at": "2025-10-19T15:30:03.231292",
+  "expires_at": "2025-10-26T15:30:03.231300",
+  "ttl_hours": 168,
+  "context": {
+    "business_name": "Clean Restroom Rental Virgina",
+    "industry": "Portable toilet supplier",
+    "city": "Manassas, VA",
+    "state": "",
+    "num_services": 0,
+    "num_products": 10
+  },
+  "metadata": {
+    "business": "Clean Restroom Rental Virgina",
+    "city": "Manassas, VA",
+    "state": null
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "content_type": "city_page",
+  "content": "```html\n<section class=\"hero\">\n    <div class=\"hero-overlay\">\n        <div class=\"hero-text\">\n            <h1>Your Premier Portable Toilet Supplier in Herndon, VA</h1>\n            <p>Clean Restroom Rental Virginia offers top-notch portable toilet solutions tailored for your needs.</p>\n        </div>\n    </div>\n</section>\n\n<section class=\"local-expertise\">\n    <h2>Local Expertise in Herndon, VA</h2>\n    <p>At Clean Restroom Rental Virginia, we pride ourselves on being a local business dedicated to serving the Herndon, VA community. Our deep understanding of the area and its unique requirements makes us the best choice for all your portable toilet needs. We are committed to providing the highest cleanliness standards, ensuring that our units are not only functional but also hygienic and well-maintained.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Our Services in Herndon, VA</h2>\n    <div class=\"services-grid\">\n        <h3>Portable Toilet Rentals</h3>\n        <p>We offer a variety of <strong>Herndon, VA portable toilets</strong> designed for any occasion, from family gatherings to large festivals.</p>\n        \n        <h3>Event Facilities</h3>\n        <p>Our <strong>Herndon, VA event facilities</strong> are equipped to handle both small and large events with ease.</p>\n\n        <h3>Construction Restrooms</h3>\n        <p>For contractors and construction projects, we provide <strong>Herndon, VA construction restrooms</strong> that meet all your job site needs.</p>\n\n        <h3>ADA-Compliant Units</h3>\n        <p>We also offer ADA-compliant portable toilets to ensure accessibility for all guests.</p>\n    </div>\n</section>\n\n<section class=\"content\">\n    <h2>Why Choose Clean Restroom Rental Virginia?</h2>\n    <p>Choosing our services means you benefit from:</p>\n    <ul>\n        <li>Prompt and timely delivery across Herndon, VA</li>\n        <li>Regularly serviced units to ensure optimal hygiene</li>\n        <li>Expertise in event support and construction site solutions</li>\n        <li>Fast response times to meet your urgent needs</li>\n    </ul>\n</section>\n\n<section class=\"content\">\n    <h2>Local Trust Signals and Community Commitment</h2>\n    <p>As a proud member of the Herndon, VA community, we are committed to providing reliable and efficient service. Our customers trust us for our dedication to cleanliness and customer satisfaction. We understand the importance of having well-maintained facilities, whether it’s for a backyard party or a large construction project.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Get Your Portable Toilet Solution Today!</h2>\n    <p>If you’re in need of <strong>Herndon, VA restroom rental</strong> services, look no further than Clean Restroom Rental Virginia. Contact us today for a quote and experience our exceptional service firsthand. We are here to support the local area with fast, reliable, and clean portable toilet solutions.</p>\n    <p><strong>Call us now!</strong> Let us help you ensure your next event or project is a success with our premium portable toilets!</p>\n</section>\n```",
+  "cached_at": "2025-10-20T08:58:41.790718",
+  "expires_at": "2025-10-27T08:58:41.790726",
+  "ttl_hours": 168,
+  "context": {
+    "business_name": "Clean Restroom Rental Virgina",
+    "industry": "Portable Toilet Supplier",
+    "city": "Herndon, VA",
+    "state": "",
+    "num_services": 0,
+    "num_products": 10
+  },
+  "metadata": {
+    "business": "Clean Restroom Rental Virgina",
+    "city": "Herndon, VA",
+    "state": null
+  }
+}

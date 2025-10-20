@@ -27,10 +27,9 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QAction, QKeySequence
 
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 from pathlib import Path
 import sys
-import tempfile
 
 # Add the src directory to the Python path for imports
 src_path = str(Path(__file__).parent.parent.parent)

@@ -29,16 +29,14 @@ from PyQt6.QtWidgets import (
     QScrollArea,
     QFrame,
     QTextEdit,
-    QListWidget,
-    QListWidgetItem,
     QSplitter,
     QGroupBox,
     QMessageBox,
     QApplication,
     QWidget,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject, QSize
-from PyQt6.QtGui import QFont, QPixmap, QIcon
+from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject
+from PyQt6.QtGui import QFont
 
 from typing import Dict, Any, List, Optional
 from pathlib import Path
@@ -46,7 +44,6 @@ import tempfile
 import webbrowser
 
 import sys
-from pathlib import Path
 
 # Add the src directory to the Python path for imports
 src_path = str(Path(__file__).parent.parent.parent)
@@ -458,7 +455,7 @@ class TemplateSelectionDialog(QDialog):
         features_text = "Features:\\n" + "\\n".join(
             [f"• {feature}" for feature in template_metadata.features]
         )
-        features_text += f"\\n\\nCompatibility:\\n"
+        features_text += "\\n\\nCompatibility:\\n"
         for key, value in template_metadata.compatibility.items():
             features_text += f"• {key.replace('_', ' ').title()}: {value}\\n"
 
