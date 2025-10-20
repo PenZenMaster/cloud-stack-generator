@@ -1466,7 +1466,7 @@ footer {
     /* Mobile responsive navigation */
     .dropdown {{
         position: static;
-        display: flex;
+        display: none;  /* Keep hidden by default */
         flex-direction: column;
         box-shadow: none;
         background-color: rgba(255, 255, 255, 0.1);
@@ -1474,28 +1474,33 @@ footer {
         border-radius: 0;
         min-width: auto;
     }}
-    
+
     .dropdown.grid-layout {{
-        display: flex;
+        display: none;  /* Keep hidden by default */
         flex-direction: column;
         grid-template-columns: none;
         min-width: auto;
         max-width: none;
     }}
-    
+
     .dropdown.grid-layout a {{
         text-align: left;
         border: none;
         background-color: rgba(255, 255, 255, 0.1);
         color: white;
     }}
-    
+
     .dropdown.grid-layout a:hover,
     .dropdown a:hover {{
         background-color: rgba(255, 255, 255, 0.2);
     }}
-    
+
+    /* Show dropdowns on hover, using flex for proper layout */
     .has-dropdown:hover .dropdown {{
+        display: flex;
+    }}
+
+    .has-dropdown:hover .dropdown.grid-layout {{
         display: flex;
     }}
 }

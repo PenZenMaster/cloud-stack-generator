@@ -19,7 +19,7 @@ Comments:
 * v1.00 - Initial backup management system
 """
 
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Tuple
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from datetime import datetime

@@ -22,17 +22,25 @@ Last Updated: 2025-08-29
 """
 
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
 from ..config.models import ClientConfig, CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
+from ..services.ai_content_service import AIContentService
+from ..services.content_cache import ContentCache
+from .content import CityContentGenerator
 
 
 class CityPageGenerator:
     """Generate unified SEO-optimized city pages with rich content"""
-    
-    def __init__(self, config: ClientConfig):
+
+    def __init__(
+        self,
+        config: ClientConfig,
+        ai_service: Optional[AIContentService] = None,
+        cache: Optional[ContentCache] = None
+    ):
         self.config = config
         self.template_dir = Path(__file__).parent.parent.parent / "templates"
         self.jinja_env = Environment(
@@ -40,76 +48,98 @@ class CityPageGenerator:
             trim_blocks=True,
             lstrip_blocks=True
         )
-        
+
         # Add custom filters
         self.jinja_env.filters['markdown_basic'] = self._markdown_basic_filter
         self.jinja_env.filters['slugify'] = self._slugify_filter
         self.jinja_env.filters['date'] = self._date_filter
+
+        # Initialize AI content generation
+        self.ai_service = ai_service or AIContentService()
+        self.cache = cache or ContentCache()
+
+        # Initialize city content generator with AI support
+        self.city_gen = CityContentGenerator(
+            ai_service=self.ai_service,
+            cache=self.cache
+        )
         
-    def generate_city_page(self, city_page: CityPageConfig, output_dir: str) -> str:
-        """Generate a single enhanced city page using Jinja2 templates"""
+    def generate_city_page(self, city_page: CityPageConfig, output_dir: str, use_ai: bool = True) -> str:
+        """Generate a single enhanced city page using Jinja2 templates with AI content"""
         try:
             # Load the SEO authority template
             template = self.jinja_env.get_template('pages/seo_authority_city_page.html')
-            
+
             # Prepare template context
             context = self._build_template_context(city_page)
-            
+
+            # Use AI-powered content generation if available
+            if use_ai and self.city_gen.use_ai:
+                ai_content = self.city_gen.generate_city_content(
+                    self.config,
+                    city=city_page.city_name,
+                    use_ai=True
+                )
+                if ai_content:
+                    context["ai_generated_content"] = ai_content
+
             # Render the template
             html_content = template.render(**context)
-            
+
             # Write to file
             output_path = Path(output_dir) / f"{city_page.slug}.html"
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            
+
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
-                
+
             return str(output_path)
-            
+
         except Exception as e:
             raise Exception(f"Error generating city page for {city_page.city_name}: {str(e)}")
     
-    def generate_city_page_from_string(self, city: str, output_dir: str) -> str:
-        """Legacy method: Generate city page from string - creates enhanced city page"""
+    def generate_city_page_from_string(self, city: str, output_dir: str, use_ai: bool = True) -> str:
+        """Legacy method: Generate city page from string - creates enhanced city page with AI"""
         # Parse city string into components
         parts = city.split(',')
         city_name = parts[0].strip()
         state = parts[1].strip() if len(parts) > 1 else ""
-        
+
         # Create enhanced city page config
         city_page = self.create_sample_city_page(city_name, state)
-        
-        # Generate using unified method
-        return self.generate_city_page(city_page, output_dir)
+
+        # Generate using unified method with AI support
+        return self.generate_city_page(city_page, output_dir, use_ai=use_ai)
     
-    def generate_all_city_pages(self, output_dir: str) -> List[str]:
-        """Generate all city pages - supports both enhanced city_pages and legacy target_cities"""
+    def generate_all_city_pages(self, output_dir: str, use_ai: bool = True) -> List[str]:
+        """Generate all city pages with AI support - supports both enhanced city_pages and legacy target_cities"""
         generated_files = []
-        
+
         # Priority 1: Use enhanced city_pages if available
         if hasattr(self.config, 'city_pages') and self.config.city_pages:
             for city_page in self.config.city_pages:
                 try:
-                    file_path = self.generate_city_page(city_page, output_dir)
+                    file_path = self.generate_city_page(city_page, output_dir, use_ai=use_ai)
                     generated_files.append(file_path)
-                    print(f"Generated enhanced city page: {city_page.city_name}")
+                    ai_status = " (AI-powered)" if use_ai and self.city_gen.use_ai else ""
+                    print(f"Generated enhanced city page: {city_page.city_name}{ai_status}")
                 except Exception as e:
                     print(f"Error generating enhanced page for {city_page.city_name}: {e}")
-                    
+
         # Fallback: Migrate legacy target_cities if no enhanced pages exist
         elif hasattr(self.config, 'target_cities') and self.config.target_cities:
             print("Migrating legacy target_cities to enhanced city pages...")
             for city in self.config.target_cities:
                 try:
-                    file_path = self.generate_city_page_from_string(city, output_dir)
+                    file_path = self.generate_city_page_from_string(city, output_dir, use_ai=use_ai)
                     generated_files.append(file_path)
-                    print(f"Generated city page from legacy config: {city}")
+                    ai_status = " (AI-powered)" if use_ai and self.city_gen.use_ai else ""
+                    print(f"Generated city page from legacy config: {city}{ai_status}")
                 except Exception as e:
                     print(f"Error generating page for {city}: {e}")
         else:
             print("No city pages or target cities configured for generation")
-                    
+
         return generated_files
     
     def create_sample_city_page(self, city_name: str, state: str = "") -> CityPageConfig:

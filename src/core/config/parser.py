@@ -384,6 +384,7 @@ class ConfigParser:
                     caption=image_data.get("caption", ""),
                     credit=image_data.get("credit", ""),
                     source=image_data.get("source", "Wikipedia"),
+                    embed_code=image_data.get("embed_code", ""),
                 )
 
                 # Parse places of interest
@@ -579,6 +580,7 @@ class ConfigParser:
                         "caption": cp.city_image.caption,
                         "credit": cp.city_image.credit,
                         "source": cp.city_image.source,
+                        "embed_code": cp.city_image.embed_code,
                     },
                     "seo_content_title": cp.seo_content_title,
                     "seo_content_body": cp.seo_content_body,
