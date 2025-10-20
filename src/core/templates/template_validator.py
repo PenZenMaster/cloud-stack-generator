@@ -23,7 +23,6 @@ from typing import Dict, Any, List, Optional, Tuple, Set
 from dataclasses import dataclass
 from enum import Enum
 import re
-import html
 from pathlib import Path
 
 try:

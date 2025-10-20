@@ -1,0 +1,20 @@
+{
+  "content_type": "city_page",
+  "content": "```html\n<section class=\"hero\">\n    <div class=\"hero-overlay\">\n        <div class=\"hero-text\">\n            <h1>Premium Portable Toilet Rental Services in Reston, VA</h1>\n            <p>Your reliable partner for clean and accessible restrooms for any event.</p>\n        </div>\n    </div>\n</section>\n\n<section class=\"local-expertise\">\n    <h2>Why Choose Clean Restroom Rental Virginia in Reston, VA?</h2>\n    <p>At Clean Restroom Rental Virginia, we take pride in being a local business serving the Reston, VA community. Our experienced professionals are dedicated to providing high-quality portable toilet solutions tailored to meet your needs. With a focus on customer satisfaction, we ensure our services exceed your expectations.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Our Comprehensive Services for Reston, VA Residents</h2>\n    <div class=\"services-grid\">\n        <h3>Event Rentals</h3>\n        <p>Whether it's a wedding, festival, or corporate event, we offer a range of portable toilets to accommodate your guests comfortably.</p>\n\n        <h3>Construction Site Solutions</h3>\n        <p>We provide reliable restroom facilities to construction sites in Reston, VA, ensuring your team has access to clean and sanitary options.</p>\n\n        <h3>Long-term Rentals</h3>\n        <p>For businesses and organizations in need of long-term restroom solutions, our flexible rental options cater to your specific requirements.</p>\n    </div>\n</section>\n\n<section class=\"content\">\n    <h2>Why Trust Clean Restroom Rental Virginia?</h2>\n    <p>Choosing us means opting for quality service delivery at competitive pricing. We understand the importance of reliable and timely service, especially in the Reston, VA area. Our fast response times ensure you won’t have to wait when you need us the most.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Local Trust Signals and Community Commitment</h2>\n    <p>As a proud member of the Reston, VA community, we are committed to serving our local residents and businesses. Our team of experienced professionals is dedicated to providing the best possible service, ensuring you receive the quality you deserve.</p>\n</section>\n\n<section class=\"content\">\n    <h2>Get Started Today!</h2>\n    <p>Ready to experience unparalleled portable toilet rental services in Reston, VA? Contact Clean Restroom Rental Virginia now for a free quote! Our local team is here to assist you with quick response times and tailored solutions for your needs.</p>\n    <p><strong>Call us today or fill out our online form to get started!</strong></p>\n</section>\n```",
+  "cached_at": "2025-10-19T15:30:09.611511",
+  "expires_at": "2025-10-26T15:30:09.611519",
+  "ttl_hours": 168,
+  "context": {
+    "business_name": "Clean Restroom Rental Virgina",
+    "industry": "Portable toilet supplier",
+    "city": "Reston, VA",
+    "state": "",
+    "num_services": 0,
+    "num_products": 10
+  },
+  "metadata": {
+    "business": "Clean Restroom Rental Virgina",
+    "city": "Reston, VA",
+    "state": null
+  }
+}

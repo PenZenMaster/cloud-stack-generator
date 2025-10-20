@@ -26,7 +26,7 @@ import traceback
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, Callable, Type, Union
+from typing import Dict, Any, Callable
 from contextlib import contextmanager
 from .error_logger import ErrorLogger
 

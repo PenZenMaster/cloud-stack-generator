@@ -143,7 +143,7 @@ class GitHubTokenManager:
         # Check if token already exists
         existing_token = self.get_token()
         if existing_token:
-            print(f"✅ Token already configured")
+            print("✅ Token already configured")
             if self.validate_token(existing_token):
                 print("✅ Token is valid and working")
                 return existing_token
@@ -181,7 +181,7 @@ class GitHubTokenManager:
         elif choice == "2":
             self.store_in_credential_manager(token)
         elif choice == "3":
-            print(f"\n📝 Add this to your environment:")
+            print("\n📝 Add this to your environment:")
             print(f"set GITHUB_TOKEN={token}")
             print("Or in PowerShell:")
             print(f"$env:GITHUB_TOKEN='{token}'")

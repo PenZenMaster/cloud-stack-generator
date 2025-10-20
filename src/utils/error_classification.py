@@ -20,10 +20,9 @@ Comments:
 """
 
 from enum import Enum
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Tuple
 from dataclasses import dataclass
 from PyQt6.QtWidgets import QMessageBox
-from PyQt6.QtGui import QIcon
 
 
 class IssueLevel(Enum):

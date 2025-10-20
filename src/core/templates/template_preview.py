@@ -21,9 +21,8 @@ Comments:
 
 from typing import Dict, Any, Optional
 from pathlib import Path
-import tempfile
 import base64
-from .template_manager import TemplateManager, TemplateMetadata
+from .template_manager import TemplateManager
 
 
 class TemplatePreviewGenerator:

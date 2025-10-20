@@ -3,10 +3,8 @@ GitHub Issues Creator
 Automatically create GitHub issues from templates for the cloud-stack-generator project
 """
 
-import json
 import requests
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 
 from github_token_manager import GitHubTokenManager
@@ -542,8 +540,8 @@ def main():
                 print(f"   #{issue['number']}: {issue['title']}")
                 print(f"      URL: {issue['html_url']}")
 
-            print(f"\n✅ Visit your repository to see the issues:")
-            print(f"   https://github.com/PenZenMaster/cloud-stack-generator/issues")
+            print("\n✅ Visit your repository to see the issues:")
+            print("   https://github.com/PenZenMaster/cloud-stack-generator/issues")
 
         else:
             print("\n❌ No issues were created.")
