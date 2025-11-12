@@ -66,6 +66,7 @@ test_output/
 *.log
 config/
 qa_artifacts/
+.cache/ai_content/*.json
 
 # Security - API keys and sensitive data
 config/api_keys.json
