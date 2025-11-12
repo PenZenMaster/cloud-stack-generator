@@ -275,7 +275,7 @@ class CityPageGenerator:
             'industry_sections': industry_sections,
             
             # Page metadata
-            'page_url': f"/{city_page.slug}/",
+            'page_url': f"locations/{city_page.slug}.html",
             'current_year': 2025,
             'current_date': current_date,
             
