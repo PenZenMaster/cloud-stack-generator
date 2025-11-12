@@ -19,13 +19,14 @@ Version: 1.0.0
 """
 
 from .build_pipeline import BuildPipeline, BuildPhase, BuildContext
+from .content_coordinator import ContentCoordinator
 
 __all__ = [
     "BuildPipeline",
     "BuildPhase",
     "BuildContext",
+    "ContentCoordinator",
 ]
 
 # Additional imports will be added as modules are created:
-# from .content_coordinator import ContentCoordinator
 # from .website_orchestrator import WebsiteOrchestrator
