@@ -1,3 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title or (business.business_name + ' - Privacy Policy') }}</title>
+    <meta name="description" content="{{ page_description or ('Privacy Policy for ' + business.business_name) }}">
+    <meta name="keywords" content="privacy policy, {{ business.business_name.lower() }}, {{ business.industry.lower() }}">
+    <meta name="author" content="{{ business.business_name }}">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{{ page_title or (business.business_name + ' - Privacy Policy') }}">
+    <meta property="og:description" content="{{ page_description or ('Privacy Policy for ' + business.business_name) }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ site_url }}/privacy-policy.html">
+    {% if branding.logo_url %}
+    <meta property="og:image" content="{{ branding.logo_url }}">
+    {% endif %}
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/print.css" media="print">
+
+    <!-- Favicon -->
+    {% if branding.favicon_url %}
+    <link rel="icon" type="image/x-icon" href="{{ branding.favicon_url }}">
+    {% endif %}
+
+    <!-- Schema.org markup for Google+ -->
+    {% if schema_organization %}
+    <script type="application/ld+json">
+    {{ schema_organization | tojson }}
+    </script>
+    {% endif %}
+</head>
+<body>
+
 {% include 'components/header.html' %}
 
 <main>
@@ -34,6 +72,21 @@
             <h2>Data Security</h2>
             <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
 
+            <h2>Your Rights</h2>
+            <p>You have the right to:</p>
+            <ul>
+                <li>Access the personal information we hold about you</li>
+                <li>Request correction of inaccurate information</li>
+                <li>Request deletion of your personal information</li>
+                <li>Opt-out of marketing communications</li>
+            </ul>
+
+            <h2>Cookies</h2>
+            <p>Our website may use cookies to enhance user experience. You can choose to disable cookies through your browser settings, though this may affect website functionality.</p>
+
+            <h2>Changes to This Policy</h2>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "last updated" date.</p>
+
             <h2>Contact Us</h2>
             <p>If you have any questions about this Privacy Policy, please contact us:</p>
             <div class="contact-info">
@@ -52,3 +105,6 @@
 </main>
 
 {% include 'components/footer.html' %}
+
+</body>
+</html>
