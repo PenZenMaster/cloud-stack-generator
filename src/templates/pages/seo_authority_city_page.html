@@ -947,7 +947,7 @@
                     <div class="sidebar-card">
                         <h4>Popular Services</h4>
                         {% for service in services[:5] %}
-                        <p><a href="/services/{{ service.slug | default(service.name.lower().replace(' ', '-')) }}/">{{ service.name }}</a></p>
+                        <p><a href="{{ base_path | default('') }}services/{{ service.slug | default(service.name.lower().replace(' ', '-')) }}.html">{{ service.name }}</a></p>
                         {% endfor %}
                     </div>
                 </aside>
@@ -1030,19 +1030,19 @@
                 <h4>Related {{ business.industry }} Resources</h4>
                 <div class="links-grid">
                     {% for service in services %}
-                    <a href="/services/{{ service.slug | default(service.name.lower().replace(' ', '-')) }}/">{{ service.name }} Services</a>
+                    <a href="{{ base_path | default('') }}services/{{ service.slug | default(service.name.lower().replace(' ', '-')) }}.html">{{ service.name }} Services</a>
                     {% endfor %}
-                    
+
                     {% if other_cities %}
                     <!-- Strategic City Interlinking -->
                     {% for other_city in other_cities[:4] %}
-                    <a href="/{{ other_city.slug }}/">{{ business.industry }} in {{ other_city.city_name }}</a>
+                    <a href="{{ base_path | default('') }}locations/{{ other_city.slug }}.html">{{ business.industry }} in {{ other_city.city_name }}</a>
                     {% endfor %}
                     {% endif %}
-                    
-                    <a href="/locations/">All Service Areas</a>
-                    <a href="/about/">About {{ business.business_name }}</a>
-                    <a href="/contact/">Contact Us</a>
+
+                    <a href="{{ base_path | default('') }}index.html#locations">All Service Areas</a>
+                    <a href="{{ base_path | default('') }}about.html">About {{ business.business_name }}</a>
+                    <a href="{{ base_path | default('') }}contact.html">Contact Us</a>
                 </div>
                 
                 {% if other_cities and other_cities|length > 4 %}
@@ -1051,7 +1051,7 @@
                     <h5>We Also Serve:</h5>
                     <p>
                         {% for other_city in other_cities[4:] %}
-                        <a href="/{{ other_city.slug }}/">{{ other_city.city_name }}</a>{% if not loop.last %}, {% endif %}
+                        <a href="{{ base_path | default('') }}locations/{{ other_city.slug }}.html">{{ other_city.city_name }}</a>{% if not loop.last %}, {% endif %}
                         {% endfor %}
                     </p>
                 </div>

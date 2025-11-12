@@ -35,7 +35,7 @@
                             {% if product.category %}
                             <p class="product-category"><strong>Category:</strong> {{ product.category|title }}</p>
                             {% endif %}
-                            <a href="products/{{ (product.name if product.name else product)|slugify }}.html" class="product-link">Learn More →</a>
+                            <a href="{{ base_path | default('') }}products/{{ (product.name if product.name else product)|slugify }}.html" class="product-link">Learn More →</a>
                         </div>
                     </div>
                     {% endfor %}
@@ -45,7 +45,7 @@
                 {% endif %}
                 
                 <div class="contact-cta">
-                    <p>Need a custom solution? <a href="contact.html">Contact us</a> to discuss your specific requirements!</p>
+                    <p>Need a custom solution? <a href="{{ base_path | default('') }}contact.html">Contact us</a> to discuss your specific requirements!</p>
                 </div>
             </div>
         </section>
