@@ -57,7 +57,9 @@
                         {% if service.image_url %}
                         <img src="{{ service.image_url }}" alt="{{ service.name if service.name else service }}" class="service-image">
                         {% else %}
-                        <img src="https://via.placeholder.com/400x300?text={{ (service.name if service.name else service)|urlencode }}" alt="{{ service.name if service.name else service }}" class="service-image">
+                        <div class="service-image-placeholder">
+                            <span>{{ service.name if service.name else service }}</span>
+                        </div>
                         {% endif %}
                         <div class="service-card-content">
                             <h3>{{ service.name if service.name else service }}</h3>
