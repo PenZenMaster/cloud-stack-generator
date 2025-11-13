@@ -84,7 +84,7 @@ client:
     contact_preference: ''
     additional_locations: []
   branding:
-    primary_color: '#bf062f'
+    primary_color: '#bf3152'
     secondary_color: '#fe9e1f'
     body_background_color: '#ffffff'
     body_text_color: '#333333'
@@ -109,6 +109,19 @@ client:
     - salvo metal works
     - local business
   offerings:
+  - name: Bespoke Architectural Metal Fabrication for Historical Restorations
+    description: Salvo Metal Works provides master-level bespoke metal fabrication
+      for historical restorations, recreating period-accurate architectural elements
+      with unmatched craftsmanship and attention to detail. Their team specializes
+      in replicating copper cupolas, finials, leader boxes, dormers, vents, and ornamental
+      features using traditional techniques blended with modern precision tools. Whether
+      restoring a landmark estate, church, courthouse, or historic residential property,
+      Salvo ensures each piece honors original design intent while delivering long-lasting
+      performance. From reverse-engineering deteriorated components to matching old-world
+      patinas, they support architects and preservationists with historically faithful,
+      high-quality metal elements that seamlessly integrate into existing structures.
+    category: Design Services
+    type: service
   - sku: SMW-CUPOLAS
     name: Custom Copper Cupolas
     image_url: https://salvometalworks.com/wp-content/uploads/2024/11/custom-copper-cupola-300x300.jpg
@@ -263,6 +276,7 @@ client:
       caption: Wikipedia - Chicago
       credit: Wikipedia - Chicago
       source: https://en.wikipedia.org/wiki/Chicago
+      embed_code: ''
     seo_content_title: Architectural Metal Fabrication Chicago | Salvo Metal Works
     seo_content_body: "Chicago doesn\u2019t just admire architecture\u2014it lives\
       \ and breathes it. From lakefront wind to freeze\u2013thaw cycles, this city\
@@ -378,6 +392,7 @@ client:
       caption: Wikipedia - Bellwood, Illinois
       credit: Wikipedia - Bellwood, Illinois
       source: https://en.wikipedia.org/wiki/Bellwood%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -437,6 +452,7 @@ client:
       caption: No image available for Oak Park Illinois
       credit: No image available for Oak Park Illinois
       source: https://en.wikipedia.org/wiki/Oak_Park_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -498,6 +514,7 @@ client:
       caption: Wikipedia - Berwyn, Illinois
       credit: Wikipedia - Berwyn, Illinois
       source: https://en.wikipedia.org/wiki/Berwyn%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -557,6 +574,7 @@ client:
       caption: Wikipedia - Bridgeview, Illinois
       credit: Wikipedia - Bridgeview, Illinois
       source: https://en.wikipedia.org/wiki/Bridgeview%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -617,6 +635,7 @@ client:
       caption: Wikipedia - Brookfield, Illinois
       credit: Wikipedia - Brookfield, Illinois
       source: https://en.wikipedia.org/wiki/Brookfield%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -678,6 +697,7 @@ client:
       caption: Wikipedia - Burbank, Illinois
       credit: Wikipedia - Burbank, Illinois
       source: https://en.wikipedia.org/wiki/Burbank%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -739,6 +759,7 @@ client:
       caption: Wikipedia - Cicero, Illinois
       credit: Wikipedia - Cicero, Illinois
       source: https://en.wikipedia.org/wiki/Cicero%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -799,6 +820,7 @@ client:
       caption: Wikipedia - Elmwood Park, Illinois
       credit: Wikipedia - Elmwood Park, Illinois
       source: https://en.wikipedia.org/wiki/Elmwood_Park%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -861,6 +883,7 @@ client:
       caption: Wikipedia - Evanston, Illinois
       credit: Wikipedia - Evanston, Illinois
       source: https://en.wikipedia.org/wiki/Evanston%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -924,6 +947,7 @@ client:
       caption: Wikipedia - Forest Park, Illinois
       credit: Wikipedia - Forest Park, Illinois
       source: https://en.wikipedia.org/wiki/Forest_Park%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -984,6 +1008,7 @@ client:
       caption: Wikipedia - Franklin Park, Illinois
       credit: Wikipedia - Franklin Park, Illinois
       source: ''
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1044,6 +1069,7 @@ client:
       caption: Wikipedia - Harwood Heights, Illinois
       credit: Wikipedia - Harwood Heights, Illinois
       source: ''
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1105,6 +1131,7 @@ client:
       caption: Wikipedia - Lincolnwood, Illinois
       credit: Wikipedia - Lincolnwood, Illinois
       source: https://en.wikipedia.org/wiki/Lincolnwood%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1164,6 +1191,7 @@ client:
       caption: Wikipedia - Lyons, Illinois
       credit: Wikipedia - Lyons, Illinois
       source: ''
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1224,6 +1252,7 @@ client:
       caption: Wikipedia - Maywood, Illinois
       credit: Wikipedia - Maywood, Illinois
       source: https://en.wikipedia.org/wiki/Maywood%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1283,6 +1312,7 @@ client:
       caption: Wikipedia - Melrose Park, Illinois
       credit: Wikipedia - Melrose Park, Illinois
       source: https://en.wikipedia.org/wiki/Melrose_Park%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1344,6 +1374,7 @@ client:
       caption: Wikipedia - Norridge, Illinois
       credit: Wikipedia - Norridge, Illinois
       source: ''
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1405,6 +1436,7 @@ client:
       caption: Wikipedia - Oak Lawn, Illinois
       credit: Wikipedia - Oak Lawn, Illinois
       source: https://en.wikipedia.org/wiki/Oak_Lawn%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1468,6 +1500,7 @@ client:
       caption: Wikipedia - Oak Park, Illinois
       credit: Wikipedia - Oak Park, Illinois
       source: https://en.wikipedia.org/wiki/Oak_Park%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1530,6 +1563,7 @@ client:
       caption: Wikipedia - Park Ridge, Illinois
       credit: Wikipedia - Park Ridge, Illinois
       source: https://en.wikipedia.org/wiki/Park_Ridge%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1592,6 +1626,7 @@ client:
       caption: Wikipedia - River Forest, Illinois
       credit: Wikipedia - River Forest, Illinois
       source: https://en.wikipedia.org/wiki/River_Forest%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1651,6 +1686,7 @@ client:
       caption: Wikipedia - River Grove, Illinois
       credit: Wikipedia - River Grove, Illinois
       source: ''
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1713,6 +1749,7 @@ client:
       caption: Wikipedia - Riverside, Illinois
       credit: Wikipedia - Riverside, Illinois
       source: https://en.wikipedia.org/wiki/Riverside%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1773,6 +1810,7 @@ client:
       caption: Wikipedia - Skokie, Illinois
       credit: Wikipedia - Skokie, Illinois
       source: https://en.wikipedia.org/wiki/Skokie%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1833,6 +1871,7 @@ client:
       caption: Wikipedia - Summit, Illinois
       credit: Wikipedia - Summit, Illinois
       source: https://en.wikipedia.org/wiki/Summit%2C_Illinois
+      embed_code: ''
     seo_content_title: ''
     seo_content_body: ''
     places_of_interest:
@@ -1870,3 +1909,17 @@ client:
     featured_products: []
     city_map_embed: ''
     service_area_note: ''
+  cloud:
+    aws_profile: AWS
+    aws_region: us-east-1
+    bucket_name: salvo-metal-works-backlink-site
+    deployment_mode: cloudfront
+    distribution_id: d2lcpb9bumubgm
+    deployment_url: https://d2lcpb9bumubgm.cloudfront.net
+    site_type: backlink_site
+    main_site_url: https://salvometalworks.com
+    allow_indexing: true
+    html_cache_control: max-age=300,public
+    asset_cache_control: max-age=86400,public
+    index_document: index.html
+    error_document: 404.html
