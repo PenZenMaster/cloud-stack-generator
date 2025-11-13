@@ -20,10 +20,10 @@ from PyQt6.QtWidgets import (
     QProgressBar,
     QDialog,
 )
-from PyQt6.QtCore import pyqtSignal, QTimer
+from PyQt6.QtCore import pyqtSignal, QTimer, QThread
 from PyQt6.QtGui import QFont, QAction
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import json
 
 # Import all modular components
@@ -46,6 +46,45 @@ from ..version import get_version
 from ..utils import log_error_dialog, log_file_operation_error
 
 
+class GenerationWorker(QThread):
+    """Worker thread for website generation to keep UI responsive"""
+
+    progress = pyqtSignal(str)
+    finished = pyqtSignal(bool, str, list, str)
+
+    def __init__(self, config, output_dir: str):
+        super().__init__()
+        self.config = config
+        self.output_dir = output_dir
+
+    def run(self):
+        """Run website generation in background thread"""
+        try:
+            from ..core.generators.page_generator import PageGenerator
+
+            self.progress.emit("Initializing website generator...")
+            generator = PageGenerator(output_base_dir=self.output_dir)
+
+            self.progress.emit("Generating HTML pages...")
+            result = generator.generate_complete_website(self.config)
+
+            if result.success:
+                self.progress.emit("Website generation completed!")
+                self.finished.emit(
+                    True,
+                    "Website generated successfully!",
+                    result.generated_files,
+                    self.output_dir,
+                )
+            else:
+                self.finished.emit(
+                    False, f"Generation failed: {result.errors}", [], self.output_dir
+                )
+
+        except Exception as e:
+            self.finished.emit(False, f"Unexpected error: {str(e)}", [], self.output_dir)
+
+
 class EnhancedMainWindow(QMainWindow):
     """Enhanced main window with full modular tab integration"""
 
@@ -61,10 +100,11 @@ class EnhancedMainWindow(QMainWindow):
         self.config_parser = ConfigParser()
         self.current_config_file = None
         self.unsaved_changes = False
-        
+        self.generation_worker: Optional[GenerationWorker] = None
+
         # Initialize error logger
         self.error_logger = ErrorLogger()
-        
+
         # Load application-wide API keys
         self.app_api_keys = self.load_app_api_keys()
 
@@ -1387,86 +1427,104 @@ class EnhancedMainWindow(QMainWindow):
             
             if not output_dir:
                 return  # User cancelled
-            
-            # Create website generator
-            from ..core.generators.page_generator import PageGenerator
-            generator = PageGenerator(output_base_dir=output_dir)
-            
-            # Generate website
+
+            # Disable generate button during generation
+            self.generate_btn.setEnabled(False)
+            self.progress_bar.setVisible(True)
+            self.progress_bar.setRange(0, 0)
             self.status_label.setText("Generating website...")
-            result = generator.generate_complete_website(config)
-            
-            if result.success:
-                message = "Website generated successfully!\n\nFiles created:\n"
-                for file_path in result.generated_files:
-                    message += f"• {Path(file_path).name}\n"
-                message += f"\nLocation: {output_dir}"
-                
-                # Show generation success and offer cloud deployment
-                reply = QMessageBox.question(
-                    self,
-                    "Website Generation Complete",
-                    message + "\n\nWould you like to deploy this website to the cloud?",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                    QMessageBox.StandardButton.Yes
-                )
-                
-                if reply == QMessageBox.StandardButton.Yes:
-                    # Switch to cloud tab and start deployment
-                    cloud_tab_index = self.main_tabs.indexOf(self.cloud_tab)
-                    self.main_tabs.setCurrentIndex(cloud_tab_index)
-                    
-                    # Check if cloud deployment is configured
-                    if self.cloud_tab.get_config_data().get('aws_profile') and self.cloud_tab.get_config_data().get('bucket_name'):
-                        # Set the local path in cloud tab and start deployment
-                        self.cloud_tab.local_path_input.setText(output_dir)
-                        self.cloud_tab.deploy_website(output_dir)
-                    else:
-                        QMessageBox.information(
-                            self,
-                            "Cloud Configuration Required",
-                            "Please configure your AWS profile and S3 bucket in the Cloud Deploy tab before deploying."
-                        )
-                else:
-                    QMessageBox.information(
-                        self,
-                        "Website Ready",
-                        "Your website is ready for manual deployment or you can use the Cloud Deploy tab later."
-                    )
-                
-                self.status_label.setText(f"Website generated successfully in {output_dir}")
-            else:
-                error_message = f"Failed to generate website:\n\n{result.errors}"
-                log_error_dialog(
-                    "Website Generation Failed",
-                    error_message,
-                    context="Website generation process failed",
-                    component="EnhancedMainWindow.generate_website",
-                    user_action="Attempting to generate website with PageGenerator"
-                )
-                QMessageBox.critical(
-                    self,
-                    "Website Generation Failed",
-                    error_message
-                )
-                self.status_label.setText("Website generation failed")
-                
+
+            # Start generation in background thread
+            self.generation_worker = GenerationWorker(config, output_dir)
+            self.generation_worker.progress.connect(self._update_generation_progress)
+            self.generation_worker.finished.connect(self._generation_finished)
+            self.generation_worker.start()
+
         except Exception as e:
-            error_message = f"An error occurred during website generation:\n\n{str(e)}"
+            error_message = f"An error occurred while starting website generation:\n\n{str(e)}"
             log_error_dialog(
-                "Website Generation Error",
+                "Generation Start Error",
                 error_message,
-                context="Exception caught during website generation",
+                context="Exception caught while initializing generation",
                 component="EnhancedMainWindow.generate_website",
                 exception=e,
-                user_action="Attempting to generate website"
+                user_action="Attempting to start website generation"
             )
             QMessageBox.critical(
                 self,
-                "Website Generation Error",
+                "Generation Error",
                 error_message
             )
-            self.status_label.setText("Website generation error")
+            self.status_label.setText("Failed to start generation")
+
+    def _update_generation_progress(self, message: str):
+        """Update progress during generation"""
+        self.status_label.setText(message)
+
+    def _generation_finished(
+        self, success: bool, message: str, generated_files: list, output_dir: str
+    ):
+        """Handle generation completion"""
+        self.progress_bar.setVisible(False)
+        self.generate_btn.setEnabled(True)
+
+        if success:
+            result = type('obj', (object,), {
+                'success': True,
+                'generated_files': generated_files,
+                'errors': []
+            })()
+            
+            display_message = "Website generated successfully!\n\nFiles created:\n"
+            for file_path in result.generated_files:
+                display_message += f"+ {Path(file_path).name}\n"
+            display_message += f"\nLocation: {output_dir}"
+
+            # Show generation success and offer cloud deployment
+            reply = QMessageBox.question(
+                self,
+                "Website Generation Complete",
+                display_message + "\n\nWould you like to deploy this website to the cloud?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes
+            )
+
+            if reply == QMessageBox.StandardButton.Yes:
+                cloud_tab_index = self.main_tabs.indexOf(self.cloud_tab)
+                self.main_tabs.setCurrentIndex(cloud_tab_index)
+
+                if self.cloud_tab.get_config_data().get('aws_profile') and self.cloud_tab.get_config_data().get('bucket_name'):
+                    self.cloud_tab.local_path_input.setText(output_dir)
+                    self.cloud_tab.deploy_website(output_dir)
+                else:
+                    QMessageBox.information(
+                        self,
+                        "Cloud Configuration Required",
+                        "Please configure your AWS profile and S3 bucket in the Cloud Deploy tab before deploying."
+                    )
+            else:
+                QMessageBox.information(
+                    self,
+                    "Website Ready",
+                    "Your website is ready for manual deployment or you can use the Cloud Deploy tab later."
+                )
+
+            self.status_label.setText(f"Website generated successfully in {output_dir}")
+        else:
+            error_message = f"Failed to generate website:\n\n{message}"
+            log_error_dialog(
+                "Website Generation Failed",
+                error_message,
+                context="Website generation process failed",
+                component="EnhancedMainWindow._generation_finished",
+                user_action="Background generation completed with errors"
+            )
+            QMessageBox.critical(
+                self,
+                "Website Generation Failed",
+                error_message
+            )
+            self.status_label.setText("Website generation failed")
 
     def ask_save_changes(self) -> QMessageBox.StandardButton:
         """Ask user if they want to save unsaved changes"""

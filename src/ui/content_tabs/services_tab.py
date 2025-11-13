@@ -415,6 +415,23 @@ class ServicesTab(BaseTab):
             }
         """
         )
+        self.add_service_btn.clicked.connect(self._add_service)
+
+        self.clear_service_form_btn = QPushButton("Clear Form")
+        self.clear_service_form_btn.clicked.connect(self._clear_service_form)
+
+        self.validate_service_btn = QPushButton("Validate")
+        self.validate_service_btn.clicked.connect(self._validate_current_service)
+
+        actions_layout.addWidget(self.add_service_btn)
+        actions_layout.addWidget(self.clear_service_form_btn)
+        actions_layout.addWidget(self.validate_service_btn)
+        actions_layout.addStretch()
+
+        entry_layout.addLayout(actions_layout, 5, 0, 1, 4)
+
+        entry_group.setLayout(entry_layout)
+        parent_layout.addWidget(entry_group)
 
     def _create_services_actions_section(self, parent_layout: QVBoxLayout):
         """Create services actions section"""
