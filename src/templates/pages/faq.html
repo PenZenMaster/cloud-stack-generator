@@ -21,8 +21,8 @@
                 <p>Find answers to common questions about our {{ business.industry.lower() }} services.</p>
                 
                 <div class="faq-list">
-                    {% if business.faq %}
-                        {% for faq_item in business.faq %}
+                    {% if faq %}
+                        {% for faq_item in faq %}
                         <div class="faq-item">
                             <h3>{{ faq_item.question }}</h3>
                             <p>{{ faq_item.answer }}</p>
