@@ -1051,6 +1051,10 @@ class EnhancedMainWindow(QMainWindow):
             "services": [
                 {"name": s.name, "description": s.description, "category": s.category}
                 for s in config.services
+            ],
+            "faq": [
+                {"question": f.question, "answer": f.answer}
+                for f in config.faq
             ]
         }
         self.services_tab.set_config_data(services_data)
