@@ -199,6 +199,7 @@ class HTMLGenerator:
                 "related_services": related_services,
                 "service_features": getattr(service, "features", []),
                 "service_schema": self._generate_service_schema(service, config),
+                "base_path": "../",  # Service detail pages are in subdirectory
             }
         )
 
@@ -275,8 +276,28 @@ class HTMLGenerator:
 
         return self._render_template("pages/privacy-policy.html", template_data)
 
+    def _get_canonical_base_url(self, config: ClientConfig) -> str:
+        """
+        Get the base URL for canonical tags and sitemaps.
+
+        For backlink sites: Use deployment_url (CloudFront) so Google indexes it independently
+        For main sites: Use deployment_url if specified, otherwise business.domain
+        """
+        # For backlink sites, always use the deployed URL (CloudFront)
+        if hasattr(config.cloud, 'site_type') and config.cloud.site_type == "backlink_site" and config.cloud.deployment_url:
+            return config.cloud.deployment_url.rstrip("/")
+
+        # For main sites, prefer deployment_url if specified
+        if config.cloud.deployment_url:
+            return config.cloud.deployment_url.rstrip("/")
+
+        # Fallback to business domain
+        return config.business.domain.rstrip("/")
+
     def _prepare_template_data(self, config: ClientConfig) -> Dict[str, Any]:
         """Prepare common template data for all pages"""
+        canonical_base = self._get_canonical_base_url(config)
+
         template_data = {
             "business": config.business,
             "contact": config.contact,
@@ -287,11 +308,15 @@ class HTMLGenerator:
             "current_year": datetime.now().year,
             "generation_date": datetime.now().strftime("%Y-%m-%d"),
             "site_url": config.business.domain,
+            "canonical_base_url": canonical_base,  # NEW: For canonical tags
+            "is_backlink_site": hasattr(config.cloud, 'site_type') and config.cloud.site_type == "backlink_site",  # NEW
+            "main_site_url": getattr(config.cloud, 'main_site_url', '') if hasattr(config, 'cloud') else '',  # NEW: For backlink sites
             "navigation": self._generate_navigation(config),
             "footer_links": self._generate_footer_links(config),
             "social_links": self._get_social_links(config),
             "schema_organization": self._generate_organization_schema(config),
             "city_pages": getattr(config, 'city_pages', []),
+            "base_path": "",  # Default for root-level pages, can be overridden by specific page generators
         }
         
         # Add enhanced data if available
