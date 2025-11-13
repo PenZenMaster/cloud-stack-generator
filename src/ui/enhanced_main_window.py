@@ -791,6 +791,18 @@ class EnhancedMainWindow(QMainWindow):
                 )
             )
 
+        # Create FAQ list from services tab
+        from ..core.config.models import FAQItem
+        faqs = []
+        faq_data = config_data.get("services", {}).get("faq", [])
+        for f_data in faq_data:
+            faqs.append(
+                FAQItem(
+                    question=f_data.get("question", ""),
+                    answer=f_data.get("answer", ""),
+                )
+            )
+
         # Import GoogleMapsConfig for cities data
         from ..core.config.models import GoogleMapsConfig
         
@@ -877,6 +889,7 @@ class EnhancedMainWindow(QMainWindow):
             cloud=cloud,
             products=products,
             services=services,
+            faq=faqs,  # Add FAQs from services tab
             social_media=social_media,
             google_business_profile=google_business_profile,
             google_maps=google_maps,
