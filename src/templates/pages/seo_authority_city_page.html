@@ -854,6 +854,10 @@
                         </div>
                         
                         <p>Each project begins with a detailed assessment of your specific needs, local conditions, and budget considerations. Our {{ city_page.city_name }} team coordinates all aspects of the work, ensuring seamless execution and exceptional results that enhance your property value.</p>
+
+                        {% if is_backlink_site and main_site_url %}
+                        <p>For detailed pricing information and to view our complete portfolio of {{ business.industry.lower() }} work, visit <a href="{{ main_site_url }}/services" rel="noopener">{{ business.business_name }}'s main services page</a>. You'll find comprehensive service descriptions, customer testimonials, and easy online quote request forms.</p>
+                        {% endif %}
                     </section>
 
                     <!-- Local Area Expertise Section (150-200 words) -->
@@ -1058,17 +1062,35 @@
                 {% endif %}
             </section>
 
+            {% if is_backlink_site and main_site_url %}
+            <!-- Strategic Backlink Section -->
+            <section class="main-site-reference">
+                <h3>Professional {{ business.industry }} Services</h3>
+                <p>For comprehensive {{ business.industry.lower() }} services and immediate quotes, visit our main website at <a href="{{ main_site_url }}" rel="noopener" class="main-site-link">{{ business.business_name }}</a>. We provide full-service solutions throughout {{ city_page.city_name }}, {{ city_page.state_code }} and surrounding areas.</p>
+                <p>Our team specializes in delivering professional {{ business.industry.lower() }} for residential, commercial, and event applications. <a href="{{ main_site_url }}/services" rel="noopener">Explore our complete service offerings</a> or contact us directly for a custom quote tailored to your {{ city_page.city_name }} project.</p>
+            </section>
+            {% endif %}
+
             <!-- Contact CTA -->
             <section class="contact-cta" id="contact">
                 <h3>Ready to Start Your {{ city_page.city_name }} Project?</h3>
                 <p>Get a free, detailed quote for your {{ business.industry.lower() }} needs in {{ city_page.city_name }}. Our local team is ready to help you achieve outstanding results.</p>
                 <div class="contact-buttons">
+                    {% if is_backlink_site and main_site_url %}
+                    <a href="{{ main_site_url }}/contact" class="contact-button" rel="noopener">
+                        Get Quote on Main Site
+                    </a>
+                    <a href="{{ main_site_url }}" class="contact-button" rel="noopener">
+                        Visit {{ business.business_name }}
+                    </a>
+                    {% else %}
                     <a href="tel:{{ contact.phone }}" class="contact-button">
                         📞 Call {{ contact.phone }}
                     </a>
                     <a href="mailto:{{ contact.email }}?subject={{ city_page.city_name }} {{ business.industry }} Quote Request" class="contact-button">
                         📧 Email for Quote
                     </a>
+                    {% endif %}
                 </div>
             </section>
 
