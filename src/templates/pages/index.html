@@ -13,7 +13,7 @@
     <meta property="og:title" content="{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
     <meta property="og:description" content="{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ business.domain }}">
+    <meta property="og:url" content="{{ canonical_base_url | default(business.domain) }}">
     {% if branding.logo_url %}<meta property="og:image" content="{{ branding.logo_url }}">{% endif %}
 
     <!-- Twitter Card Meta Tags -->
@@ -21,7 +21,7 @@
     <meta name="twitter:title" content="{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
     <meta name="twitter:description" content="{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}">
 
-    <link rel="canonical" href="{{ business.domain }}">
+    <link rel="canonical" href="{{ canonical_base_url | default(business.domain) }}">
     <link rel="stylesheet" href="css/style.css">
 
     <!-- Enhanced Schema.org JSON-LD with Wikipedia entities -->

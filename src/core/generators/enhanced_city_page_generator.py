@@ -35,6 +35,24 @@ class EnhancedCityPageGenerator:
         self.template_manager = TemplateManager()
         self.selected_template_id = template_id or "seo_authority_city"
 
+    def _get_canonical_base_url(self) -> str:
+        """
+        Get the base URL for canonical tags and sitemaps.
+
+        For backlink sites: Use deployment_url (CloudFront) so Google indexes it independently
+        For main sites: Use deployment_url if specified, otherwise business.domain
+        """
+        # For backlink sites, always use the deployed URL (CloudFront)
+        if hasattr(self.config.cloud, 'site_type') and self.config.cloud.site_type == "backlink_site" and self.config.cloud.deployment_url:
+            return self.config.cloud.deployment_url.rstrip("/")
+
+        # For main sites, prefer deployment_url if specified
+        if self.config.cloud.deployment_url:
+            return self.config.cloud.deployment_url.rstrip("/")
+
+        # Fallback to business domain
+        return self.config.business.domain.rstrip("/")
+
     def set_template(self, template_id: str) -> bool:
         """
         Set the template to use for generation
@@ -310,7 +328,10 @@ class EnhancedCityPageGenerator:
                 "generator_version": "2.1.0"
             },
             # Helper variables
-            "page_url": f"https://{self.config.business.website_url}/{city_page.slug}",
+            "page_url": f"{self._get_canonical_base_url()}/locations/{city_page.slug}.html",
+            "canonical_base_url": self._get_canonical_base_url(),
+            "is_backlink_site": hasattr(self.config.cloud, 'site_type') and self.config.cloud.site_type == "backlink_site",
+            "main_site_url": getattr(self.config.cloud, 'main_site_url', '') if hasattr(self.config, 'cloud') else '',
             "current_year": datetime.now().year,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }

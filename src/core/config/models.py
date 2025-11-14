@@ -462,30 +462,35 @@ class GoogleMapsConfig:
 @dataclass
 class CloudConfig:
     """Cloud deployment configuration following SOP patterns"""
-    
+
     # AWS profile and authentication
     aws_profile: str = ""
     aws_region: str = "us-east-1"
-    
+
     # Deployment settings
     bucket_name: str = ""
     deployment_mode: str = "s3"  # "s3" or "cloudfront"
-    
+
     # CloudFront settings (for cloudfront mode)
     distribution_id: str = ""
     custom_domain: str = ""
-    
+
     # Caching configuration following SOP
     html_cache_control: str = "max-age=300,public"  # 5 minutes for HTML
     asset_cache_control: str = "max-age=86400,public"  # 1 day for assets
-    
+
     # S3 website configuration (for s3 mode)
     index_document: str = "index.html"
     error_document: str = "404.html"
-    
+
     # Deployment history and metadata
     last_deployment: Optional[str] = None
     deployment_url: str = ""
+
+    # SEO and backlink site configuration
+    site_type: str = "main_site"  # "main_site" or "backlink_site"
+    main_site_url: str = ""  # For backlink sites: the main production site to link to
+    allow_indexing: bool = True  # Control search engine indexing
     
     def __post_init__(self):
         """Post-initialization validation and setup"""

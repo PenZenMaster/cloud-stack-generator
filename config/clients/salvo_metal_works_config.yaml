@@ -203,7 +203,11 @@ client:
     category: '1500'
     price: ''
     type: product
-  faq: []
+  faq:
+  - question: What is love?
+    answer: a feeling
+  - question: What is soup
+    answer: a food
   target_cities:
   - Chicago
   - Bellwood, Illinois
@@ -1909,17 +1913,3 @@ client:
     featured_products: []
     city_map_embed: ''
     service_area_note: ''
-  cloud:
-    aws_profile: AWS
-    aws_region: us-east-1
-    bucket_name: salvo-metal-works-backlink-site
-    deployment_mode: cloudfront
-    distribution_id: d2lcpb9bumubgm
-    deployment_url: https://d2lcpb9bumubgm.cloudfront.net
-    site_type: backlink_site
-    main_site_url: https://salvometalworks.com
-    allow_indexing: true
-    html_cache_control: max-age=300,public
-    asset_cache_control: max-age=86400,public
-    index_document: index.html
-    error_document: 404.html
