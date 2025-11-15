@@ -16,7 +16,7 @@
     <meta property="og:url" content="{{ business.domain }}/services/{{ service.name|slugify }}.html">
     {% if service.image_url %}<meta property="og:image" content="{{ service.image_url }}">{% endif %}
 
-    <link rel="canonical" href="{{ business.domain }}/services/{{ service.name|slugify }}.html">
+    <link rel="canonical" href="{{ canonical_base_url }}/services/{{ service.name|slugify }}.html">
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
