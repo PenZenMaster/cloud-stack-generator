@@ -540,11 +540,15 @@ class CloudTab(BaseTab):
         # Deployment Controls Section
         controls_group = self.create_deployment_controls_section()
         layout.addWidget(controls_group)
-        
+
+        # SEO Meta Tags Section
+        meta_tags_group = self.create_meta_tags_section()
+        layout.addWidget(meta_tags_group)
+
         # Status and Progress Section
         status_group = self.create_status_section()
         layout.addWidget(status_group)
-        
+
         layout.addStretch()
         self.setLayout(layout)
     
@@ -783,9 +787,70 @@ class CloudTab(BaseTab):
         layout.addWidget(self.website_url_label)
         
         group.setLayout(layout)
-        
+
         return group
-    
+
+    def create_meta_tags_section(self) -> QGroupBox:
+        """Create SEO meta tags management section"""
+        from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
+
+        group = QGroupBox("SEO Meta Tags")
+        layout = QVBoxLayout()
+
+        # Info label
+        info_label = QLabel("Manage SEO meta tags (e.g., Google Site Verification, Facebook Domain Verification)")
+        info_label.setWordWrap(True)
+        info_label.setStyleSheet("color: #666; font-style: italic;")
+        layout.addWidget(info_label)
+
+        # Meta tags table
+        self.meta_tags_table = QTableWidget()
+        self.meta_tags_table.setColumnCount(2)
+        self.meta_tags_table.setHorizontalHeaderLabels(["Meta Tag Name", "Content"])
+        self.meta_tags_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.meta_tags_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.meta_tags_table.setColumnWidth(0, 250)
+        self.meta_tags_table.setMaximumHeight(200)
+        layout.addWidget(self.meta_tags_table)
+
+        # Meta tag input fields
+        input_layout = QGridLayout()
+
+        input_layout.addWidget(QLabel("Tag Name:"), 0, 0)
+        self.meta_tag_name_input = QLineEdit()
+        self.meta_tag_name_input.setPlaceholderText("e.g., google-site-verification")
+        input_layout.addWidget(self.meta_tag_name_input, 0, 1)
+
+        input_layout.addWidget(QLabel("Content:"), 1, 0)
+        self.meta_tag_content_input = QLineEdit()
+        self.meta_tag_content_input.setPlaceholderText("e.g., xd8vHxFt3Iuru6NoXjN4trhN8KIy7Ti0AMKSL7oQnyU")
+        input_layout.addWidget(self.meta_tag_content_input, 1, 1)
+
+        layout.addLayout(input_layout)
+
+        # Action buttons
+        button_layout = QHBoxLayout()
+
+        self.add_meta_tag_button = QPushButton("Add/Update Tag")
+        self.add_meta_tag_button.clicked.connect(self.add_or_update_meta_tag)
+        button_layout.addWidget(self.add_meta_tag_button)
+
+        self.remove_meta_tag_button = QPushButton("Remove Tag")
+        self.remove_meta_tag_button.clicked.connect(self.remove_meta_tag)
+        self.remove_meta_tag_button.setEnabled(False)
+        button_layout.addWidget(self.remove_meta_tag_button)
+
+        button_layout.addStretch()
+        layout.addLayout(button_layout)
+
+        group.setLayout(layout)
+
+        # Connect table selection signal
+        self.meta_tags_table.itemSelectionChanged.connect(self.on_meta_tag_selection_changed)
+        self.meta_tags_table.cellDoubleClicked.connect(self.on_meta_tag_double_clicked)
+
+        return group
+
     def connect_signals(self):
         """Connect UI signals"""
         # Signals are connected in individual create_* methods
@@ -2001,14 +2066,121 @@ class CloudTab(BaseTab):
         from datetime import datetime
         timestamp = datetime.now().strftime("%H:%M:%S")
         formatted_message = f"[{timestamp}] {message}"
-        
+
         # Safety check - status_text might not be initialized yet
         if self.status_text is not None:
             self.status_text.append(formatted_message)
         else:
             # Fallback to print if UI not ready
             print(f"CloudTab: {formatted_message}")
-    
+
+    # Meta Tags CRUD Methods
+
+    def add_or_update_meta_tag(self):
+        """Add or update a meta tag"""
+        from PyQt6.QtWidgets import QTableWidgetItem
+
+        tag_name = self.meta_tag_name_input.text().strip()
+        tag_content = self.meta_tag_content_input.text().strip()
+
+        if not tag_name:
+            QMessageBox.warning(self, "Invalid Input", "Tag name is required")
+            return
+
+        if not tag_content:
+            QMessageBox.warning(self, "Invalid Input", "Tag content is required")
+            return
+
+        # Check if tag already exists
+        existing_row = -1
+        for row in range(self.meta_tags_table.rowCount()):
+            if self.meta_tags_table.item(row, 0).text() == tag_name:
+                existing_row = row
+                break
+
+        if existing_row >= 0:
+            # Update existing tag
+            self.meta_tags_table.item(existing_row, 1).setText(tag_content)
+            self.log_status(f"Updated meta tag: {tag_name}")
+        else:
+            # Add new tag
+            row = self.meta_tags_table.rowCount()
+            self.meta_tags_table.insertRow(row)
+            self.meta_tags_table.setItem(row, 0, QTableWidgetItem(tag_name))
+            self.meta_tags_table.setItem(row, 1, QTableWidgetItem(tag_content))
+            self.log_status(f"Added meta tag: {tag_name}")
+
+        # Clear input fields
+        self.meta_tag_name_input.clear()
+        self.meta_tag_content_input.clear()
+
+        # Mark configuration as changed
+        if hasattr(self, 'config_changed'):
+            self.config_changed.emit()
+
+    def remove_meta_tag(self):
+        """Remove selected meta tag"""
+        selected_items = self.meta_tags_table.selectedItems()
+        if not selected_items:
+            return
+
+        row = selected_items[0].row()
+        tag_name = self.meta_tags_table.item(row, 0).text()
+
+        reply = QMessageBox.question(
+            self,
+            "Confirm Deletion",
+            f"Are you sure you want to remove the meta tag '{tag_name}'?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self.meta_tags_table.removeRow(row)
+            self.log_status(f"Removed meta tag: {tag_name}")
+
+            # Clear input fields
+            self.meta_tag_name_input.clear()
+            self.meta_tag_content_input.clear()
+            self.remove_meta_tag_button.setEnabled(False)
+
+            # Mark configuration as changed
+            if hasattr(self, 'config_changed'):
+                self.config_changed.emit()
+
+    def on_meta_tag_selection_changed(self):
+        """Handle meta tag selection change"""
+        selected_items = self.meta_tags_table.selectedItems()
+        self.remove_meta_tag_button.setEnabled(len(selected_items) > 0)
+
+    def on_meta_tag_double_clicked(self, row: int, column: int):
+        """Handle double-click on meta tag for editing"""
+        tag_name = self.meta_tags_table.item(row, 0).text()
+        tag_content = self.meta_tags_table.item(row, 1).text()
+
+        self.meta_tag_name_input.setText(tag_name)
+        self.meta_tag_content_input.setText(tag_content)
+
+    def load_meta_tags_from_config(self, meta_tags: Dict[str, str]):
+        """Load meta tags from configuration dictionary"""
+        from PyQt6.QtWidgets import QTableWidgetItem
+
+        self.meta_tags_table.setRowCount(0)
+
+        for tag_name, tag_content in meta_tags.items():
+            row = self.meta_tags_table.rowCount()
+            self.meta_tags_table.insertRow(row)
+            self.meta_tags_table.setItem(row, 0, QTableWidgetItem(tag_name))
+            self.meta_tags_table.setItem(row, 1, QTableWidgetItem(tag_content))
+
+    def get_meta_tags_from_table(self) -> Dict[str, str]:
+        """Get meta tags as dictionary from table"""
+        meta_tags = {}
+        for row in range(self.meta_tags_table.rowCount()):
+            tag_name = self.meta_tags_table.item(row, 0).text()
+            tag_content = self.meta_tags_table.item(row, 1).text()
+            meta_tags[tag_name] = tag_content
+        return meta_tags
+
     def get_config_data(self) -> Dict[str, Any]:
         """Get cloud configuration data"""
         return {
@@ -2016,7 +2188,8 @@ class CloudTab(BaseTab):
             'aws_region': self.region_combo.currentText(),
             'bucket_name': self._get_actual_bucket_name(),
             'directory': self.directory_combo.currentText().strip(),
-            'deployment_mode': 's3' if self.s3_mode_radio.isChecked() else 'cloudfront'
+            'deployment_mode': 's3' if self.s3_mode_radio.isChecked() else 'cloudfront',
+            'meta_tags': self.get_meta_tags_from_table()
         }
     
     def set_config_data(self, data: Dict[str, Any]):
@@ -2082,7 +2255,12 @@ class CloudTab(BaseTab):
             self.s3_mode_radio.setChecked(True)
         else:
             self.cloudfront_mode_radio.setChecked(True)
-    
+
+        # Load meta tags
+        meta_tags = data.get('meta_tags', {})
+        if isinstance(meta_tags, dict):
+            self.load_meta_tags_from_config(meta_tags)
+
     def validate_data(self) -> tuple[bool, list[str]]:
         """Validate cloud configuration"""
         errors = []

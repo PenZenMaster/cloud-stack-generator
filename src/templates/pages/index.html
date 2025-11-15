@@ -9,6 +9,13 @@
     <meta name="author" content="{{ business.business_name }}">
     <meta name="robots" content="index, follow">
 
+    <!-- SEO Meta Tags -->
+    {% if cloud and cloud.meta_tags %}
+    {% for name, content in cloud.meta_tags.items() %}
+    <meta name="{{ name }}" content="{{ content }}">
+    {% endfor %}
+    {% endif %}
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
     <meta property="og:description" content="{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}">

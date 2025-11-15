@@ -6,7 +6,14 @@
     <title>{{ city_page.title }} | {{ business.business_name }}</title>
     <meta name="description" content="{{ city_page.meta_description }}">
     <meta name="keywords" content="{{ city_page.primary_keyword }}{% if city_page.secondary_keywords %}, {{ city_page.secondary_keywords|join(', ') }}{% endif %}">
-    
+
+    <!-- SEO Meta Tags -->
+    {% if cloud and cloud.meta_tags %}
+    {% for name, content in cloud.meta_tags.items() %}
+    <meta name="{{ name }}" content="{{ content }}">
+    {% endfor %}
+    {% endif %}
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="{{ city_page.title }}">
     <meta property="og:description" content="{{ city_page.meta_description }}">
