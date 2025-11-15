@@ -22,7 +22,8 @@ Comments:
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QLabel, QLineEdit,
     QPushButton, QComboBox, QRadioButton, QButtonGroup, QTextEdit,
-    QProgressBar, QMessageBox, QDialog, QDialogButtonBox, QApplication
+    QProgressBar, QMessageBox, QDialog, QDialogButtonBox, QApplication,
+    QCheckBox
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from typing import Dict, Any, Optional, List
