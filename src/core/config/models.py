@@ -491,6 +491,9 @@ class CloudConfig:
     site_type: str = "main_site"  # "main_site" or "backlink_site"
     main_site_url: str = ""  # For backlink sites: the main production site to link to
     allow_indexing: bool = True  # Control search engine indexing
+
+    # SEO meta tags (name -> content mapping)
+    meta_tags: Dict[str, str] = field(default_factory=dict)  # {"google-site-verification": "code", "facebook-domain-verification": "code"}
     
     def __post_init__(self):
         """Post-initialization validation and setup"""
