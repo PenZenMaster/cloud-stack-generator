@@ -457,15 +457,24 @@ class ConnectionTestWorker(QThread):
 
 class DeploymentWorker(QThread):
     """Background worker for deployment operations"""
-    
+
     progress_updated = pyqtSignal(UploadProgress)
     deployment_completed = pyqtSignal(UploadResult)
-    
-    def __init__(self, s3_manager: S3Manager, local_path: str, bucket_name: str):
+
+    def __init__(
+        self,
+        s3_manager: S3Manager,
+        local_path: str,
+        bucket_name: str,
+        distribution_id: str = "",
+        auto_invalidate: bool = False
+    ):
         super().__init__()
         self.s3_manager = s3_manager
         self.local_path = local_path
         self.bucket_name = bucket_name
+        self.distribution_id = distribution_id
+        self.auto_invalidate = auto_invalidate
     
     def run(self):
         """Execute deployment in background"""
@@ -475,6 +484,20 @@ class DeploymentWorker(QThread):
 
             # Upload directory
             result = self.s3_manager.upload_directory(self.local_path, self.bucket_name)
+
+            # Perform CloudFront cache invalidation if enabled
+            if result.success and self.auto_invalidate and self.distribution_id:
+                invalidation_success, invalidation_msg, invalidation_id = (
+                    self.s3_manager.create_cloudfront_invalidation(self.distribution_id)
+                )
+
+                result.invalidation_id = invalidation_id
+                if invalidation_success:
+                    result.invalidation_status = "InProgress"
+                    result.message += f" | Cache invalidation started (ID: {invalidation_id})"
+                else:
+                    result.invalidation_status = "Failed"
+                    result.message += f" | Cache invalidation failed: {invalidation_msg}"
 
             self.deployment_completed.emit(result)
         except Exception as e:
@@ -515,6 +538,8 @@ class CloudTab(BaseTab):
         self.deployment_mode_group = None
         self.s3_mode_radio = None
         self.cloudfront_mode_radio = None
+        self.distribution_id_input = None
+        self.auto_invalidate_checkbox = None
         self.progress_bar = None
         self.deploy_button = None
         self.status_text = None
@@ -715,18 +740,38 @@ class CloudTab(BaseTab):
         
         layout.addWidget(self.s3_mode_radio)
         layout.addWidget(self.cloudfront_mode_radio)
-        
+
         # Mode description
         self.mode_description = QLabel("S3 Static Website: Direct hosting from S3 bucket with public access")
         self.mode_description.setStyleSheet("color: #666; font-style: italic;")
         self.mode_description.setWordWrap(True)
         layout.addWidget(self.mode_description)
-        
+
+        # CloudFront Settings (only for existing CloudFront distributions)
+        cf_label = QLabel("CloudFront Distribution Settings")
+        cf_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
+        layout.addWidget(cf_label)
+
+        # Distribution ID input
+        dist_layout = QHBoxLayout()
+        dist_layout.addWidget(QLabel("Distribution ID:"))
+        self.distribution_id_input = QLineEdit()
+        self.distribution_id_input.setPlaceholderText("E.g., E3VQJQK8Z5Z5Z5")
+        self.distribution_id_input.setToolTip("CloudFront distribution ID for cache invalidation")
+        dist_layout.addWidget(self.distribution_id_input)
+        layout.addLayout(dist_layout)
+
+        # Auto-invalidate checkbox
+        self.auto_invalidate_checkbox = QCheckBox("Automatically invalidate CloudFront cache after deployment")
+        self.auto_invalidate_checkbox.setChecked(True)
+        self.auto_invalidate_checkbox.setToolTip("Create invalidation request for /* after successful upload")
+        layout.addWidget(self.auto_invalidate_checkbox)
+
         group.setLayout(layout)
-        
+
         # Connect signals
         self.deployment_mode_group.buttonClicked.connect(self.on_deployment_mode_changed)
-        
+
         return group
     
     def create_deployment_controls_section(self) -> QGroupBox:
@@ -2011,9 +2056,19 @@ class CloudTab(BaseTab):
             return
         
         self.log_status(message)
-        
+
+        # Get CloudFront settings for cache invalidation
+        distribution_id = self.distribution_id_input.text().strip()
+        auto_invalidate = self.auto_invalidate_checkbox.isChecked()
+
         # Start deployment worker
-        self.deployment_worker = DeploymentWorker(self.s3_manager, website_path, bucket_name)
+        self.deployment_worker = DeploymentWorker(
+            self.s3_manager,
+            website_path,
+            bucket_name,
+            distribution_id,
+            auto_invalidate
+        )
         self.deployment_worker.progress_updated.connect(self.update_deployment_progress)
         self.deployment_worker.deployment_completed.connect(self.deployment_finished)
         
@@ -2189,6 +2244,8 @@ class CloudTab(BaseTab):
             'bucket_name': self._get_actual_bucket_name(),
             'directory': self.directory_combo.currentText().strip(),
             'deployment_mode': 's3' if self.s3_mode_radio.isChecked() else 'cloudfront',
+            'distribution_id': self.distribution_id_input.text().strip(),
+            'auto_invalidate_cache': self.auto_invalidate_checkbox.isChecked(),
             'meta_tags': self.get_meta_tags_from_table()
         }
     
@@ -2260,6 +2317,14 @@ class CloudTab(BaseTab):
         meta_tags = data.get('meta_tags', {})
         if isinstance(meta_tags, dict):
             self.load_meta_tags_from_config(meta_tags)
+
+        # Load CloudFront settings
+        distribution_id = data.get('distribution_id', '')
+        if distribution_id:
+            self.distribution_id_input.setText(distribution_id)
+
+        auto_invalidate = data.get('auto_invalidate_cache', True)
+        self.auto_invalidate_checkbox.setChecked(auto_invalidate)
 
     def validate_data(self) -> tuple[bool, list[str]]:
         """Validate cloud configuration"""

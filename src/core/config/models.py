@@ -494,7 +494,10 @@ class CloudConfig:
 
     # SEO meta tags (name -> content mapping)
     meta_tags: Dict[str, str] = field(default_factory=dict)  # {"google-site-verification": "code", "facebook-domain-verification": "code"}
-    
+
+    # CloudFront cache invalidation
+    auto_invalidate_cache: bool = True  # Automatically invalidate CloudFront cache after deployment
+
     def __post_init__(self):
         """Post-initialization validation and setup"""
         # Validate deployment mode

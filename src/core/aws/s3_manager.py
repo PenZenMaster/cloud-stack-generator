@@ -51,7 +51,9 @@ class UploadResult:
     uploaded_files: List[str] = None
     failed_files: List[str] = None
     website_url: str = ""
-    
+    invalidation_id: str = ""
+    invalidation_status: str = ""
+
     def __post_init__(self):
         if self.uploaded_files is None:
             self.uploaded_files = []
@@ -545,7 +547,54 @@ class S3Manager:
             
         except Exception as e:
             return False, f"Failed to delete objects: {str(e)}"
-    
+
+    def create_cloudfront_invalidation(
+        self,
+        distribution_id: str,
+        paths: List[str] = None
+    ) -> Tuple[bool, str, str]:
+        """
+        Create CloudFront cache invalidation for specified paths.
+
+        Args:
+            distribution_id: CloudFront distribution ID
+            paths: List of paths to invalidate (default: ['/*'] for all files)
+
+        Returns:
+            Tuple[bool, str, str]: (success, message, invalidation_id)
+        """
+        if paths is None:
+            paths = ['/*']
+
+        try:
+            cloudfront = self.session.client('cloudfront')
+
+            # Create unique caller reference using timestamp
+            caller_reference = f"invalidation-{int(datetime.now().timestamp())}"
+
+            # Create invalidation
+            response = cloudfront.create_invalidation(
+                DistributionId=distribution_id,
+                InvalidationBatch={
+                    'Paths': {
+                        'Quantity': len(paths),
+                        'Items': paths
+                    },
+                    'CallerReference': caller_reference
+                }
+            )
+
+            invalidation_id = response['Invalidation']['Id']
+            status = response['Invalidation']['Status']
+
+            return True, f"Invalidation created (ID: {invalidation_id}, Status: {status})", invalidation_id
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            return False, f"CloudFront invalidation failed ({error_code}): {str(e)}", ""
+        except Exception as e:
+            return False, f"CloudFront invalidation failed: {str(e)}", ""
+
     def _get_file_metadata(self, file_ext: str) -> Dict[str, str]:
         """Get S3 upload metadata for file extension"""
         if file_ext in self.cache_settings:
