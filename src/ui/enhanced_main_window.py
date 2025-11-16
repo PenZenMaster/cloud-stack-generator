@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (
     QProgressBar,
     QDialog,
 )
-from PyQt6.QtCore import pyqtSignal, QTimer, QThread
+from PyQt6.QtCore import pyqtSignal, QTimer, QThread, QSettings
 from PyQt6.QtGui import QFont, QAction
 from pathlib import Path
 from typing import Dict, Any, Optional
@@ -101,6 +101,9 @@ class EnhancedMainWindow(QMainWindow):
         self.current_config_file = None
         self.unsaved_changes = False
         self.generation_worker: Optional[GenerationWorker] = None
+
+        # Initialize settings for persistent preferences
+        self.settings = QSettings("RankRocketCo", "SEOAuthorityWebsiteGenerator")
 
         # Initialize error logger
         self.error_logger = ErrorLogger()
@@ -1487,11 +1490,12 @@ class EnhancedMainWindow(QMainWindow):
                 if hasattr(self.loaded_config, 'google_business_profile') and self.loaded_config.google_business_profile:
                     config.google_business_profile = self.loaded_config.google_business_profile
             
-            # Ask user for output directory
+            # Ask user for output directory (use last used directory or default)
+            last_output_dir = self.settings.value("last_output_directory", str(Path.cwd() / "output" / "websites"))
             output_dir = QFileDialog.getExistingDirectory(
                 self,
                 "Select Output Directory for Website",
-                str(Path.cwd() / "output" / "websites")
+                last_output_dir
             )
             
             if not output_dir:
@@ -1538,12 +1542,15 @@ class EnhancedMainWindow(QMainWindow):
         self.generate_btn.setEnabled(True)
 
         if success:
+            # Save the output directory for next time
+            self.settings.setValue("last_output_directory", output_dir)
+
             result = type('obj', (object,), {
                 'success': True,
                 'generated_files': generated_files,
                 'errors': []
             })()
-            
+
             display_message = "Website generated successfully!\n\nFiles created:\n"
             for file_path in result.generated_files:
                 display_message += f"+ {Path(file_path).name}\n"
