@@ -17,8 +17,8 @@ def test_embed_generation():
     """Test that cities with embed codes generate properly."""
     # Load config
     config_path = Path(__file__).parent.parent / "config" / "clients" / "salvo_metal_works_config.yaml"
-    parser = ConfigParser(config_path)
-    config = parser.load_configuration()
+    parser = ConfigParser()
+    config = parser.parse_yaml_file(str(config_path))
     
     # Find cities with embed codes
     cities_with_embeds = []

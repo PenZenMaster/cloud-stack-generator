@@ -25,7 +25,11 @@
       "Bash(\"C:\\Program Files\\GitHub CLI\\gh.exe\" issue list --state closed --limit 5)",
       "Bash(aws s3 cp:*)",
       "Bash(aws s3 ls:*)",
-      "Bash(aws s3 website:*)"
+      "Bash(aws s3 website:*)",
+      "Bash(cat:*)",
+      "Bash(.gitignore)",
+      "Bash(git check-ignore:*)",
+      "Bash([ -f docs/HANDOFF_SUMMARY.md ])"
     ],
     "deny": [],
     "ask": []

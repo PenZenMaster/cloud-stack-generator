@@ -61,12 +61,18 @@ Thumbs.db
 # Project specific
 output/
 logs/
-tests/
 test_output/
+tests/output/
+tests/artifacts/
 *.log
 /config/
 qa_artifacts/
 .cache/ai_content/*.json
+
+# Test coverage and temp files
+coverage_*.txt
+test_output.txt
+.coverage.*
 
 # Security - API keys and sensitive data
 config/api_keys.json
