@@ -28,6 +28,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from typing import Dict, Any, Optional, List
 from pathlib import Path
+import logging
 import subprocess
 import platform
 
@@ -492,18 +493,42 @@ class DeploymentWorker(QThread):
                 s3_prefix=self.s3_directory
             )
 
+            # Debug: Log deployment parameters
+            logging.info(
+                f"Deployment completed: success={result.success}, "
+                f"distribution_id='{self.distribution_id}', "
+                f"s3_directory='{self.s3_directory}', "
+                f"auto_invalidate={self.auto_invalidate}"
+            )
+
             # Update CloudFront origin path if directory is specified and distribution exists
             if result.success and self.distribution_id and self.s3_directory:
+                # Log the update attempt for debugging
+                update_info = (
+                    f"Updating CloudFront origin path: "
+                    f"distribution={self.distribution_id}, "
+                    f"path={self.s3_directory}"
+                )
+                logging.info(update_info)
+                result.message += f"\n[CloudFront] Updating origin path to: /{self.s3_directory}"
+
                 origin_update_success, origin_update_msg = (
                     self.s3_manager.update_cloudfront_origin_path(
                         self.distribution_id,
                         self.s3_directory
                     )
                 )
+
                 if origin_update_success:
-                    result.message += f" | {origin_update_msg}"
+                    result.message += f"\n[CloudFront] {origin_update_msg}"
+                    result.message += f"\n[CloudFront] NOTE: Changes may take 2-15 minutes to propagate"
                 else:
-                    result.message += f" | Warning: {origin_update_msg}"
+                    result.message += f"\n[CloudFront] ERROR: {origin_update_msg}"
+                    logging.error(f"CloudFront update failed: {origin_update_msg}")
+            elif result.success and self.distribution_id and not self.s3_directory:
+                logging.info("CloudFront origin path update skipped: deploying to root directory")
+            elif result.success and not self.distribution_id:
+                logging.info("CloudFront origin path update skipped: no distribution ID configured")
 
             # Perform CloudFront cache invalidation if enabled
             if result.success and self.auto_invalidate and self.distribution_id:
