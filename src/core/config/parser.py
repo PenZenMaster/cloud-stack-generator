@@ -599,6 +599,30 @@ class ConfigParser:
                 city_pages_data.append(city_page_dict)
             yaml_data["client"]["city_pages"] = city_pages_data
 
+        # Add cloud deployment configuration
+        if config.cloud:
+            cloud_dict = {
+                "aws_profile": config.cloud.aws_profile,
+                "aws_region": config.cloud.aws_region,
+                "bucket_name": config.cloud.bucket_name,
+                "deployment_mode": config.cloud.deployment_mode,
+                "deployment_url": config.cloud.deployment_url,
+                "distribution_id": config.cloud.distribution_id,
+                "custom_domain": config.cloud.custom_domain,
+                "auto_invalidate_cache": config.cloud.auto_invalidate_cache,
+                "site_type": config.cloud.site_type,
+                "main_site_url": config.cloud.main_site_url,
+                "allow_indexing": config.cloud.allow_indexing,
+                "meta_tags": config.cloud.meta_tags,
+                "html_cache_control": config.cloud.html_cache_control,
+                "asset_cache_control": config.cloud.asset_cache_control,
+                "index_document": config.cloud.index_document,
+                "error_document": config.cloud.error_document,
+            }
+            if config.cloud.last_deployment:
+                cloud_dict["last_deployment"] = config.cloud.last_deployment
+            yaml_data["cloud"] = cloud_dict
+
         return yaml_data
 
     def save_yaml_file(self, config: ClientConfig, file_path: str) -> bool:
