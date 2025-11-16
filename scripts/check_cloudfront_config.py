@@ -24,7 +24,16 @@ def check_distribution_config(distribution_id: str, profile_name: str = "default
     """
     try:
         # Create boto3 session with profile
-        session = boto3.Session(profile_name=profile_name)
+        try:
+            session = boto3.Session(profile_name=profile_name)
+        except Exception as profile_error:
+            print(f"ERROR: Failed to load AWS profile '{profile_name}'", file=sys.stderr)
+            print("\nAvailable profiles:", file=sys.stderr)
+            available_profiles = boto3.Session().available_profiles
+            for p in available_profiles:
+                print(f"  - {p}", file=sys.stderr)
+            print(f"\nUsage: python {sys.argv[0]} <distribution_id> [profile_name]", file=sys.stderr)
+            return False
 
         # Initialize S3Manager with session
         manager = S3Manager(session=session)
