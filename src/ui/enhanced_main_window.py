@@ -875,10 +875,36 @@ class EnhancedMainWindow(QMainWindow):
         # Create cloud config
         cloud_data = config_data.get("cloud", {})
         cloud = CloudConfig(
+            # AWS credentials and settings
             aws_profile=cloud_data.get("aws_profile", ""),
             aws_region=cloud_data.get("aws_region", "us-east-1"),
+
+            # S3 and deployment settings
             bucket_name=cloud_data.get("bucket_name", ""),
             deployment_mode=cloud_data.get("deployment_mode", "s3"),
+            deployment_url=cloud_data.get("deployment_url", ""),
+
+            # CloudFront settings
+            distribution_id=cloud_data.get("distribution_id", ""),
+            custom_domain=cloud_data.get("custom_domain", ""),
+            auto_invalidate_cache=cloud_data.get("auto_invalidate_cache", True),
+
+            # SEO and backlink configuration
+            site_type=cloud_data.get("site_type", "main_site"),
+            main_site_url=cloud_data.get("main_site_url", ""),
+            allow_indexing=cloud_data.get("allow_indexing", True),
+            meta_tags=cloud_data.get("meta_tags", {}),
+
+            # Caching configuration
+            html_cache_control=cloud_data.get("html_cache_control", "max-age=300,public"),
+            asset_cache_control=cloud_data.get("asset_cache_control", "max-age=86400,public"),
+
+            # Website configuration
+            index_document=cloud_data.get("index_document", "index.html"),
+            error_document=cloud_data.get("error_document", "404.html"),
+
+            # Deployment history
+            last_deployment=cloud_data.get("last_deployment"),
         )
 
         # Create complete config
@@ -1064,10 +1090,36 @@ class EnhancedMainWindow(QMainWindow):
         
         # Load cloud deployment data
         cloud_data = {
+            # AWS credentials and settings
             "aws_profile": config.cloud.aws_profile,
             "aws_region": config.cloud.aws_region,
+
+            # S3 and deployment settings
             "bucket_name": config.cloud.bucket_name,
             "deployment_mode": config.cloud.deployment_mode,
+            "deployment_url": config.cloud.deployment_url,
+
+            # CloudFront settings
+            "distribution_id": config.cloud.distribution_id,
+            "custom_domain": config.cloud.custom_domain,
+            "auto_invalidate_cache": config.cloud.auto_invalidate_cache,
+
+            # SEO and backlink configuration
+            "site_type": config.cloud.site_type,
+            "main_site_url": config.cloud.main_site_url,
+            "allow_indexing": config.cloud.allow_indexing,
+            "meta_tags": config.cloud.meta_tags,
+
+            # Caching configuration
+            "html_cache_control": config.cloud.html_cache_control,
+            "asset_cache_control": config.cloud.asset_cache_control,
+
+            # Website configuration
+            "index_document": config.cloud.index_document,
+            "error_document": config.cloud.error_document,
+
+            # Deployment history
+            "last_deployment": config.cloud.last_deployment,
         }
         self.cloud_tab.set_config_data(cloud_data)
 
