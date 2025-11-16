@@ -11,6 +11,7 @@ sys.path.insert(0, str(project_root))
 
 from src.core.aws.s3_manager import S3Manager
 import json
+import boto3
 
 
 def check_distribution_config(distribution_id: str, profile_name: str = "default"):
@@ -22,7 +23,11 @@ def check_distribution_config(distribution_id: str, profile_name: str = "default
         profile_name: AWS profile name
     """
     try:
-        manager = S3Manager(profile_name=profile_name)
+        # Create boto3 session with profile
+        session = boto3.Session(profile_name=profile_name)
+
+        # Initialize S3Manager with session
+        manager = S3Manager(session=session)
         cloudfront = manager.session.client('cloudfront')
 
         print(f"Checking CloudFront distribution: {distribution_id}")
