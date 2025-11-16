@@ -595,6 +595,58 @@ class S3Manager:
         except Exception as e:
             return False, f"CloudFront invalidation failed: {str(e)}", ""
 
+    def update_cloudfront_origin_path(
+        self,
+        distribution_id: str,
+        origin_path: str
+    ) -> Tuple[bool, str]:
+        """
+        Update CloudFront distribution origin path to serve from S3 subdirectory.
+
+        Args:
+            distribution_id: CloudFront distribution ID
+            origin_path: S3 directory path (e.g., '/client-name' or '' for root)
+
+        Returns:
+            Tuple[bool, str]: (success, message)
+        """
+        try:
+            cloudfront = self.session.client('cloudfront')
+
+            # Get current distribution configuration
+            response = cloudfront.get_distribution_config(Id=distribution_id)
+            config = response['DistributionConfig']
+            etag = response['ETag']
+
+            # Update origin path for the first origin (S3 bucket)
+            if config['Origins']['Quantity'] > 0:
+                # Ensure origin_path starts with / if not empty
+                if origin_path and not origin_path.startswith('/'):
+                    origin_path = f'/{origin_path}'
+
+                # Remove trailing slash if present
+                origin_path = origin_path.rstrip('/')
+
+                config['Origins']['Items'][0]['OriginPath'] = origin_path
+
+                # Update the distribution
+                cloudfront.update_distribution(
+                    Id=distribution_id,
+                    DistributionConfig=config,
+                    IfMatch=etag
+                )
+
+                path_display = origin_path if origin_path else '/ (root)'
+                return True, f"CloudFront origin path updated to: {path_display}"
+            else:
+                return False, "No origins found in CloudFront distribution"
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            return False, f"CloudFront update failed ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, f"CloudFront update failed: {str(e)}"
+
     def _get_file_metadata(self, file_ext: str) -> Dict[str, str]:
         """Get S3 upload metadata for file extension"""
         if file_ext in self.cache_settings:
