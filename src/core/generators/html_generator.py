@@ -302,6 +302,7 @@ class HTMLGenerator:
             "business": config.business,
             "contact": config.contact,
             "branding": config.branding,
+            "cloud": config.cloud,
             "services": config.services,
             "products": config.products,
             "faq": getattr(config, 'faq', []),
