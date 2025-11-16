@@ -849,40 +849,33 @@ class CloudTab(BaseTab):
         layout = QVBoxLayout()
 
         # Info label
-        info_label = QLabel("Manage SEO meta tags (e.g., Google Site Verification, Facebook Domain Verification)")
+        info_label = QLabel("Paste complete meta tag (Google provides the full tag)")
         info_label.setWordWrap(True)
         info_label.setStyleSheet("color: #666; font-style: italic;")
         layout.addWidget(info_label)
 
-        # Meta tags table
+        # Meta tags list (table showing full tags)
         self.meta_tags_table = QTableWidget()
-        self.meta_tags_table.setColumnCount(2)
-        self.meta_tags_table.setHorizontalHeaderLabels(["Meta Tag Name", "Content"])
-        self.meta_tags_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
-        self.meta_tags_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.meta_tags_table.setColumnWidth(0, 250)
-        self.meta_tags_table.setMaximumHeight(200)
+        self.meta_tags_table.setColumnCount(1)
+        self.meta_tags_table.setHorizontalHeaderLabels(["Meta Tag"])
+        self.meta_tags_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.meta_tags_table.setMaximumHeight(150)
         layout.addWidget(self.meta_tags_table)
 
-        # Meta tag input fields
-        input_layout = QGridLayout()
+        # Single meta tag input field
+        input_layout = QVBoxLayout()
 
-        input_layout.addWidget(QLabel("Tag Name:"), 0, 0)
-        self.meta_tag_name_input = QLineEdit()
-        self.meta_tag_name_input.setPlaceholderText("e.g., google-site-verification")
-        input_layout.addWidget(self.meta_tag_name_input, 0, 1)
-
-        input_layout.addWidget(QLabel("Content:"), 1, 0)
-        self.meta_tag_content_input = QLineEdit()
-        self.meta_tag_content_input.setPlaceholderText("e.g., xd8vHxFt3Iuru6NoXjN4trhN8KIy7Ti0AMKSL7oQnyU")
-        input_layout.addWidget(self.meta_tag_content_input, 1, 1)
+        input_layout.addWidget(QLabel("Complete Meta Tag:"))
+        self.meta_tag_input = QLineEdit()
+        self.meta_tag_input.setPlaceholderText('<meta name="google-site-verification" content="xd8vHxFt3Iuru6NoXjN4trhN8KIy7Ti0AMKSL7oQnyU" />')
+        input_layout.addWidget(self.meta_tag_input)
 
         layout.addLayout(input_layout)
 
         # Action buttons
         button_layout = QHBoxLayout()
 
-        self.add_meta_tag_button = QPushButton("Add/Update Tag")
+        self.add_meta_tag_button = QPushButton("Add Tag")
         self.add_meta_tag_button.clicked.connect(self.add_or_update_meta_tag)
         button_layout.addWidget(self.add_meta_tag_button)
 
@@ -2138,42 +2131,53 @@ class CloudTab(BaseTab):
     # Meta Tags CRUD Methods
 
     def add_or_update_meta_tag(self):
-        """Add or update a meta tag"""
+        """Add or update a meta tag from full HTML tag"""
         from PyQt6.QtWidgets import QTableWidgetItem
+        import re
 
-        tag_name = self.meta_tag_name_input.text().strip()
-        tag_content = self.meta_tag_content_input.text().strip()
+        full_tag = self.meta_tag_input.text().strip()
 
-        if not tag_name:
-            QMessageBox.warning(self, "Invalid Input", "Tag name is required")
+        if not full_tag:
+            QMessageBox.warning(self, "Invalid Input", "Please paste a complete meta tag")
             return
 
-        if not tag_content:
-            QMessageBox.warning(self, "Invalid Input", "Tag content is required")
+        # Parse the meta tag to extract name and content
+        # Pattern matches: <meta name="..." content="..." /> or similar variations
+        name_match = re.search(r'name=["\']([^"\']+)["\']', full_tag)
+        content_match = re.search(r'content=["\']([^"\']+)["\']', full_tag)
+
+        if not name_match or not content_match:
+            QMessageBox.warning(
+                self,
+                "Invalid Meta Tag",
+                "Could not parse meta tag. Expected format:\n<meta name=\"tag-name\" content=\"tag-content\" />"
+            )
             return
+
+        tag_name = name_match.group(1)
+        tag_content = content_match.group(1)
 
         # Check if tag already exists
         existing_row = -1
         for row in range(self.meta_tags_table.rowCount()):
-            if self.meta_tags_table.item(row, 0).text() == tag_name:
+            existing_tag = self.meta_tags_table.item(row, 0).text()
+            if tag_name in existing_tag:
                 existing_row = row
                 break
 
         if existing_row >= 0:
             # Update existing tag
-            self.meta_tags_table.item(existing_row, 1).setText(tag_content)
+            self.meta_tags_table.item(existing_row, 0).setText(full_tag)
             self.log_status(f"Updated meta tag: {tag_name}")
         else:
             # Add new tag
             row = self.meta_tags_table.rowCount()
             self.meta_tags_table.insertRow(row)
-            self.meta_tags_table.setItem(row, 0, QTableWidgetItem(tag_name))
-            self.meta_tags_table.setItem(row, 1, QTableWidgetItem(tag_content))
+            self.meta_tags_table.setItem(row, 0, QTableWidgetItem(full_tag))
             self.log_status(f"Added meta tag: {tag_name}")
 
-        # Clear input fields
-        self.meta_tag_name_input.clear()
-        self.meta_tag_content_input.clear()
+        # Clear input field
+        self.meta_tag_input.clear()
 
         # Mark configuration as changed
         if hasattr(self, 'config_changed'):
@@ -2181,12 +2185,18 @@ class CloudTab(BaseTab):
 
     def remove_meta_tag(self):
         """Remove selected meta tag"""
+        import re
+
         selected_items = self.meta_tags_table.selectedItems()
         if not selected_items:
             return
 
         row = selected_items[0].row()
-        tag_name = self.meta_tags_table.item(row, 0).text()
+        full_tag = self.meta_tags_table.item(row, 0).text()
+
+        # Extract tag name for display
+        name_match = re.search(r'name=["\']([^"\']+)["\']', full_tag)
+        tag_name = name_match.group(1) if name_match else "tag"
 
         reply = QMessageBox.question(
             self,
@@ -2199,9 +2209,8 @@ class CloudTab(BaseTab):
             self.meta_tags_table.removeRow(row)
             self.log_status(f"Removed meta tag: {tag_name}")
 
-            # Clear input fields
-            self.meta_tag_name_input.clear()
-            self.meta_tag_content_input.clear()
+            # Clear input field
+            self.meta_tag_input.clear()
             self.remove_meta_tag_button.setEnabled(False)
 
             # Mark configuration as changed
@@ -2215,31 +2224,39 @@ class CloudTab(BaseTab):
 
     def on_meta_tag_double_clicked(self, row: int, column: int):
         """Handle double-click on meta tag for editing"""
-        tag_name = self.meta_tags_table.item(row, 0).text()
-        tag_content = self.meta_tags_table.item(row, 1).text()
-
-        self.meta_tag_name_input.setText(tag_name)
-        self.meta_tag_content_input.setText(tag_content)
+        full_tag = self.meta_tags_table.item(row, 0).text()
+        self.meta_tag_input.setText(full_tag)
 
     def load_meta_tags_from_config(self, meta_tags: Dict[str, str]):
-        """Load meta tags from configuration dictionary"""
+        """Load meta tags from configuration dictionary (name: content pairs)"""
         from PyQt6.QtWidgets import QTableWidgetItem
 
         self.meta_tags_table.setRowCount(0)
 
         for tag_name, tag_content in meta_tags.items():
+            # Reconstruct full meta tag from name/content pair
+            full_tag = f'<meta name="{tag_name}" content="{tag_content}" />'
             row = self.meta_tags_table.rowCount()
             self.meta_tags_table.insertRow(row)
-            self.meta_tags_table.setItem(row, 0, QTableWidgetItem(tag_name))
-            self.meta_tags_table.setItem(row, 1, QTableWidgetItem(tag_content))
+            self.meta_tags_table.setItem(row, 0, QTableWidgetItem(full_tag))
 
     def get_meta_tags_from_table(self) -> Dict[str, str]:
-        """Get meta tags as dictionary from table"""
+        """Parse full meta tags from table and return as dictionary"""
+        import re
+
         meta_tags = {}
         for row in range(self.meta_tags_table.rowCount()):
-            tag_name = self.meta_tags_table.item(row, 0).text()
-            tag_content = self.meta_tags_table.item(row, 1).text()
-            meta_tags[tag_name] = tag_content
+            full_tag = self.meta_tags_table.item(row, 0).text()
+
+            # Parse name and content from full tag
+            name_match = re.search(r'name=["\']([^"\']+)["\']', full_tag)
+            content_match = re.search(r'content=["\']([^"\']+)["\']', full_tag)
+
+            if name_match and content_match:
+                tag_name = name_match.group(1)
+                tag_content = content_match.group(1)
+                meta_tags[tag_name] = tag_content
+
         return meta_tags
 
     def get_config_data(self) -> Dict[str, Any]:
