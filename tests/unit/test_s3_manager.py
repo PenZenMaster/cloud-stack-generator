@@ -489,8 +489,61 @@ class TestS3Manager:
         # Single periods are allowed in S3 bucket names
         is_valid, message = self.manager.validate_bucket_name("invalid.bucket.name")
         assert is_valid is True
-        
+
         # But consecutive periods are not allowed
         is_valid, message = self.manager.validate_bucket_name("invalid..bucket..name")
         assert is_valid is False
         assert "consecutive periods" in message
+
+    @patch('boto3.Session')
+    def test_update_cloudfront_origin_path(self, mock_session):
+        """Test updating CloudFront distribution origin path (Issue #12 fix)"""
+        # Setup CloudFront mock
+        mock_cloudfront = Mock()
+
+        # Mock get_distribution_config response
+        mock_cloudfront.get_distribution_config.return_value = {
+            'DistributionConfig': {
+                'Origins': {
+                    'Quantity': 1,
+                    'Items': [
+                        {
+                            'Id': 'S3-bucket',
+                            'DomainName': 'bucket.s3.amazonaws.com',
+                            'OriginPath': ''  # Currently serving from root
+                        }
+                    ]
+                },
+                'CallerReference': 'test-ref'
+            },
+            'ETag': 'test-etag-123'
+        }
+
+        mock_session_instance = Mock()
+        mock_session_instance.client.return_value = mock_cloudfront
+        self.manager.session = mock_session_instance
+
+        # Test updating origin path to subdirectory
+        success, message = self.manager.update_cloudfront_origin_path(
+            'E1234DISTRIBUTION',
+            'clean-restroom-rentals-va'
+        )
+
+        # Verify success
+        assert success is True
+        assert 'CloudFront origin path updated' in message
+        assert '/clean-restroom-rentals-va' in message
+
+        # Verify update_distribution was called with correct parameters
+        mock_cloudfront.update_distribution.assert_called_once()
+        call_args = mock_cloudfront.update_distribution.call_args
+
+        # Check distribution ID
+        assert call_args[1]['Id'] == 'E1234DISTRIBUTION'
+
+        # Check origin path was updated
+        updated_config = call_args[1]['DistributionConfig']
+        assert updated_config['Origins']['Items'][0]['OriginPath'] == '/clean-restroom-rentals-va'
+
+        # Check ETag was passed for optimistic locking
+        assert call_args[1]['IfMatch'] == 'test-etag-123'

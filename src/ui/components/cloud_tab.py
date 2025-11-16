@@ -492,6 +492,19 @@ class DeploymentWorker(QThread):
                 s3_prefix=self.s3_directory
             )
 
+            # Update CloudFront origin path if directory is specified and distribution exists
+            if result.success and self.distribution_id and self.s3_directory:
+                origin_update_success, origin_update_msg = (
+                    self.s3_manager.update_cloudfront_origin_path(
+                        self.distribution_id,
+                        self.s3_directory
+                    )
+                )
+                if origin_update_success:
+                    result.message += f" | {origin_update_msg}"
+                else:
+                    result.message += f" | Warning: {origin_update_msg}"
+
             # Perform CloudFront cache invalidation if enabled
             if result.success and self.auto_invalidate and self.distribution_id:
                 invalidation_success, invalidation_msg, invalidation_id = (
