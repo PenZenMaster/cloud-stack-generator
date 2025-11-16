@@ -18,14 +18,38 @@ from PyQt6.QtGui import QFont
 # Add src directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+def trim_error_log(max_lines=50):
+    """Trim error log to keep only the last N lines on startup"""
+    try:
+        error_log_path = Path(__file__).parent / "logs" / "error_log.txt"
+
+        # Skip if log file doesn't exist
+        if not error_log_path.exists():
+            return
+
+        # Read all lines from the log file
+        with open(error_log_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+        # If file has more than max_lines, keep only the last max_lines
+        if len(lines) > max_lines:
+            with open(error_log_path, "w", encoding="utf-8") as f:
+                f.writelines(lines[-max_lines:])
+            print(f"Error log trimmed: kept last {max_lines} lines (removed {len(lines) - max_lines} lines)")
+        else:
+            print(f"Error log size: {len(lines)} lines (no trim needed)")
+
+    except Exception as e:
+        print(f"Failed to trim error log: {e}")
+
 def log_error_to_file(error_type, error_msg, stack_trace=""):
     """Log errors to error_log.txt for better debugging"""
     try:
         error_log_path = Path(__file__).parent / "logs" / "error_log.txt"
         error_log_path.parent.mkdir(exist_ok=True)
-        
+
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+
         with open(error_log_path, "a", encoding="utf-8") as f:
             f.write(f"\n{'='*60}\n")
             f.write(f"ERROR LOG ENTRY - {timestamp}\n")
@@ -37,7 +61,7 @@ def log_error_to_file(error_type, error_msg, stack_trace=""):
             f.write(f"Working Directory: {Path.cwd()}\n")
             f.write(f"Python Path: {sys.path[:3]}...\n")  # First 3 entries
             f.write(f"{'='*60}\n\n")
-            
+
         print(f"Error logged to: {error_log_path}")
         return str(error_log_path)
     except Exception as log_error:
@@ -89,6 +113,9 @@ try:
     def main():
         """Main application entry point"""
         try:
+            # Trim error log to prevent excessive growth
+            trim_error_log(max_lines=50)
+
             # Create application
             app = setup_application()
 
