@@ -17,6 +17,7 @@ from .models import (
     ContactConfig,
     AddressConfig,
     BrandingConfig,
+    CloudConfig,
     ProductConfig,
     ServiceConfig,
     FAQItem,
