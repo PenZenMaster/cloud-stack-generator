@@ -583,6 +583,7 @@ class CloudTab(BaseTab):
         self.deployment_mode_group = None
         self.s3_mode_radio = None
         self.cloudfront_mode_radio = None
+        self.cloudfront_settings_group = None  # Container for CloudFront settings
         self.distribution_id_input = None
         self.auto_invalidate_checkbox = None
         self.progress_bar = None
@@ -797,25 +798,33 @@ class CloudTab(BaseTab):
         self.mode_description.setWordWrap(True)
         layout.addWidget(self.mode_description)
 
-        # CloudFront Settings (only for existing CloudFront distributions)
-        cf_label = QLabel("CloudFront Distribution Settings")
-        cf_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
-        layout.addWidget(cf_label)
+        # CloudFront Settings Group (for Mode A with existing CloudFront)
+        self.cloudfront_settings_group = QGroupBox("CloudFront Distribution (Optional)")
+        cf_layout = QVBoxLayout()
+
+        # Explanation label
+        cf_info = QLabel("If you have an existing CloudFront distribution, enter its ID here to automatically update the origin path and invalidate cache.")
+        cf_info.setStyleSheet("color: #666; font-size: 10px;")
+        cf_info.setWordWrap(True)
+        cf_layout.addWidget(cf_info)
 
         # Distribution ID input
         dist_layout = QHBoxLayout()
         dist_layout.addWidget(QLabel("Distribution ID:"))
         self.distribution_id_input = QLineEdit()
-        self.distribution_id_input.setPlaceholderText("E.g., E3VQJQK8Z5Z5Z5")
-        self.distribution_id_input.setToolTip("CloudFront distribution ID for cache invalidation")
+        self.distribution_id_input.setPlaceholderText("E.g., E1DKVV3777HLXC (optional)")
+        self.distribution_id_input.setToolTip("CloudFront distribution ID - leave blank to deploy to S3 only")
         dist_layout.addWidget(self.distribution_id_input)
-        layout.addLayout(dist_layout)
+        cf_layout.addLayout(dist_layout)
 
         # Auto-invalidate checkbox
         self.auto_invalidate_checkbox = QCheckBox("Automatically invalidate CloudFront cache after deployment")
         self.auto_invalidate_checkbox.setChecked(True)
         self.auto_invalidate_checkbox.setToolTip("Create invalidation request for /* after successful upload")
-        layout.addWidget(self.auto_invalidate_checkbox)
+        cf_layout.addWidget(self.auto_invalidate_checkbox)
+
+        self.cloudfront_settings_group.setLayout(cf_layout)
+        layout.addWidget(self.cloudfront_settings_group)
 
         group.setLayout(layout)
 
@@ -2028,8 +2037,16 @@ class CloudTab(BaseTab):
         """Handle deployment mode change"""
         if self.s3_mode_radio.isChecked():
             self.mode_description.setText("S3 Static Website: Direct hosting from S3 bucket with public access")
+            # CloudFront settings visible but optional for Mode A
+            if self.cloudfront_settings_group:
+                self.cloudfront_settings_group.setVisible(True)
+                self.cloudfront_settings_group.setTitle("CloudFront Distribution (Optional)")
         else:
-            self.mode_description.setText("CloudFront + OAC: Production-ready hosting with CDN (Coming in Phase 2)")
+            self.mode_description.setText("CloudFront + OAC: Production-ready CDN with private bucket access")
+            # CloudFront settings required for Mode B
+            if self.cloudfront_settings_group:
+                self.cloudfront_settings_group.setVisible(True)
+                self.cloudfront_settings_group.setTitle("CloudFront Distribution (Required)")
     
     def update_deploy_button_state(self):
         """Update deploy button enabled state"""
