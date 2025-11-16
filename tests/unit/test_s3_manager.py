@@ -274,11 +274,54 @@ class TestS3Manager:
         # Verify progress updates
         assert len(progress_updates) >= 2
     
+    @patch('pathlib.Path.rglob')
+    @patch('pathlib.Path.exists')
+    @patch('pathlib.Path.is_dir')
+    @patch('boto3.Session')
+    def test_upload_directory_with_prefix(self, mock_session, mock_is_dir, mock_exists, mock_rglob):
+        """Test directory upload with s3_prefix (Issue #11 fix)"""
+        # Setup path mocks
+        mock_exists.return_value = True
+        mock_is_dir.return_value = True
+
+        # Create mock file
+        mock_file = Mock()
+        mock_file.is_file.return_value = True
+        mock_file.name = "index.html"
+        mock_file.suffix = ".html"
+        mock_file.relative_to.return_value = Path("index.html")
+        mock_file.stat.return_value.st_size = 1024
+
+        mock_rglob.return_value = [mock_file]
+
+        # Setup S3 mock
+        mock_s3 = Mock()
+        mock_session_instance = Mock()
+        mock_session_instance.client.return_value = mock_s3
+        self.manager.session = mock_session_instance
+
+        # Test upload with directory prefix
+        result = self.manager.upload_directory(
+            "/test/path",
+            "test-bucket",
+            s3_prefix="client-name/v1"
+        )
+
+        # Verify S3 key includes the prefix
+        assert result.success is True
+        assert len(result.uploaded_files) == 1
+        assert result.uploaded_files[0] == "client-name/v1/index.html"
+
+        # Verify upload_file was called with correct S3 key
+        mock_s3.upload_file.assert_called_once()
+        call_args = mock_s3.upload_file.call_args
+        assert call_args[0][2] == "client-name/v1/index.html"  # S3 key
+
     def test_upload_directory_not_found(self):
         """Test upload when directory doesn't exist"""
         with patch('pathlib.Path.exists', return_value=False):
             result = self.manager.upload_directory("/nonexistent", "test-bucket")
-            
+
             assert result.success is False
             assert "not found" in result.message
     

@@ -467,6 +467,7 @@ class DeploymentWorker(QThread):
         s3_manager: S3Manager,
         local_path: str,
         bucket_name: str,
+        s3_directory: str = "",
         distribution_id: str = "",
         auto_invalidate: bool = False
     ):
@@ -474,6 +475,7 @@ class DeploymentWorker(QThread):
         self.s3_manager = s3_manager
         self.local_path = local_path
         self.bucket_name = bucket_name
+        self.s3_directory = s3_directory
         self.distribution_id = distribution_id
         self.auto_invalidate = auto_invalidate
     
@@ -484,7 +486,11 @@ class DeploymentWorker(QThread):
             self.s3_manager.set_progress_callback(self.progress_updated.emit)
 
             # Upload directory
-            result = self.s3_manager.upload_directory(self.local_path, self.bucket_name)
+            result = self.s3_manager.upload_directory(
+                self.local_path,
+                self.bucket_name,
+                s3_prefix=self.s3_directory
+            )
 
             # Perform CloudFront cache invalidation if enabled
             if result.success and self.auto_invalidate and self.distribution_id:
@@ -2056,6 +2062,11 @@ class CloudTab(BaseTab):
         
         self.log_status(message)
 
+        # Get directory from UI
+        directory = self.directory_combo.currentText().strip()
+        if directory == "/ (root)" or directory == "/":
+            directory = ""  # Root directory = empty prefix
+
         # Get CloudFront settings for cache invalidation
         distribution_id = self.distribution_id_input.text().strip()
         auto_invalidate = self.auto_invalidate_checkbox.isChecked()
@@ -2065,8 +2076,9 @@ class CloudTab(BaseTab):
             self.s3_manager,
             website_path,
             bucket_name,
-            distribution_id,
-            auto_invalidate
+            s3_directory=directory,
+            distribution_id=distribution_id,
+            auto_invalidate=auto_invalidate
         )
         self.deployment_worker.progress_updated.connect(self.update_deployment_progress)
         self.deployment_worker.deployment_completed.connect(self.deployment_finished)
