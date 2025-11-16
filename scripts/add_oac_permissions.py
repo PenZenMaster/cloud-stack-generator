@@ -102,12 +102,12 @@ def add_policy(iam, username: str) -> bool:
             PolicyDocument=json.dumps(OAC_POLICY, indent=2)
         )
 
-        print("✓ Policy added successfully!")
+        print("[OK] Policy added successfully!")
         return True
 
     except ClientError as e:
         error_code = e.response.get('Error', {}).get('Code', 'Unknown')
-        print(f"\n✗ Failed to add policy ({error_code})")
+        print(f"\n[FAIL] Failed to add policy ({error_code})")
         print(f"Error: {e}")
 
         if error_code == 'AccessDenied':
@@ -149,7 +149,7 @@ def main():
 
         # Extract username from ARN
         if ':user/' not in arn:
-            print("\n✗ ERROR: This script must be run with IAM user credentials.")
+            print("\n[ERROR] This script must be run with IAM user credentials.")
             print("Your ARN indicates you're using a role, not a user.")
             print("\nPlease:")
             print("1. Use IAM user credentials (not assumed role)")
@@ -168,12 +168,12 @@ def main():
         print(f"\nChecking if policy '{POLICY_NAME}' already exists...")
 
         if check_policy_exists(iam, username):
-            print(f"✓ Policy '{POLICY_NAME}' already exists!")
+            print(f"[OK] Policy '{POLICY_NAME}' already exists!")
             print("\nNo action needed. Run the permission test to verify:")
             print("  python scripts/test_cloudfront_permissions.py")
             return 0
 
-        print("✗ Policy does not exist yet")
+        print("[INFO] Policy does not exist yet")
 
         # Show what will be added
         print("\n" + "=" * 60)
@@ -202,7 +202,7 @@ def main():
             print("\n" + "=" * 60)
             print("SUCCESS")
             print("=" * 60)
-            print(f"\n✓ Policy '{POLICY_NAME}' added to user '{username}'")
+            print(f"\n[OK] Policy '{POLICY_NAME}' added to user '{username}'")
             print("\nNext steps:")
             print("1. Run the permission test to verify:")
             print("   python scripts/test_cloudfront_permissions.py")
