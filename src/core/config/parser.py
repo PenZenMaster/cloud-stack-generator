@@ -118,6 +118,9 @@ class ConfigParser:
         # Parse enhanced city pages
         city_pages = self._parse_city_pages_config(client_data)
 
+        # Parse cloud deployment configuration
+        cloud = self._parse_cloud_config(yaml_data)
+
         # Build complete configuration
         config = ClientConfig(
             business=business,
@@ -134,6 +137,7 @@ class ConfigParser:
             target_cities=target_cities,
             seo_content=seo_content,
             api_keys=api_keys,
+            cloud=cloud,
         )
 
         self.current_config = config
@@ -439,6 +443,45 @@ class ConfigParser:
                 continue
 
         return city_pages
+
+    def _parse_cloud_config(self, yaml_data: Dict[str, Any]) -> CloudConfig:
+        """Parse cloud deployment configuration section"""
+        cloud_data = yaml_data.get("cloud", {})
+        if not isinstance(cloud_data, dict):
+            return CloudConfig()
+
+        return CloudConfig(
+            # AWS credentials and settings
+            aws_profile=cloud_data.get("aws_profile", ""),
+            aws_region=cloud_data.get("aws_region", "us-east-1"),
+
+            # S3 and deployment settings
+            bucket_name=cloud_data.get("bucket_name", ""),
+            deployment_mode=cloud_data.get("deployment_mode", "s3"),
+            deployment_url=cloud_data.get("deployment_url", ""),
+
+            # CloudFront settings
+            distribution_id=cloud_data.get("distribution_id", ""),
+            custom_domain=cloud_data.get("custom_domain", ""),
+            auto_invalidate_cache=cloud_data.get("auto_invalidate_cache", True),
+
+            # SEO and backlink configuration
+            site_type=cloud_data.get("site_type", "main_site"),
+            main_site_url=cloud_data.get("main_site_url", ""),
+            allow_indexing=cloud_data.get("allow_indexing", True),
+            meta_tags=cloud_data.get("meta_tags", {}),
+
+            # Caching configuration
+            html_cache_control=cloud_data.get("html_cache_control", "max-age=3600"),
+            asset_cache_control=cloud_data.get("asset_cache_control", "max-age=31536000"),
+
+            # Website configuration
+            index_document=cloud_data.get("index_document", "index.html"),
+            error_document=cloud_data.get("error_document", "404.html"),
+
+            # Deployment history
+            last_deployment=cloud_data.get("last_deployment", ""),
+        )
 
     def generate_yaml_dict(self, config: ClientConfig) -> Dict[str, Any]:
         """
