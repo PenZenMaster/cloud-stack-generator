@@ -35,7 +35,7 @@ def test_permission(client, operation: str, **kwargs) -> tuple[bool, str]:
 
         if error_code in ['AccessDenied', 'UnauthorizedOperation', 'AccessDeniedException']:
             return False, f"Access Denied ({error_code})"
-        elif error_code in ['InvalidParameterValue', 'NoSuchEntity', 'NoSuchDistribution']:
+        elif error_code in ['InvalidParameterValue', 'NoSuchEntity', 'NoSuchDistribution', 'NoSuchOriginAccessControl']:
             # These errors mean we have permission but the resource doesn't exist
             return True, "OK (tested)"
         else:
@@ -68,9 +68,9 @@ def check_cloudfront_permissions(session) -> dict:
         results[operation] = has_perm
 
         if has_perm:
-            print(f"  Status: ✓ {message}")
+            print(f"  Status: [OK] {message}")
         else:
-            print(f"  Status: ✗ {message}")
+            print(f"  Status: [FAIL] {message}")
 
     return results
 
@@ -104,9 +104,9 @@ def check_s3_permissions(session, test_bucket: str) -> dict:
         results[operation] = has_perm
 
         if has_perm:
-            print(f"  Status: ✓ {message}")
+            print(f"  Status: [OK] {message}")
         else:
-            print(f"  Status: ✗ {message}")
+            print(f"  Status: [FAIL] {message}")
 
     return results
 
@@ -127,7 +127,7 @@ def check_sts_permissions(session) -> dict:
     results['get_caller_identity'] = has_perm
 
     if has_perm:
-        print(f"  Status: ✓ {message}")
+        print(f"  Status: [OK] {message}")
 
         # Show account info
         try:
@@ -137,7 +137,7 @@ def check_sts_permissions(session) -> dict:
         except Exception:
             pass
     else:
-        print(f"  Status: ✗ {message}")
+        print(f"  Status: [FAIL] {message}")
 
     return results
 
@@ -173,7 +173,7 @@ def analyze_results(cf_results: dict, s3_results: dict, sts_results: dict):
     print("\nRequired CloudFront Permissions:")
     for operation, description in required_cf.items():
         has = cf_results.get(operation, False)
-        status = "✓" if has else "✗ MISSING"
+        status = "[OK]" if has else "[MISSING]"
         print(f"  {status} {description}")
         if not has:
             missing.append(f"cloudfront:{operation}")
@@ -181,7 +181,7 @@ def analyze_results(cf_results: dict, s3_results: dict, sts_results: dict):
     print("\nRequired S3 Permissions:")
     for operation, description in required_s3.items():
         has = s3_results.get(operation, False)
-        status = "✓" if has else "✗ MISSING"
+        status = "[OK]" if has else "[MISSING]"
         print(f"  {status} {description}")
         if not has:
             missing.append(f"s3:{operation}")
@@ -189,7 +189,7 @@ def analyze_results(cf_results: dict, s3_results: dict, sts_results: dict):
     print("\nRequired STS Permissions:")
     for operation, description in required_sts.items():
         has = sts_results.get(operation, False)
-        status = "✓" if has else "✗ MISSING"
+        status = "[OK]" if has else "[MISSING]"
         print(f"  {status} {description}")
         if not has:
             missing.append(f"sts:{operation}")
@@ -215,7 +215,7 @@ def analyze_results(cf_results: dict, s3_results: dict, sts_results: dict):
     print("=" * 60)
 
     if missing:
-        print("\n✗ MISSING PERMISSIONS DETECTED")
+        print("\n[FAIL] MISSING PERMISSIONS DETECTED")
         print(f"\nYou are missing {len(missing)} testable permission(s):")
         for perm in missing:
             print(f"  - {perm}")
@@ -227,7 +227,7 @@ def analyze_results(cf_results: dict, s3_results: dict, sts_results: dict):
 
         return False
     else:
-        print("\n✓ ALL TESTABLE PERMISSIONS OK")
+        print("\n[PASS] ALL TESTABLE PERMISSIONS OK")
         print("\nNote: Some permissions cannot be tested without creating resources.")
         print("If deployment fails, you may need to add:")
         for perm in additional:
