@@ -80,3 +80,6 @@ awg-cloud-credentials.json
 *.bak
 awg-cloud-stack_accessKeys.csv
 SECURITY_ALERT.md
+
+# Windows artifact files
+nul
