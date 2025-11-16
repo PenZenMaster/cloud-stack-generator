@@ -64,7 +64,7 @@ logs/
 tests/
 test_output/
 *.log
-config/
+/config/
 qa_artifacts/
 .cache/ai_content/*.json
 
