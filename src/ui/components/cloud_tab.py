@@ -558,18 +558,23 @@ class CloudTab(BaseTab):
         # Bucket Configuration Section
         bucket_group = self.create_bucket_section()
         layout.addWidget(bucket_group)
-        
-        # Deployment Mode Section
+
+        # Two-column layout for CloudFront Settings and Meta Tags
+        two_column_layout = QHBoxLayout()
+
+        # Left Column: Deployment Mode (with CloudFront Distribution Settings)
         mode_group = self.create_deployment_mode_section()
-        layout.addWidget(mode_group)
-        
+        two_column_layout.addWidget(mode_group)
+
+        # Right Column: SEO Meta Tags
+        meta_tags_group = self.create_meta_tags_section()
+        two_column_layout.addWidget(meta_tags_group)
+
+        layout.addLayout(two_column_layout)
+
         # Deployment Controls Section
         controls_group = self.create_deployment_controls_section()
         layout.addWidget(controls_group)
-
-        # SEO Meta Tags Section
-        meta_tags_group = self.create_meta_tags_section()
-        layout.addWidget(meta_tags_group)
 
         # Status and Progress Section
         status_group = self.create_status_section()
