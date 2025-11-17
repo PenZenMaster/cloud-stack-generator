@@ -216,11 +216,45 @@ class TestCloudTab:
     def test_deployment_mode_default(self, qapp):
         """Test default deployment mode"""
         tab = CloudTab()
-        
+
         assert tab.s3_mode_radio.isChecked() is True
         assert tab.cloudfront_mode_radio.isChecked() is False
         assert tab.cloudfront_mode_radio.isEnabled() is False  # Phase 2 feature
-    
+
+    def test_mode_a_disables_cloudfront_section(self, qapp):
+        """Test Mode A disables CloudFront settings section"""
+        tab = CloudTab()
+
+        # Mode A should be selected by default
+        assert tab.s3_mode_radio.isChecked() is True
+
+        # CloudFront settings group should be disabled in Mode A
+        assert tab.cloudfront_settings_group is not None
+        assert tab.cloudfront_settings_group.isEnabled() is False
+
+    def test_mode_a_updates_cloudfront_title(self, qapp):
+        """Test Mode A updates CloudFront section title"""
+        tab = CloudTab()
+
+        # Mode A should be selected by default
+        assert tab.s3_mode_radio.isChecked() is True
+
+        # CloudFront section title should indicate it's not used
+        assert tab.cloudfront_settings_group is not None
+        assert "Not Used in Mode A" in tab.cloudfront_settings_group.title()
+
+    def test_mode_a_grayed_out_styling(self, qapp):
+        """Test Mode A applies grayed-out styling to CloudFront section"""
+        tab = CloudTab()
+
+        # Mode A should be selected by default
+        assert tab.s3_mode_radio.isChecked() is True
+
+        # CloudFront section should have gray styling
+        assert tab.cloudfront_settings_group is not None
+        style = tab.cloudfront_settings_group.styleSheet()
+        assert "#999999" in style or "color: #999" in style.lower()
+
     @patch('src.ui.components.cloud_tab.AWSProfileDialog')
     def test_create_new_profile_success(self, mock_dialog, qapp):
         """Test successful profile creation"""

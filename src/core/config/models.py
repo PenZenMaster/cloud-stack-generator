@@ -460,6 +460,72 @@ class GoogleMapsConfig:
 
 
 @dataclass
+class DeploymentConfig:
+    """
+    Individual deployment configuration for multi-deployment support.
+
+    Each deployment represents a unique bucket/directory combination with its own
+    CloudFront distribution, meta tags, and deployment history.
+    """
+
+    # Deployment identification
+    deployment_id: str  # Unique identifier: e.g., "portable-sanitation-solutions-clean-restroom-rentals-va"
+    bucket: str  # S3 bucket name
+    directory: str  # Directory/prefix within bucket (can be empty for root)
+    region: str = "us-east-1"  # AWS region
+
+    # Deployment mode
+    mode: str = "s3"  # "s3" or "cloudfront"
+
+    # CloudFront settings (for Mode B)
+    cloudfront_distribution_id: Optional[str] = None  # E.g., "E1DKVV3777HLXC"
+    cloudfront_domain: Optional[str] = None  # E.g., "d35dpqbrqrzecj.cloudfront.net"
+
+    # Deployment history
+    last_deployed: Optional[str] = None  # ISO format datetime string
+    deployment_url: Optional[str] = None  # Full URL to deployed site
+
+    # SEO meta tags specific to this deployment
+    meta_tags: Dict[str, str] = field(default_factory=dict)
+
+    def __post_init__(self):
+        """Validate deployment configuration"""
+        if self.mode not in ["s3", "cloudfront"]:
+            self.mode = "s3"
+
+        # Generate deployment_id if not provided
+        if not self.deployment_id:
+            safe_bucket = self.bucket.replace("_", "-")
+            safe_directory = self.directory.replace("/", "-").replace("_", "-")
+            if safe_directory:
+                self.deployment_id = f"{safe_bucket}-{safe_directory}"
+            else:
+                self.deployment_id = safe_bucket
+
+    def get_website_url(self) -> str:
+        """Get the public website URL for this deployment"""
+        if self.deployment_url:
+            return self.deployment_url
+
+        if self.mode == "cloudfront" and self.cloudfront_domain:
+            url = f"https://{self.cloudfront_domain}"
+            if self.directory:
+                url += f"/{self.directory}"
+            return url
+        elif self.mode == "s3" and self.bucket:
+            base_url = f"http://{self.bucket}.s3-website-{self.region}.amazonaws.com"
+            if self.directory:
+                base_url += f"/{self.directory}"
+            return base_url
+
+        return ""
+
+    def is_configured(self) -> bool:
+        """Check if deployment is properly configured"""
+        return bool(self.bucket and self.region)
+
+
+@dataclass
 class CloudConfig:
     """Cloud deployment configuration following SOP patterns"""
 
@@ -536,9 +602,12 @@ class ClientConfig:
     business: BusinessConfig = field(default_factory=BusinessConfig)
     contact: ContactConfig = field(default_factory=ContactConfig)
     branding: BrandingConfig = field(default_factory=BrandingConfig)
-    
+
     # Cloud deployment configuration
     cloud: CloudConfig = field(default_factory=CloudConfig)
+
+    # Multi-deployment support (v3.2.0+)
+    deployments: List[DeploymentConfig] = field(default_factory=list)
 
     # Content
     products: List[ProductConfig] = field(default_factory=list)

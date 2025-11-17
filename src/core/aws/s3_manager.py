@@ -647,6 +647,530 @@ class S3Manager:
         except Exception as e:
             return False, f"CloudFront update failed: {str(e)}"
 
+    def find_distribution_by_origin(
+        self,
+        bucket_name: str,
+        origin_path: str = ""
+    ) -> Optional[str]:
+        """
+        Find existing CloudFront distribution for bucket and origin path.
+
+        Args:
+            bucket_name: S3 bucket name
+            origin_path: Origin path (directory) within bucket (e.g., 'clean-restroom-rentals-va')
+
+        Returns:
+            Distribution ID if found, None otherwise
+        """
+        try:
+            cloudfront = self.session.client('cloudfront')
+
+            # Normalize origin path (should start with / if not empty)
+            if origin_path and not origin_path.startswith('/'):
+                origin_path = f'/{origin_path}'
+            origin_path = origin_path.rstrip('/')  # Remove trailing slash
+
+            # Get bucket region for origin domain
+            try:
+                s3 = self._get_s3_client()
+                bucket_location = s3.get_bucket_location(Bucket=bucket_name)
+                region = bucket_location.get('LocationConstraint') or 'us-east-1'
+            except:
+                region = 'us-east-1'
+
+            # S3 origin domain name
+            origin_domain = f"{bucket_name}.s3.{region}.amazonaws.com"
+
+            # List all distributions
+            paginator = cloudfront.get_paginator('list_distributions')
+            for page in paginator.paginate():
+                if 'Items' not in page['DistributionList']:
+                    continue
+
+                for dist in page['DistributionList']['Items']:
+                    # Check each origin in the distribution
+                    for origin in dist['Origins']['Items']:
+                        # Match by domain name and origin path
+                        if origin['DomainName'] == origin_domain:
+                            dist_origin_path = origin.get('OriginPath', '')
+                            if dist_origin_path == origin_path:
+                                return dist['Id']
+
+            return None
+
+        except Exception as e:
+            print(f"Error finding CloudFront distribution: {e}")
+            return None
+
+    def create_origin_access_control(
+        self,
+        name: str,
+        description: str = ""
+    ) -> Tuple[bool, Optional[str], str]:
+        """
+        Create CloudFront Origin Access Control (OAC) identity.
+
+        Args:
+            name: OAC name (should be unique)
+            description: Optional description
+
+        Returns:
+            Tuple[bool, Optional[str], str]: (success, oac_id, message)
+        """
+        try:
+            cloudfront = self.session.client('cloudfront')
+
+            # Create OAC
+            response = cloudfront.create_origin_access_control(
+                OriginAccessControlConfig={
+                    'Name': name,
+                    'Description': description or f"OAC for {name}",
+                    'SigningProtocol': 'sigv4',
+                    'SigningBehavior': 'always',
+                    'OriginAccessControlOriginType': 's3'
+                }
+            )
+
+            oac_id = response['OriginAccessControl']['Id']
+            return True, oac_id, f"OAC created: {oac_id}"
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            if error_code == 'OriginAccessControlAlreadyExists':
+                # Try to find existing OAC
+                try:
+                    paginator = cloudfront.get_paginator('list_origin_access_controls')
+                    for page in paginator.paginate():
+                        if 'Items' in page['OriginAccessControlList']:
+                            for oac in page['OriginAccessControlList']['Items']:
+                                if oac['Name'] == name:
+                                    return True, oac['Id'], f"Using existing OAC: {oac['Id']}"
+                except:
+                    pass
+
+            return False, None, f"OAC creation failed ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, None, f"OAC creation failed: {str(e)}"
+
+    def create_cloudfront_distribution_with_oac(
+        self,
+        bucket_name: str,
+        origin_path: str = "",
+        comment: str = ""
+    ) -> Tuple[bool, Optional[str], Optional[str], str]:
+        """
+        Create CloudFront distribution with Origin Access Control (OAC) for private S3 bucket.
+
+        Args:
+            bucket_name: S3 bucket name
+            origin_path: S3 directory path (e.g., 'clean-restroom-rentals-va' or '' for root)
+            comment: Distribution comment/description
+
+        Returns:
+            Tuple[bool, Optional[str], Optional[str], str]:
+                (success, distribution_id, cloudfront_domain, message)
+        """
+        try:
+            cloudfront = self.session.client('cloudfront')
+
+            # Get bucket region
+            try:
+                s3 = self._get_s3_client()
+                bucket_location = s3.get_bucket_location(Bucket=bucket_name)
+                region = bucket_location.get('LocationConstraint') or 'us-east-1'
+            except:
+                region = 'us-east-1'
+
+            # Normalize origin path
+            if origin_path and not origin_path.startswith('/'):
+                origin_path = f'/{origin_path}'
+            origin_path = origin_path.rstrip('/')
+
+            # S3 origin domain
+            origin_domain = f"{bucket_name}.s3.{region}.amazonaws.com"
+
+            # Create OAC
+            oac_name = f"OAC-{bucket_name}-{origin_path.replace('/', '-') if origin_path else 'root'}"
+            oac_success, oac_id, oac_message = self.create_origin_access_control(
+                name=oac_name,
+                description=f"OAC for {bucket_name}{origin_path}"
+            )
+
+            if not oac_success or not oac_id:
+                return False, None, None, f"Failed to create OAC: {oac_message}"
+
+            # Generate unique caller reference
+            import time
+            caller_reference = f"{bucket_name}-{origin_path}-{int(time.time())}"
+
+            # Distribution configuration
+            dist_config = {
+                'CallerReference': caller_reference,
+                'Comment': comment or f"Auto-created for {bucket_name}{origin_path}",
+                'Enabled': True,
+                'Origins': {
+                    'Quantity': 1,
+                    'Items': [
+                        {
+                            'Id': 'S3-Origin',
+                            'DomainName': origin_domain,
+                            'OriginPath': origin_path,
+                            'OriginAccessControlId': oac_id,
+                            'S3OriginConfig': {
+                                'OriginAccessIdentity': ''  # Empty for OAC
+                            }
+                        }
+                    ]
+                },
+                'DefaultCacheBehavior': {
+                    'TargetOriginId': 'S3-Origin',
+                    'ViewerProtocolPolicy': 'redirect-to-https',
+                    'AllowedMethods': {
+                        'Quantity': 2,
+                        'Items': ['GET', 'HEAD'],
+                        'CachedMethods': {
+                            'Quantity': 2,
+                            'Items': ['GET', 'HEAD']
+                        }
+                    },
+                    'Compress': True,
+                    'ForwardedValues': {
+                        'QueryString': False,
+                        'Cookies': {'Forward': 'none'}
+                    },
+                    'MinTTL': 0,
+                    'DefaultTTL': 86400,
+                    'MaxTTL': 31536000
+                },
+                'DefaultRootObject': 'index.html',
+                'CustomErrorResponses': {
+                    'Quantity': 1,
+                    'Items': [
+                        {
+                            'ErrorCode': 404,
+                            'ResponsePagePath': '/404.html',
+                            'ResponseCode': '404',
+                            'ErrorCachingMinTTL': 300
+                        }
+                    ]
+                }
+            }
+
+            # Create distribution
+            response = cloudfront.create_distribution(
+                DistributionConfig=dist_config
+            )
+
+            distribution_id = response['Distribution']['Id']
+            cloudfront_domain = response['Distribution']['DomainName']
+
+            # Update S3 bucket policy to allow OAC
+            policy_success, policy_message = self.update_bucket_policy_for_oac(
+                bucket_name=bucket_name,
+                distribution_arn=response['Distribution']['ARN']
+            )
+
+            if not policy_success:
+                print(f"Warning: Bucket policy update failed: {policy_message}")
+
+            return True, distribution_id, cloudfront_domain, \
+                   f"CloudFront distribution created: {distribution_id} (domain: {cloudfront_domain})"
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            return False, None, None, f"CloudFront creation failed ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, None, None, f"CloudFront creation failed: {str(e)}"
+
+    def update_bucket_policy_for_oac(
+        self,
+        bucket_name: str,
+        distribution_arn: str
+    ) -> Tuple[bool, str]:
+        """
+        Update S3 bucket policy to allow CloudFront OAC access.
+
+        Args:
+            bucket_name: S3 bucket name
+            distribution_arn: CloudFront distribution ARN
+
+        Returns:
+            Tuple[bool, str]: (success, message)
+        """
+        try:
+            s3 = self._get_s3_client()
+
+            # Bucket policy allowing CloudFront OAC
+            policy = {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "AllowCloudFrontServicePrincipal",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "cloudfront.amazonaws.com"
+                        },
+                        "Action": "s3:GetObject",
+                        "Resource": f"arn:aws:s3:::{bucket_name}/*",
+                        "Condition": {
+                            "StringEquals": {
+                                "AWS:SourceArn": distribution_arn
+                            }
+                        }
+                    }
+                ]
+            }
+
+            # Apply bucket policy
+            s3.put_bucket_policy(
+                Bucket=bucket_name,
+                Policy=json.dumps(policy)
+            )
+
+            # Block public access (bucket should be private)
+            try:
+                s3.put_public_access_block(
+                    Bucket=bucket_name,
+                    PublicAccessBlockConfiguration={
+                        'BlockPublicAcls': True,
+                        'IgnorePublicAcls': True,
+                        'BlockPublicPolicy': True,
+                        'RestrictPublicBuckets': True
+                    }
+                )
+            except:
+                pass  # May not have permission, but policy is more important
+
+            return True, f"Bucket policy updated for OAC access"
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            return False, f"Bucket policy update failed ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, f"Bucket policy update failed: {str(e)}"
+
+    def get_or_create_distribution(
+        self,
+        bucket_name: str,
+        origin_path: str = "",
+        comment: str = ""
+    ) -> Tuple[bool, Optional[str], Optional[str], bool, str]:
+        """
+        Get existing CloudFront distribution or create new one with OAC.
+
+        High-level convenience method that:
+        1. Searches for existing distribution matching bucket + origin path
+        2. If found, returns existing distribution
+        3. If not found, creates new distribution with OAC
+
+        Args:
+            bucket_name: S3 bucket name
+            origin_path: Directory/prefix within bucket (e.g., "my-client" or "")
+            comment: Optional description for distribution (used if creating new)
+
+        Returns:
+            Tuple of (success, distribution_id, cloudfront_domain, is_new, message)
+            - success: True if distribution available (found or created)
+            - distribution_id: CloudFront distribution ID (e.g., "E1234567890ABC")
+            - cloudfront_domain: CloudFront domain (e.g., "d111111abcdef8.cloudfront.net")
+            - is_new: True if created new, False if reused existing
+            - message: Status or error message
+
+        Example:
+            success, dist_id, domain, is_new, msg = s3_manager.get_or_create_distribution(
+                bucket_name="my-bucket",
+                origin_path="my-client",
+                comment="Auto-created for My Client"
+            )
+            if success:
+                url = f"https://{domain}/my-client"
+        """
+        try:
+            # Step 1: Check for existing distribution
+            existing_dist_id = self.find_distribution_by_origin(
+                bucket_name=bucket_name,
+                origin_path=origin_path
+            )
+
+            if existing_dist_id:
+                # Found existing distribution - get its domain
+                cloudfront = self.session.client('cloudfront')
+                response = cloudfront.get_distribution(Id=existing_dist_id)
+                cloudfront_domain = response['Distribution']['DomainName']
+
+                return True, existing_dist_id, cloudfront_domain, False, \
+                       f"Reusing existing distribution: {existing_dist_id}"
+
+            # Step 2: No existing distribution, create new one
+            create_success, dist_id, domain, create_message = \
+                self.create_cloudfront_distribution_with_oac(
+                    bucket_name=bucket_name,
+                    origin_path=origin_path,
+                    comment=comment
+                )
+
+            if create_success:
+                return True, dist_id, domain, True, \
+                       f"Created new distribution: {dist_id}"
+            else:
+                return False, None, None, False, \
+                       f"Failed to create distribution: {create_message}"
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            return False, None, None, False, \
+                   f"Distribution lookup/create failed ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, None, None, False, \
+                   f"Distribution lookup/create failed: {str(e)}"
+
+    def check_distribution_oac_status(
+        self,
+        distribution_id: str
+    ) -> Tuple[bool, bool, str]:
+        """
+        Check if CloudFront distribution has Origin Access Control (OAC) configured.
+
+        Args:
+            distribution_id: CloudFront distribution ID
+
+        Returns:
+            Tuple of (success, has_oac, message)
+            - success: True if check completed (even if no OAC found)
+            - has_oac: True if distribution uses OAC, False otherwise
+            - message: Description of OAC status or error message
+
+        Example:
+            success, has_oac, msg = s3_manager.check_distribution_oac_status("E1234567890ABC")
+            if success and not has_oac:
+                print("WARNING: Distribution lacks OAC - will cause 403 errors with private bucket")
+        """
+        try:
+            cloudfront = self.session.client('cloudfront')
+
+            # Get distribution configuration
+            response = cloudfront.get_distribution_config(Id=distribution_id)
+            config = response['DistributionConfig']
+
+            # Check if any origin has OAC configured
+            has_oac = False
+            oac_count = 0
+
+            if 'Origins' in config and 'Items' in config['Origins']:
+                for origin in config['Origins']['Items']:
+                    # Check for OriginAccessControlId (OAC)
+                    if origin.get('OriginAccessControlId'):
+                        has_oac = True
+                        oac_count += 1
+
+            if has_oac:
+                return True, True, f"Distribution has OAC configured ({oac_count} origin(s) with OAC)"
+            else:
+                return True, False, \
+                    "Distribution does NOT have OAC - uses legacy Origin Access Identity or public access"
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            if error_code == 'NoSuchDistribution':
+                return False, False, f"Distribution not found: {distribution_id}"
+            return False, False, f"OAC check failed ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, False, f"OAC check failed: {str(e)}"
+
+    def disable_distribution(
+        self,
+        distribution_id: str
+    ) -> Tuple[bool, str]:
+        """
+        Disable CloudFront distribution (prerequisite for deletion).
+
+        Args:
+            distribution_id: CloudFront distribution ID
+
+        Returns:
+            Tuple of (success, message)
+        """
+        try:
+            cloudfront = self.session.client('cloudfront')
+
+            # Get current config and ETag
+            response = cloudfront.get_distribution_config(Id=distribution_id)
+            config = response['DistributionConfig']
+            etag = response['ETag']
+
+            # Check if already disabled
+            if not config['Enabled']:
+                return True, f"Distribution already disabled: {distribution_id}"
+
+            # Disable distribution
+            config['Enabled'] = False
+
+            cloudfront.update_distribution(
+                Id=distribution_id,
+                DistributionConfig=config,
+                IfMatch=etag
+            )
+
+            return True, \
+                f"Distribution disabled: {distribution_id}. " \
+                f"Wait for status 'Deployed' before deleting (may take 5-10 minutes)."
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            return False, f"Disable failed ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, f"Disable failed: {str(e)}"
+
+    def delete_distribution(
+        self,
+        distribution_id: str
+    ) -> Tuple[bool, str]:
+        """
+        Delete CloudFront distribution (must be disabled first).
+
+        Args:
+            distribution_id: CloudFront distribution ID
+
+        Returns:
+            Tuple of (success, message)
+        """
+        try:
+            cloudfront = self.session.client('cloudfront')
+
+            # Get current config and ETag
+            response = cloudfront.get_distribution_config(Id=distribution_id)
+            config = response['DistributionConfig']
+            etag = response['ETag']
+
+            # Verify distribution is disabled
+            if config['Enabled']:
+                return False, \
+                    f"Cannot delete: Distribution is still enabled. " \
+                    f"Disable it first using disable_distribution()."
+
+            # Check deployment status
+            dist_response = cloudfront.get_distribution(Id=distribution_id)
+            status = dist_response['Distribution']['Status']
+
+            if status != 'Deployed':
+                return False, \
+                    f"Cannot delete: Distribution status is '{status}'. " \
+                    f"Wait until status is 'Deployed' (current changes must finish deploying)."
+
+            # Delete distribution
+            cloudfront.delete_distribution(
+                Id=distribution_id,
+                IfMatch=etag
+            )
+
+            return True, f"Distribution deleted: {distribution_id}"
+
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            return False, f"Delete failed ({error_code}): {str(e)}"
+        except Exception as e:
+            return False, f"Delete failed: {str(e)}"
+
     def _get_file_metadata(self, file_ext: str) -> Dict[str, str]:
         """Get S3 upload metadata for file extension"""
         if file_ext in self.cache_settings:

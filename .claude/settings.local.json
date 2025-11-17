@@ -29,7 +29,8 @@
       "Bash(cat:*)",
       "Bash(.gitignore)",
       "Bash(git check-ignore:*)",
-      "Bash([ -f docs/HANDOFF_SUMMARY.md ])"
+      "Bash([ -f docs/HANDOFF_SUMMARY.md ])",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

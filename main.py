@@ -1,10 +1,10 @@
 # main.py
 """
-SEO Authority Website Generator v2.0
+SEO Authority Website Generator v3.2
 Sprint 2 Week 2 - Enhanced Main Application Entry Point
 
-Updated: September 05, 2025
-Version: 2.1.1 - Identified Preview Website blocking issue - requires AWS separation
+Updated: November 16, 2025
+Version: 3.2.0 - Mode B: CloudFront + OAC Auto-Deployment, Multi-Deployment Support, Per-Deployment Meta Tags
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 
@@ -101,7 +101,7 @@ try:
             from src.version import get_version
             app.setApplicationVersion(get_version())
         except ImportError:
-            app.setApplicationVersion("2.1.0")  # Fallback version
+            app.setApplicationVersion("3.2.0")  # Fallback version
         app.setOrganizationName("Cloud Stack Solutions")
 
         # Set default font

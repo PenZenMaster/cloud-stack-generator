@@ -33,6 +33,7 @@ from .components.contact_tab import ContactTab
 from .components.branding_tab import BrandingTab
 from .components.api_keys_tab import APIKeysTab
 from .components.cloud_tab import CloudTab
+from .components.deployment_history_tab import DeploymentHistoryTab
 from .content_tabs.products_tab import ProductsTab
 from .content_tabs.services_tab import ServicesTab
 from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
@@ -267,6 +268,7 @@ class EnhancedMainWindow(QMainWindow):
         self.products_tab = ProductsTab()
         self.services_tab = ServicesTab()
         self.cloud_tab = CloudTab()
+        self.deployment_history_tab = DeploymentHistoryTab()
 
         # Add tabs to main widget
         self.main_tabs.addTab(self.business_tab, "Business Info")
@@ -277,6 +279,7 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.services_tab, "Services & FAQ")
         self.main_tabs.addTab(self.api_keys_tab, "API Keys")
         self.main_tabs.addTab(self.cloud_tab, "Cloud Deploy")
+        self.main_tabs.addTab(self.deployment_history_tab, "Deployment History")
 
         layout.addWidget(self.main_tabs)
 
@@ -381,6 +384,9 @@ class EnhancedMainWindow(QMainWindow):
         self.enhanced_cities_tab.validation_requested.connect(self.validate_all_tabs)
         self.api_keys_tab.validation_requested.connect(self.validate_all_tabs)
 
+        # Cloud deployment signal (v3.2.0 - Phase 5: Per-deployment meta tags)
+        self.cloud_tab.deployment_created.connect(self.on_deployment_created)
+
         # Tab change signal
         self.main_tabs.currentChanged.connect(self.on_tab_changed)
 
@@ -402,6 +408,44 @@ class EnhancedMainWindow(QMainWindow):
             # Don't fail the config change event if cloud tab update fails
             print(f"Warning: Failed to update cloud tab client context: {e}")
 
+    def on_deployment_created(self, deployment: "DeploymentConfig"):
+        """Handle deployment creation/update (v3.2.0 - Phase 5)"""
+        from src.core.config.models import DeploymentConfig
+
+        if not hasattr(self, 'current_config') or not self.current_config:
+            print("Warning: No config loaded, cannot save deployment")
+            return
+
+        # Find existing deployment with same ID
+        existing_index = -1
+        for i, dep in enumerate(self.current_config.deployments):
+            if dep.deployment_id == deployment.deployment_id:
+                existing_index = i
+                break
+
+        # Update or append deployment
+        if existing_index >= 0:
+            self.current_config.deployments[existing_index] = deployment
+            print(f"Updated existing deployment: {deployment.deployment_id}")
+        else:
+            self.current_config.deployments.append(deployment)
+            print(f"Added new deployment: {deployment.deployment_id}")
+
+        # Refresh deployment history tab
+        self.deployment_history_tab.set_config(self.current_config)
+
+        # Mark config as modified and trigger auto-save
+        self.unsaved_changes = True
+        self.update_window_title()
+
+        # Auto-save config after deployment
+        if self.config_file_path:
+            try:
+                self.save_configuration()
+                self.status_label.setText(f"Deployment saved: {deployment.deployment_id}")
+            except Exception as e:
+                print(f"Warning: Failed to auto-save after deployment: {e}")
+                self.status_label.setText(f"Deployment created but not saved: {deployment.deployment_id}")
 
     def on_tab_changed(self, index):
         """Handle tab change events"""
@@ -1126,6 +1170,9 @@ class EnhancedMainWindow(QMainWindow):
         }
         self.cloud_tab.set_config_data(cloud_data)
 
+        # Load deployment history (v3.2.0 - Phase 2)
+        self.deployment_history_tab.set_config(config)
+
     def validate_all_tabs_simple(self):
         """Validate all tabs and show results with proper ValidationResult handling"""
         self.status_label.setText("Validating configuration...")
@@ -1637,7 +1684,7 @@ class EnhancedMainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "About SEO Authority Website Generator",
-            "<h3>SEO Authority Website Generator v2.0</h3>"
+            "<h3>SEO Authority Website Generator v3.2.0</h3>"
             "<p>Sprint 2 Week 2 - Enhanced Modular Architecture</p>"
             "<p><b>Features:</b></p>"
             "<ul>"
@@ -1646,8 +1693,12 @@ class EnhancedMainWindow(QMainWindow):
             "<li>Branding & Color Management</li>"
             "<li>Product Catalog with CSV Import</li>"
             "<li>Services & FAQ Management</li>"
+            "<li><b>NEW:</b> Mode A (S3-Only) & Mode B (CloudFront + OAC) Deployment</li>"
+            "<li><b>NEW:</b> Auto-Create CloudFront Distributions with OAC</li>"
+            "<li><b>NEW:</b> Multi-Deployment Management</li>"
+            "<li><b>NEW:</b> Per-Deployment Meta Tags</li>"
             "</ul>"
-            "<p><b>Status:</b> Ready for Website Generation Integration</p>",
+            "<p><b>Status:</b> Production-Ready Cloud Deployment</p>",
         )
 
     def closeEvent(self, event):
