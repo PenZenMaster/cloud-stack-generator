@@ -18,6 +18,7 @@ from .models import (
     AddressConfig,
     BrandingConfig,
     CloudConfig,
+    DeploymentConfig,
     ProductConfig,
     ServiceConfig,
     FAQItem,
@@ -122,6 +123,9 @@ class ConfigParser:
         # Parse cloud deployment configuration
         cloud = self._parse_cloud_config(yaml_data)
 
+        # Parse multi-deployment configuration (v3.2.0+)
+        deployments = self._parse_deployments(yaml_data)
+
         # Build complete configuration
         config = ClientConfig(
             business=business,
@@ -139,6 +143,7 @@ class ConfigParser:
             seo_content=seo_content,
             api_keys=api_keys,
             cloud=cloud,
+            deployments=deployments,
         )
 
         self.current_config = config
@@ -484,6 +489,37 @@ class ConfigParser:
             last_deployment=cloud_data.get("last_deployment", ""),
         )
 
+    def _parse_deployments(self, yaml_data: Dict[str, Any]) -> List[DeploymentConfig]:
+        """Parse deployments array (v3.2.0+ multi-deployment support)"""
+        deployments_data = yaml_data.get("deployments", [])
+        if not isinstance(deployments_data, list):
+            return []
+
+        deployments = []
+        for deployment_item in deployments_data:
+            if not isinstance(deployment_item, dict):
+                continue
+
+            try:
+                deployment = DeploymentConfig(
+                    deployment_id=deployment_item.get("deployment_id", ""),
+                    bucket=deployment_item.get("bucket", ""),
+                    directory=deployment_item.get("directory", ""),
+                    region=deployment_item.get("region", "us-east-1"),
+                    mode=deployment_item.get("mode", "s3"),
+                    cloudfront_distribution_id=deployment_item.get("cloudfront_distribution_id"),
+                    cloudfront_domain=deployment_item.get("cloudfront_domain"),
+                    last_deployed=deployment_item.get("last_deployed"),
+                    deployment_url=deployment_item.get("deployment_url"),
+                    meta_tags=deployment_item.get("meta_tags", {}),
+                )
+                deployments.append(deployment)
+            except Exception as e:
+                print(f"Warning: Skipping invalid deployment entry: {e}")
+                continue
+
+        return deployments
+
     def generate_yaml_dict(self, config: ClientConfig) -> Dict[str, Any]:
         """
         Generate YAML dictionary from ClientConfig object
@@ -666,6 +702,34 @@ class ConfigParser:
             if config.cloud.last_deployment:
                 cloud_dict["last_deployment"] = config.cloud.last_deployment
             yaml_data["cloud"] = cloud_dict
+
+        # Add deployments array (v3.2.0+ multi-deployment support)
+        if config.deployments:
+            deployments_data = []
+            for deployment in config.deployments:
+                deployment_dict = {
+                    "deployment_id": deployment.deployment_id,
+                    "bucket": deployment.bucket,
+                    "directory": deployment.directory,
+                    "region": deployment.region,
+                    "mode": deployment.mode,
+                }
+
+                # Optional fields - only include if set
+                if deployment.cloudfront_distribution_id:
+                    deployment_dict["cloudfront_distribution_id"] = deployment.cloudfront_distribution_id
+                if deployment.cloudfront_domain:
+                    deployment_dict["cloudfront_domain"] = deployment.cloudfront_domain
+                if deployment.last_deployed:
+                    deployment_dict["last_deployed"] = deployment.last_deployed
+                if deployment.deployment_url:
+                    deployment_dict["deployment_url"] = deployment.deployment_url
+                if deployment.meta_tags:
+                    deployment_dict["meta_tags"] = deployment.meta_tags
+
+                deployments_data.append(deployment_dict)
+
+            yaml_data["deployments"] = deployments_data
 
         return yaml_data
 

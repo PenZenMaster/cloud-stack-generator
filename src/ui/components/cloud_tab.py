@@ -31,12 +31,14 @@ from pathlib import Path
 import logging
 import subprocess
 import platform
+from datetime import datetime
 
 from .base_tab import BaseTab
 from .progress_widget import ProgressWidget
 from ...core.aws.credentials import AWSCredentialsManager, AuthMethod
 from ...core.aws.s3_manager import S3Manager, UploadProgress, UploadResult
 from ...core.config.client_aws_config import ClientAWSConfig, get_client_aws_manager
+from ...core.config.models import DeploymentConfig
 from ...utils.error_logger import log_error_dialog
 
 
@@ -560,7 +562,10 @@ class DeploymentWorker(QThread):
 
 class CloudTab(BaseTab):
     """Cloud deployment configuration tab"""
-    
+
+    # Signal emitted when a deployment is created/updated
+    deployment_created = pyqtSignal(DeploymentConfig)
+
     def __init__(self, parent=None):
         self.credentials_manager = AWSCredentialsManager()
         self.s3_manager = S3Manager()
@@ -627,7 +632,10 @@ class CloudTab(BaseTab):
 
         layout.addStretch()
         self.setLayout(layout)
-    
+
+        # Apply initial deployment mode state
+        self.on_deployment_mode_changed()
+
     def create_profile_section(self) -> QGroupBox:
         """Create AWS profile configuration section"""
         group = QGroupBox("AWS Profile")
@@ -780,11 +788,11 @@ class CloudTab(BaseTab):
         self.s3_mode_radio = QRadioButton("Mode A: S3 Static Website (Fast deployment)")
         self.s3_mode_radio.setChecked(True)
         self.s3_mode_radio.setToolTip("Direct S3 website hosting - fastest deployment, public bucket required")
-        
-        # Mode B: CloudFront + OAC (Phase 2)
-        self.cloudfront_mode_radio = QRadioButton("Mode B: CloudFront + OAC (Coming in Phase 2)")
-        self.cloudfront_mode_radio.setEnabled(False)
-        self.cloudfront_mode_radio.setToolTip("CloudFront distribution with Origin Access Control - production ready, private bucket")
+
+        # Mode B: CloudFront + OAC (v3.2.0 - Production Ready)
+        self.cloudfront_mode_radio = QRadioButton("Mode B: CloudFront + OAC (Production CDN)")
+        self.cloudfront_mode_radio.setEnabled(True)  # v3.2.0: Mode B now fully implemented
+        self.cloudfront_mode_radio.setToolTip("CloudFront distribution with Origin Access Control - auto-created, production ready, private bucket, HTTPS")
         
         self.deployment_mode_group.addButton(self.s3_mode_radio, 0)
         self.deployment_mode_group.addButton(self.cloudfront_mode_radio, 1)
@@ -822,6 +830,34 @@ class CloudTab(BaseTab):
         self.auto_invalidate_checkbox.setChecked(True)
         self.auto_invalidate_checkbox.setToolTip("Create invalidation request for /* after successful upload")
         cf_layout.addWidget(self.auto_invalidate_checkbox)
+
+        # OAC Diagnostic Tools (v3.2.0)
+        diagnostic_layout = QVBoxLayout()
+
+        # OAC Status Label
+        self.oac_status_label = QLabel("")
+        self.oac_status_label.setWordWrap(True)
+        self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px;")
+        diagnostic_layout.addWidget(self.oac_status_label)
+
+        # Diagnostic Buttons
+        button_layout = QHBoxLayout()
+
+        self.check_oac_button = QPushButton("Check OAC Status")
+        self.check_oac_button.setToolTip("Check if this distribution has Origin Access Control configured")
+        self.check_oac_button.clicked.connect(self.on_check_oac_status)
+        button_layout.addWidget(self.check_oac_button)
+
+        self.delete_distribution_button = QPushButton("Delete Distribution")
+        self.delete_distribution_button.setToolTip("Disable and delete this CloudFront distribution")
+        self.delete_distribution_button.setStyleSheet("background-color: #ffcccc;")
+        self.delete_distribution_button.clicked.connect(self.on_delete_distribution)
+        button_layout.addWidget(self.delete_distribution_button)
+
+        button_layout.addStretch()
+        diagnostic_layout.addLayout(button_layout)
+
+        cf_layout.addLayout(diagnostic_layout)
 
         self.cloudfront_settings_group.setLayout(cf_layout)
         layout.addWidget(self.cloudfront_settings_group)
@@ -2036,17 +2072,25 @@ class CloudTab(BaseTab):
     def on_deployment_mode_changed(self):
         """Handle deployment mode change"""
         if self.s3_mode_radio.isChecked():
-            self.mode_description.setText("S3 Static Website: Direct hosting from S3 bucket with public access")
-            # CloudFront settings visible but optional for Mode A
+            # Mode A: S3-only deployment (no CloudFront)
+            self.mode_description.setText("S3 Static Website: Direct hosting from S3 bucket with public access (no CloudFront)")
+
+            # Disable CloudFront settings for Mode A
             if self.cloudfront_settings_group:
-                self.cloudfront_settings_group.setVisible(True)
-                self.cloudfront_settings_group.setTitle("CloudFront Distribution (Optional)")
+                self.cloudfront_settings_group.setEnabled(False)
+                self.cloudfront_settings_group.setTitle("CloudFront Distribution (Not Used in Mode A)")
+                # Gray out appearance
+                self.cloudfront_settings_group.setStyleSheet("QGroupBox { color: #999999; }")
         else:
-            self.mode_description.setText("CloudFront + OAC: Production-ready CDN with private bucket access")
-            # CloudFront settings required for Mode B
+            # Mode B: CloudFront + OAC deployment
+            self.mode_description.setText("CloudFront + OAC: Production-ready CDN with private bucket access (auto-created)")
+
+            # Enable CloudFront settings for Mode B
             if self.cloudfront_settings_group:
-                self.cloudfront_settings_group.setVisible(True)
-                self.cloudfront_settings_group.setTitle("CloudFront Distribution (Required)")
+                self.cloudfront_settings_group.setEnabled(True)
+                self.cloudfront_settings_group.setTitle("CloudFront Distribution (Auto-Created)")
+                # Restore normal appearance
+                self.cloudfront_settings_group.setStyleSheet("")
     
     def update_deploy_button_state(self):
         """Update deploy button enabled state"""
@@ -2122,9 +2166,53 @@ class CloudTab(BaseTab):
         if directory == "/ (root)" or directory == "/":
             directory = ""  # Root directory = empty prefix
 
-        # Get CloudFront settings for cache invalidation
-        distribution_id = self.distribution_id_input.text().strip()
-        auto_invalidate = self.auto_invalidate_checkbox.isChecked()
+        # Check deployment mode
+        is_mode_a = self.s3_mode_radio.isChecked()
+
+        # Get CloudFront settings (only for Mode B)
+        if is_mode_a:
+            # Mode A: S3-only deployment (no CloudFront)
+            distribution_id = ""
+            auto_invalidate = False
+            cloudfront_domain = ""
+            self.current_cloudfront_domain = ""  # No CloudFront for Mode A
+            self.log_status("Mode A: S3-only deployment (CloudFront disabled)")
+        else:
+            # Mode B: CloudFront + OAC deployment (auto-create distribution)
+            self.log_status("Mode B: CloudFront + OAC deployment (auto-creating distribution...)")
+
+            # Auto-create or find existing CloudFront distribution
+            comment = f"Auto-created for {bucket_name}"
+            if directory:
+                comment += f" (directory: {directory})"
+
+            success, dist_id, cf_domain, is_new, msg = self.s3_manager.get_or_create_distribution(
+                bucket_name=bucket_name,
+                origin_path=directory,
+                comment=comment
+            )
+
+            if not success:
+                self.log_status(f"Error: {msg}")
+                return
+
+            distribution_id = dist_id
+            cloudfront_domain = cf_domain
+            auto_invalidate = True  # Always invalidate cache for Mode B
+
+            # Store CloudFront domain for deployment_finished() to use
+            self.current_cloudfront_domain = cloudfront_domain
+
+            # Log distribution info
+            if is_new:
+                self.log_status(f"Created new CloudFront distribution: {distribution_id}")
+            else:
+                self.log_status(f"Reusing existing distribution: {distribution_id}")
+
+            self.log_status(f"CloudFront domain: {cloudfront_domain}")
+
+            # Update UI with distribution ID
+            self.distribution_id_input.setText(distribution_id)
 
         # Start deployment worker
         self.deployment_worker = DeploymentWorker(
@@ -2158,18 +2246,93 @@ class CloudTab(BaseTab):
         """Handle deployment completion"""
         self.progress_bar.setVisible(False)
         self.deploy_button.setEnabled(True)
-        
+
         if result.success:
-            # Get website URL
-            bucket_name = self._get_actual_bucket_name()
-            region = self.region_combo.currentText()
-            website_url = self.s3_manager.get_website_url(bucket_name, region, prefer_https=True)
-            
+            # Use website URL from deployment result (includes directory path)
+            website_url = result.website_url
+
+            # Fallback: generate URL if not provided in result
+            if not website_url:
+                bucket_name = self._get_actual_bucket_name()
+                region = self.region_combo.currentText()
+                directory = self.directory_combo.currentText().strip()
+                if directory == "/ (root)" or directory == "/":
+                    directory = ""
+
+                # Check deployment mode to generate correct URL
+                is_mode_a = self.s3_mode_radio.isChecked()
+
+                if is_mode_a:
+                    # Mode A: S3 website URL only (no CloudFront)
+                    website_url = self.s3_manager.get_website_url(bucket_name, region, prefer_https=False)
+
+                    # Mode A: Append directory to URL (S3 doesn't use origin path)
+                    if website_url and directory:
+                        website_url = website_url.rstrip('/')
+                        website_url = f"{website_url}/{directory}"
+                else:
+                    # Mode B: Use stored CloudFront domain from deployment
+                    if hasattr(self, 'current_cloudfront_domain') and self.current_cloudfront_domain:
+                        website_url = f"https://{self.current_cloudfront_domain}/"
+                    else:
+                        # Fallback: use get_website_url (shouldn't happen with v3.2.0)
+                        website_url = self.s3_manager.get_website_url(bucket_name, region, prefer_https=True)
+
+                    # Mode B: DO NOT append directory - CloudFront origin path already includes it!
+                    # The distribution's origin path is set to /directory, so we access the root URL
+                    # CloudFront will automatically prepend the origin path when fetching from S3
+
             if website_url:
                 self.website_url_label.setText(f'<a href="{website_url}">View Website: {website_url}</a>')
-            
+
             self.log_status(f"Deployment completed successfully! {result.message}")
-            
+
+            # Create/update deployment record with current meta tags
+            bucket_name = self._get_actual_bucket_name()
+            directory = self.directory_combo.currentText().strip()
+            if directory == "/ (root)" or directory == "/":
+                directory = ""
+
+            # Generate deployment ID
+            deployment_id = f"{bucket_name}"
+            if directory:
+                deployment_id += f"-{directory}"
+
+            # Get mode and CloudFront settings
+            mode = "s3" if self.s3_mode_radio.isChecked() else "cloudfront"
+            distribution_id = self.distribution_id_input.text().strip() if mode == "cloudfront" else ""
+            cloudfront_domain = ""
+
+            # Extract CloudFront domain from distribution_id if available
+            if distribution_id and mode == "cloudfront":
+                try:
+                    cloudfront = self.s3_manager.session.client('cloudfront')
+                    response = cloudfront.get_distribution(Id=distribution_id)
+                    cloudfront_domain = response['Distribution']['DomainName']
+                except:
+                    pass  # CloudFront domain extraction failed, will use deployment URL
+
+            # Get current meta tags from UI
+            meta_tags = self.get_meta_tags_from_table()
+
+            # Create deployment config
+            deployment = DeploymentConfig(
+                deployment_id=deployment_id,
+                bucket=bucket_name,
+                directory=directory,
+                region=self.region_combo.currentText(),
+                mode=mode,
+                cloudfront_distribution_id=distribution_id if mode == "cloudfront" else None,
+                cloudfront_domain=cloudfront_domain if mode == "cloudfront" else None,
+                last_deployed=datetime.utcnow().isoformat() + "Z",
+                deployment_url=website_url,
+                meta_tags=meta_tags
+            )
+
+            # Emit signal for parent to handle
+            self.deployment_created.emit(deployment)
+            self.log_status(f"Deployment record created: {deployment_id}")
+
             # Show success message
             QMessageBox.information(
                 self,
@@ -2283,6 +2446,159 @@ class CloudTab(BaseTab):
             # Mark configuration as changed
             if hasattr(self, 'config_changed'):
                 self.config_changed.emit()
+
+    def on_check_oac_status(self):
+        """Check OAC status for entered distribution ID (v3.2.0 diagnostic tool)"""
+        distribution_id = self.distribution_id_input.text().strip()
+
+        if not distribution_id:
+            self.oac_status_label.setText("⚠️ Enter a distribution ID first")
+            self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #ff9900; background-color: #fff3cd;")
+            return
+
+        # Check if profile is selected
+        profile_name = self.profile_combo.currentText()
+        if not profile_name or profile_name == "No profiles configured":
+            self.oac_status_label.setText("⚠️ Select an AWS profile first")
+            self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #ff9900; background-color: #fff3cd;")
+            return
+
+        # Activate profile and check OAC
+        if not self.credentials_manager.set_active_profile(profile_name):
+            self.oac_status_label.setText("❌ Failed to activate AWS profile")
+            self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #cc0000; background-color: #ffdddd;")
+            return
+
+        session = self.credentials_manager.get_active_session()
+        self.s3_manager.set_session(session)
+
+        self.log_status(f"Checking OAC status for distribution: {distribution_id}...")
+        self.oac_status_label.setText("⏳ Checking OAC status...")
+        self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #0066cc; background-color: #e6f2ff;")
+
+        # Check OAC status
+        success, has_oac, message = self.s3_manager.check_distribution_oac_status(distribution_id)
+
+        if not success:
+            self.oac_status_label.setText(f"❌ {message}")
+            self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #cc0000; background-color: #ffdddd;")
+            self.log_status(f"OAC check failed: {message}")
+        elif has_oac:
+            self.oac_status_label.setText(f"✅ {message}")
+            self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #006600; background-color: #ddffdd;")
+            self.log_status(f"OAC check passed: {message}")
+        else:
+            # Distribution lacks OAC - show warning and suggestion
+            self.oac_status_label.setText(
+                f"⚠️ WARNING: {message}\n"
+                f"This distribution will cause 403 errors with private buckets. "
+                f"Recommended: Delete this distribution and let Mode B create a new one with OAC."
+            )
+            self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #cc6600; background-color: #ffeecc;")
+            self.log_status(f"WARNING: {message}")
+
+    def on_delete_distribution(self):
+        """Delete CloudFront distribution (v3.2.0 diagnostic tool)"""
+        distribution_id = self.distribution_id_input.text().strip()
+
+        if not distribution_id:
+            QMessageBox.warning(
+                self,
+                "No Distribution ID",
+                "Please enter a distribution ID first."
+            )
+            return
+
+        # Confirm deletion
+        reply = QMessageBox.question(
+            self,
+            "Delete CloudFront Distribution",
+            f"Are you sure you want to delete distribution: {distribution_id}?\n\n"
+            f"This will:\n"
+            f"1. Disable the distribution (5-10 min wait)\n"
+            f"2. Delete the distribution permanently\n\n"
+            f"Note: This does NOT delete S3 bucket or files.\n\n"
+            f"After deletion, Mode B can create a new distribution with OAC.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        # Check if profile is selected
+        profile_name = self.profile_combo.currentText()
+        if not profile_name or profile_name == "No profiles configured":
+            QMessageBox.warning(self, "No Profile", "Please select an AWS profile first.")
+            return
+
+        # Activate profile
+        if not self.credentials_manager.set_active_profile(profile_name):
+            QMessageBox.warning(self, "Profile Error", "Failed to activate AWS profile.")
+            return
+
+        session = self.credentials_manager.get_active_session()
+        self.s3_manager.set_session(session)
+
+        # Step 1: Disable distribution
+        self.log_status(f"Disabling distribution: {distribution_id}...")
+        self.oac_status_label.setText("⏳ Step 1/2: Disabling distribution...")
+        self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #0066cc; background-color: #e6f2ff;")
+
+        success, message = self.s3_manager.disable_distribution(distribution_id)
+
+        if not success:
+            self.oac_status_label.setText(f"❌ Disable failed: {message}")
+            self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #cc0000; background-color: #ffdddd;")
+            QMessageBox.warning(
+                self,
+                "Disable Failed",
+                f"Failed to disable distribution:\n\n{message}"
+            )
+            return
+
+        self.log_status(message)
+
+        # Check if already disabled or needs wait
+        if "already disabled" in message:
+            # Already disabled, try deleting immediately
+            self.log_status(f"Distribution already disabled, attempting deletion...")
+            self.oac_status_label.setText("⏳ Step 2/2: Deleting distribution...")
+
+            delete_success, delete_message = self.s3_manager.delete_distribution(distribution_id)
+
+            if delete_success:
+                self.oac_status_label.setText(f"✅ {delete_message}")
+                self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #006600; background-color: #ddffdd;")
+                self.distribution_id_input.clear()
+                QMessageBox.information(
+                    self,
+                    "Distribution Deleted",
+                    f"Distribution deleted successfully!\n\n"
+                    f"You can now deploy with Mode B to create a new distribution with OAC."
+                )
+            else:
+                self.oac_status_label.setText(f"⚠️ {delete_message}")
+                self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #cc6600; background-color: #ffeecc;")
+                QMessageBox.warning(
+                    self,
+                    "Delete Failed",
+                    f"Failed to delete distribution:\n\n{delete_message}\n\n"
+                    f"You may need to wait for the distribution to fully deploy before deleting."
+                )
+        else:
+            # Disabled successfully, but needs to wait
+            self.oac_status_label.setText(
+                f"⏳ Distribution disabled. Wait 5-10 minutes for status 'Deployed', "
+                f"then click 'Delete Distribution' again to complete deletion."
+            )
+            self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #0066cc; background-color: #e6f2ff;")
+            QMessageBox.information(
+                self,
+                "Distribution Disabled",
+                f"Distribution disabled successfully!\n\n"
+                f"Wait 5-10 minutes for CloudFront to finish deploying changes.\n\n"
+                f"Then click 'Delete Distribution' again to complete the deletion."
+            )
 
     def on_meta_tag_selection_changed(self):
         """Handle meta tag selection change"""
