@@ -110,6 +110,49 @@
 
 ---
 
+## 📋 FUTURE PHASES (Placeholders)
+
+### 🔮 **Phase 3: Multi-Cloud Deployment Support** (Future)
+**Goal**: Expand beyond AWS S3 to support multiple cloud storage providers
+
+**Planned Cloud Providers** (Priority Order):
+1. **Google Cloud Storage (GCS)**
+   - Google Cloud CDN integration
+   - IAM and bucket policy configuration
+   - Regional deployment options
+   - Pricing advantages for certain regions
+
+2. **Backblaze B2**
+   - Cost-effective storage option
+   - CloudFlare CDN integration
+   - S3-compatible API
+   - Excellent pricing for bandwidth
+
+3. **Wasabi Hot Cloud Storage**
+   - No egress fees
+   - S3-compatible API
+   - Fast performance
+   - Predictable pricing model
+
+**Architecture Approach**:
+- Abstract storage provider interface
+- Pluggable deployment modules
+- Unified configuration schema
+- Provider-specific optimizations
+- Multi-provider deployment (same site to multiple clouds)
+
+**Benefits**:
+- Cost optimization (choose cheapest provider)
+- Redundancy and failover
+- Geographic diversity
+- Vendor lock-in prevention
+- A/B testing across providers
+
+**Estimated Effort**: 1-2 weeks per provider
+**Status**: Deferred until Phase 1 & 2 complete
+
+---
+
 ## 📊 ARCHITECTURE STATUS
 
 ### ✅ Backlink Site System COMPLETE
