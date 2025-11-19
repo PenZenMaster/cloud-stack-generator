@@ -1032,7 +1032,7 @@ class HTMLGenerator:
             try:
                 date_obj = datetime.fromisoformat(str(date_input))
                 return date_obj.strftime(format_str)
-            except:
+            except (ValueError, TypeError, AttributeError):
                 return str(date_input)
 
     def _generate_company_story(self, config: ClientConfig) -> str:
