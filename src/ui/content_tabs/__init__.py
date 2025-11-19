@@ -34,11 +34,11 @@ try:
 except ImportError:
     print("Warning: ServicesTab not available")
 
-# Future content tabs will be added here
-# try:
-#     from .cities_tab import CitiesTab
-#     __all__.append("CitiesTab")
-# except ImportError:
-#     print("Warning: CitiesTab not available")
+try:
+    from .faq_tab import FAQTab
+
+    __all__.append("FAQTab")
+except ImportError:
+    print("Warning: FAQTab not available")
 
 print(f"Content Tabs loaded: {', '.join(__all__)}")
