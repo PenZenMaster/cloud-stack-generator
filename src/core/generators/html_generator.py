@@ -15,6 +15,10 @@ from ..config.models import ClientConfig
 from ..services.ai_content_service import AIContentService
 from ..services.content_cache import ContentCache
 from .content import HomeContentGenerator
+from ..utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 
 
 class HTMLGenerator:
@@ -62,7 +66,10 @@ class HTMLGenerator:
 
             return env
         except Exception as e:
-            print(f"Warning: Could not setup Jinja2 environment: {e}")
+            logger.warning(
+                "Could not setup Jinja2 environment",
+                extra={"extra_fields": {"error": str(e)}}
+            )
             # Fallback to basic string templates
             return None
 
@@ -841,10 +848,19 @@ class HTMLGenerator:
                 rendered = template.render(**template_data)
                 return rendered
             except jinja2.TemplateNotFound:
-                print(f"Warning: Template {template_name} not found, using fallback")
+                logger.warning(
+                    f"Template {template_name} not found, using fallback",
+                    extra={"extra_fields": {"template": template_name}}
+                )
                 return self._render_fallback_template(template_name, template_data)
             except Exception as e:
-                print(f"Error rendering template {template_name}: {e}")
+                logger.error(
+                    f"Error rendering template {template_name}",
+                    extra={"extra_fields": {
+                        "template": template_name,
+                        "error": str(e)
+                    }}
+                )
                 return self._render_fallback_template(template_name, template_data)
         else:
             return self._render_fallback_template(template_name, template_data)

@@ -17,6 +17,11 @@ from enum import Enum
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
+from ..utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
+
 
 class BuildPhase(Enum):
     """Build pipeline phases"""
@@ -314,7 +319,7 @@ class BuildPipeline:
         if self.context and self.context.has_errors():
             # Log errors for debugging
             for error in self.context.errors:
-                print(f"Build error: {error}")
+                logger.error(f"Build error: {error}")
 
             # Optionally remove generated files here
             # Currently leaving files for inspection

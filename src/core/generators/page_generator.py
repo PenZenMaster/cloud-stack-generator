@@ -15,6 +15,10 @@ from datetime import datetime
 from .html_generator import HTMLGenerator
 from .css_generator import CSSGenerator
 from ..config.models import ClientConfig
+from ..utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 
 
 class GenerationResult:
@@ -838,6 +842,9 @@ document.addEventListener('DOMContentLoaded', initContactForm);
                 webbrowser.open(f"file://{index_file.absolute()}")
                 return True
         except Exception as e:
-            print(f"Could not open website: {e}")
+            logger.error(
+                "Could not open website",
+                extra={"extra_fields": {"error": str(e)}}
+            )
 
         return False

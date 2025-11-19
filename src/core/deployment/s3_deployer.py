@@ -20,14 +20,16 @@ Comments:
 """
 
 import json
-import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
 
 import boto3
 from botocore.exceptions import ClientError
 
-logger = logging.getLogger(__name__)
+from ..utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 
 
 class S3WebsiteDeployer:
@@ -373,12 +375,6 @@ def deploy_client_website(
     Returns:
         Deployment result dictionary
     """
-    # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format="[%(levelname)s] %(message)s",
-    )
-
     # Determine local path (uses snake_case on filesystem)
     output_path = Path(__file__).parent.parent.parent.parent / "output" / "clients" / client_slug
 
@@ -398,15 +394,15 @@ def deploy_client_website(
         create_if_not_exists=True,
     )
 
-    # Print results
+    # Log results
     if result["success"]:
-        print(f"\n[SUCCESS] Website deployed successfully!")
-        print(f"[INFO] Bucket: {result['bucket_name']}")
-        print(f"[INFO] Website URL: {result['full_url']}")
-        print(f"[INFO] Steps completed: {', '.join(result['steps_completed'])}")
+        logger.info("Website deployed successfully!")
+        logger.info(f"Bucket: {result['bucket_name']}")
+        logger.info(f"Website URL: {result['full_url']}")
+        logger.info(f"Steps completed: {', '.join(result['steps_completed'])}")
     else:
-        print(f"\n[FAIL] Deployment failed!")
-        print(f"[INFO] Errors: {', '.join(result['errors'])}")
+        logger.error("Deployment failed!")
+        logger.error(f"Errors: {', '.join(result['errors'])}")
 
     return result
 

@@ -28,6 +28,10 @@ from jinja2 import Environment, FileSystemLoader
 
 from ..config.models import ClientConfig, CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
 from ..services.ai_content_service import AIContentService
+from ..utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 from ..services.content_cache import ContentCache
 from .content import CityContentGenerator
 
@@ -122,23 +126,48 @@ class CityPageGenerator:
                     file_path = self.generate_city_page(city_page, output_dir, use_ai=use_ai)
                     generated_files.append(file_path)
                     ai_status = " (AI-powered)" if use_ai and self.city_gen.use_ai else ""
-                    print(f"Generated enhanced city page: {city_page.city_name}{ai_status}")
+                    logger.info(
+                        f"Generated enhanced city page: {city_page.city_name}{ai_status}",
+                        extra={"extra_fields": {
+                            "city": city_page.city_name,
+                            "ai_powered": use_ai and self.city_gen.use_ai
+                        }}
+                    )
                 except Exception as e:
-                    print(f"Error generating enhanced page for {city_page.city_name}: {e}")
+                    logger.error(
+                        f"Error generating enhanced page for {city_page.city_name}",
+                        extra={"extra_fields": {
+                            "city": city_page.city_name,
+                            "error": str(e)
+                        }}
+                    )
 
         # Fallback: Migrate legacy target_cities if no enhanced pages exist
         elif hasattr(self.config, 'target_cities') and self.config.target_cities:
-            print("Migrating legacy target_cities to enhanced city pages...")
+            logger.info("Migrating legacy target_cities to enhanced city pages...")
             for city in self.config.target_cities:
                 try:
                     file_path = self.generate_city_page_from_string(city, output_dir, use_ai=use_ai)
                     generated_files.append(file_path)
                     ai_status = " (AI-powered)" if use_ai and self.city_gen.use_ai else ""
-                    print(f"Generated city page from legacy config: {city}{ai_status}")
+                    logger.info(
+                        f"Generated city page from legacy config: {city}{ai_status}",
+                        extra={"extra_fields": {
+                            "city": city,
+                            "ai_powered": use_ai and self.city_gen.use_ai,
+                            "from_legacy": True
+                        }}
+                    )
                 except Exception as e:
-                    print(f"Error generating page for {city}: {e}")
+                    logger.error(
+                        f"Error generating page for {city}",
+                        extra={"extra_fields": {
+                            "city": city,
+                            "error": str(e)
+                        }}
+                    )
         else:
-            print("No city pages or target cities configured for generation")
+            logger.warning("No city pages or target cities configured for generation")
 
         return generated_files
     

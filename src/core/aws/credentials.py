@@ -28,6 +28,11 @@ from enum import Enum
 import subprocess
 from pathlib import Path
 
+from ..utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
+
 
 class AuthMethod(Enum):
     """Supported AWS authentication methods"""
@@ -238,15 +243,40 @@ class AWSCredentialsManager:
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code', 'Unknown')
             if 'Token has expired' in str(e) or 'UnauthorizedOperation' in str(e):
-                print(f"SSO token expired for profile '{profile_name}'. Run: aws sso login --profile {profile_name}")
+                logger.warning(
+                    f"SSO token expired for profile '{profile_name}'",
+                    extra={"extra_fields": {
+                        "profile": profile_name,
+                        "remediation": f"aws sso login --profile {profile_name}"
+                    }}
+                )
             else:
-                print(f"AWS Error listing buckets for profile '{profile_name}' ({error_code}): {e}")
+                logger.error(
+                    f"AWS Error listing buckets for profile '{profile_name}'",
+                    extra={"extra_fields": {
+                        "profile": profile_name,
+                        "error_code": error_code,
+                        "error": str(e)
+                    }}
+                )
             return []
         except Exception as e:
             if 'Token has expired' in str(e):
-                print(f"SSO token expired for profile '{profile_name}'. Run: aws sso login --profile {profile_name}")
+                logger.warning(
+                    f"SSO token expired for profile '{profile_name}'",
+                    extra={"extra_fields": {
+                        "profile": profile_name,
+                        "remediation": f"aws sso login --profile {profile_name}"
+                    }}
+                )
             else:
-                print(f"Error listing buckets for profile '{profile_name}': {e}")
+                logger.error(
+                    f"Error listing buckets for profile '{profile_name}'",
+                    extra={"extra_fields": {
+                        "profile": profile_name,
+                        "error": str(e)
+                    }}
+                )
             return []
     
     def set_active_profile(self, profile_name: str) -> bool:
@@ -257,7 +287,13 @@ class AWSCredentialsManager:
         # Validate profile before activating
         is_valid, message, _ = self.validate_profile(profile_name)
         if not is_valid:
-            print(f"Cannot activate profile: {message}")
+            logger.error(
+                "Cannot activate profile",
+                extra={"extra_fields": {
+                    "profile": profile_name,
+                    "reason": message
+                }}
+            )
             return False
         
         # Deactivate current profile
@@ -435,9 +471,12 @@ class AWSCredentialsManager:
             
             self.active_profile = data.get('active_profile')
             return True
-            
+
         except Exception as e:
-            print(f"Error importing profiles: {e}")
+            logger.error(
+                "Error importing profiles",
+                extra={"extra_fields": {"error": str(e)}}
+            )
             return False
     
     def _load_profiles(self) -> None:
@@ -448,7 +487,13 @@ class AWSCredentialsManager:
                     data = json.load(f)
                     self.import_profiles(data)
         except Exception as e:
-            print(f"Warning: Could not load AWS profiles: {e}")
+            logger.warning(
+                "Could not load AWS profiles",
+                extra={"extra_fields": {
+                    "profiles_file": str(self._profiles_file),
+                    "error": str(e)
+                }}
+            )
             # Continue with empty profiles if loading fails
     
     def _save_profiles(self) -> None:
@@ -458,7 +503,13 @@ class AWSCredentialsManager:
             with open(self._profiles_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"Warning: Could not save AWS profiles: {e}")
+            logger.warning(
+                "Could not save AWS profiles",
+                extra={"extra_fields": {
+                    "profiles_file": str(self._profiles_file),
+                    "error": str(e)
+                }}
+            )
 
 
 # Utility functions for AWS CLI integration
@@ -500,5 +551,11 @@ def get_aws_config_profiles() -> List[str]:
         
         return profiles
     except Exception as e:
-        print(f"Error reading AWS config: {e}")
+        logger.error(
+            "Error reading AWS config",
+            extra={"extra_fields": {
+                "config_path": str(config_path),
+                "error": str(e)
+            }}
+        )
         return []
