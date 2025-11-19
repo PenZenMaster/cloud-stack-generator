@@ -35,6 +35,13 @@
     <script type="application/ld+json">
     {{ schema_organization | tojson }}
     </script>
+
+    <!-- Breadcrumb Schema -->
+    {% if breadcrumb_schema %}
+    <script type="application/ld+json">
+    {{ breadcrumb_schema | tojson }}
+    </script>
+    {% endif %}
 </head>
 <body>
     {% include 'components/header.html' %}

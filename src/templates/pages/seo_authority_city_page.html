@@ -21,7 +21,7 @@
     <meta property="og:url" content="{{ page_url }}">
     <meta property="og:image" content="{{ city_page.city_image.image_url }}">
     
-    <!-- Schema.org JSON-LD -->
+    <!-- Enhanced LocalBusiness Schema with Multiple Service Areas -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -29,11 +29,19 @@
         "name": "{{ business.business_name }}",
         "description": "{{ city_page.meta_description }}",
         "url": "{{ page_url }}",
-        "areaServed": {
-            "@type": "City",
-            "name": "{{ city_page.city_name }}",
-            "addressRegion": "{{ city_page.state }}"
-        },
+        {% if branding.logo_url %}"image": "{{ branding.logo_url }}",{% endif %}
+        "areaServed": [
+            {
+                "@type": "City",
+                "name": "{{ city_page.city_name }}",
+                "addressRegion": "{{ city_page.state }}"
+            }{% if other_cities %}{% for other_city in other_cities %},
+            {
+                "@type": "City",
+                "name": "{{ other_city.city_name }}",
+                "addressRegion": "{{ other_city.state }}"
+            }{% endfor %}{% endif %}
+        ],
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "{{ contact.address.street }}",
@@ -44,9 +52,21 @@
         },
         "telephone": "{{ contact.phone }}",
         "email": "{{ contact.email }}",
+        {% if geo_coordinates %}"geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "{{ geo_coordinates.latitude }}",
+            "longitude": "{{ geo_coordinates.longitude }}"
+        },{% endif %}
         "serviceType": [{% for service in services %}"{{ service.name }}"{% if not loop.last %}, {% endif %}{% endfor %}],
+        "knowsAbout": [{% for service in services %}"{{ service.name }}"{% if not loop.last %}, {% endif %}{% endfor %}],
         "priceRange": "$$",
         "openingHours": "{{ business.hours | default('Mo-Fr 08:00-17:00') }}",
+        {% if social_media %}"sameAs": [
+            {% if social_media.facebook %}"{{ social_media.facebook }}"{% if social_media.twitter or social_media.linkedin or social_media.instagram %},{% endif %}{% endif %}
+            {% if social_media.twitter %}"{{ social_media.twitter }}"{% if social_media.linkedin or social_media.instagram %},{% endif %}{% endif %}
+            {% if social_media.linkedin %}"{{ social_media.linkedin }}"{% if social_media.instagram %},{% endif %}{% endif %}
+            {% if social_media.instagram %}"{{ social_media.instagram }}"{% endif %}
+        ],{% endif %}
         "hasOfferCatalog": {
             "@type": "OfferCatalog",
             "name": "{{ business.industry }} Services",
@@ -57,7 +77,12 @@
                     "itemOffered": {
                         "@type": "Service",
                         "name": "{{ service.name }}",
-                        "description": "{{ service.description | default('Professional ' + service.name.lower() + ' services in ' + city_page.city_name) }}"
+                        "description": "{{ service.description | default('Professional ' + service.name.lower() + ' services in ' + city_page.city_name) }}",
+                        "areaServed": {
+                            "@type": "City",
+                            "name": "{{ city_page.city_name }}",
+                            "addressRegion": "{{ city_page.state }}"
+                        }
                     }
                 }{% if not loop.last %}, {% endif %}
                 {% endfor %}
@@ -87,7 +112,14 @@
     }
     </script>
     {% endif %}
-    
+
+    <!-- Breadcrumb Schema -->
+    {% if breadcrumb_schema %}
+    <script type="application/ld+json">
+    {{ breadcrumb_schema | tojson }}
+    </script>
+    {% endif %}
+
     <!-- CSS -->
     <link rel="stylesheet" href="{{ css_file }}">
     <style>

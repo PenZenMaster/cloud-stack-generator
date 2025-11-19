@@ -6,8 +6,38 @@
     <title>FAQ - {{ business.business_name }}</title>
     <meta name="description" content="Frequently asked questions about {{ business.business_name }} {{ business.industry.lower() }} services">
     <meta name="robots" content="index, follow">
-    
+
     <link rel="canonical" href="{{ canonical_base_url }}/faq.html">
+
+    <!-- FAQ Schema -->
+    {% if faq and faq|length > 0 %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {% for faq_item in faq %}
+            {
+                "@type": "Question",
+                "name": "{{ faq_item.question }}",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "{{ faq_item.answer }}"
+                }
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }
+    </script>
+    {% endif %}
+
+    <!-- Breadcrumb Schema -->
+    {% if breadcrumb_schema %}
+    <script type="application/ld+json">
+    {{ breadcrumb_schema | tojson }}
+    </script>
+    {% endif %}
+
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
