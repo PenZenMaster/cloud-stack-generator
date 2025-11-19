@@ -84,6 +84,10 @@ class HTMLGenerator:
                 "is_homepage": True,
                 "featured_services": config.services[:3],  # Show top 3 services
                 "featured_products": config.products[:6],  # Show top 6 products
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "homepage",
+                    template_data["canonical_base_url"]
+                ),
             }
         )
 
@@ -100,6 +104,10 @@ class HTMLGenerator:
                 "company_story": self._generate_company_story(config),
                 "team_members": self._get_team_members(config),
                 "company_values": self._get_company_values(config),
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "about",
+                    template_data["canonical_base_url"]
+                ),
             }
         )
 
@@ -116,6 +124,10 @@ class HTMLGenerator:
                 "contact_form": True,
                 "google_maps_embed": self._generate_maps_embed(config.contact.address.to_single_line()),
                 "business_hours": self._get_business_hours(config),
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "contact",
+                    template_data["canonical_base_url"]
+                ),
             }
         )
 
@@ -145,6 +157,10 @@ class HTMLGenerator:
                 "total_services": len(services),
                 "service_categories": list(services_by_category.keys()),
                 "has_services": len(services) > 0,
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "services",
+                    template_data["canonical_base_url"]
+                ),
             }
         )
 
@@ -170,6 +186,10 @@ class HTMLGenerator:
                 "products_by_category": products_by_category,
                 "total_products": len(config.products),
                 "product_categories": list(products_by_category.keys()),
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "products",
+                    template_data["canonical_base_url"]
+                ),
             }
         )
 
@@ -186,6 +206,9 @@ class HTMLGenerator:
             if s.category == service.category and s.name != service.name
         ][:3]
 
+        service_slug = getattr(service, 'slug', service.name.lower().replace(' ', '-'))
+        service_url = f"{template_data['canonical_base_url']}/services/{service_slug}.html"
+
         template_data.update(
             {
                 "page_title": f"{service.name} - {config.business.business_name}",
@@ -200,6 +223,12 @@ class HTMLGenerator:
                 "service_features": getattr(service, "features", []),
                 "service_schema": self._generate_service_schema(service, config),
                 "base_path": "../",  # Service detail pages are in subdirectory
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "service-detail",
+                    template_data["canonical_base_url"],
+                    page_title=service.name,
+                    page_url=service_url
+                ),
             }
         )
 
@@ -216,6 +245,9 @@ class HTMLGenerator:
             if p.category == product.category and p.sku != product.sku
         ][:4]
 
+        product_slug = getattr(product, 'slug', product.name.lower().replace(' ', '-'))
+        product_url = f"{template_data['canonical_base_url']}/products/{product_slug}.html"
+
         template_data.update(
             {
                 "page_title": f"{product.name} - {config.business.business_name}",
@@ -229,6 +261,12 @@ class HTMLGenerator:
                 "related_products": related_products,
                 "product_schema": self._generate_product_schema(product, config),
                 "base_path": "../",  # Product pages are in subdirectory
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "product-detail",
+                    template_data["canonical_base_url"],
+                    page_title=product.name,
+                    page_url=product_url
+                ),
             }
         )
 
@@ -256,6 +294,10 @@ class HTMLGenerator:
                 "page_type": "faq",
                 "faqs_by_category": faqs_by_category,
                 "total_faqs": sum(len(faqs) for faqs in faqs_by_category.values()),
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "faq",
+                    template_data["canonical_base_url"]
+                ),
             }
         )
 
@@ -271,6 +313,10 @@ class HTMLGenerator:
                 "page_description": f"Privacy policy for {config.business.business_name}",
                 "page_type": "privacy",
                 "current_year": "2024",  # This will be handled by template data later
+                "breadcrumb_schema": self._generate_breadcrumb_schema(
+                    "privacy",
+                    template_data["canonical_base_url"]
+                ),
             }
         )
 
@@ -654,6 +700,136 @@ class HTMLGenerator:
             }
 
         return schema
+
+    def _generate_breadcrumb_schema(
+        self,
+        page_type: str,
+        canonical_base_url: str,
+        page_title: str = "",
+        page_url: str = ""
+    ) -> Dict[str, Any]:
+        """
+        Generate BreadcrumbList schema for better SEO and navigation clarity.
+
+        Args:
+            page_type: Type of page (homepage, about, services, service-detail, etc.)
+            canonical_base_url: Base URL for the site
+            page_title: Title of the current page (for detail pages)
+            page_url: URL of the current page (optional, auto-generated if not provided)
+
+        Returns:
+            Dict containing BreadcrumbList schema in JSON-LD format
+        """
+        breadcrumbs = []
+
+        # Home is always first
+        breadcrumbs.append({
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": canonical_base_url
+        })
+
+        # Build breadcrumb trail based on page type
+        if page_type == "homepage":
+            # Homepage only has itself
+            pass
+
+        elif page_type == "about":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "About Us",
+                "item": f"{canonical_base_url}/about.html"
+            })
+
+        elif page_type == "contact":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Contact",
+                "item": f"{canonical_base_url}/contact.html"
+            })
+
+        elif page_type == "services":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Services",
+                "item": f"{canonical_base_url}/services.html"
+            })
+
+        elif page_type == "service-detail":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Services",
+                "item": f"{canonical_base_url}/services.html"
+            })
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 3,
+                "name": page_title,
+                "item": page_url or f"{canonical_base_url}/services/{page_title.lower().replace(' ', '-')}.html"
+            })
+
+        elif page_type == "products":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Products",
+                "item": f"{canonical_base_url}/products.html"
+            })
+
+        elif page_type == "product-detail":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Products",
+                "item": f"{canonical_base_url}/products.html"
+            })
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 3,
+                "name": page_title,
+                "item": page_url or f"{canonical_base_url}/products/{page_title.lower().replace(' ', '-')}.html"
+            })
+
+        elif page_type == "faq":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "FAQ",
+                "item": f"{canonical_base_url}/faq.html"
+            })
+
+        elif page_type == "privacy":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Privacy Policy",
+                "item": f"{canonical_base_url}/privacy-policy.html"
+            })
+
+        elif page_type == "city-page":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Locations",
+                "item": f"{canonical_base_url}/#locations"
+            })
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 3,
+                "name": page_title,
+                "item": page_url or f"{canonical_base_url}/locations/{page_title.lower().replace(' ', '-')}.html"
+            })
+
+        return {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": breadcrumbs
+        }
 
     def _render_template(
         self, template_name: str, template_data: Dict[str, Any]

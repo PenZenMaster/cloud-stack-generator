@@ -53,6 +53,50 @@ class EnhancedCityPageGenerator:
         # Fallback to business domain
         return self.config.business.domain.rstrip("/")
 
+    def _generate_breadcrumb_schema(
+        self,
+        city_name: str,
+        city_slug: str
+    ) -> Dict[str, Any]:
+        """
+        Generate BreadcrumbList schema for city pages.
+
+        Args:
+            city_name: Name of the city
+            city_slug: URL slug for the city
+
+        Returns:
+            Dict containing BreadcrumbList schema in JSON-LD format
+        """
+        canonical_base = self._get_canonical_base_url()
+
+        breadcrumbs = [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": canonical_base
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Locations",
+                "item": f"{canonical_base}/#locations"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": city_name,
+                "item": f"{canonical_base}/locations/{city_slug}.html"
+            }
+        ]
+
+        return {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": breadcrumbs
+        }
+
     def set_template(self, template_id: str) -> bool:
         """
         Set the template to use for generation
@@ -334,6 +378,11 @@ class EnhancedCityPageGenerator:
             "main_site_url": getattr(self.config.cloud, 'main_site_url', '') if hasattr(self.config, 'cloud') else '',
             "current_year": datetime.now().year,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            # Schema.org structured data
+            "breadcrumb_schema": self._generate_breadcrumb_schema(
+                city_page.city_name,
+                city_page.slug
+            ),
         }
 
         return context
