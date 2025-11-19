@@ -1,10 +1,10 @@
 # main.py
 """
-SEO Authority Website Generator v3.2
+SEO Authority Website Generator v3.3
 Sprint 2 Week 2 - Enhanced Main Application Entry Point
 
-Updated: November 16, 2025
-Version: 3.2.0 - Mode B: CloudFront + OAC Auto-Deployment, Multi-Deployment Support, Per-Deployment Meta Tags
+Updated: November 19, 2025
+Version: 3.3.0 - Help Menu Documentation Viewer with Markdown Rendering
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 

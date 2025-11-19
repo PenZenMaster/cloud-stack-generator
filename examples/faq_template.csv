@@ -1,0 +1,16 @@
+question,answer,category,tags,priority,active,city_name,state
+"What are your business hours?","We are open Monday-Friday 9AM-5PM EST.",general,"hours,contact,availability",10,true,,
+"Do you offer free shipping?","Yes, we offer free shipping on orders over $50.",shipping,"shipping,delivery,cost",8,true,,
+"What is your return policy?","We accept returns within 30 days of purchase with original packaging.",returns,"returns,refund,policy",9,true,,
+"What payment methods do you accept?","We accept Visa, Mastercard, American Express, and PayPal.",general,"payment,billing,credit card",7,true,,
+"How do I track my order?","You can track your order using the tracking number sent to your email.",shipping,"shipping,tracking,order",8,true,,
+"How long does shipping take?","Standard shipping takes 5-7 business days.",shipping,"shipping,delivery,timeline",7,true,,
+"Can I cancel my order?","Orders can be cancelled within 24 hours of placement.",general,"order,cancel,policy",6,true,,
+"Do you ship internationally?","Currently we only ship within the United States.",shipping,"shipping,international",5,true,,
+"What is your warranty policy?","All products come with a 1-year manufacturer warranty.",products,"warranty,guarantee,products",6,true,,
+"Do you serve Orlando, FL?","Yes, we provide services throughout Orlando and surrounding areas.",location,"location,service area",7,true,Orlando,FL
+"What are the delivery times in Orlando?","We deliver to Orlando within 24-48 hours.",shipping,"delivery,timeline",6,true,Orlando,FL
+"Are your products eco-friendly?","Yes, all our products are made from sustainable materials.",products,"products,eco-friendly,sustainability",5,true,,
+"Do you offer bulk discounts?","Yes, contact us for bulk pricing options.",pricing,"pricing,discount,bulk",7,true,,
+"What is your email address?","You can reach us at support@example.com",general,"contact,email",5,true,,
+"Do you have a showroom?","Yes, visit us at 123 Main Street, Suite 100.",location,"location,showroom,visit",4,false,,

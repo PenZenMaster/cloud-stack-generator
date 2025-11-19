@@ -1,0 +1,167 @@
+[
+  {
+    "question": "What are your business hours?",
+    "answer": "We are open Monday-Friday 9AM-5PM EST.",
+    "category": "general",
+    "tags": ["hours", "contact", "availability"],
+    "priority": 10,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "Do you offer free shipping?",
+    "answer": "Yes, we offer free shipping on orders over $50.",
+    "category": "shipping",
+    "tags": ["shipping", "delivery", "cost"],
+    "priority": 8,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "What is your return policy?",
+    "answer": "We accept returns within 30 days of purchase with original packaging.",
+    "category": "returns",
+    "tags": ["returns", "refund", "policy"],
+    "priority": 9,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "What payment methods do you accept?",
+    "answer": "We accept Visa, Mastercard, American Express, and PayPal.",
+    "category": "general",
+    "tags": ["payment", "billing", "credit card"],
+    "priority": 7,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "How do I track my order?",
+    "answer": "You can track your order using the tracking number sent to your email.",
+    "category": "shipping",
+    "tags": ["shipping", "tracking", "order"],
+    "priority": 8,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "How long does shipping take?",
+    "answer": "Standard shipping takes 5-7 business days.",
+    "category": "shipping",
+    "tags": ["shipping", "delivery", "timeline"],
+    "priority": 7,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "Can I cancel my order?",
+    "answer": "Orders can be cancelled within 24 hours of placement.",
+    "category": "general",
+    "tags": ["order", "cancel", "policy"],
+    "priority": 6,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "Do you ship internationally?",
+    "answer": "Currently we only ship within the United States.",
+    "category": "shipping",
+    "tags": ["shipping", "international"],
+    "priority": 5,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "What is your warranty policy?",
+    "answer": "All products come with a 1-year manufacturer warranty.",
+    "category": "products",
+    "tags": ["warranty", "guarantee", "products"],
+    "priority": 6,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "Do you serve Orlando, FL?",
+    "answer": "Yes, we provide services throughout Orlando and surrounding areas.",
+    "category": "location",
+    "tags": ["location", "service area"],
+    "priority": 7,
+    "active": true,
+    "city_name": "Orlando",
+    "state": "FL",
+    "schema_type": "Question"
+  },
+  {
+    "question": "What are the delivery times in Orlando?",
+    "answer": "We deliver to Orlando within 24-48 hours.",
+    "category": "shipping",
+    "tags": ["delivery", "timeline"],
+    "priority": 6,
+    "active": true,
+    "city_name": "Orlando",
+    "state": "FL",
+    "schema_type": "Question"
+  },
+  {
+    "question": "Are your products eco-friendly?",
+    "answer": "Yes, all our products are made from sustainable materials.",
+    "category": "products",
+    "tags": ["products", "eco-friendly", "sustainability"],
+    "priority": 5,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "Do you offer bulk discounts?",
+    "answer": "Yes, contact us for bulk pricing options.",
+    "category": "pricing",
+    "tags": ["pricing", "discount", "bulk"],
+    "priority": 7,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "What is your email address?",
+    "answer": "You can reach us at support@example.com",
+    "category": "general",
+    "tags": ["contact", "email"],
+    "priority": 5,
+    "active": true,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  },
+  {
+    "question": "Do you have a showroom?",
+    "answer": "Yes, visit us at 123 Main Street, Suite 100.",
+    "category": "location",
+    "tags": ["location", "showroom", "visit"],
+    "priority": 4,
+    "active": false,
+    "city_name": null,
+    "state": null,
+    "schema_type": "Question"
+  }
+]

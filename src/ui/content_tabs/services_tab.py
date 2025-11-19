@@ -1,12 +1,23 @@
 """
-Filename: services_tab.py
-Path: E:\\projects\\cloud-stack-generator\\src\\ui\\content_tabs\\services_tab.py
-Description: Services management tab with manual entry, categories, and FAQ integration
-Handles service catalog management with detailed descriptions and pricing information
+Module/Script Name: Services Tab
+Path: src/ui/content_tabs/services_tab.py
 
-Version: 1.0.0
-Date: 2025-08-11
-Author: Cloud Stack Generator Team
+Description:
+Services management tab with manual entry, categories, and pricing information.
+Handles service catalog management with detailed descriptions.
+
+Author(s):
+Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
+
+Created Date:
+2025-08-11
+
+Last Modified Date:
+2025-11-18
+
+Comments:
+* v1.00 - Initial services management tab
+* v1.01 - Removed FAQ functionality (now in separate FAQ tab)
 """
 
 from typing import Dict, Any, List, Tuple, Optional
@@ -26,8 +37,6 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QAbstractItemView,
     QFrame,
-    QTabWidget,
-    QWidget,
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
@@ -104,43 +113,8 @@ class Service:
         return len(errors) == 0, errors
 
 
-class FAQ:
-    """FAQ data model"""
-
-    def __init__(self, question: str = "", answer: str = "", category: str = "General"):
-        self.question = question
-        self.answer = answer
-        self.category = category
-
-    def to_dict(self) -> Dict[str, str]:
-        """Convert to dictionary"""
-        return {
-            "question": self.question,
-            "answer": self.answer,
-            "category": self.category,
-        }
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, str]) -> "FAQ":
-        """Create from dictionary"""
-        return cls(
-            question=data.get("question", ""),
-            answer=data.get("answer", ""),
-            category=data.get("category", "General"),
-        )
-
-    def is_valid(self) -> Tuple[bool, List[str]]:
-        """Validate FAQ data"""
-        errors = []
-        if not self.question.strip():
-            errors.append("Question is required")
-        if not self.answer.strip():
-            errors.append("Answer is required")
-        return len(errors) == 0, errors
-
-
 class ServicesTab(BaseTab):
-    """Tab for services and FAQ management"""
+    """Tab for services management"""
 
     # Signals
     config_changed = pyqtSignal()
@@ -163,71 +137,27 @@ class ServicesTab(BaseTab):
         "Custom Services",
     ]
 
-    # FAQ categories
-    FAQ_CATEGORIES = [
-        "General",
-        "Services",
-        "Pricing",
-        "Support",
-        "Process",
-        "Technical",
-    ]
-
     def __init__(self, parent=None):
         self.services: List[Service] = []
-        self.faqs: List[FAQ] = []
         self.has_changes = False
         super().__init__(parent)
 
     def setup_ui(self):
-        """Setup services and FAQ management UI"""
+        """Setup services management UI"""
         main_layout = QVBoxLayout()
-        main_layout.setSpacing(10)
-
-        # Create main tab widget
-        self.main_tabs = QTabWidget()
-
-        # Services tab
-        services_widget = QWidget()
-        self._setup_services_tab(services_widget)
-        self.main_tabs.addTab(services_widget, "🔧 Services")
-
-        # FAQ tab
-        faq_widget = QWidget()
-        self._setup_faq_tab(faq_widget)
-        self.main_tabs.addTab(faq_widget, "❓ FAQ")
-
-        main_layout.addWidget(self.main_tabs)
-        self.setLayout(main_layout)
-
-    def _setup_services_tab(self, parent_widget: QWidget):
-        """Setup services management tab"""
-        layout = QVBoxLayout()
-        layout.setSpacing(15)
+        main_layout.setSpacing(15)
 
         # Create services sections
-        self._create_services_table_section(layout)
-        self._create_service_entry_section(layout)
-        self._create_services_actions_section(layout)
+        self._create_services_table_section(main_layout)
+        self._create_service_entry_section(main_layout)
+        self._create_services_actions_section(main_layout)
 
-        parent_widget.setLayout(layout)
-
-    def _setup_faq_tab(self, parent_widget: QWidget):
-        """Setup FAQ management tab"""
-        layout = QVBoxLayout()
-        layout.setSpacing(15)
-
-        # Create FAQ sections
-        self._create_faq_table_section(layout)
-        self._create_faq_entry_section(layout)
-        self._create_faq_actions_section(layout)
-
-        parent_widget.setLayout(layout)
+        self.setLayout(main_layout)
 
     def _create_services_table_section(self, parent_layout: QVBoxLayout):
         """Create services table section"""
         # Section header
-        header_label = self._create_section_header("🔧 Services Catalog")
+        header_label = self._create_section_header("Services Catalog")
         parent_layout.addWidget(header_label)
 
         # Table group
@@ -302,7 +232,7 @@ class ServicesTab(BaseTab):
     def _create_service_entry_section(self, parent_layout: QVBoxLayout):
         """Create service entry section"""
         # Section header
-        header_label = self._create_section_header("➕ Add/Edit Service")
+        header_label = self._create_section_header("Add/Edit Service")
         parent_layout.addWidget(header_label)
 
         # Entry group
@@ -399,7 +329,7 @@ class ServicesTab(BaseTab):
         # Action buttons
         actions_layout = QHBoxLayout()
 
-        self.add_service_btn = QPushButton("➕ Add Service")
+        self.add_service_btn = QPushButton("Add Service")
         self.add_service_btn.setStyleSheet(
             """
             QPushButton {
@@ -446,7 +376,7 @@ class ServicesTab(BaseTab):
         self.select_all_services_btn = QPushButton("Select All")
         self.select_all_services_btn.clicked.connect(self._select_all_services)
 
-        self.delete_selected_services_btn = QPushButton("🗑️ Delete Selected")
+        self.delete_selected_services_btn = QPushButton("Delete Selected")
         self.delete_selected_services_btn.setStyleSheet(
             """
             QPushButton {
@@ -467,7 +397,7 @@ class ServicesTab(BaseTab):
         )
 
         # Validation
-        self.validate_all_services_btn = QPushButton("🔍 Validate All Services")
+        self.validate_all_services_btn = QPushButton("Validate All Services")
         self.validate_all_services_btn.setStyleSheet(
             """
             QPushButton {
@@ -793,7 +723,7 @@ class ServicesTab(BaseTab):
 
         if is_valid:
             QMessageBox.information(
-                self, "Validation Success", "✅ Service data is valid!"
+                self, "Validation Success", "Service data is valid!"
             )
         else:
             QMessageBox.warning(
@@ -826,7 +756,7 @@ class ServicesTab(BaseTab):
             self.services_table.setItem(row, 4, QTableWidgetItem(desc_text))
 
             # Actions
-            actions_btn = QPushButton("✏️ Edit")
+            actions_btn = QPushButton("Edit")
             actions_btn.setMaximumWidth(60)
             actions_btn.clicked.connect(lambda checked, r=row: self._edit_service(r))
             self.services_table.setCellWidget(row, 5, actions_btn)
@@ -900,7 +830,7 @@ class ServicesTab(BaseTab):
             self.service_inputs["features"].setPlainText("\n".join(service.features))
 
             # Change button to update mode
-            self.add_service_btn.setText("💾 Update Service")
+            self.add_service_btn.setText("Update Service")
             try:
                 self.add_service_btn.clicked.disconnect()
             except TypeError:
@@ -958,7 +888,7 @@ class ServicesTab(BaseTab):
 
     def _reset_add_service_button(self):
         """Reset add service button to add mode"""
-        self.add_service_btn.setText("➕ Add Service")
+        self.add_service_btn.setText("Add Service")
         try:
             self.add_service_btn.clicked.disconnect()
         except TypeError:
@@ -1023,7 +953,7 @@ class ServicesTab(BaseTab):
             QMessageBox.information(
                 self,
                 "Validation Success",
-                f"✅ All {len(self.services)} services are valid!",
+                f"All {len(self.services)} services are valid!",
             )
 
     # FAQ methods
@@ -1272,7 +1202,7 @@ class ServicesTab(BaseTab):
         )  # No required fields at tab level (individual services/FAQs have requirements)
 
     def validate_data(self) -> ValidationResult:
-        """Validate all services and FAQ data"""
+        """Validate all services data"""
         result = ValidationResult()
 
         # Validate services
@@ -1294,26 +1224,6 @@ class ServicesTab(BaseTab):
 
             for name in duplicates:
                 result.add_error(f"Duplicate service name found: {name}")
-
-        # Validate FAQs
-        if not self.faqs:
-            result.add_warning("No FAQs defined - consider adding common questions")
-        else:
-            for i, faq in enumerate(self.faqs):
-                is_valid, errors = faq.is_valid()
-                if not is_valid:
-                    for error in errors:
-                        result.add_error(f"FAQ {i+1}: {error}")
-
-            # Check for duplicate FAQ questions
-            faq_questions = [f.question.lower() for f in self.faqs]
-            duplicates = []
-            for question in faq_questions:
-                if faq_questions.count(question) > 1 and question not in duplicates:
-                    duplicates.append(question)
-
-            for question in duplicates:
-                result.add_error(f"Duplicate FAQ question found: {question}")
 
         # Best practice warnings
         if len(self.services) > 20:
@@ -1337,9 +1247,6 @@ class ServicesTab(BaseTab):
                 f"{services_without_duration} services missing duration information"
             )
 
-        if len(self.faqs) < 3:
-            result.add_warning("Consider adding more FAQs (recommended: 5+ questions)")
-
         return result
 
     def validate_and_show_results(self):
@@ -1347,17 +1254,16 @@ class ServicesTab(BaseTab):
         result = self.validate_data()
 
         if result.is_valid:
-            msg = "✅ Services & FAQ validation passed!\n\n"
-            msg += f"• Services: {len(self.services)}\n"
-            msg += f"• FAQs: {len(self.faqs)}\n"
-            msg += "• All data is valid\n"
+            msg = "Services validation passed!\n\n"
+            msg += f"- Services: {len(self.services)}\n"
+            msg += "- All data is valid\n"
 
             if result.warnings:
-                msg += f"• Warnings: {len(result.warnings)}\n"
+                msg += f"- Warnings: {len(result.warnings)}\n"
 
                 # Show detailed warnings
                 detailed_msg = (
-                    msg + "\n" + "\n".join([f"⚠️ {w}" for w in result.warnings])
+                    msg + "\n" + "\n".join([f"WARNING: {w}" for w in result.warnings])
                 )
                 msgbox = QMessageBox(self)
                 msgbox.setWindowTitle("Validation Results")
@@ -1367,18 +1273,17 @@ class ServicesTab(BaseTab):
             else:
                 QMessageBox.information(self, "Validation Success", msg)
         else:
-            msg = "❌ Services & FAQ validation failed!\n\n"
-            msg += f"• Services: {len(self.services)}\n"
-            msg += f"• FAQs: {len(self.faqs)}\n"
-            msg += f"• Errors: {len(result.errors)}\n"
+            msg = "Services validation failed!\n\n"
+            msg += f"- Services: {len(self.services)}\n"
+            msg += f"- Errors: {len(result.errors)}\n"
 
             if result.warnings:
-                msg += f"• Warnings: {len(result.warnings)}\n"
+                msg += f"- Warnings: {len(result.warnings)}\n"
 
             # Show detailed errors and warnings
             details = []
-            details.extend([f"❌ {e}" for e in result.errors])
-            details.extend([f"⚠️ {w}" for w in result.warnings])
+            details.extend([f"ERROR: {e}" for e in result.errors])
+            details.extend([f"WARNING: {w}" for w in result.warnings])
 
             detailed_msg = msg + "\n" + "\n".join(details)
             msgbox = QMessageBox(self)
@@ -1388,55 +1293,40 @@ class ServicesTab(BaseTab):
             msgbox.exec()
 
     def get_config_data(self) -> Dict[str, Any]:
-        """Get services and FAQ configuration data"""
+        """Get services configuration data"""
         return {
             "services": [service.to_dict() for service in self.services],
-            "faq": [faq.to_dict() for faq in self.faqs],
         }
 
     def set_config_data(self, data: Dict[str, Any]):
-        """Set services and FAQ configuration data"""
+        """Set services configuration data"""
         # Load services
         services_data = data.get("services", [])
         self.services = [Service.from_dict(s) for s in services_data]
 
-        # Load FAQs
-        faq_data = data.get("faq", [])
-        self.faqs = [FAQ.from_dict(f) for f in faq_data]
-
         # Refresh displays
         self._refresh_services_table()
-        self._refresh_faq_table()
         self._update_services_count()
-        self._update_faq_count()
 
         # Clear forms
         self._clear_service_form()
-        self._clear_faq_form()
         self._reset_add_service_button()
-        self._reset_add_faq_button()
 
         # Emit data loaded signal
         self.data_loaded.emit()
 
     def clear_data(self):
-        """Clear all services and FAQ data"""
+        """Clear all services data"""
         self.services.clear()
-        self.faqs.clear()
 
         self._refresh_services_table()
-        self._refresh_faq_table()
         self._update_services_count()
-        self._update_faq_count()
 
         self._clear_service_form()
-        self._clear_faq_form()
         self._reset_add_service_button()
-        self._reset_add_faq_button()
 
         # Clear search filters
         self.services_search_input.clear()
-        self.faq_search_input.clear()
 
         self.has_changes = False
 

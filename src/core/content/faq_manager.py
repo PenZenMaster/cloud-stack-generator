@@ -313,13 +313,14 @@ class FAQManager:
     def export_to_csv(self, file_path: Path, active_only: bool = False) -> int:
         """
         Export FAQs to CSV file.
+        If no FAQs exist, exports a template CSV with headers only.
 
         Args:
             file_path: Output CSV file path
             active_only: Only export active FAQs
 
         Returns:
-            Number of FAQs exported
+            Number of FAQs exported (0 if template exported)
         """
         try:
             faqs_to_export = self.faqs
@@ -333,6 +334,11 @@ class FAQManager:
                 ]
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
+
+                # If no FAQs to export, just write header (template)
+                if len(faqs_to_export) == 0:
+                    logger.info(f"Exported CSV template (no FAQs): {file_path}")
+                    return 0
 
                 for faq in faqs_to_export:
                     writer.writerow({
@@ -414,6 +420,7 @@ class FAQManager:
     ) -> int:
         """
         Export FAQs to JSON file.
+        If no FAQs exist, exports a template JSON with one empty example.
 
         Args:
             file_path: Output JSON file path
@@ -421,14 +428,31 @@ class FAQManager:
             pretty: Pretty-print JSON
 
         Returns:
-            Number of FAQs exported
+            Number of FAQs exported (0 if template exported)
         """
         try:
             faqs_to_export = self.faqs
             if active_only:
                 faqs_to_export = [faq for faq in self.faqs if faq.active]
 
-            data = [faq.to_dict() for faq in faqs_to_export]
+            # If no FAQs to export, create template with empty example
+            if len(faqs_to_export) == 0:
+                data = [{
+                    "question": "",
+                    "answer": "",
+                    "category": "general",
+                    "tags": [],
+                    "priority": 0,
+                    "active": True,
+                    "city_name": None,
+                    "state": None,
+                    "created_date": "",
+                    "modified_date": "",
+                    "schema_type": "Question"
+                }]
+                logger.info(f"Exported JSON template (no FAQs): {file_path}")
+            else:
+                data = [faq.to_dict() for faq in faqs_to_export]
 
             with open(file_path, 'w', encoding='utf-8') as f:
                 if pretty:
@@ -436,7 +460,9 @@ class FAQManager:
                 else:
                     json.dump(data, f, ensure_ascii=False)
 
-            logger.info(f"Exported {len(faqs_to_export)} FAQs to JSON: {file_path}")
+            if len(faqs_to_export) > 0:
+                logger.info(f"Exported {len(faqs_to_export)} FAQs to JSON: {file_path}")
+
             return len(faqs_to_export)
 
         except Exception as e:

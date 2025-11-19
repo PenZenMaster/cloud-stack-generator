@@ -36,6 +36,7 @@ from .components.cloud_tab import CloudTab
 from .components.deployment_history_tab import DeploymentHistoryTab
 from .content_tabs.products_tab import ProductsTab
 from .content_tabs.services_tab import ServicesTab
+from .content_tabs.faq_tab import FAQTab
 from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
 
 # Import core functionality
@@ -45,6 +46,9 @@ from ..version import get_version
 
 # Import error logging
 from ..utils import log_error_dialog, log_file_operation_error
+
+# Import dialogs
+from .dialogs.documentation_viewer import show_documentation
 
 
 class GenerationWorker(QThread):
@@ -246,6 +250,86 @@ class EnhancedMainWindow(QMainWindow):
             help_menu = QMenu("&Help", self)
             menubar.addMenu(help_menu)
 
+        # Documentation submenu
+        docs_menu = QMenu("&Documentation", self)
+        help_menu.addMenu(docs_menu)
+
+        # User Guides submenu
+        user_guides_menu = QMenu("User Guides", self)
+        docs_menu.addMenu(user_guides_menu)
+
+        user_guides = [
+            ("FAQ Import/Export", "FAQ_IMPORT_EXPORT.md"),
+            ("AI Setup Quickstart", "AI_SETUP_QUICKSTART.md"),
+            ("Template System Guide", "TEMPLATE_SYSTEM_GUIDE.md"),
+            ("AWS S3 Deployment Setup", "AWS_S3_DEPLOYMENT_SETUP.md"),
+        ]
+
+        for title, filename in user_guides:
+            action = QAction(title, self)
+            action.triggered.connect(
+                lambda checked, f=filename: self.show_documentation(f)
+            )
+            user_guides_menu.addAction(action)
+
+        # Project Documentation submenu
+        project_docs_menu = QMenu("Project Documentation", self)
+        docs_menu.addMenu(project_docs_menu)
+
+        project_docs = [
+            ("Project Plan", "AWG-Project-Plan.md"),
+            ("Product Roadmap", "PRODUCT_ROADMAP.md"),
+            ("Project Status", "projectStatus.md"),
+            ("Session Context", "SESSION_CONTEXT.md"),
+            ("Handoff Summary", "HANDOFF_SUMMARY.md"),
+        ]
+
+        for title, filename in project_docs:
+            action = QAction(title, self)
+            action.triggered.connect(
+                lambda checked, f=filename: self.show_documentation(f)
+            )
+            project_docs_menu.addAction(action)
+
+        # Technical Guides submenu
+        tech_guides_menu = QMenu("Technical Guides", self)
+        docs_menu.addMenu(tech_guides_menu)
+
+        tech_guides = [
+            ("Codebase Structure", "CODEBASE_STRUCTURE.md"),
+            ("Architecture Analysis", "ARCHITECTURE_ANALYSIS.md"),
+            ("Template System Architecture", "TEMPLATE_SYSTEM_ARCHITECTURE.md"),
+            ("AI Integration Guide", "AI_INTEGRATION_GUIDE.md"),
+            ("Debugging", "DEBUGGING.md"),
+            ("TDD Workflow", "TDD_WORKFLOW.md"),
+        ]
+
+        for title, filename in tech_guides:
+            action = QAction(title, self)
+            action.triggered.connect(
+                lambda checked, f=filename: self.show_documentation(f)
+            )
+            tech_guides_menu.addAction(action)
+
+        # All Documentation submenu (alphabetical)
+        all_docs_menu = QMenu("All Documentation", self)
+        docs_menu.addMenu(all_docs_menu)
+
+        # Get all .md files from docs directory
+        docs_dir = Path(__file__).parent.parent.parent / "docs"
+        if docs_dir.exists():
+            doc_files = sorted([f.name for f in docs_dir.glob("*.md")])
+            for filename in doc_files:
+                # Create friendly title from filename
+                title = filename.replace(".md", "").replace("_", " ").replace("-", " ")
+                action = QAction(title, self)
+                action.triggered.connect(
+                    lambda checked, f=filename: self.show_documentation(f)
+                )
+                all_docs_menu.addAction(action)
+
+        help_menu.addSeparator()
+
         about_action = QAction("&About", self)
         about_action.triggered.connect(self.show_about)
         help_menu.addAction(about_action)
@@ -267,6 +351,7 @@ class EnhancedMainWindow(QMainWindow):
         self.enhanced_cities_tab = EnhancedCitiesTab()
         self.products_tab = ProductsTab()
         self.services_tab = ServicesTab()
+        self.faq_tab = FAQTab()
         self.cloud_tab = CloudTab()
         self.deployment_history_tab = DeploymentHistoryTab()
 
@@ -276,7 +361,8 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.branding_tab, "Branding & Style")
         self.main_tabs.addTab(self.enhanced_cities_tab, "Cities")
         self.main_tabs.addTab(self.products_tab, "Products")
-        self.main_tabs.addTab(self.services_tab, "Services & FAQ")
+        self.main_tabs.addTab(self.services_tab, "Services")
+        self.main_tabs.addTab(self.faq_tab, "FAQ")
         self.main_tabs.addTab(self.api_keys_tab, "API Keys")
         self.main_tabs.addTab(self.cloud_tab, "Cloud Deploy")
         self.main_tabs.addTab(self.deployment_history_tab, "Deployment History")
@@ -375,6 +461,7 @@ class EnhancedMainWindow(QMainWindow):
         self.enhanced_cities_tab.config_changed.connect(self.on_config_changed)
         self.products_tab.config_changed.connect(self.on_config_changed)
         self.services_tab.config_changed.connect(self.on_config_changed)
+        self.faq_tab.config_changed.connect(self.on_config_changed)
         # Note: API Keys tab handles its own persistence and should not trigger unsaved changes
 
         # Connect validation signals
@@ -695,7 +782,7 @@ class EnhancedMainWindow(QMainWindow):
 
     def get_all_config_data(self) -> Dict[str, Any]:
         """Get configuration data from all tabs"""
-        return {
+        config = {
             "business": self.business_tab.get_config_data(),
             "contact": self.contact_tab.get_config_data(),
             "branding": self.branding_tab.get_config_data(),
@@ -705,6 +792,12 @@ class EnhancedMainWindow(QMainWindow):
             "cloud": self.cloud_tab.get_config_data(),
             # API keys are application-level, not saved in client configs
         }
+
+        # Merge FAQ data from FAQ tab into services section
+        faq_data = self.faq_tab.get_config_data()
+        config["services"].update(faq_data)
+
+        return config
 
     def create_client_config(self, config_data: Dict[str, Any]) -> ClientConfig:
         """Create ClientConfig object from tab data"""
@@ -1124,13 +1217,18 @@ class EnhancedMainWindow(QMainWindow):
             "services": [
                 {"name": s.name, "description": s.description, "category": s.category}
                 for s in config.services
-            ],
+            ]
+        }
+        self.services_tab.set_config_data(services_data)
+
+        # Load FAQ data
+        faq_data = {
             "faq": [
                 {"question": f.question, "answer": f.answer}
                 for f in config.faq
             ]
         }
-        self.services_tab.set_config_data(services_data)
+        self.faq_tab.set_config_data(faq_data)
 
         # Set client context for cloud tab (loads client-specific AWS config)
         self.cloud_tab.set_client_context(config.business.business_name, config.business.domain)
@@ -1243,7 +1341,8 @@ class EnhancedMainWindow(QMainWindow):
             "Branding & Style": self.branding_tab,
             "Cities": self.enhanced_cities_tab,
             "Products": self.products_tab,
-            "Services & FAQ": self.services_tab,
+            "Services": self.services_tab,
+            "FAQ": self.faq_tab,
             # API Keys tab excluded - it's application-level, not client-specific
         }
 
@@ -1684,7 +1783,7 @@ class EnhancedMainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "About SEO Authority Website Generator",
-            "<h3>SEO Authority Website Generator v3.2.0</h3>"
+            "<h3>SEO Authority Website Generator v3.3.0</h3>"
             "<p>Sprint 2 Week 2 - Enhanced Modular Architecture</p>"
             "<p><b>Features:</b></p>"
             "<ul>"
@@ -1693,13 +1792,28 @@ class EnhancedMainWindow(QMainWindow):
             "<li>Branding & Color Management</li>"
             "<li>Product Catalog with CSV Import</li>"
             "<li>Services & FAQ Management</li>"
-            "<li><b>NEW:</b> Mode A (S3-Only) & Mode B (CloudFront + OAC) Deployment</li>"
-            "<li><b>NEW:</b> Auto-Create CloudFront Distributions with OAC</li>"
-            "<li><b>NEW:</b> Multi-Deployment Management</li>"
-            "<li><b>NEW:</b> Per-Deployment Meta Tags</li>"
+            "<li>Mode A (S3-Only) & Mode B (CloudFront + OAC) Deployment</li>"
+            "<li>Auto-Create CloudFront Distributions with OAC</li>"
+            "<li>Multi-Deployment Management</li>"
+            "<li>Per-Deployment Meta Tags</li>"
+            "<li><b>NEW:</b> Help Menu with Documentation Viewer</li>"
+            "<li><b>NEW:</b> Markdown Rendering for Documentation</li>"
             "</ul>"
             "<p><b>Status:</b> Production-Ready Cloud Deployment</p>",
         )
+
+    def show_documentation(self, filename: str):
+        """
+        Show documentation in a non-modal viewer window.
+
+        Args:
+            filename: Name of the documentation file (e.g., "FAQ_IMPORT_EXPORT.md")
+        """
+        docs_dir = Path(__file__).parent.parent.parent / "docs"
+        doc_path = docs_dir / filename
+
+        # Use the convenience function to show documentation
+        show_documentation(doc_path, self)
 
     def closeEvent(self, event):
         """Handle application close event"""
