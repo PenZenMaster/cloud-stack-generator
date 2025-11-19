@@ -25,6 +25,10 @@ from datetime import datetime
 
 from ..templates.template_manager import TemplateManager, TemplateType
 from ..config.models import ClientConfig, CityPageConfig
+from ..utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 
 
 class EnhancedCityPageGenerator:
@@ -274,7 +278,10 @@ class EnhancedCityPageGenerator:
             return preview_generator.generate_preview_html(self.selected_template_id, context)
 
         except Exception as e:
-            print(f"Error generating preview: {e}")
+            logger.error(
+                "Error generating preview",
+                extra={"extra_fields": {"error": str(e)}}
+            )
             return None
 
     def _build_template_context(self, city_page: CityPageConfig) -> Dict[str, Any]:

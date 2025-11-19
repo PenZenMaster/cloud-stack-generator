@@ -30,6 +30,11 @@ import re
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
+from ..utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
+
 
 @dataclass
 class UploadProgress:
@@ -315,12 +320,18 @@ class S3Manager:
                     
                 except Exception as cf_error:
                     # Fallback to HTTP if CloudFront fails
-                    print(f"CloudFront setup failed, falling back to HTTP: {cf_error}")
+                    logger.warning(
+                        "CloudFront setup failed, falling back to HTTP",
+                        extra={"extra_fields": {
+                            "bucket": bucket_name,
+                            "error": str(cf_error)
+                        }}
+                    )
                     if region == 'us-east-1':
                         website_url = f"http://{bucket_name}.s3-website-{region}.amazonaws.com"
                     else:
                         website_url = f"http://{bucket_name}.s3-website.{region}.amazonaws.com"
-                    
+
                     return True, f"Website configured with HTTP (HTTPS setup failed). URL: {website_url}"
             else:
                 # HTTP-only mode
@@ -422,9 +433,17 @@ class S3Manager:
                     bytes_uploaded += file_size
                     progress.bytes_uploaded = bytes_uploaded
                     progress.uploaded_files += 1
-                    
+
                 except Exception as e:
-                    print(f"Failed to upload {file_path}: {e}")
+                    logger.error(
+                        "Failed to upload file",
+                        extra={"extra_fields": {
+                            "file_path": str(file_path),
+                            "bucket": bucket_name,
+                            "s3_key": s3_key,
+                            "error": str(e)
+                        }}
+                    )
                     failed_files.append(str(relative_path))
                     progress.failed_files += 1
             
@@ -473,9 +492,15 @@ class S3Manager:
                             if origin.get('DomainName') == s3_origin:
                                 # Found CloudFront distribution
                                 return f"https://{dist['DomainName']}"
-                    
+
                 except Exception as cf_error:
-                    print(f"CloudFront lookup failed: {cf_error}")
+                    logger.warning(
+                        "CloudFront lookup failed",
+                        extra={"extra_fields": {
+                            "bucket": bucket_name,
+                            "error": str(cf_error)
+                        }}
+                    )
             
             # Fallback to S3 website URL (HTTP only)
             s3 = self._get_s3_client()
@@ -487,9 +512,15 @@ class S3Manager:
                 return f"http://{bucket_name}.s3-website-{region}.amazonaws.com"
             else:
                 return f"http://{bucket_name}.s3-website.{region}.amazonaws.com"
-            
+
         except Exception as e:
-            print(f"Error getting website URL: {e}")
+            logger.error(
+                "Error getting website URL",
+                extra={"extra_fields": {
+                    "bucket": bucket_name,
+                    "error": str(e)
+                }}
+            )
             return None
     
     def list_bucket_contents(
@@ -516,9 +547,16 @@ class S3Manager:
                 })
             
             return objects
-            
+
         except Exception as e:
-            print(f"Error listing bucket contents: {e}")
+            logger.error(
+                "Error listing bucket contents",
+                extra={"extra_fields": {
+                    "bucket": bucket_name,
+                    "prefix": prefix,
+                    "error": str(e)
+                }}
+            )
             return []
     
     def delete_bucket_contents(self, bucket_name: str, prefix: str = "") -> Tuple[bool, str]:
@@ -699,7 +737,14 @@ class S3Manager:
             return None
 
         except Exception as e:
-            print(f"Error finding CloudFront distribution: {e}")
+            logger.error(
+                "Error finding CloudFront distribution",
+                extra={"extra_fields": {
+                    "bucket": bucket_name,
+                    "origin_path": origin_path,
+                    "error": str(e)
+                }}
+            )
             return None
 
     def create_origin_access_control(
@@ -871,7 +916,14 @@ class S3Manager:
             )
 
             if not policy_success:
-                print(f"Warning: Bucket policy update failed: {policy_message}")
+                logger.warning(
+                    "Bucket policy update failed",
+                    extra={"extra_fields": {
+                        "bucket": bucket_name,
+                        "distribution_arn": response['Distribution']['ARN'],
+                        "message": policy_message
+                    }}
+                )
 
             return True, distribution_id, cloudfront_domain, \
                    f"CloudFront distribution created: {distribution_id} (domain: {cloudfront_domain})"
@@ -1043,7 +1095,7 @@ class S3Manager:
         Example:
             success, has_oac, msg = s3_manager.check_distribution_oac_status("E1234567890ABC")
             if success and not has_oac:
-                print("WARNING: Distribution lacks OAC - will cause 403 errors with private bucket")
+                logger.warning("Distribution lacks OAC - will cause 403 errors with private bucket")
         """
         try:
             cloudfront = self.session.client('cloudfront')
