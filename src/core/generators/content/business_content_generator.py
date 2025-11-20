@@ -24,7 +24,6 @@ import logging
 from typing import TYPE_CHECKING, Optional, Dict, Any
 
 if TYPE_CHECKING:
-    from ...config.models import ClientConfig
     from ...services.ai_content_service import AIContentService
 
 logger = logging.getLogger(__name__)
