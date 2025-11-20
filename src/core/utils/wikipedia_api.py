@@ -89,7 +89,7 @@ class WikipediaAPI:
             potential_urls = []
             
             if "/thumb/" in original_url:
-                base_url = original_url.split("/thumb/")[0] + "/thumb/" + original_url.split("/thumb/")[1]
+                original_url.split("/thumb/")[0] + "/thumb/" + original_url.split("/thumb/")[1]
                 
                 # Try different sizes, from largest to smallest
                 for size in ["1280px", "800px", "640px", "480px", "320px"]:

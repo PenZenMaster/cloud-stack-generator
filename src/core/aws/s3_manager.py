@@ -713,7 +713,7 @@ class S3Manager:
                 s3 = self._get_s3_client()
                 bucket_location = s3.get_bucket_location(Bucket=bucket_name)
                 region = bucket_location.get('LocationConstraint') or 'us-east-1'
-            except:
+            except Exception:
                 region = 'us-east-1'
 
             # S3 origin domain name
@@ -790,7 +790,7 @@ class S3Manager:
                             for oac in page['OriginAccessControlList']['Items']:
                                 if oac['Name'] == name:
                                     return True, oac['Id'], f"Using existing OAC: {oac['Id']}"
-                except:
+                except Exception:
                     pass
 
             return False, None, f"OAC creation failed ({error_code}): {str(e)}"
@@ -823,7 +823,7 @@ class S3Manager:
                 s3 = self._get_s3_client()
                 bucket_location = s3.get_bucket_location(Bucket=bucket_name)
                 region = bucket_location.get('LocationConstraint') or 'us-east-1'
-            except:
+            except Exception:
                 region = 'us-east-1'
 
             # Normalize origin path
@@ -990,10 +990,10 @@ class S3Manager:
                         'RestrictPublicBuckets': True
                     }
                 )
-            except:
+            except Exception:
                 pass  # May not have permission, but policy is more important
 
-            return True, f"Bucket policy updated for OAC access"
+            return True, "Bucket policy updated for OAC access"
 
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code', 'Unknown')
@@ -1197,8 +1197,8 @@ class S3Manager:
             # Verify distribution is disabled
             if config['Enabled']:
                 return False, \
-                    f"Cannot delete: Distribution is still enabled. " \
-                    f"Disable it first using disable_distribution()."
+                    "Cannot delete: Distribution is still enabled. " \
+                    "Disable it first using disable_distribution()."
 
             # Check deployment status
             dist_response = cloudfront.get_distribution(Id=distribution_id)

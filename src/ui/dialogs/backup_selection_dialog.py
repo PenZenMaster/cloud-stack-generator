@@ -36,7 +36,7 @@ src_path = str(Path(__file__).parent.parent.parent)
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
-from core.templates.backup_manager import BackupMetadata
+from core.templates.backup_manager import BackupMetadata  # noqa: E402
 
 
 class BackupSelectionDialog(QDialog):

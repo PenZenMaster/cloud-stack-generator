@@ -295,7 +295,7 @@ class FAQManager:
 
                     except Exception as e:
                         logger.warning(
-                            f"Skipping invalid CSV row",
+                            "Skipping invalid CSV row",
                             extra={"extra_fields": {"error": str(e), "row": row}}
                         )
                         continue
@@ -305,7 +305,7 @@ class FAQManager:
 
         except Exception as e:
             logger.error(
-                f"Failed to import FAQs from CSV",
+                "Failed to import FAQs from CSV",
                 extra={"extra_fields": {"file": str(file_path), "error": str(e)}}
             )
             raise
@@ -359,7 +359,7 @@ class FAQManager:
 
         except Exception as e:
             logger.error(
-                f"Failed to export FAQs to CSV",
+                "Failed to export FAQs to CSV",
                 extra={"extra_fields": {"file": str(file_path), "error": str(e)}}
             )
             raise
@@ -397,7 +397,7 @@ class FAQManager:
                     imported += 1
                 except Exception as e:
                     logger.warning(
-                        f"Skipping invalid JSON item",
+                        "Skipping invalid JSON item",
                         extra={"extra_fields": {"error": str(e), "item": item}}
                     )
                     continue
@@ -407,7 +407,7 @@ class FAQManager:
 
         except Exception as e:
             logger.error(
-                f"Failed to import FAQs from JSON",
+                "Failed to import FAQs from JSON",
                 extra={"extra_fields": {"file": str(file_path), "error": str(e)}}
             )
             raise
@@ -467,7 +467,7 @@ class FAQManager:
 
         except Exception as e:
             logger.error(
-                f"Failed to export FAQs to JSON",
+                "Failed to export FAQs to JSON",
                 extra={"extra_fields": {"file": str(file_path), "error": str(e)}}
             )
             raise
