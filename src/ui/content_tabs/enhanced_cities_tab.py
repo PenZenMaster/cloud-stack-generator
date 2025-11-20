@@ -1174,9 +1174,8 @@ class EnhancedCitiesTab(BaseTab):
                     parent=self
                 )
 
-                if dialog.exec() == QDialog.DialogCode.Accepted:
-                    final_content = dialog.get_content()
-                    self.about_city_edit.setPlainText(final_content)
+                dialog.content_accepted.connect(lambda c: self.about_city_edit.setPlainText(c))
+                dialog.exec()
             else:
                 QMessageBox.critical(
                     self, "Generation Failed",
@@ -1278,9 +1277,8 @@ Generate only the title, no explanation."""
                     parent=self
                 )
 
-                if dialog.exec() == QDialog.DialogCode.Accepted:
-                    final_content = dialog.get_content()
-                    self.seo_title_edit.setText(final_content)
+                dialog.content_accepted.connect(lambda c: self.seo_title_edit.setText(c))
+                dialog.exec()
             else:
                 QMessageBox.critical(
                     self, "Generation Failed",
@@ -1396,10 +1394,12 @@ Generate 800-1200 words of high-quality, SEO-optimized content."""
                     parent=self
                 )
 
-                if dialog.exec() == QDialog.DialogCode.Accepted:
-                    final_content = dialog.get_content()
-                    self.seo_content_edit.setPlainText(final_content)
+                def on_content_accepted(c):
+                    self.seo_content_edit.setPlainText(c)
                     self.update_word_count()
+
+                dialog.content_accepted.connect(on_content_accepted)
+                dialog.exec()
             else:
                 QMessageBox.critical(
                     self, "Generation Failed",
