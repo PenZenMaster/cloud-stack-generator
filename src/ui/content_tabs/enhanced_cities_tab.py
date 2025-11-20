@@ -1416,11 +1416,14 @@ Structure:
 4. Local expertise and community connection
 5. Call to action encouraging contact
 
-Write in HTML format with <h3> headings for sections and <p> tags for paragraphs.
+IMPORTANT: Generate ONLY the content text (plain paragraphs and sections).
+DO NOT include any HTML tags (no <html>, <body>, <head>, <!DOCTYPE>, etc.).
+DO NOT include any meta tags or structural elements.
+Just write the content as plain text that will be inserted into a webpage.
 Focus on value to the customer, not just features.
 Make it locally relevant to {city_name}.
 
-Generate 800-1200 words of high-quality, SEO-optimized content."""
+Generate 800-1200 words of high-quality, SEO-optimized content as plain text only."""
 
             if existing_content:
                 prompt += f"\n\nExisting content to enhance:\n{existing_content[:500]}"
