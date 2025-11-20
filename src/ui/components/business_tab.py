@@ -256,19 +256,21 @@ class BusinessTab(BaseTab):
         header_layout.addStretch()
 
         # Generate with AI button
-        ai_desc_button = QPushButton("✨ Generate with AI")
-        ai_desc_button.setMaximumWidth(150)
+        ai_desc_button = QPushButton("Generate with AI")
+        ai_desc_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         ai_desc_button.setStyleSheet("""
             QPushButton {
                 background-color: #007bff;
                 color: white;
+                padding: 8px 16px;
                 border: none;
-                padding: 6px 12px;
                 border-radius: 4px;
-                font-size: 10px;
             }
             QPushButton:hover {
                 background-color: #0056b3;
+            }
+            QPushButton:pressed {
+                background-color: #004085;
             }
         """)
         ai_desc_button.clicked.connect(self._generate_business_description)
@@ -365,19 +367,21 @@ class BusinessTab(BaseTab):
         overview_header.addWidget(overview_label)
         overview_header.addStretch()
 
-        ai_overview_button = QPushButton("✨ Generate with AI")
-        ai_overview_button.setMaximumWidth(150)
+        ai_overview_button = QPushButton("Generate with AI")
+        ai_overview_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         ai_overview_button.setStyleSheet("""
             QPushButton {
                 background-color: #007bff;
                 color: white;
+                padding: 8px 16px;
                 border: none;
-                padding: 6px 12px;
                 border-radius: 4px;
-                font-size: 10px;
             }
             QPushButton:hover {
                 background-color: #0056b3;
+            }
+            QPushButton:pressed {
+                background-color: #004085;
             }
         """)
         ai_overview_button.clicked.connect(self._generate_company_overview)
@@ -399,19 +403,21 @@ class BusinessTab(BaseTab):
         mission_header.addWidget(mission_label)
         mission_header.addStretch()
 
-        ai_mission_button = QPushButton("✨ Generate with AI")
-        ai_mission_button.setMaximumWidth(150)
+        ai_mission_button = QPushButton("Generate with AI")
+        ai_mission_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         ai_mission_button.setStyleSheet("""
             QPushButton {
                 background-color: #007bff;
                 color: white;
+                padding: 8px 16px;
                 border: none;
-                padding: 6px 12px;
                 border-radius: 4px;
-                font-size: 10px;
             }
             QPushButton:hover {
                 background-color: #0056b3;
+            }
+            QPushButton:pressed {
+                background-color: #004085;
             }
         """)
         ai_mission_button.clicked.connect(self._generate_mission_statement)
@@ -433,19 +439,21 @@ class BusinessTab(BaseTab):
         guarantee_header.addWidget(guarantee_label)
         guarantee_header.addStretch()
 
-        ai_guarantee_button = QPushButton("✨ Generate with AI")
-        ai_guarantee_button.setMaximumWidth(150)
+        ai_guarantee_button = QPushButton("Generate with AI")
+        ai_guarantee_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         ai_guarantee_button.setStyleSheet("""
             QPushButton {
                 background-color: #007bff;
                 color: white;
+                padding: 8px 16px;
                 border: none;
-                padding: 6px 12px;
                 border-radius: 4px;
-                font-size: 10px;
             }
             QPushButton:hover {
                 background-color: #0056b3;
+            }
+            QPushButton:pressed {
+                background-color: #004085;
             }
         """)
         ai_guarantee_button.clicked.connect(self._generate_service_guarantee)
@@ -467,19 +475,21 @@ class BusinessTab(BaseTab):
         service_area_header.addWidget(service_area_label)
         service_area_header.addStretch()
 
-        ai_service_area_button = QPushButton("✨ Generate with AI")
-        ai_service_area_button.setMaximumWidth(150)
+        ai_service_area_button = QPushButton("Generate with AI")
+        ai_service_area_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         ai_service_area_button.setStyleSheet("""
             QPushButton {
                 background-color: #007bff;
                 color: white;
+                padding: 8px 16px;
                 border: none;
-                padding: 6px 12px;
                 border-radius: 4px;
-                font-size: 10px;
             }
             QPushButton:hover {
                 background-color: #0056b3;
+            }
+            QPushButton:pressed {
+                background-color: #004085;
             }
         """)
         ai_service_area_button.clicked.connect(self._generate_service_area_description)
