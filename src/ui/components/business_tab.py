@@ -27,9 +27,9 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,
     QTableWidgetItem,
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple
 from .base_tab import BaseTab, ValidationResult
 from ..dialogs.ai_content_preview_dialog import AIContentPreviewDialog
 from ...core.services.ai_content_service import AIContentService
