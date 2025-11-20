@@ -24,12 +24,22 @@ from PyQt6.QtWidgets import (
     QFrame,
     QMessageBox,
     QScrollArea,
+    QApplication,
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from .base_tab import BaseTab, ValidationResult
 from ..dialogs.city_embed_dialog import CityEmbedDialog
 from ..dialogs.enhanced_city_embed_dialog import EnhancedCityEmbedDialog
+from ..dialogs.ai_content_preview_dialog import AIContentPreviewDialog
+
+# Import AI services
+try:
+    from ...core.services.ai_content_service import AIContentService
+    from ...core.generators.content.city_field_content_generator import CityFieldContentGenerator
+except ImportError:
+    AIContentService = None
+    CityFieldContentGenerator = None
 
 # Import error logging
 
@@ -57,6 +67,11 @@ class CitiesTab(BaseTab):
         self.error_labels = {}
         self.has_changes = False
         self.app_api_keys = {}  # Store reference to app-wide API keys
+
+        # Initialize AI services
+        self.ai_service = AIContentService() if AIContentService else None
+        self.city_generator = CityFieldContentGenerator(self.ai_service) if CityFieldContentGenerator else None
+
         super().__init__(parent)
 
     def setup_ui(self):
@@ -393,19 +408,44 @@ class CitiesTab(BaseTab):
         instructions.setStyleSheet("color: #666; font-style: italic;")
         seo_layout.addWidget(instructions)
 
-        # SEO content fields
+        # SEO content fields with AI generation buttons
         seo_fields = [
-            ("neighborhoods", "City Neighborhoods & Landmarks", "Downtown Detroit, Corktown, Midtown, Belle Isle Park"),
-            ("pain_points", "Local Pain Points & Seasonal Factors", "Winter weather challenges, road construction impacts"),
-            ("case_studies", "Micro Case Studies & Examples", "Completed project: Historic downtown renovation"),
+            ("neighborhoods", "City Neighborhoods & Landmarks", "Downtown Detroit, Corktown, Midtown, Belle Isle Park", self._generate_neighborhoods),
+            ("pain_points", "Local Pain Points & Seasonal Factors", "Winter weather challenges, road construction impacts", self._generate_pain_points),
+            ("case_studies", "Micro Case Studies & Examples", "Completed project: Historic downtown renovation", self._generate_case_studies),
         ]
 
-        for field_key, label_text, placeholder in seo_fields:
-            # Label
+        for field_key, label_text, placeholder, generate_method in seo_fields:
+            # Label with AI button
+            label_layout = QHBoxLayout()
             label = QLabel(label_text + ":")
             label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
             label.setWordWrap(True)
-            seo_layout.addWidget(label)
+            label_layout.addWidget(label)
+
+            # AI generation button
+            if self.ai_service and self.ai_service.is_available():
+                ai_button = QPushButton("✨ Generate with AI")
+                ai_button.setFont(QFont("Arial", 9))
+                ai_button.setMaximumWidth(150)
+                ai_button.setStyleSheet("""
+                    QPushButton {
+                        background-color: #6C63FF;
+                        color: white;
+                        border: none;
+                        padding: 5px 10px;
+                        border-radius: 3px;
+                        font-weight: bold;
+                    }
+                    QPushButton:hover {
+                        background-color: #5952CC;
+                    }
+                """)
+                ai_button.clicked.connect(generate_method)
+                label_layout.addWidget(ai_button)
+
+            label_layout.addStretch()
+            seo_layout.addLayout(label_layout)
 
             # Input field
             widget = QTextEdit()
@@ -414,15 +454,40 @@ class CitiesTab(BaseTab):
             widget.setFont(QFont("Arial", 9))
             widget.setPlaceholderText(placeholder)
             widget.textChanged.connect(self._emit_config_changed)
-            
+
             self.seo_inputs[field_key] = widget
             seo_layout.addWidget(widget)
 
-        # City-specific FAQ section
+        # City-specific FAQ section with AI button
+        faq_label_layout = QHBoxLayout()
         faq_label = QLabel("City-Specific FAQ (4-6 Questions):")
         faq_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         faq_label.setWordWrap(True)
-        seo_layout.addWidget(faq_label)
+        faq_label_layout.addWidget(faq_label)
+
+        # AI generation button for FAQ
+        if self.ai_service and self.ai_service.is_available():
+            faq_ai_button = QPushButton("✨ Generate with AI")
+            faq_ai_button.setFont(QFont("Arial", 9))
+            faq_ai_button.setMaximumWidth(150)
+            faq_ai_button.setStyleSheet("""
+                QPushButton {
+                    background-color: #6C63FF;
+                    color: white;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 3px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #5952CC;
+                }
+            """)
+            faq_ai_button.clicked.connect(self._generate_local_faq)
+            faq_label_layout.addWidget(faq_ai_button)
+
+        faq_label_layout.addStretch()
+        seo_layout.addLayout(faq_label_layout)
 
         self.seo_inputs["local_faq"] = QTextEdit()
         self.seo_inputs["local_faq"].setFont(QFont("Arial", 9))
@@ -757,7 +822,222 @@ class CitiesTab(BaseTab):
         stored_api_key = self.app_api_keys.get("google_maps_api_key", "")
         self.api_key_input.setText(stored_api_key)
         self._on_api_key_changed()  # Update status
-    
+
+    # AI Content Generation Methods
+
+    def _get_selected_city(self):
+        """Get selected city for AI generation or first city from list."""
+        # Try to get from city selector if available
+        if hasattr(self, 'city_selector') and self.city_selector.currentText() != "Select a city...":
+            return self.city_selector.currentText()
+
+        # Fallback to first city in target cities list
+        cities_text = self.city_inputs["target_cities"].toPlainText().strip()
+        if cities_text:
+            cities = [c.strip() for c in cities_text.split("\n") if c.strip()]
+            if cities:
+                return cities[0]
+
+        return None
+
+    def _generate_neighborhoods(self):
+        """Generate neighborhoods and landmarks with AI"""
+        if not self.ai_service or not self.ai_service.is_available():
+            QMessageBox.warning(self, "AI Not Available", "AI content generation is not available.")
+            return
+
+        # Get required business info from parent or config
+        city = self._get_selected_city()
+        if not city:
+            QMessageBox.warning(self, "No City Selected", "Please add target cities first.")
+            return
+
+        # TODO: Get business name, state, industry from parent config
+        business_name = "Your Business"  # Placeholder
+        state = "Michigan"  # Placeholder
+        industry = "Services"  # Placeholder
+
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
+
+        try:
+            existing_content = self.seo_inputs["neighborhoods"].toPlainText().strip()
+            content = self.city_generator.generate_neighborhoods_description(
+                city_name=city,
+                state=state,
+                business_name=business_name,
+                industry=industry,
+                existing_content=existing_content
+            )
+
+            if not content:
+                QMessageBox.critical(self, "Generation Failed", "Failed to generate neighborhoods content.")
+                return
+
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            dialog = AIContentPreviewDialog(
+                title=f"AI Generated Neighborhoods for {city}",
+                field_name="City Neighborhoods & Landmarks",
+                content=content,
+                regenerate_callback=lambda: self.city_generator.generate_neighborhoods_description(
+                    city_name=city, state=state, business_name=business_name, industry=industry, existing_content=existing_content
+                ),
+                parent=self
+            )
+            dialog.content_accepted.connect(lambda c: self.seo_inputs["neighborhoods"].setPlainText(c))
+            dialog.exec()
+        finally:
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+    def _generate_pain_points(self):
+        """Generate local pain points with AI"""
+        if not self.ai_service or not self.ai_service.is_available():
+            QMessageBox.warning(self, "AI Not Available", "AI content generation is not available.")
+            return
+
+        city = self._get_selected_city()
+        if not city:
+            QMessageBox.warning(self, "No City Selected", "Please add target cities first.")
+            return
+
+        business_name = "Your Business"
+        state = "Michigan"
+        industry = "Services"
+
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
+
+        try:
+            existing_content = self.seo_inputs["pain_points"].toPlainText().strip()
+            content = self.city_generator.generate_pain_points(
+                city_name=city, state=state, business_name=business_name,
+                industry=industry, existing_content=existing_content
+            )
+
+            if not content:
+                QMessageBox.critical(self, "Generation Failed", "Failed to generate pain points.")
+                return
+
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            dialog = AIContentPreviewDialog(
+                title=f"AI Generated Pain Points for {city}",
+                field_name="Local Pain Points & Seasonal Factors",
+                content=content,
+                regenerate_callback=lambda: self.city_generator.generate_pain_points(
+                    city_name=city, state=state, business_name=business_name, industry=industry, existing_content=existing_content
+                ),
+                parent=self
+            )
+            dialog.content_accepted.connect(lambda c: self.seo_inputs["pain_points"].setPlainText(c))
+            dialog.exec()
+        finally:
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+    def _generate_case_studies(self):
+        """Generate micro case studies with AI"""
+        if not self.ai_service or not self.ai_service.is_available():
+            QMessageBox.warning(self, "AI Not Available", "AI content generation is not available.")
+            return
+
+        city = self._get_selected_city()
+        if not city:
+            QMessageBox.warning(self, "No City Selected", "Please add target cities first.")
+            return
+
+        business_name = "Your Business"
+        state = "Michigan"
+        industry = "Services"
+
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
+
+        try:
+            existing_content = self.seo_inputs["case_studies"].toPlainText().strip()
+            content = self.city_generator.generate_case_studies(
+                city_name=city, state=state, business_name=business_name,
+                industry=industry, existing_content=existing_content
+            )
+
+            if not content:
+                QMessageBox.critical(self, "Generation Failed", "Failed to generate case studies.")
+                return
+
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            dialog = AIContentPreviewDialog(
+                title=f"AI Generated Case Studies for {city}",
+                field_name="Micro Case Studies & Examples",
+                content=content,
+                regenerate_callback=lambda: self.city_generator.generate_case_studies(
+                    city_name=city, state=state, business_name=business_name, industry=industry, existing_content=existing_content
+                ),
+                parent=self
+            )
+            dialog.content_accepted.connect(lambda c: self.seo_inputs["case_studies"].setPlainText(c))
+            dialog.exec()
+        finally:
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+    def _generate_local_faq(self):
+        """Generate city-specific FAQ with AI"""
+        if not self.ai_service or not self.ai_service.is_available():
+            QMessageBox.warning(self, "AI Not Available", "AI content generation is not available.")
+            return
+
+        city = self._get_selected_city()
+        if not city:
+            QMessageBox.warning(self, "No City Selected", "Please add target cities first.")
+            return
+
+        business_name = "Your Business"
+        state = "Michigan"
+        industry = "Services"
+
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
+
+        try:
+            neighborhoods = self.seo_inputs["neighborhoods"].toPlainText().strip()
+            pain_points = self.seo_inputs["pain_points"].toPlainText().strip()
+            existing_content = self.seo_inputs["local_faq"].toPlainText().strip()
+
+            content = self.city_generator.generate_local_faq(
+                city_name=city, state=state, business_name=business_name,
+                industry=industry, neighborhoods=neighborhoods,
+                pain_points=pain_points, existing_content=existing_content
+            )
+
+            if not content:
+                QMessageBox.critical(self, "Generation Failed", "Failed to generate FAQ.")
+                return
+
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            dialog = AIContentPreviewDialog(
+                title=f"AI Generated FAQ for {city}",
+                field_name="City-Specific FAQ",
+                content=content,
+                regenerate_callback=lambda: self.city_generator.generate_local_faq(
+                    city_name=city, state=state, business_name=business_name, industry=industry,
+                    neighborhoods=neighborhoods, pain_points=pain_points, existing_content=existing_content
+                ),
+                parent=self
+            )
+            dialog.content_accepted.connect(lambda c: self.seo_inputs["local_faq"].setPlainText(c))
+            dialog.exec()
+        finally:
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
     def connect_signals(self):
         """Connect UI signals to emit config_changed"""
         # Signals already connected in individual widgets
