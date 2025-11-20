@@ -425,20 +425,21 @@ class CitiesTab(BaseTab):
 
             # AI generation button
             if self.ai_service and self.ai_service.is_available():
-                ai_button = QPushButton("✨ Generate with AI")
-                ai_button.setFont(QFont("Arial", 9))
-                ai_button.setMaximumWidth(150)
+                ai_button = QPushButton("Generate with AI")
+                ai_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
                 ai_button.setStyleSheet("""
                     QPushButton {
-                        background-color: #6C63FF;
+                        background-color: #007bff;
                         color: white;
+                        padding: 8px 16px;
                         border: none;
-                        padding: 5px 10px;
-                        border-radius: 3px;
-                        font-weight: bold;
+                        border-radius: 4px;
                     }
                     QPushButton:hover {
-                        background-color: #5952CC;
+                        background-color: #0056b3;
+                    }
+                    QPushButton:pressed {
+                        background-color: #004085;
                     }
                 """)
                 ai_button.clicked.connect(generate_method)
@@ -467,20 +468,21 @@ class CitiesTab(BaseTab):
 
         # AI generation button for FAQ
         if self.ai_service and self.ai_service.is_available():
-            faq_ai_button = QPushButton("✨ Generate with AI")
-            faq_ai_button.setFont(QFont("Arial", 9))
-            faq_ai_button.setMaximumWidth(150)
+            faq_ai_button = QPushButton("Generate with AI")
+            faq_ai_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
             faq_ai_button.setStyleSheet("""
                 QPushButton {
-                    background-color: #6C63FF;
+                    background-color: #007bff;
                     color: white;
+                    padding: 8px 16px;
                     border: none;
-                    padding: 5px 10px;
-                    border-radius: 3px;
-                    font-weight: bold;
+                    border-radius: 4px;
                 }
                 QPushButton:hover {
-                    background-color: #5952CC;
+                    background-color: #0056b3;
+                }
+                QPushButton:pressed {
+                    background-color: #004085;
                 }
             """)
             faq_ai_button.clicked.connect(self._generate_local_faq)

@@ -347,7 +347,23 @@ class EnhancedCitiesTab(BaseTab):
         about_city_header = QHBoxLayout()
         about_city_header.addWidget(QLabel("About City:"))
         if self.ai_service and self.ai_service.is_available():
-            ai_about_btn = QPushButton("+ Generate with AI")
+            ai_about_btn = QPushButton("Generate with AI")
+            ai_about_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+            ai_about_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #007bff;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 4px;
+                }
+                QPushButton:hover {
+                    background-color: #0056b3;
+                }
+                QPushButton:pressed {
+                    background-color: #004085;
+                }
+            """)
             ai_about_btn.clicked.connect(self._generate_about_city)
             about_city_header.addWidget(ai_about_btn)
         about_city_header.addStretch()
@@ -361,7 +377,23 @@ class EnhancedCitiesTab(BaseTab):
         seo_title_header = QHBoxLayout()
         seo_title_header.addWidget(QLabel("SEO Content Title:"))
         if self.ai_service and self.ai_service.is_available():
-            ai_title_btn = QPushButton("+ Generate with AI")
+            ai_title_btn = QPushButton("Generate with AI")
+            ai_title_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+            ai_title_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #007bff;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 4px;
+                }
+                QPushButton:hover {
+                    background-color: #0056b3;
+                }
+                QPushButton:pressed {
+                    background-color: #004085;
+                }
+            """)
             ai_title_btn.clicked.connect(self._generate_seo_title)
             seo_title_header.addWidget(ai_title_btn)
         seo_title_header.addStretch()
@@ -374,7 +406,23 @@ class EnhancedCitiesTab(BaseTab):
         seo_body_header = QHBoxLayout()
         seo_body_header.addWidget(QLabel("SEO Content Body (800+ words):"))
         if self.ai_service and self.ai_service.is_available():
-            ai_body_btn = QPushButton("+ Generate with AI")
+            ai_body_btn = QPushButton("Generate with AI")
+            ai_body_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+            ai_body_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #007bff;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 4px;
+                }
+                QPushButton:hover {
+                    background-color: #0056b3;
+                }
+                QPushButton:pressed {
+                    background-color: #004085;
+                }
+            """)
             ai_body_btn.clicked.connect(self._generate_seo_body)
             seo_body_header.addWidget(ai_body_btn)
         seo_body_header.addStretch()
