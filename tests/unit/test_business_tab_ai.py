@@ -126,8 +126,8 @@ class TestBusinessTabAIGeneration:
         # Verify cursor was set to wait cursor
         mock_set_cursor.assert_called_once_with(Qt.CursorShape.WaitCursor)
 
-        # Verify cursor was restored
-        mock_restore_cursor.assert_called_once()
+        # Verify cursor was restored (called twice: before dialog and in finally)
+        assert mock_restore_cursor.call_count == 2
 
     @patch('src.ui.components.business_tab.QApplication.setOverrideCursor')
     @patch('src.ui.components.business_tab.QApplication.restoreOverrideCursor')
@@ -259,7 +259,8 @@ class TestBusinessTabAIGeneration:
 
         # Verify cursor handling
         mock_set_cursor.assert_called_once()
-        mock_restore_cursor.assert_called_once()
+        # Cursor restored twice: before dialog and in finally
+        assert mock_restore_cursor.call_count == 2
 
         # Verify dialog was shown
         mock_dialog.assert_called_once()
@@ -309,4 +310,5 @@ class TestBusinessTabAIGeneration:
 
             # Verify cursor was set and restored for each method
             mock_set_cursor.assert_called_once_with(Qt.CursorShape.WaitCursor)
-            mock_restore_cursor.assert_called_once()
+            # Cursor restored twice: before dialog and in finally
+            assert mock_restore_cursor.call_count == 2

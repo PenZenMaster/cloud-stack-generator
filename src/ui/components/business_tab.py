@@ -933,7 +933,11 @@ class BusinessTab(BaseTab):
                 )
                 return
 
-            # Show preview dialog
+            # Restore cursor and enable UI before showing dialog
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            # Show preview dialog with normal cursor
             dialog = AIContentPreviewDialog(
                 title="AI Generated Business Description",
                 field_name="Business Description",
@@ -949,7 +953,7 @@ class BusinessTab(BaseTab):
             dialog.content_accepted.connect(lambda c: self.description_input.setPlainText(c))
             dialog.exec()
         finally:
-            # Restore cursor and enable UI
+            # Safety net - ensure cursor and UI are restored even if exception occurred
             QApplication.restoreOverrideCursor()
             self.setEnabled(True)
 
@@ -998,7 +1002,11 @@ class BusinessTab(BaseTab):
                 )
                 return
 
-            # Show preview dialog
+            # Restore cursor and enable UI before showing dialog
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            # Show preview dialog with normal cursor
             dialog = AIContentPreviewDialog(
                 title="AI Generated Company Overview",
                 field_name="Company Overview",
@@ -1015,7 +1023,7 @@ class BusinessTab(BaseTab):
             dialog.content_accepted.connect(lambda c: self.company_overview_input.setPlainText(c))
             dialog.exec()
         finally:
-            # Restore cursor and enable UI
+            # Safety net - ensure cursor and UI are restored even if exception occurred
             QApplication.restoreOverrideCursor()
             self.setEnabled(True)
 
@@ -1062,7 +1070,11 @@ class BusinessTab(BaseTab):
                 )
                 return
 
-            # Show preview dialog
+            # Restore cursor and enable UI before showing dialog
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            # Show preview dialog with normal cursor
             dialog = AIContentPreviewDialog(
                 title="AI Generated Mission Statement",
                 field_name="Mission Statement",
@@ -1078,7 +1090,7 @@ class BusinessTab(BaseTab):
             dialog.content_accepted.connect(lambda c: self.mission_statement_input.setPlainText(c))
             dialog.exec()
         finally:
-            # Restore cursor and enable UI
+            # Safety net - ensure cursor and UI are restored even if exception occurred
             QApplication.restoreOverrideCursor()
             self.setEnabled(True)
 
@@ -1125,7 +1137,11 @@ class BusinessTab(BaseTab):
                 )
                 return
 
-            # Show preview dialog
+            # Restore cursor and enable UI before showing dialog
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            # Show preview dialog with normal cursor
             dialog = AIContentPreviewDialog(
                 title="AI Generated Service Guarantee",
                 field_name="Service Guarantee",
@@ -1141,7 +1157,7 @@ class BusinessTab(BaseTab):
             dialog.content_accepted.connect(lambda c: self.service_guarantee_input.setPlainText(c))
             dialog.exec()
         finally:
-            # Restore cursor and enable UI
+            # Safety net - ensure cursor and UI are restored even if exception occurred
             QApplication.restoreOverrideCursor()
             self.setEnabled(True)
 
@@ -1189,7 +1205,11 @@ class BusinessTab(BaseTab):
                 )
                 return
 
-            # Show preview dialog
+            # Restore cursor and enable UI before showing dialog
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            # Show preview dialog with normal cursor
             dialog = AIContentPreviewDialog(
                 title="AI Generated Service Area Description",
                 field_name="Service Area Description",
@@ -1205,6 +1225,6 @@ class BusinessTab(BaseTab):
             dialog.content_accepted.connect(lambda c: self.service_area_description_input.setPlainText(c))
             dialog.exec()
         finally:
-            # Restore cursor and enable UI
+            # Safety net - ensure cursor and UI are restored even if exception occurred
             QApplication.restoreOverrideCursor()
             self.setEnabled(True)
