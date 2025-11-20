@@ -9,7 +9,7 @@ Phase 2 Implementation (v3.2.0)
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QFrame, QGroupBox, QMessageBox
+    QScrollArea, QFrame, QMessageBox
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from typing import List, Optional

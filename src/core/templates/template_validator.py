@@ -26,17 +26,10 @@ import re
 from pathlib import Path
 
 try:
-    from jinja2 import Environment, Template, TemplateSyntaxError, meta, DictLoader
-    from jinja2.exceptions import UndefinedError
+    from jinja2 import Environment, TemplateSyntaxError, meta, DictLoader
     JINJA2_AVAILABLE = True
 except ImportError:
     JINJA2_AVAILABLE = False
-
-try:
-    from bs4 import BeautifulSoup, Comment
-    BS4_AVAILABLE = True
-except ImportError:
-    BS4_AVAILABLE = False
 
 
 class ValidationLevel(Enum):
@@ -269,7 +262,7 @@ class TemplateValidator:
             variables = meta.find_undeclared_variables(ast)
 
             # Try to compile template
-            template = self.jinja_env.from_string(template_content)
+            self.jinja_env.from_string(template_content)
 
         except TemplateSyntaxError as e:
             issues.append(ValidationIssue(

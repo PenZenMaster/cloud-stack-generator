@@ -147,7 +147,6 @@ class PeopleAlsoAskAPI:
     
     def _generate_city_questions(self, service: str, city_base: str, count: int) -> List[str]:
         """Generate city-specific questions"""
-        questions = []
         
         templates = [
             f"What should I know about {service} in {city_base}?",
