@@ -23,7 +23,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject
 from PyQt6.QtGui import QFont
 
 from ..components.base_tab import BaseTab
-from ..dialogs.ai_content_preview import AIContentPreviewDialog
+from ..dialogs.ai_content_preview_dialog import AIContentPreviewDialog
 from ...core.config.models import (
     CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
 )
