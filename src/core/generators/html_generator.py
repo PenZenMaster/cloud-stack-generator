@@ -498,11 +498,22 @@ class HTMLGenerator:
 
         # Determine if we should use LocalBusiness or Organization
         # Use LocalBusiness only if address is publicly exposed
-        has_public_address = (
-            (config.google_business_profile.expose_address) or  # GBP shows address
-            (config.contact.address.publish_on_website)  # Address published on website
-        )
+        # Handle both dict and object formats for backward compatibility
+        gbp_expose = False
+        if hasattr(config, 'google_business_profile'):
+            if isinstance(config.google_business_profile, dict):
+                gbp_expose = config.google_business_profile.get('expose_address', False)
+            else:
+                gbp_expose = getattr(config.google_business_profile, 'expose_address', False)
 
+        address_publish = False
+        if hasattr(config.contact, 'address'):
+            if isinstance(config.contact.address, dict):
+                address_publish = config.contact.address.get('publish_on_website', True)
+            else:
+                address_publish = getattr(config.contact.address, 'publish_on_website', True)
+
+        has_public_address = gbp_expose or address_publish
         business_type = "LocalBusiness" if has_public_address else "Organization"
 
         # Main business entity
@@ -521,9 +532,9 @@ class HTMLGenerator:
             business_schema["email"] = config.contact.email
 
         # Add address with proper PostalAddress structure
-        # Only include address if it's meant to be published
+        # Only include address if it's meant to be published (reuse the values from above)
         if (config.contact.address and config.contact.address.street and
-            (config.contact.address.publish_on_website or config.google_business_profile.expose_address)):
+            (address_publish or gbp_expose)):
             business_schema["address"] = {
                 "@type": "PostalAddress",
                 "streetAddress": config.contact.address.street,
