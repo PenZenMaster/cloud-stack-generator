@@ -46,7 +46,7 @@ except ImportError:
 
 # Import enhanced error handling
 try:
-    from ...utils import get_error_handler, handle_errors, safe_operation, log_ui_error
+    from ...utils import log_ui_error
     ERROR_HANDLING_AVAILABLE = True
 except ImportError:
     print("Enhanced error handling not available")
@@ -483,7 +483,7 @@ class SimpleTemplateEditor(QDialog):
         try:
             # Try to render with Jinja2 if available
             try:
-                from jinja2 import Template, Environment, DictLoader
+                from jinja2 import Environment, DictLoader
                 # Load component templates for includes
                 component_templates = self._load_component_templates()
                 env = Environment(loader=DictLoader(component_templates))

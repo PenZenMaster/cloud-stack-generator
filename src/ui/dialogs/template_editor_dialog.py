@@ -52,13 +52,13 @@ src_path = str(Path(__file__).parent.parent.parent)
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
-from core.templates.template_manager import TemplateManager, TemplateType, TemplateMetadata, TemplateVariant
-from core.templates.template_preview import TemplatePreviewGenerator
-from core.templates.backup_manager import TemplateBackupManager
+from core.templates.template_manager import TemplateManager, TemplateType, TemplateMetadata, TemplateVariant  # noqa: E402
+from core.templates.template_preview import TemplatePreviewGenerator  # noqa: E402
+from core.templates.backup_manager import TemplateBackupManager  # noqa: E402
 
 # Import enhanced error handling
 try:
-    from ...utils import get_error_handler, handle_errors, safe_operation, log_ui_error
+    from ...utils import log_ui_error
     from ...utils.error_classification import classify_and_handle_error
     ERROR_HANDLING_AVAILABLE = True
 except ImportError:
@@ -1192,7 +1192,7 @@ class TemplateEditorDialog(QDialog):
             from jinja2 import Environment, DictLoader
             # Use DictLoader to avoid "no loader specified" warning
             env = Environment(loader=DictLoader({}))
-            template = env.from_string(self.current_template_content)
+            env.from_string(self.current_template_content)
         except Exception as e:
             errors.append(f"Jinja2 template syntax error: {str(e)}")
 

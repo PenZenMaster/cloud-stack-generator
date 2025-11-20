@@ -366,7 +366,7 @@ class TemplateManager:
                 dst.write(content)
 
             # Export metadata
-            metadata_file = export_dir / f"{template_id}.template.json"
+            export_dir / f"{template_id}.template.json"
             self.create_template_metadata_file(metadata, export_dir.parent)
 
             return True

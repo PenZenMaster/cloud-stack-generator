@@ -50,8 +50,8 @@ src_path = str(Path(__file__).parent.parent.parent)
 if src_path not in sys.path:
     sys.path.insert(0, src_path)
 
-from core.templates.template_manager import TemplateManager, TemplateType
-from core.templates.template_preview import TemplatePreviewGenerator
+from core.templates.template_manager import TemplateManager, TemplateType  # noqa: E402
+from core.templates.template_preview import TemplatePreviewGenerator  # noqa: E402
 
 
 class TemplatePreviewWorker(QObject):

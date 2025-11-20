@@ -26,7 +26,6 @@ import json
 from .abstract_provider import (
     AbstractCloudProvider,
     ProviderType,
-    DeploymentMode,
     DeploymentResult,
     ProviderConfig,
     AuthenticationError,
@@ -42,7 +41,7 @@ logger = get_logger(__name__)
 
 try:
     from google.cloud import storage
-    from google.cloud.exceptions import GoogleCloudError, NotFound, Conflict
+    from google.cloud.exceptions import NotFound, Conflict
     from google.oauth2 import service_account
     GCS_AVAILABLE = True
 except ImportError:
@@ -129,7 +128,7 @@ class GCSProvider(AbstractCloudProvider):
 
             # Method 2: Service Account key components
             elif "project_id" in credentials and "private_key" in credentials:
-                logger.info(f"Authenticating with service account key components")
+                logger.info("Authenticating with service account key components")
 
                 sa_info = {
                     "type": "service_account",
@@ -169,7 +168,7 @@ class GCSProvider(AbstractCloudProvider):
 
             self._authenticated = True
             logger.info(
-                f"GCS authentication successful",
+                "GCS authentication successful",
                 extra={"extra_fields": {"project_id": self.project_id}}
             )
             return True
@@ -388,7 +387,7 @@ class GCSProvider(AbstractCloudProvider):
             if not local_dir.exists() or not local_dir.is_dir():
                 raise UploadError(f"Local directory not found: {local_dir}")
 
-            bucket = self.client.get_bucket(bucket_name)
+            _ = self.client.get_bucket(bucket_name)  # Validate bucket exists
 
             # Store bucket name for file uploads
             self.config.extra_config["current_bucket"] = bucket_name
