@@ -1,0 +1,119 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://acmemetal.com#business",
+      "name": "Acme Metal Fabrication",
+      "description": "Custom architectural metalwork and fabrication services",
+      "url": "https://acmemetal.com",
+      "telephone": "+1-555-123-4567",
+      "email": "info@acmemetal.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "123 Industrial Way",
+        "addressLocality": "Richmond",
+        "addressRegion": "Virginia",
+        "postalCode": "23219",
+        "addressCountry": "United States"
+      },
+      "logo": "https://acmemetal.com/logo.png",
+      "image": "https://acmemetal.com/logo.png",
+      "sameAs": [
+        "https://facebook.com/acmemetal",
+        "https://linkedin.com/company/acmemetal",
+        "https://instagram.com/acmemetal"
+      ],
+      "areaServed": [
+        {
+          "@type": "City",
+          "name": "Richmond",
+          "containedIn": {
+            "@type": "State",
+            "name": "Virginia"
+          }
+        },
+        {
+          "@type": "City",
+          "name": "Charlottesville",
+          "containedIn": {
+            "@type": "State",
+            "name": "Virginia"
+          }
+        }
+      ],
+      "knowsAbout": [
+        "https://en.wikipedia.org/wiki/Metal_fabrication",
+        "https://en.wikipedia.org/wiki/Metalworking",
+        "https://en.wikipedia.org/wiki/Copper",
+        "https://en.wikipedia.org/wiki/Architectural_metalwork"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://acmemetal.com#website",
+      "url": "https://acmemetal.com",
+      "name": "Acme Metal Fabrication",
+      "publisher": {
+        "@id": "https://acmemetal.com#business"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://acmemetal.com#webpage",
+      "url": "https://acmemetal.com",
+      "name": "Acme Metal Fabrication - Precision Metal Fabrication Since 1995",
+      "description": "Custom architectural metalwork and fabrication services",
+      "inLanguage": "en",
+      "isPartOf": {
+        "@id": "https://acmemetal.com#website"
+      },
+      "about": {
+        "@id": "https://acmemetal.com#business"
+      },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://acmemetal.com/logo.png"
+      }
+    },
+    {
+      "@type": "Product",
+      "@id": "https://acmemetal.com/products/custom-copper-cupola#product",
+      "name": "Custom Copper Cupola",
+      "description": "Hand-crafted copper cupola for architectural applications",
+      "category": "Architectural Metalwork",
+      "brand": {
+        "@id": "https://acmemetal.com#business"
+      },
+      "itemCondition": "https://schema.org/NewCondition",
+      "sku": "CUP-001",
+      "mpn": "CUP-001",
+      "image": [
+        "https://acmemetal.com/images/products/copper-cupola.jpg"
+      ],
+      "isSimilarTo": [
+        "https://en.wikipedia.org/wiki/Cupola"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "2500",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "url": "https://acmemetal.com/products/custom-copper-cupola",
+        "seller": {
+          "@id": "https://acmemetal.com#business"
+        }
+      }
+    },
+    {
+      "@type": "Service",
+      "name": "Custom Metal Fabrication",
+      "description": "Precision metal fabrication for architectural projects",
+      "provider": {
+        "@id": "https://acmemetal.com#business"
+      },
+      "@id": "https://acmemetal.com/services/custom-metal-fabrication#service"
+    }
+  ]
+}
