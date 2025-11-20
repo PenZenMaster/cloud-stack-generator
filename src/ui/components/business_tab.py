@@ -27,10 +27,13 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,
     QTableWidgetItem,
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFont
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 from .base_tab import BaseTab, ValidationResult
+from ..dialogs.ai_content_preview_dialog import AIContentPreviewDialog
+from ...core.services.ai_content_service import AIContentService
+from ...core.generators.content.business_content_generator import BusinessContentGenerator
 import re
 
 
@@ -117,9 +120,13 @@ class BusinessTab(BaseTab):
         self.company_stats_input: QTextEdit
 
         super().__init__(parent)
-        
+
         # Initialize why choose us items
         self.why_choose_us_items = []
+
+        # Initialize AI services
+        self.ai_service = AIContentService()
+        self.business_generator = BusinessContentGenerator(self.ai_service)
 
     def setup_ui(self):
         """Setup business information UI with working layout"""
@@ -236,14 +243,36 @@ class BusinessTab(BaseTab):
     def _create_description_section(self) -> QGroupBox:
         """Create business description section"""
         group = QGroupBox("Business Description (Optional)")
-        group.setMaximumHeight(180)
+        group.setMaximumHeight(220)
         layout = QVBoxLayout()
         layout.setSpacing(10)
 
-        # Description label with help text
+        # Description label with help text and AI button
+        header_layout = QHBoxLayout()
         desc_label = QLabel("Provide a brief description of your business:")
         desc_label.setFont(QFont("Arial", 10))
-        layout.addWidget(desc_label)
+        header_layout.addWidget(desc_label)
+        header_layout.addStretch()
+
+        # Generate with AI button
+        ai_desc_button = QPushButton("✨ Generate with AI")
+        ai_desc_button.setMaximumWidth(150)
+        ai_desc_button.setStyleSheet("""
+            QPushButton {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+        """)
+        ai_desc_button.clicked.connect(self._generate_business_description)
+        header_layout.addWidget(ai_desc_button)
+        layout.addLayout(header_layout)
 
         # Description text area
         self.description_input = QTextEdit()
@@ -329,10 +358,31 @@ class BusinessTab(BaseTab):
         layout.addWidget(self.years_in_business_input)
         
         # Company Overview
+        overview_header = QHBoxLayout()
         overview_label = QLabel("Company Overview (for About section):")
         overview_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        layout.addWidget(overview_label)
-        
+        overview_header.addWidget(overview_label)
+        overview_header.addStretch()
+
+        ai_overview_button = QPushButton("✨ Generate with AI")
+        ai_overview_button.setMaximumWidth(150)
+        ai_overview_button.setStyleSheet("""
+            QPushButton {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+        """)
+        ai_overview_button.clicked.connect(self._generate_company_overview)
+        overview_header.addWidget(ai_overview_button)
+        layout.addLayout(overview_header)
+
         self.company_overview_input = QTextEdit()
         self.company_overview_input.setFont(QFont("Arial", 10))
         self.company_overview_input.setPlaceholderText(
@@ -342,10 +392,31 @@ class BusinessTab(BaseTab):
         layout.addWidget(self.company_overview_input)
         
         # Mission Statement
+        mission_header = QHBoxLayout()
         mission_label = QLabel("Mission Statement (optional):")
         mission_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        layout.addWidget(mission_label)
-        
+        mission_header.addWidget(mission_label)
+        mission_header.addStretch()
+
+        ai_mission_button = QPushButton("✨ Generate with AI")
+        ai_mission_button.setMaximumWidth(150)
+        ai_mission_button.setStyleSheet("""
+            QPushButton {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+        """)
+        ai_mission_button.clicked.connect(self._generate_mission_statement)
+        mission_header.addWidget(ai_mission_button)
+        layout.addLayout(mission_header)
+
         self.mission_statement_input = QTextEdit()
         self.mission_statement_input.setFont(QFont("Arial", 10))
         self.mission_statement_input.setPlaceholderText(
@@ -355,10 +426,31 @@ class BusinessTab(BaseTab):
         layout.addWidget(self.mission_statement_input)
         
         # Service Guarantee
+        guarantee_header = QHBoxLayout()
         guarantee_label = QLabel("Service Guarantee (optional):")
         guarantee_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        layout.addWidget(guarantee_label)
-        
+        guarantee_header.addWidget(guarantee_label)
+        guarantee_header.addStretch()
+
+        ai_guarantee_button = QPushButton("✨ Generate with AI")
+        ai_guarantee_button.setMaximumWidth(150)
+        ai_guarantee_button.setStyleSheet("""
+            QPushButton {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+        """)
+        ai_guarantee_button.clicked.connect(self._generate_service_guarantee)
+        guarantee_header.addWidget(ai_guarantee_button)
+        layout.addLayout(guarantee_header)
+
         self.service_guarantee_input = QTextEdit()
         self.service_guarantee_input.setFont(QFont("Arial", 10))
         self.service_guarantee_input.setPlaceholderText(
@@ -368,10 +460,31 @@ class BusinessTab(BaseTab):
         layout.addWidget(self.service_guarantee_input)
         
         # Service Area Description
+        service_area_header = QHBoxLayout()
         service_area_label = QLabel("Service Area Description (optional):")
         service_area_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        layout.addWidget(service_area_label)
-        
+        service_area_header.addWidget(service_area_label)
+        service_area_header.addStretch()
+
+        ai_service_area_button = QPushButton("✨ Generate with AI")
+        ai_service_area_button.setMaximumWidth(150)
+        ai_service_area_button.setStyleSheet("""
+            QPushButton {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+        """)
+        ai_service_area_button.clicked.connect(self._generate_service_area_description)
+        service_area_header.addWidget(ai_service_area_button)
+        layout.addLayout(service_area_header)
+
         self.service_area_description_input = QTextEdit()
         self.service_area_description_input.setFont(QFont("Arial", 10))
         self.service_area_description_input.setPlaceholderText(
@@ -774,3 +887,285 @@ class BusinessTab(BaseTab):
     def get_tab_name(self) -> str:
         """Get tab name for title display"""
         return "Business Information"
+
+    # AI Content Generation Methods
+
+    def _generate_business_description(self):
+        """Generate business description using AI"""
+        if not self.ai_service.is_available():
+            QMessageBox.warning(
+                self,
+                "AI Not Available",
+                "AI content generation is not available. Please check your OpenAI API key configuration."
+            )
+            return
+
+        business_name = self.business_name_input.text().strip()
+        industry = self.industry_input.currentText().strip()
+
+        if not business_name or not industry:
+            QMessageBox.warning(
+                self,
+                "Missing Information",
+                "Please enter Business Name and Industry before generating AI content."
+            )
+            return
+
+        # Show progress message
+        QMessageBox.information(
+            self,
+            "Generating Content",
+            "Generating business description with AI... This may take a few seconds."
+        )
+
+        # Generate content
+        existing_desc = self.description_input.toPlainText().strip()
+        content = self.business_generator.generate_business_description(
+            business_name=business_name,
+            industry=industry,
+            existing_description=existing_desc
+        )
+
+        if not content:
+            QMessageBox.critical(
+                self,
+                "Generation Failed",
+                "Failed to generate business description. Please try again."
+            )
+            return
+
+        # Show preview dialog
+        dialog = AIContentPreviewDialog(
+            title="AI Generated Business Description",
+            field_name="Business Description",
+            content=content,
+            regenerate_callback=lambda: self.business_generator.generate_business_description(
+                business_name=business_name,
+                industry=industry,
+                existing_description=existing_desc
+            ),
+            parent=self
+        )
+
+        dialog.content_accepted.connect(lambda c: self.description_input.setPlainText(c))
+        dialog.exec()
+
+    def _generate_company_overview(self):
+        """Generate company overview using AI"""
+        if not self.ai_service.is_available():
+            QMessageBox.warning(
+                self,
+                "AI Not Available",
+                "AI content generation is not available. Please check your OpenAI API key configuration."
+            )
+            return
+
+        business_name = self.business_name_input.text().strip()
+        industry = self.industry_input.currentText().strip()
+
+        if not business_name or not industry:
+            QMessageBox.warning(
+                self,
+                "Missing Information",
+                "Please enter Business Name and Industry before generating AI content."
+            )
+            return
+
+        # Generate content
+        business_desc = self.description_input.toPlainText().strip()
+        years = self.years_in_business_input.text().strip()
+
+        content = self.business_generator.generate_company_overview(
+            business_name=business_name,
+            industry=industry,
+            business_description=business_desc,
+            years_in_business=years
+        )
+
+        if not content:
+            QMessageBox.critical(
+                self,
+                "Generation Failed",
+                "Failed to generate company overview. Please try again."
+            )
+            return
+
+        # Show preview dialog
+        dialog = AIContentPreviewDialog(
+            title="AI Generated Company Overview",
+            field_name="Company Overview",
+            content=content,
+            regenerate_callback=lambda: self.business_generator.generate_company_overview(
+                business_name=business_name,
+                industry=industry,
+                business_description=business_desc,
+                years_in_business=years
+            ),
+            parent=self
+        )
+
+        dialog.content_accepted.connect(lambda c: self.company_overview_input.setPlainText(c))
+        dialog.exec()
+
+    def _generate_mission_statement(self):
+        """Generate mission statement using AI"""
+        if not self.ai_service.is_available():
+            QMessageBox.warning(
+                self,
+                "AI Not Available",
+                "AI content generation is not available. Please check your OpenAI API key configuration."
+            )
+            return
+
+        business_name = self.business_name_input.text().strip()
+        industry = self.industry_input.currentText().strip()
+
+        if not business_name or not industry:
+            QMessageBox.warning(
+                self,
+                "Missing Information",
+                "Please enter Business Name and Industry before generating AI content."
+            )
+            return
+
+        # Generate content
+        business_desc = self.description_input.toPlainText().strip()
+
+        content = self.business_generator.generate_mission_statement(
+            business_name=business_name,
+            industry=industry,
+            business_description=business_desc
+        )
+
+        if not content:
+            QMessageBox.critical(
+                self,
+                "Generation Failed",
+                "Failed to generate mission statement. Please try again."
+            )
+            return
+
+        # Show preview dialog
+        dialog = AIContentPreviewDialog(
+            title="AI Generated Mission Statement",
+            field_name="Mission Statement",
+            content=content,
+            regenerate_callback=lambda: self.business_generator.generate_mission_statement(
+                business_name=business_name,
+                industry=industry,
+                business_description=business_desc
+            ),
+            parent=self
+        )
+
+        dialog.content_accepted.connect(lambda c: self.mission_statement_input.setPlainText(c))
+        dialog.exec()
+
+    def _generate_service_guarantee(self):
+        """Generate service guarantee using AI"""
+        if not self.ai_service.is_available():
+            QMessageBox.warning(
+                self,
+                "AI Not Available",
+                "AI content generation is not available. Please check your OpenAI API key configuration."
+            )
+            return
+
+        business_name = self.business_name_input.text().strip()
+        industry = self.industry_input.currentText().strip()
+
+        if not business_name or not industry:
+            QMessageBox.warning(
+                self,
+                "Missing Information",
+                "Please enter Business Name and Industry before generating AI content."
+            )
+            return
+
+        # Generate content
+        business_desc = self.description_input.toPlainText().strip()
+
+        content = self.business_generator.generate_service_guarantee(
+            business_name=business_name,
+            industry=industry,
+            business_description=business_desc
+        )
+
+        if not content:
+            QMessageBox.critical(
+                self,
+                "Generation Failed",
+                "Failed to generate service guarantee. Please try again."
+            )
+            return
+
+        # Show preview dialog
+        dialog = AIContentPreviewDialog(
+            title="AI Generated Service Guarantee",
+            field_name="Service Guarantee",
+            content=content,
+            regenerate_callback=lambda: self.business_generator.generate_service_guarantee(
+                business_name=business_name,
+                industry=industry,
+                business_description=business_desc
+            ),
+            parent=self
+        )
+
+        dialog.content_accepted.connect(lambda c: self.service_guarantee_input.setPlainText(c))
+        dialog.exec()
+
+    def _generate_service_area_description(self):
+        """Generate service area description using AI"""
+        if not self.ai_service.is_available():
+            QMessageBox.warning(
+                self,
+                "AI Not Available",
+                "AI content generation is not available. Please check your OpenAI API key configuration."
+            )
+            return
+
+        business_name = self.business_name_input.text().strip()
+        industry = self.industry_input.currentText().strip()
+
+        if not business_name or not industry:
+            QMessageBox.warning(
+                self,
+                "Missing Information",
+                "Please enter Business Name and Industry before generating AI content."
+            )
+            return
+
+        # Generate content
+        # TODO: Get actual service areas from city pages when available
+        service_areas = []
+
+        content = self.business_generator.generate_service_area_description(
+            business_name=business_name,
+            industry=industry,
+            service_areas=service_areas
+        )
+
+        if not content:
+            QMessageBox.critical(
+                self,
+                "Generation Failed",
+                "Failed to generate service area description. Please try again."
+            )
+            return
+
+        # Show preview dialog
+        dialog = AIContentPreviewDialog(
+            title="AI Generated Service Area Description",
+            field_name="Service Area Description",
+            content=content,
+            regenerate_callback=lambda: self.business_generator.generate_service_area_description(
+                business_name=business_name,
+                industry=industry,
+                service_areas=service_areas
+            ),
+            parent=self
+        )
+
+        dialog.content_accepted.connect(lambda c: self.service_area_description_input.setPlainText(c))
+        dialog.exec()
