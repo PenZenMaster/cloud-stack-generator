@@ -24,7 +24,7 @@ import tempfile
 import json
 import yaml
 from pathlib import Path
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import patch
 import sys
 import os
 

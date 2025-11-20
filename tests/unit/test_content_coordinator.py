@@ -13,7 +13,7 @@ Version: 1.0.0
 
 import pytest
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch, mock_open
+from unittest.mock import Mock, patch
 
 from src.core.orchestration.content_coordinator import ContentCoordinator
 from src.core.config.models import (

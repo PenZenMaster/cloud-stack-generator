@@ -5,7 +5,6 @@ Version: 1.00
 Author: Cloud Stack Generator Team
 """
 
-import pytest
 from src.core.aws.s3_manager import S3Manager
 
 

@@ -12,9 +12,7 @@ Version: 1.0.0
 """
 
 import pytest
-import os
-from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch, call
+from unittest.mock import Mock, patch
 
 from src.core.orchestration.website_orchestrator import (
     WebsiteOrchestrator,

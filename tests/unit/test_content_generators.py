@@ -20,7 +20,7 @@ Comments:
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 import sys
 import os
 

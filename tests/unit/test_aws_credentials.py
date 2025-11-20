@@ -3,8 +3,7 @@ Unit tests for AWS credentials management system
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
+from unittest.mock import Mock, patch
 from datetime import datetime
 
 from src.core.aws.credentials import (

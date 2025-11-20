@@ -20,7 +20,7 @@ Comments:
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import Qt
 import sys

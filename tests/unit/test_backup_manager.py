@@ -22,10 +22,9 @@ Comments:
 import pytest
 import tempfile
 import json
-import shutil
 import zipfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch
 from datetime import datetime, timedelta
 import sys
 import os

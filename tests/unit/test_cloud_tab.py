@@ -5,12 +5,10 @@ Unit tests for CloudTab UI component
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from PyQt6.QtWidgets import QApplication, QMessageBox
-from PyQt6.QtCore import Qt
-from PyQt6.QtTest import QTest
 
 from src.ui.components.cloud_tab import CloudTab, AWSProfileDialog, DeploymentWorker
-from src.core.aws.credentials import AuthMethod, AWSProfile
-from src.core.aws.s3_manager import UploadResult, UploadProgress
+from src.core.aws.credentials import AuthMethod
+from src.core.aws.s3_manager import UploadResult
 
 
 @pytest.fixture(autouse=True)
@@ -377,7 +375,7 @@ class TestCloudTab:
     
     def test_test_aws_connection_success(self, qapp):
         """Test successful AWS connection test with background worker"""
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import patch
         
         tab = CloudTab()
         
@@ -403,7 +401,7 @@ class TestCloudTab:
     
     def test_test_aws_connection_failure(self, qapp):
         """Test failed AWS connection test with background worker"""
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import patch
         
         tab = CloudTab()
         
@@ -471,7 +469,7 @@ class TestCloudTab:
     
     def test_background_worker_lifecycle(self, qapp):
         """Test background worker lifecycle management"""
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import patch
         
         tab = CloudTab()
         
@@ -782,7 +780,7 @@ class TestCloudTab:
     
     def test_refresh_bucket_list_success(self, qapp):
         """Test successful bucket list refresh with background worker"""
-        from unittest.mock import patch, MagicMock
+        from unittest.mock import patch
         
         tab = CloudTab()
         
@@ -874,8 +872,8 @@ class TestCloudTab:
     @pytest.mark.skip(reason="Test hangs due to UI interactions - temporarily disabled")
     def test_deployment_worker_integration(self, qapp):
         """Test DeploymentWorker integration with CloudTab"""
-        from unittest.mock import patch, MagicMock
-        from src.core.aws.s3_manager import UploadResult, UploadProgress
+        from unittest.mock import patch
+        from src.core.aws.s3_manager import UploadResult
         
         tab = CloudTab()
         
@@ -1055,7 +1053,6 @@ class TestDeploymentWorker:
     
     def test_deployment_worker_error_handling(self):
         """Test DeploymentWorker error handling"""
-        from src.core.aws.s3_manager import UploadResult
         
         s3_manager = Mock()
         s3_manager.upload_directory.side_effect = Exception("Upload failed")

@@ -22,13 +22,7 @@ def test_website_generation():
     try:
         # Import modules
         print("📦 Importing modules...")
-        from src.core.generators import PageGenerator, GenerationResult
-        from src.core.config.models import (
-            ClientConfig,
-            BusinessConfig,
-            ContactConfig,
-            BrandingConfig,
-        )
+        from src.core.generators import PageGenerator
 
         print("   ✅ Core modules imported successfully")
 

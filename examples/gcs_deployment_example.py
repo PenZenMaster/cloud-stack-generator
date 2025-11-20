@@ -91,7 +91,7 @@ def example_1_basic_deployment():
                 print(f"\nCreating bucket: {bucket_name}...")
 
                 if provider.create_bucket(bucket_name):
-                    print(f"Bucket created successfully!")
+                    print("Bucket created successfully!")
 
                     # Configure for website hosting
                     print("\nConfiguring website hosting...")
@@ -279,11 +279,11 @@ def example_4_multi_region():
             results[region_code] = result
 
             if result.success:
-                print(f"Deployment successful!")
+                print("Deployment successful!")
                 print(f"Files: {result.files_uploaded}")
                 print(f"URL: {result.website_url}")
             else:
-                print(f"Deployment failed!")
+                print("Deployment failed!")
                 print(f"Errors: {len(result.errors)}")
 
     # Summary

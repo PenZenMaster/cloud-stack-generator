@@ -9,9 +9,7 @@ Author: Cloud Stack Generator Team
 """
 
 import sys
-import pytest
-from PyQt6.QtWidgets import QApplication, QWidget
-from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QApplication
 from PyQt6.QtTest import QTest
 import os
 
@@ -359,7 +357,7 @@ def run_business_tab_tests():
                 test_instance.teardown_method()
 
         print("\n" + "=" * 60)
-        print(f"BUSINESS TAB TEST RESULTS")
+        print("BUSINESS TAB TEST RESULTS")
         print("=" * 60)
         print(f"✅ Passed: {passed_tests}")
         print(f"❌ Failed: {failed_tests}")

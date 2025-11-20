@@ -11,10 +11,6 @@ Author: Cloud Stack Generator Team
 """
 
 import pytest
-import tempfile
-import os
-from pathlib import Path
-import yaml
 
 # Test markers
 pytestmark = [pytest.mark.integration, pytest.mark.cities, pytest.mark.yaml_bug]

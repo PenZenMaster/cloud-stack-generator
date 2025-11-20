@@ -276,10 +276,10 @@ def example_statistics():
     print(f"Total FAQs: {stats['total_faqs']}")
     print(f"Active FAQs: {stats['active_faqs']}")
     print(f"Inactive FAQs: {stats['inactive_faqs']}")
-    print(f"\nBy Category:")
+    print("\nBy Category:")
     for category, count in stats['categories'].items():
         print(f"  {category}: {count}")
-    print(f"\nBy City:")
+    print("\nBy City:")
     for city, count in stats['cities'].items():
         print(f"  {city}: {count}")
     print(f"\nTotal unique tags: {stats['total_tags']}")
