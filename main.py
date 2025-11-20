@@ -1,10 +1,10 @@
 # main.py
 """
-SEO Authority Website Generator v3.3
+SEO Authority Website Generator v3.4
 Sprint 2 Week 2 - Enhanced Main Application Entry Point
 
 Updated: November 19, 2025
-Version: 3.3.0 - Help Menu Documentation Viewer with Markdown Rendering
+Version: 3.4.0 - Multi-Cloud Deployment with GCS Provider & Configuration Persistence
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 

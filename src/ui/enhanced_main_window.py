@@ -299,6 +299,8 @@ class EnhancedMainWindow(QMainWindow):
             ("Codebase Structure", "CODEBASE_STRUCTURE.md"),
             ("Architecture Analysis", "ARCHITECTURE_ANALYSIS.md"),
             ("Template System Architecture", "TEMPLATE_SYSTEM_ARCHITECTURE.md"),
+            ("Multi-Cloud Architecture", "MULTI_CLOUD_ARCHITECTURE.md"),
+            ("GCS Deployment Setup", "GCS_DEPLOYMENT_SETUP.md"),
             ("AI Integration Guide", "AI_INTEGRATION_GUIDE.md"),
             ("Debugging", "DEBUGGING.md"),
             ("TDD Workflow", "TDD_WORKFLOW.md"),
@@ -1783,7 +1785,7 @@ class EnhancedMainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "About SEO Authority Website Generator",
-            "<h3>SEO Authority Website Generator v3.3.0</h3>"
+            "<h3>SEO Authority Website Generator v3.4.0</h3>"
             "<p>Sprint 2 Week 2 - Enhanced Modular Architecture</p>"
             "<p><b>Features:</b></p>"
             "<ul>"

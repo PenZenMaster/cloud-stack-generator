@@ -1,7 +1,7 @@
 # Cloud Stack Generator - Product Roadmap
 
-**Last Updated**: November 12, 2025
-**Current Version**: 3.1.0
+**Last Updated**: November 19, 2025
+**Current Version**: 3.2.0
 **Project Status**: Active Development
 
 ---
@@ -595,6 +595,224 @@ class GoogleBusinessProfile:
 
 ---
 
+### 6.2 Progress Bar Modal Dialog Enhancement
+
+**Status**: 📋 **Planned**
+**Priority**: MEDIUM
+**Location**: All UI components with progress indicators
+**Target Version**: 3.4.0
+**Estimated Effort**: 2-3 days
+
+**Current Issue**:
+Progress bars are dynamically inserted into the UI layout during operations (bucket refresh, deployment, etc.), which:
+- Distorts the UI layout while processes are running
+- Creates visual inconsistency and layout shifts
+- Does not feel like a polished application experience
+- Makes the UI appear unstable
+
+**Requirements**:
+- Replace all inline progress indicators with modal dialog popups
+- Modal should be non-closeable during operation
+- Show "OK" or "Close" button when operation completes
+- Maintain consistent visual appearance throughout operations
+- Support both determinate and indeterminate progress styles
+
+**Affected Components**:
+- `src/ui/components/cloud_tab.py` - Bucket refresh progress
+- `src/ui/components/cloud_tab.py` - Deployment progress
+- `src/ui/components/cloud_tab.py` - Directory refresh progress
+- `src/ui/components/deployment_history_tab.py` - Deployment history loading
+- Any other components using `ProgressWidget` inline
+
+**Implementation Tasks**:
+- [ ] Create reusable `ProgressDialog` modal component
+  - Non-modal during operation (cannot dismiss)
+  - Shows progress bar (determinate or indeterminate)
+  - Shows status text updates
+  - Shows "OK" button when complete
+  - Shows "Cancel" button for cancellable operations
+- [ ] Replace `bucket_progress` inline widget with modal dialog
+- [ ] Replace deployment progress inline widget with modal dialog
+- [ ] Replace directory refresh progress with modal dialog
+- [ ] Update all worker threads to emit signals to modal dialog
+- [ ] Add success/error icons and color coding to completed modals
+- [ ] Test all progress operations with new modal dialogs
+- [ ] Update UI/UX documentation
+
+**Design Specifications**:
+- Modal size: 400x200px (minimum)
+- Progress bar: Full width with 20px margins
+- Status text: Centered, word-wrapped, 2-line minimum height
+- Buttons: Right-aligned, standard platform button size
+- Colors:
+  - In-progress: Blue accent
+  - Success: Green accent
+  - Error: Red accent
+
+**Example Usage**:
+```python
+# Before (inline progress):
+self.bucket_progress.show_progress("Refreshing...", indeterminate=True)
+# ... operation ...
+self.bucket_progress.update_status("Complete")
+self.bucket_progress.hide_progress()
+
+# After (modal dialog):
+self.progress_dialog = ProgressDialog(self, "Refreshing Bucket List")
+self.progress_dialog.show_indeterminate()
+# ... operation ...
+self.progress_dialog.set_complete("Found 10 buckets", success=True)
+# User clicks OK to dismiss
+```
+
+**Benefits**:
+- Professional, polished UI appearance
+- No layout distortion during operations
+- Consistent user experience across all operations
+- Clear visual feedback with completion state
+- Prevents user interaction with form during operations
+
+---
+
+### 6.3 Persist Cloud Provider Credentials After Successful Test
+
+**Status**: 📋 **Planned**
+**Priority**: HIGH
+**Location**: `src/ui/components/cloud_tab.py`, `src/core/config/models.py`
+**Target Version**: 3.3.0
+**Estimated Effort**: 2-3 days
+
+**Current Issue**:
+When users successfully test their cloud provider credentials (GCS, Azure, etc.), the credentials are not persisted to the client configuration. Users must re-enter credentials every time they:
+- Restart the application
+- Switch between clients
+- Switch between cloud providers
+
+This creates poor user experience and friction in the deployment workflow.
+
+**Requirements**:
+- Automatically save cloud provider credentials to client configuration after successful connection test
+- Support multiple cloud providers (GCS, Azure Blob, Backblaze B2, Wasabi, DigitalOcean Spaces)
+- Encrypt sensitive credential data (service account keys, access tokens)
+- Load saved credentials when client is selected
+- Allow users to update/delete saved credentials
+- Maintain backwards compatibility with existing AWS profile system
+
+**Affected Components**:
+- `src/ui/components/cloud_tab.py` - Cloud Deploy tab UI
+  - `test_gcs_connection()` - Save GCS credentials after successful test
+  - `on_provider_changed()` - Load saved credentials when provider selected
+  - `load_client_config()` - Load provider credentials when client selected
+- `src/core/config/models.py` - Data models
+  - Add `CloudProviderConfig` class for multi-cloud credentials
+  - Add encryption/decryption methods for sensitive fields
+- `src/core/config/client_config.py` - Client configuration persistence
+  - Save/load cloud provider configurations
+  - Encrypt/decrypt credentials before storage
+
+**Implementation Tasks**:
+- [ ] Design cloud provider credential storage schema
+  - [ ] Define `CloudProviderConfig` dataclass
+  - [ ] Identify sensitive fields requiring encryption
+  - [ ] Design YAML structure for multi-provider configs
+- [ ] Implement credential encryption/decryption
+  - [ ] Use cryptography library (Fernet symmetric encryption)
+  - [ ] Generate/store encryption key securely
+  - [ ] Add encryption helper methods
+- [ ] Update client configuration model
+  - [ ] Add `cloud_providers` dict to client config
+  - [ ] Add methods to save/load/delete provider configs
+  - [ ] Maintain separate configs per provider type
+- [ ] Update Cloud Deploy tab UI
+  - [ ] Save GCS credentials after successful test
+  - [ ] Save Azure credentials after successful test
+  - [ ] Save other provider credentials after successful test
+  - [ ] Load saved credentials on client selection
+  - [ ] Load saved credentials on provider change
+  - [ ] Add "Clear Saved Credentials" button per provider
+- [ ] Add validation and error handling
+  - [ ] Validate credentials before saving
+  - [ ] Handle decryption failures gracefully
+  - [ ] Warn user if credentials are outdated/invalid
+- [ ] Update tests
+  - [ ] Unit tests for encryption/decryption
+  - [ ] Unit tests for credential save/load
+  - [ ] Integration tests for full workflow
+- [ ] Update documentation
+  - [ ] Document credential storage format
+  - [ ] Document security considerations
+  - [ ] Update user guide
+
+**Data Model Design**:
+```python
+@dataclass
+class CloudProviderConfig:
+    provider_type: str  # "google_gcs", "azure_blob", etc.
+    region: str
+    credentials: Dict[str, str]  # Encrypted sensitive fields
+    bucket_name: Optional[str] = None
+    deployment_mode: str = "storage_only"
+    last_tested: Optional[datetime] = None
+    is_valid: bool = False
+
+# In ClientConfig:
+@dataclass
+class ClientConfig:
+    # ... existing fields ...
+    cloud_providers: Dict[str, CloudProviderConfig] = field(default_factory=dict)
+    # Key = provider_type ("google_gcs", "azure_blob", etc.)
+```
+
+**YAML Storage Format**:
+```yaml
+cloud_providers:
+  google_gcs:
+    provider_type: google_gcs
+    region: us-central1
+    credentials:
+      project_id: my-gcp-project  # Plain text (not sensitive)
+      service_account_json_path: /path/to/key.json  # Path only
+      # Encrypted fields stored in separate encrypted file or keyring
+    bucket_name: my-website-bucket
+    deployment_mode: storage_only
+    last_tested: 2025-11-19T12:00:00
+    is_valid: true
+
+  azure_blob:
+    provider_type: azure_blob
+    region: eastus
+    credentials:
+      # Similar structure
+```
+
+**Security Considerations**:
+- Use Fernet symmetric encryption for credential storage
+- Store encryption key in OS keyring (keyring library)
+- Never log or display decrypted credentials
+- Support environment variable overrides for CI/CD
+- Add option to store credentials in memory only (not persisted)
+
+**User Workflow**:
+1. User enters GCS credentials (Project ID + Service Account JSON)
+2. User clicks "Test GCS Connection"
+3. Connection succeeds
+4. System automatically saves credentials to client config (encrypted)
+5. Next time user selects this client + GCS provider:
+   - Credentials are auto-populated
+   - User can immediately refresh buckets or deploy
+6. User can update credentials and test again
+7. User can clear saved credentials via "Clear Credentials" button
+
+**Benefits**:
+- Improved user experience - no repeated credential entry
+- Faster deployment workflow
+- Consistent behavior across all cloud providers
+- Secure credential storage with encryption
+- Maintains per-client configurations
+- Easy credential management and updates
+
+---
+
 ## 📊 Implementation Priority Matrix
 
 ### Phase 1 (Version 3.2.0) - Q4 2025
@@ -674,6 +892,14 @@ class GoogleBusinessProfile:
 ---
 
 ## 🔄 Changelog
+
+### November 19, 2025
+- Added section 6.2: Progress Bar Modal Dialog Enhancement
+- Added section 6.3: Persist Cloud Provider Credentials After Successful Test
+- Updated current version to 3.2.0
+- Added UI/UX improvement task for modal progress dialogs
+- Added credential persistence enhancement for multi-cloud support
+- Fixed: Changed "S3 Bucket Configuration" label to "Cloud Storage Bucket Configuration"
 
 ### November 12, 2025
 - Initial roadmap created from qa_artifacts/mods.txt
