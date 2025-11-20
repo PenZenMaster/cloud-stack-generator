@@ -16,12 +16,13 @@ from datetime import datetime
 @dataclass
 class AddressConfig:
     """Address configuration with separate fields"""
-    
+
     street: str = ""
     city: str = ""
     state: str = ""
     zip_code: str = ""
     country: str = "United States"
+    publish_on_website: bool = True  # Controls if address appears in LocalBusiness schema
     
     def to_single_line(self) -> str:
         """Convert to single line address string for display purposes"""
@@ -446,6 +447,21 @@ class SocialMediaConfig:
 
 
 @dataclass
+class GoogleBusinessProfileConfig:
+    """Google Business Profile (GBP) configuration for schema.org LocalBusiness"""
+
+    profile_url: str = ""  # Full GBP URL
+    expose_address: bool = False  # Whether GBP publicly shows the business address
+    place_id: str = ""  # Google Maps Place ID
+    rating: str = ""  # Average rating (e.g., "4.8")
+    review_count: str = ""  # Number of reviews
+
+    def is_configured(self) -> bool:
+        """Check if GBP is configured"""
+        return bool(self.profile_url or self.place_id)
+
+
+@dataclass
 class GoogleMapsConfig:
     """Google Maps integration configuration"""
 
@@ -626,7 +642,7 @@ class ClientConfig:
     # Social and maps
     social_media: SocialMediaConfig = field(default_factory=SocialMediaConfig)
     google_maps: GoogleMapsConfig = field(default_factory=GoogleMapsConfig)
-    google_business_profile: Dict[str, str] = field(default_factory=dict)
+    google_business_profile: GoogleBusinessProfileConfig = field(default_factory=GoogleBusinessProfileConfig)
     
     # Cities and local SEO data (legacy support)
     target_cities: List[str] = field(default_factory=list)
@@ -823,7 +839,13 @@ class ClientConfig:
                     "logo_url": self.branding.logo_url,
                 },
                 "social_media": self.social_media.get_valid_links(),
-                "google_business_profile": self.google_business_profile,
+                "google_business_profile": {
+                    "profile_url": self.google_business_profile.profile_url,
+                    "expose_address": self.google_business_profile.expose_address,
+                    "place_id": self.google_business_profile.place_id,
+                    "rating": self.google_business_profile.rating,
+                    "review_count": self.google_business_profile.review_count,
+                },
                 "google_maps": {
                     "api_key": self.google_maps.api_key,
                     "embed_code": self.google_maps.embed_code,

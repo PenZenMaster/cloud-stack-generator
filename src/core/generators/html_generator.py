@@ -475,17 +475,39 @@ class HTMLGenerator:
 
     def _get_social_links(self, config: ClientConfig) -> List[Dict[str, str]]:
         """Get social media links if available"""
-        # This would be extended when social media fields are added to config
-        return []
+        if not hasattr(config, 'social_media') or not config.social_media:
+            return []
+
+        # Get valid social media links from config
+        valid_links = config.social_media.get_valid_links()
+
+        # Convert to list of dicts with platform names and URLs
+        social_links = []
+        for platform, url in valid_links.items():
+            social_links.append({
+                "platform": platform.title(),
+                "url": url
+            })
+
+        return social_links
 
     def _generate_organization_schema(self, config: ClientConfig) -> Dict[str, Any]:
         """Generate comprehensive JSON-LD @graph schema with Wikipedia entities"""
         # Generate @graph structure with proper entity linking
         graph = []
 
+        # Determine if we should use LocalBusiness or Organization
+        # Use LocalBusiness only if address is publicly exposed
+        has_public_address = (
+            (config.google_business_profile.expose_address) or  # GBP shows address
+            (config.contact.address.publish_on_website)  # Address published on website
+        )
+
+        business_type = "LocalBusiness" if has_public_address else "Organization"
+
         # Main business entity
         business_schema = {
-            "@type": "LocalBusiness",
+            "@type": business_type,
             "@id": f"{config.business.domain}#business",
             "name": config.business.business_name,
             "description": getattr(config.business, 'description', f"Professional {config.business.industry} services"),
@@ -499,7 +521,9 @@ class HTMLGenerator:
             business_schema["email"] = config.contact.email
 
         # Add address with proper PostalAddress structure
-        if config.contact.address and config.contact.address.street:
+        # Only include address if it's meant to be published
+        if (config.contact.address and config.contact.address.street and
+            (config.contact.address.publish_on_website or config.google_business_profile.expose_address)):
             business_schema["address"] = {
                 "@type": "PostalAddress",
                 "streetAddress": config.contact.address.street,
@@ -526,6 +550,28 @@ class HTMLGenerator:
         social_links = self._get_social_links(config)
         if social_links:
             business_schema["sameAs"] = [link["url"] for link in social_links]
+
+        # Add areaServed from city pages
+        service_areas = []
+        if config.city_pages:
+            # Use enhanced city pages
+            for city_page in config.city_pages:
+                area_dict = {
+                    "@type": "City",
+                    "name": city_page.city_name
+                }
+                if city_page.state:
+                    area_dict["containedIn"] = {
+                        "@type": "State",
+                        "name": city_page.state
+                    }
+                service_areas.append(area_dict)
+        elif config.target_cities:
+            # Fallback to legacy target_cities list
+            service_areas = [{"@type": "City", "name": city} for city in config.target_cities]
+
+        if service_areas:
+            business_schema["areaServed"] = service_areas
 
         # Add industry-specific Wikipedia entities for knowsAbout
         business_schema["knowsAbout"] = self._generate_industry_wikipedia_entities(config.business.industry)
@@ -563,6 +609,18 @@ class HTMLGenerator:
             }
 
         graph.append(webpage_schema)
+
+        # Add Product entities to @graph
+        if config.products:
+            for product in config.products:
+                product_entity = self._generate_product_schema(product, config, for_graph=True)
+                graph.append(product_entity)
+
+        # Add Service entities to @graph
+        if config.services:
+            for service in config.services:
+                service_entity = self._generate_service_schema(service, config, for_graph=True)
+                graph.append(service_entity)
 
         return {
             "@context": "https://schema.org",
@@ -632,19 +690,27 @@ class HTMLGenerator:
 
         return entities
 
-    def _generate_service_schema(self, service, config: ClientConfig) -> Dict[str, Any]:
-        """Generate JSON-LD schema for service"""
+    def _generate_service_schema(self, service, config: ClientConfig, for_graph: bool = False) -> Dict[str, Any]:
+        """Generate JSON-LD schema for service
+
+        Args:
+            service: Service configuration object
+            config: Client configuration
+            for_graph: If True, returns entity for @graph (no @context). If False, returns standalone schema.
+        """
         schema = {
-            "@context": "https://schema.org",
             "@type": "Service",
             "name": service.name,
             "description": service.description,
             "provider": {
-                "@type": "Organization",
-                "name": config.business.business_name,
-                "url": config.business.domain,
+                "@id": f"{config.business.domain}#business"
             },
         }
+
+        # Add @id for graph linking
+        if for_graph:
+            service_slug = getattr(service, 'slug', service.name.lower().replace(' ', '-'))
+            schema["@id"] = f"{config.business.domain}/services/{service_slug}#service"
 
         if hasattr(service, "price_range") and service.price_range:
             schema["offers"] = {
@@ -653,22 +719,33 @@ class HTMLGenerator:
                 "priceCurrency": "USD",
             }
 
+        # Add @context for standalone schema
+        if not for_graph:
+            return {
+                "@context": "https://schema.org",
+                **schema
+            }
+
         return schema
 
-    def _generate_product_schema(self, product, config: ClientConfig) -> Dict[str, Any]:
-        """Generate enhanced JSON-LD schema for product with Wikipedia entities"""
+    def _generate_product_schema(self, product, config: ClientConfig, for_graph: bool = False) -> Dict[str, Any]:
+        """Generate enhanced JSON-LD schema for product with Wikipedia entities
+
+        Args:
+            product: Product configuration object
+            config: Client configuration
+            for_graph: If True, returns entity for @graph (no @context). If False, returns standalone schema.
+        """
+        product_slug = getattr(product, 'slug', product.name.lower().replace(' ', '-'))
+
         schema = {
-            "@context": "https://schema.org",
             "@type": "Product",
-            "@id": f"{config.business.domain}/products/{getattr(product, 'slug', product.name.lower().replace(' ', '-'))}#product",
+            "@id": f"{config.business.domain}/products/{product_slug}#product",
             "name": product.name,
             "description": product.description,
             "category": "Architectural Metalwork",
             "brand": {
-                "@type": "Organization",
-                "@id": f"{config.business.domain}#business",
-                "name": config.business.business_name,
-                "url": config.business.domain
+                "@id": f"{config.business.domain}#business"
             },
             "itemCondition": "https://schema.org/NewCondition"
         }
@@ -698,12 +775,17 @@ class HTMLGenerator:
                 "price": str(product.price),
                 "priceCurrency": "USD",
                 "availability": "https://schema.org/InStock",
-                "url": f"{config.business.domain}/products/{getattr(product, 'slug', product.name.lower().replace(' ', '-'))}",
+                "url": f"{config.business.domain}/products/{product_slug}",
                 "seller": {
-                    "@type": "Organization",
-                    "name": config.business.business_name,
-                    "url": config.business.domain
+                    "@id": f"{config.business.domain}#business"
                 }
+            }
+
+        # Add @context for standalone schema
+        if not for_graph:
+            return {
+                "@context": "https://schema.org",
+                **schema
             }
 
         return schema
