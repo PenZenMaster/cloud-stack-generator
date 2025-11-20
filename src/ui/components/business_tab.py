@@ -26,9 +26,10 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QAbstractItemView,
     QTableWidgetItem,
+    QApplication,
 )
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont, QCursor
+from PyQt6.QtGui import QFont
 from typing import Dict, Any, List, Tuple
 from .base_tab import BaseTab, ValidationResult
 from ..dialogs.ai_content_preview_dialog import AIContentPreviewDialog
@@ -912,7 +913,7 @@ class BusinessTab(BaseTab):
             return
 
         # Set busy cursor and disable UI
-        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         self.setEnabled(False)
 
         try:
@@ -949,7 +950,7 @@ class BusinessTab(BaseTab):
             dialog.exec()
         finally:
             # Restore cursor and enable UI
-            QCursor.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
             self.setEnabled(True)
 
     def _generate_company_overview(self):
@@ -974,7 +975,7 @@ class BusinessTab(BaseTab):
             return
 
         # Set busy cursor and disable UI
-        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         self.setEnabled(False)
 
         try:
@@ -1015,7 +1016,7 @@ class BusinessTab(BaseTab):
             dialog.exec()
         finally:
             # Restore cursor and enable UI
-            QCursor.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
             self.setEnabled(True)
 
     def _generate_mission_statement(self):
@@ -1040,7 +1041,7 @@ class BusinessTab(BaseTab):
             return
 
         # Set busy cursor and disable UI
-        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         self.setEnabled(False)
 
         try:
@@ -1078,7 +1079,7 @@ class BusinessTab(BaseTab):
             dialog.exec()
         finally:
             # Restore cursor and enable UI
-            QCursor.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
             self.setEnabled(True)
 
     def _generate_service_guarantee(self):
@@ -1103,7 +1104,7 @@ class BusinessTab(BaseTab):
             return
 
         # Set busy cursor and disable UI
-        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         self.setEnabled(False)
 
         try:
@@ -1141,7 +1142,7 @@ class BusinessTab(BaseTab):
             dialog.exec()
         finally:
             # Restore cursor and enable UI
-            QCursor.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
             self.setEnabled(True)
 
     def _generate_service_area_description(self):
@@ -1166,7 +1167,7 @@ class BusinessTab(BaseTab):
             return
 
         # Set busy cursor and disable UI
-        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         self.setEnabled(False)
 
         try:
@@ -1205,5 +1206,5 @@ class BusinessTab(BaseTab):
             dialog.exec()
         finally:
             # Restore cursor and enable UI
-            QCursor.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
             self.setEnabled(True)
