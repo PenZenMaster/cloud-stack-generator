@@ -19,7 +19,7 @@ Comments:
 * v1.00 - Initial enhanced FAQ tab with EnhancedFAQItem integration
 """
 
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QVBoxLayout,
@@ -42,7 +42,7 @@ from PyQt6.QtWidgets import (
     QFileDialog,
 )
 from PyQt6.QtGui import QFont
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 
 from ..components.base_tab import BaseTab
 from ...core.content.faq_manager import FAQManager, EnhancedFAQItem, FAQCategory
@@ -488,7 +488,7 @@ class FAQTab(BaseTab):
             tags_text = self.faq_inputs["tags"].text().strip()
             tags = [tag.strip() for tag in tags_text.split(",")] if tags_text else []
 
-            faq = EnhancedFAQItem(
+            EnhancedFAQItem(
                 question=self.faq_inputs["question"].toPlainText().strip(),
                 answer=self.faq_inputs["answer"].toPlainText().strip(),
                 category=self.faq_inputs["category"].currentData(),
@@ -786,7 +786,7 @@ class FAQTab(BaseTab):
         """Show FAQ statistics"""
         stats = self.faq_manager.get_statistics()
 
-        msg = f"FAQ Statistics:\n\n"
+        msg = "FAQ Statistics:\n\n"
         msg += f"Total FAQs: {stats['total_faqs']}\n"
         msg += f"Active FAQs: {stats['active_faqs']}\n"
         msg += f"Inactive FAQs: {stats['inactive_faqs']}\n\n"

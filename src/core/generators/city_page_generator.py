@@ -28,12 +28,12 @@ from jinja2 import Environment, FileSystemLoader
 
 from ..config.models import ClientConfig, CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
 from ..services.ai_content_service import AIContentService
+from ..services.content_cache import ContentCache
 from ..utils.logger import get_logger
+from .content import CityContentGenerator
 
 # Initialize module logger
 logger = get_logger(__name__)
-from ..services.content_cache import ContentCache
-from .content import CityContentGenerator
 
 
 class CityPageGenerator:
@@ -398,7 +398,6 @@ class CityPageGenerator:
     
     def _get_industry_specific_sections(self, city_name: str, industry: str) -> Dict[str, str]:
         """Generate industry-specific content sections for enhanced SEO authority"""
-        business_name = self.config.business.business_name
         industry_lower = industry.lower()
         
         # Industry-specific section templates
@@ -508,7 +507,7 @@ class CityPageGenerator:
             try:
                 date_obj = datetime.fromisoformat(str(date_input))
                 return date_obj.strftime(format_str)
-            except:
+            except (ValueError, TypeError):
                 return str(date_input)
 
     def _generate_maps_embed(self, location: str) -> str:

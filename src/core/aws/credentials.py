@@ -222,7 +222,7 @@ class AWSCredentialsManager:
                 try:
                     location = s3.get_bucket_location(Bucket=bucket_name)
                     region = location.get('LocationConstraint') or 'us-east-1'
-                except:
+                except Exception:
                     region = 'unknown'
                 
                 bucket_info = {
@@ -417,7 +417,7 @@ class AWSCredentialsManager:
         # Validate the credentials work
         try:
             sts = session.client('sts')
-            identity = sts.get_caller_identity()
+            _ = sts.get_caller_identity()  # Validate credentials
             return session
         except Exception as e:
             raise ValueError(f"Invalid AWS credentials for profile '{profile.name}': {str(e)}")

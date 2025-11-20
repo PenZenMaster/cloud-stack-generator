@@ -499,7 +499,6 @@ class EnhancedMainWindow(QMainWindow):
 
     def on_deployment_created(self, deployment: "DeploymentConfig"):
         """Handle deployment creation/update (v3.2.0 - Phase 5)"""
-        from src.core.config.models import DeploymentConfig
 
         if not hasattr(self, 'current_config') or not self.current_config:
             print("Warning: No config loaded, cannot save deployment")

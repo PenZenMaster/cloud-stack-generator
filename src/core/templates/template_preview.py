@@ -182,7 +182,7 @@ class TemplatePreviewGenerator:
                 return None
 
             # Create a simplified version for thumbnail
-            thumbnail_html = self._create_thumbnail_html(template_id, width, height)
+            self._create_thumbnail_html(template_id, width, height)
 
             # For now, return a placeholder data URL
             # In production, this would render the HTML to an image

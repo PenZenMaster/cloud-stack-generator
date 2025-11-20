@@ -253,14 +253,12 @@ class TemplateBackupManager:
         """
         try:
             # Find and remove from index
-            template_id = None
             backup_metadata = None
 
             for tid, backups in self.backup_index.items():
                 for i, backup in enumerate(backups):
                     if backup.backup_id == backup_id:
                         backup_metadata = backups.pop(i)
-                        template_id = tid
                         break
                 if backup_metadata:
                     break

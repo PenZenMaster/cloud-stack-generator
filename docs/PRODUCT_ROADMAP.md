@@ -1,7 +1,7 @@
 # Cloud Stack Generator - Product Roadmap
 
 **Last Updated**: November 19, 2025
-**Current Version**: 3.2.0
+**Current Version**: 3.4.0
 **Project Status**: Active Development
 
 ---

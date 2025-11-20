@@ -3027,7 +3027,7 @@ class CloudTab(BaseTab):
             return
 
         tag_name = name_match.group(1)
-        tag_content = content_match.group(1)
+        content_match.group(1)
 
         # Check if tag already exists
         existing_row = -1

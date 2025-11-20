@@ -91,7 +91,7 @@ body {
             # Lighten each component
             lightened = tuple(min(255, int(c + (255 - c) * amount)) for c in rgb)
             return f"#{lightened[0]:02x}{lightened[1]:02x}{lightened[2]:02x}"
-        except:
+        except (ValueError, TypeError):
             return color
 
     def _darken_color(self, color: str, amount: float) -> str:
@@ -105,7 +105,7 @@ body {
             # Darken each component
             darkened = tuple(max(0, int(c * (1 - amount))) for c in rgb)
             return f"#{darkened[0]:02x}{darkened[1]:02x}{darkened[2]:02x}"
-        except:
+        except (ValueError, TypeError):
             return color
 
     def _generate_css_variables(self, branding: BrandingConfig) -> str:
