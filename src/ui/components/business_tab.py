@@ -28,7 +28,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
 )
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QCursor
 from typing import Dict, Any, List, Tuple
 from .base_tab import BaseTab, ValidationResult
 from ..dialogs.ai_content_preview_dialog import AIContentPreviewDialog
@@ -911,44 +911,46 @@ class BusinessTab(BaseTab):
             )
             return
 
-        # Show progress message
-        QMessageBox.information(
-            self,
-            "Generating Content",
-            "Generating business description with AI... This may take a few seconds."
-        )
+        # Set busy cursor and disable UI
+        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
 
-        # Generate content
-        existing_desc = self.description_input.toPlainText().strip()
-        content = self.business_generator.generate_business_description(
-            business_name=business_name,
-            industry=industry,
-            existing_description=existing_desc
-        )
-
-        if not content:
-            QMessageBox.critical(
-                self,
-                "Generation Failed",
-                "Failed to generate business description. Please try again."
-            )
-            return
-
-        # Show preview dialog
-        dialog = AIContentPreviewDialog(
-            title="AI Generated Business Description",
-            field_name="Business Description",
-            content=content,
-            regenerate_callback=lambda: self.business_generator.generate_business_description(
+        try:
+            # Generate content
+            existing_desc = self.description_input.toPlainText().strip()
+            content = self.business_generator.generate_business_description(
                 business_name=business_name,
                 industry=industry,
                 existing_description=existing_desc
-            ),
-            parent=self
-        )
+            )
 
-        dialog.content_accepted.connect(lambda c: self.description_input.setPlainText(c))
-        dialog.exec()
+            if not content:
+                QMessageBox.critical(
+                    self,
+                    "Generation Failed",
+                    "Failed to generate business description. Please try again."
+                )
+                return
+
+            # Show preview dialog
+            dialog = AIContentPreviewDialog(
+                title="AI Generated Business Description",
+                field_name="Business Description",
+                content=content,
+                regenerate_callback=lambda: self.business_generator.generate_business_description(
+                    business_name=business_name,
+                    industry=industry,
+                    existing_description=existing_desc
+                ),
+                parent=self
+            )
+
+            dialog.content_accepted.connect(lambda c: self.description_input.setPlainText(c))
+            dialog.exec()
+        finally:
+            # Restore cursor and enable UI
+            QCursor.restoreOverrideCursor()
+            self.setEnabled(True)
 
     def _generate_company_overview(self):
         """Generate company overview using AI"""
@@ -971,41 +973,50 @@ class BusinessTab(BaseTab):
             )
             return
 
-        # Generate content
-        business_desc = self.description_input.toPlainText().strip()
-        years = self.years_in_business_input.text().strip()
+        # Set busy cursor and disable UI
+        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
 
-        content = self.business_generator.generate_company_overview(
-            business_name=business_name,
-            industry=industry,
-            business_description=business_desc,
-            years_in_business=years
-        )
+        try:
+            # Generate content
+            business_desc = self.description_input.toPlainText().strip()
+            years = self.years_in_business_input.text().strip()
 
-        if not content:
-            QMessageBox.critical(
-                self,
-                "Generation Failed",
-                "Failed to generate company overview. Please try again."
-            )
-            return
-
-        # Show preview dialog
-        dialog = AIContentPreviewDialog(
-            title="AI Generated Company Overview",
-            field_name="Company Overview",
-            content=content,
-            regenerate_callback=lambda: self.business_generator.generate_company_overview(
+            content = self.business_generator.generate_company_overview(
                 business_name=business_name,
                 industry=industry,
                 business_description=business_desc,
                 years_in_business=years
-            ),
-            parent=self
-        )
+            )
 
-        dialog.content_accepted.connect(lambda c: self.company_overview_input.setPlainText(c))
-        dialog.exec()
+            if not content:
+                QMessageBox.critical(
+                    self,
+                    "Generation Failed",
+                    "Failed to generate company overview. Please try again."
+                )
+                return
+
+            # Show preview dialog
+            dialog = AIContentPreviewDialog(
+                title="AI Generated Company Overview",
+                field_name="Company Overview",
+                content=content,
+                regenerate_callback=lambda: self.business_generator.generate_company_overview(
+                    business_name=business_name,
+                    industry=industry,
+                    business_description=business_desc,
+                    years_in_business=years
+                ),
+                parent=self
+            )
+
+            dialog.content_accepted.connect(lambda c: self.company_overview_input.setPlainText(c))
+            dialog.exec()
+        finally:
+            # Restore cursor and enable UI
+            QCursor.restoreOverrideCursor()
+            self.setEnabled(True)
 
     def _generate_mission_statement(self):
         """Generate mission statement using AI"""
@@ -1028,38 +1039,47 @@ class BusinessTab(BaseTab):
             )
             return
 
-        # Generate content
-        business_desc = self.description_input.toPlainText().strip()
+        # Set busy cursor and disable UI
+        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
 
-        content = self.business_generator.generate_mission_statement(
-            business_name=business_name,
-            industry=industry,
-            business_description=business_desc
-        )
+        try:
+            # Generate content
+            business_desc = self.description_input.toPlainText().strip()
 
-        if not content:
-            QMessageBox.critical(
-                self,
-                "Generation Failed",
-                "Failed to generate mission statement. Please try again."
-            )
-            return
-
-        # Show preview dialog
-        dialog = AIContentPreviewDialog(
-            title="AI Generated Mission Statement",
-            field_name="Mission Statement",
-            content=content,
-            regenerate_callback=lambda: self.business_generator.generate_mission_statement(
+            content = self.business_generator.generate_mission_statement(
                 business_name=business_name,
                 industry=industry,
                 business_description=business_desc
-            ),
-            parent=self
-        )
+            )
 
-        dialog.content_accepted.connect(lambda c: self.mission_statement_input.setPlainText(c))
-        dialog.exec()
+            if not content:
+                QMessageBox.critical(
+                    self,
+                    "Generation Failed",
+                    "Failed to generate mission statement. Please try again."
+                )
+                return
+
+            # Show preview dialog
+            dialog = AIContentPreviewDialog(
+                title="AI Generated Mission Statement",
+                field_name="Mission Statement",
+                content=content,
+                regenerate_callback=lambda: self.business_generator.generate_mission_statement(
+                    business_name=business_name,
+                    industry=industry,
+                    business_description=business_desc
+                ),
+                parent=self
+            )
+
+            dialog.content_accepted.connect(lambda c: self.mission_statement_input.setPlainText(c))
+            dialog.exec()
+        finally:
+            # Restore cursor and enable UI
+            QCursor.restoreOverrideCursor()
+            self.setEnabled(True)
 
     def _generate_service_guarantee(self):
         """Generate service guarantee using AI"""
@@ -1082,38 +1102,47 @@ class BusinessTab(BaseTab):
             )
             return
 
-        # Generate content
-        business_desc = self.description_input.toPlainText().strip()
+        # Set busy cursor and disable UI
+        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
 
-        content = self.business_generator.generate_service_guarantee(
-            business_name=business_name,
-            industry=industry,
-            business_description=business_desc
-        )
+        try:
+            # Generate content
+            business_desc = self.description_input.toPlainText().strip()
 
-        if not content:
-            QMessageBox.critical(
-                self,
-                "Generation Failed",
-                "Failed to generate service guarantee. Please try again."
-            )
-            return
-
-        # Show preview dialog
-        dialog = AIContentPreviewDialog(
-            title="AI Generated Service Guarantee",
-            field_name="Service Guarantee",
-            content=content,
-            regenerate_callback=lambda: self.business_generator.generate_service_guarantee(
+            content = self.business_generator.generate_service_guarantee(
                 business_name=business_name,
                 industry=industry,
                 business_description=business_desc
-            ),
-            parent=self
-        )
+            )
 
-        dialog.content_accepted.connect(lambda c: self.service_guarantee_input.setPlainText(c))
-        dialog.exec()
+            if not content:
+                QMessageBox.critical(
+                    self,
+                    "Generation Failed",
+                    "Failed to generate service guarantee. Please try again."
+                )
+                return
+
+            # Show preview dialog
+            dialog = AIContentPreviewDialog(
+                title="AI Generated Service Guarantee",
+                field_name="Service Guarantee",
+                content=content,
+                regenerate_callback=lambda: self.business_generator.generate_service_guarantee(
+                    business_name=business_name,
+                    industry=industry,
+                    business_description=business_desc
+                ),
+                parent=self
+            )
+
+            dialog.content_accepted.connect(lambda c: self.service_guarantee_input.setPlainText(c))
+            dialog.exec()
+        finally:
+            # Restore cursor and enable UI
+            QCursor.restoreOverrideCursor()
+            self.setEnabled(True)
 
     def _generate_service_area_description(self):
         """Generate service area description using AI"""
@@ -1136,36 +1165,45 @@ class BusinessTab(BaseTab):
             )
             return
 
-        # Generate content
-        # TODO: Get actual service areas from city pages when available
-        service_areas = []
+        # Set busy cursor and disable UI
+        QCursor.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
 
-        content = self.business_generator.generate_service_area_description(
-            business_name=business_name,
-            industry=industry,
-            service_areas=service_areas
-        )
+        try:
+            # Generate content
+            # TODO: Get actual service areas from city pages when available
+            service_areas = []
 
-        if not content:
-            QMessageBox.critical(
-                self,
-                "Generation Failed",
-                "Failed to generate service area description. Please try again."
-            )
-            return
-
-        # Show preview dialog
-        dialog = AIContentPreviewDialog(
-            title="AI Generated Service Area Description",
-            field_name="Service Area Description",
-            content=content,
-            regenerate_callback=lambda: self.business_generator.generate_service_area_description(
+            content = self.business_generator.generate_service_area_description(
                 business_name=business_name,
                 industry=industry,
                 service_areas=service_areas
-            ),
-            parent=self
-        )
+            )
 
-        dialog.content_accepted.connect(lambda c: self.service_area_description_input.setPlainText(c))
-        dialog.exec()
+            if not content:
+                QMessageBox.critical(
+                    self,
+                    "Generation Failed",
+                    "Failed to generate service area description. Please try again."
+                )
+                return
+
+            # Show preview dialog
+            dialog = AIContentPreviewDialog(
+                title="AI Generated Service Area Description",
+                field_name="Service Area Description",
+                content=content,
+                regenerate_callback=lambda: self.business_generator.generate_service_area_description(
+                    business_name=business_name,
+                    industry=industry,
+                    service_areas=service_areas
+                ),
+                parent=self
+            )
+
+            dialog.content_accepted.connect(lambda c: self.service_area_description_input.setPlainText(c))
+            dialog.exec()
+        finally:
+            # Restore cursor and enable UI
+            QCursor.restoreOverrideCursor()
+            self.setEnabled(True)
