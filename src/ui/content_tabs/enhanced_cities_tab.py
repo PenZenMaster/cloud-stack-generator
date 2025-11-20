@@ -1168,8 +1168,9 @@ class EnhancedCitiesTab(BaseTab):
             if content:
                 # Show preview dialog
                 dialog = AIContentPreviewDialog(
-                    content=content,
+                    title="AI Generated Content",
                     field_name="About City",
+                    content=content,
                     parent=self
                 )
 
@@ -1271,8 +1272,9 @@ Generate only the title, no explanation."""
 
                 # Show preview dialog
                 dialog = AIContentPreviewDialog(
-                    content=content,
+                    title="AI Generated Content",
                     field_name="SEO Content Title",
+                    content=content,
                     parent=self
                 )
 
@@ -1388,8 +1390,9 @@ Generate 800-1200 words of high-quality, SEO-optimized content."""
 
                 # Show preview dialog
                 dialog = AIContentPreviewDialog(
-                    content=content,
+                    title="AI Generated Content",
                     field_name="SEO Content Body",
+                    content=content,
                     parent=self
                 )
 
