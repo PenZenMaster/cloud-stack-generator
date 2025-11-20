@@ -16,15 +16,19 @@ Author: Cloud Stack Generator Team
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFormLayout,
     QPushButton, QListWidget, QListWidgetItem, QTextEdit, QLineEdit,
-    QLabel, QGroupBox, QScrollArea, QFrame, QTabWidget, QMessageBox, QDialog, QDialogButtonBox
+    QLabel, QGroupBox, QScrollArea, QFrame, QTabWidget, QMessageBox, QDialog, QDialogButtonBox,
+    QApplication
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject
 from PyQt6.QtGui import QFont
 
 from ..components.base_tab import BaseTab
+from ..dialogs.ai_content_preview import AIContentPreviewDialog
 from ...core.config.models import (
     CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
 )
+from ...core.services.ai_content_service import AIContentService
+from ...core.generators.content.city_field_content_generator import CityFieldContentGenerator
 from typing import Dict, Any, List, Optional
 
 
@@ -175,6 +179,11 @@ class EnhancedCitiesTab(BaseTab):
         self.current_city_page: Optional[CityPageConfig] = None
         self.worker_thread = None
         self.wikipedia_worker = None
+
+        # Initialize AI services
+        self.ai_service = AIContentService() if AIContentService else None
+        self.city_generator = CityFieldContentGenerator(self.ai_service) if CityFieldContentGenerator else None
+
         super().__init__(parent)
     
     def setup_ui(self):
@@ -333,30 +342,54 @@ class EnhancedCitiesTab(BaseTab):
         """Create content tab"""
         widget = QWidget()
         layout = QVBoxLayout()
-        
-        # About City
-        layout.addWidget(QLabel("About City:"))
+
+        # About City with AI button
+        about_city_header = QHBoxLayout()
+        about_city_header.addWidget(QLabel("About City:"))
+        if self.ai_service and self.ai_service.is_available():
+            ai_about_btn = QPushButton("+ Generate with AI")
+            ai_about_btn.clicked.connect(self._generate_about_city)
+            about_city_header.addWidget(ai_about_btn)
+        about_city_header.addStretch()
+        layout.addLayout(about_city_header)
+
         self.about_city_edit = QTextEdit(city_page.about_city)
         self.about_city_edit.setMaximumHeight(120)
         layout.addWidget(self.about_city_edit)
-        
-        # SEO Content Title
-        layout.addWidget(QLabel("SEO Content Title:"))
+
+        # SEO Content Title with AI button
+        seo_title_header = QHBoxLayout()
+        seo_title_header.addWidget(QLabel("SEO Content Title:"))
+        if self.ai_service and self.ai_service.is_available():
+            ai_title_btn = QPushButton("+ Generate with AI")
+            ai_title_btn.clicked.connect(self._generate_seo_title)
+            seo_title_header.addWidget(ai_title_btn)
+        seo_title_header.addStretch()
+        layout.addLayout(seo_title_header)
+
         self.seo_title_edit = QLineEdit(city_page.seo_content_title)
         layout.addWidget(self.seo_title_edit)
-        
-        # SEO Content Body
-        layout.addWidget(QLabel("SEO Content Body (800+ words):"))
+
+        # SEO Content Body with AI button
+        seo_body_header = QHBoxLayout()
+        seo_body_header.addWidget(QLabel("SEO Content Body (800+ words):"))
+        if self.ai_service and self.ai_service.is_available():
+            ai_body_btn = QPushButton("+ Generate with AI")
+            ai_body_btn.clicked.connect(self._generate_seo_body)
+            seo_body_header.addWidget(ai_body_btn)
+        seo_body_header.addStretch()
+        layout.addLayout(seo_body_header)
+
         self.seo_content_edit = QTextEdit(city_page.seo_content_body)
         self.seo_content_edit.setMinimumHeight(300)
         layout.addWidget(self.seo_content_edit)
-        
+
         # Word count label
         self.word_count_label = QLabel()
         self.update_word_count()
         self.seo_content_edit.textChanged.connect(self.update_word_count)
         layout.addWidget(self.word_count_label)
-        
+
         widget.setLayout(layout)
         return widget
     
@@ -1062,6 +1095,319 @@ class EnhancedCitiesTab(BaseTab):
         self.refresh_city_list()
         self.clear_editor()
     
+    def _generate_about_city(self):
+        """Generate About City content with AI"""
+        # Check AI availability
+        if not self.ai_service or not self.ai_service.is_available():
+            QMessageBox.warning(
+                self, "AI Not Available",
+                "AI content generation is not available. Please check your API configuration."
+            )
+            return
+
+        # Check if city is selected
+        if not self.current_city_page:
+            QMessageBox.warning(
+                self, "No City Selected",
+                "Please select a city to generate content for."
+            )
+            return
+
+        # Get required information
+        city_name = self.current_city_page.city_name
+        state = self.current_city_page.state
+
+        if not city_name:
+            QMessageBox.warning(
+                self, "Missing Information",
+                "City name is required to generate content."
+            )
+            return
+
+        # Get business info from main window
+        try:
+            main_window = self.window()
+            business_tab = main_window.business_tab
+            business_name = business_tab.business_name_input.text().strip()
+            industry = business_tab.industry_input.currentText()
+
+            if not business_name or not industry:
+                QMessageBox.warning(
+                    self, "Missing Business Information",
+                    "Please fill in Business Name and Industry in the Business Info tab first."
+                )
+                return
+        except Exception:
+            QMessageBox.warning(
+                self, "Error",
+                "Could not retrieve business information. Please ensure Business Info tab is configured."
+            )
+            return
+
+        # Set busy cursor and disable UI
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
+
+        try:
+            # Get existing content
+            existing_content = self.about_city_edit.toPlainText().strip()
+
+            # Generate content
+            content = self.city_generator.generate_neighborhoods_description(
+                city_name=city_name,
+                state=state,
+                business_name=business_name,
+                industry=industry,
+                existing_content=existing_content
+            )
+
+            # Restore cursor before showing dialog
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            if content:
+                # Show preview dialog
+                dialog = AIContentPreviewDialog(
+                    content=content,
+                    field_name="About City",
+                    parent=self
+                )
+
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    final_content = dialog.get_content()
+                    self.about_city_edit.setPlainText(final_content)
+            else:
+                QMessageBox.critical(
+                    self, "Generation Failed",
+                    "Failed to generate content. Please try again."
+                )
+
+        finally:
+            # Ensure cursor is restored and UI is enabled
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+    def _generate_seo_title(self):
+        """Generate SEO Content Title with AI"""
+        # Check AI availability
+        if not self.ai_service or not self.ai_service.is_available():
+            QMessageBox.warning(
+                self, "AI Not Available",
+                "AI content generation is not available. Please check your API configuration."
+            )
+            return
+
+        # Check if city is selected
+        if not self.current_city_page:
+            QMessageBox.warning(
+                self, "No City Selected",
+                "Please select a city to generate content for."
+            )
+            return
+
+        # Get required information
+        city_name = self.current_city_page.city_name
+        state = self.current_city_page.state
+
+        if not city_name:
+            QMessageBox.warning(
+                self, "Missing Information",
+                "City name is required to generate content."
+            )
+            return
+
+        # Get business info
+        try:
+            main_window = self.window()
+            business_tab = main_window.business_tab
+            business_name = business_tab.business_name_input.text().strip()
+            industry = business_tab.industry_input.currentText()
+
+            if not business_name or not industry:
+                QMessageBox.warning(
+                    self, "Missing Business Information",
+                    "Please fill in Business Name and Industry in the Business Info tab first."
+                )
+                return
+        except Exception:
+            QMessageBox.warning(
+                self, "Error",
+                "Could not retrieve business information. Please ensure Business Info tab is configured."
+            )
+            return
+
+        # Set busy cursor and disable UI
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
+
+        try:
+            # Build prompt for SEO title generation
+            prompt = f"""Generate a compelling SEO content title (H2 heading) for {city_name}, {state}.
+
+Business: {business_name}
+Industry: {industry}
+
+Create a title that:
+- Is 50-70 characters
+- Includes the city name
+- Appeals to local customers
+- Is clear and benefit-focused
+
+Example formats:
+- "Professional {industry} Services in {city_name}"
+- "Trusted {industry} Solutions for {city_name} Residents"
+- "{city_name}'s Leading {industry} Provider"
+
+Generate only the title, no explanation."""
+
+            response = self.ai_service._call_openai(prompt)
+
+            # Restore cursor before showing dialog
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            if response:
+                content = response.strip()
+
+                # Show preview dialog
+                dialog = AIContentPreviewDialog(
+                    content=content,
+                    field_name="SEO Content Title",
+                    parent=self
+                )
+
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    final_content = dialog.get_content()
+                    self.seo_title_edit.setText(final_content)
+            else:
+                QMessageBox.critical(
+                    self, "Generation Failed",
+                    "Failed to generate content. Please try again."
+                )
+
+        finally:
+            # Ensure cursor is restored and UI is enabled
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+    def _generate_seo_body(self):
+        """Generate SEO Content Body (800+ words) with AI"""
+        # Check AI availability
+        if not self.ai_service or not self.ai_service.is_available():
+            QMessageBox.warning(
+                self, "AI Not Available",
+                "AI content generation is not available. Please check your API configuration."
+            )
+            return
+
+        # Check if city is selected
+        if not self.current_city_page:
+            QMessageBox.warning(
+                self, "No City Selected",
+                "Please select a city to generate content for."
+            )
+            return
+
+        # Get required information
+        city_name = self.current_city_page.city_name
+        state = self.current_city_page.state
+
+        if not city_name:
+            QMessageBox.warning(
+                self, "Missing Information",
+                "City name is required to generate content."
+            )
+            return
+
+        # Get business info
+        try:
+            main_window = self.window()
+            business_tab = main_window.business_tab
+            business_name = business_tab.business_name_input.text().strip()
+            industry = business_tab.industry_input.currentText()
+
+            if not business_name or not industry:
+                QMessageBox.warning(
+                    self, "Missing Business Information",
+                    "Please fill in Business Name and Industry in the Business Info tab first."
+                )
+                return
+        except Exception:
+            QMessageBox.warning(
+                self, "Error",
+                "Could not retrieve business information. Please ensure Business Info tab is configured."
+            )
+            return
+
+        # Set busy cursor and disable UI
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        self.setEnabled(False)
+
+        try:
+            # Get existing content
+            existing_content = self.seo_content_edit.toPlainText().strip()
+
+            # Build comprehensive prompt for SEO body content
+            prompt = f"""Generate comprehensive SEO content (800-1200 words) for {city_name}, {state}.
+
+Business: {business_name}
+Industry: {industry}
+
+Create engaging, informative content that:
+- Targets local customers in {city_name}
+- Highlights the benefits of {business_name}'s services
+- Includes natural mentions of {city_name} and {state}
+- Uses conversational, professional tone
+- Addresses common customer concerns
+- Includes 3-4 distinct sections with clear topics
+
+Structure:
+1. Opening paragraph introducing {business_name} and services in {city_name}
+2. Why choose {business_name} in {city_name} (benefits, experience, commitment)
+3. Services and solutions specific to {city_name} area needs
+4. Local expertise and community connection
+5. Call to action encouraging contact
+
+Write in HTML format with <h3> headings for sections and <p> tags for paragraphs.
+Focus on value to the customer, not just features.
+Make it locally relevant to {city_name}.
+
+Generate 800-1200 words of high-quality, SEO-optimized content."""
+
+            if existing_content:
+                prompt += f"\n\nExisting content to enhance:\n{existing_content[:500]}"
+
+            response = self.ai_service._call_openai(prompt)
+
+            # Restore cursor before showing dialog
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
+            if response:
+                content = response.strip()
+
+                # Show preview dialog
+                dialog = AIContentPreviewDialog(
+                    content=content,
+                    field_name="SEO Content Body",
+                    parent=self
+                )
+
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    final_content = dialog.get_content()
+                    self.seo_content_edit.setPlainText(final_content)
+                    self.update_word_count()
+            else:
+                QMessageBox.critical(
+                    self, "Generation Failed",
+                    "Failed to generate content. Please try again."
+                )
+
+        finally:
+            # Ensure cursor is restored and UI is enabled
+            QApplication.restoreOverrideCursor()
+            self.setEnabled(True)
+
     def __del__(self):
         """Cleanup when tab is destroyed"""
         self._cleanup_worker_thread()
