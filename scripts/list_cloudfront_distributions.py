@@ -123,7 +123,7 @@ def list_distributions():
 
             # Check if this might be the right one
             if 'portable-sanitation-solutions' in origin_domain:
-                print(f"  >>> MATCH: This distribution serves your S3 bucket!")
+                print("  >>> MATCH: This distribution serves your S3 bucket!")
                 print(f"  >>> Use this Distribution ID in the app: {dist_id}")
 
         print("\n" + "=" * 60)

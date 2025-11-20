@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from ui.dialogs.template_editor_dialog import TemplateEditorDialog
 from ui.dialogs.simple_template_editor import SimpleTemplateEditor
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 
 
 class TestTemplateSampleData:

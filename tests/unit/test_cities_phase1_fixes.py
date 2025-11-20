@@ -13,9 +13,6 @@ Author: Cloud Stack Generator Team
 """
 
 import pytest
-import tempfile
-import os
-from pathlib import Path
 
 # Test markers
 pytestmark = [pytest.mark.unit, pytest.mark.cities, pytest.mark.phase1_fixes]

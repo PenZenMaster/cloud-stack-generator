@@ -21,11 +21,10 @@ Comments:
 
 import pytest
 import os
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
+from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
 
-from src.core.services.ai_content_service import AIContentService, AIContentServiceError
+from src.core.services.ai_content_service import AIContentService
 from src.core.services.content_cache import ContentCache
 
 

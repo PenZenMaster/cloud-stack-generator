@@ -24,7 +24,7 @@ import tempfile
 import json
 import base64
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import patch, MagicMock
 import sys
 import os
 
@@ -32,7 +32,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from core.templates.template_preview import TemplatePreviewGenerator
-from core.templates.template_manager import TemplateManager, TemplateMetadata, TemplateType, TemplateVariant
+from core.templates.template_manager import TemplateManager
 
 
 class TestTemplatePreviewGenerator:

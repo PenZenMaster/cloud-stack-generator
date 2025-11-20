@@ -229,7 +229,7 @@ def analyze_schema_features(schema):
     products = [e for e in graph if e.get("@type") == "Product"]
     services = [e for e in graph if e.get("@type") == "Service"]
 
-    print(f"\nEntities in @graph:")
+    print("\nEntities in @graph:")
     print(f"  - Total: {len(graph)}")
     print(f"  - Products: {len(products)}")
     print(f"  - Services: {len(services)}")

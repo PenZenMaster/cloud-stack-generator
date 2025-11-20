@@ -10,16 +10,13 @@ Tests the GCS provider implementation including:
 
 import pytest
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch, mock_open
+from unittest.mock import Mock, patch, mock_open
 from tempfile import TemporaryDirectory
-import json
 
 from src.core.deployment.providers import (
     GCSProvider,
     ProviderType,
     ProviderConfig,
-    DeploymentMode,
-    DeploymentResult,
     AuthenticationError,
     BucketCreationError,
     UploadError,
@@ -494,7 +491,6 @@ class TestProviderFactory:
 
     def test_create_gcs_provider(self):
         """Test creating GCS provider via factory"""
-        from src.core.deployment.providers import create_provider
 
         config = ProviderConfig(
             provider_type=ProviderType.GOOGLE_GCS,
@@ -525,7 +521,6 @@ class TestProviderFactory:
 
     def test_create_invalid_provider(self):
         """Test creating non-existent provider"""
-        from src.core.deployment.providers import create_provider
 
         config = ProviderConfig(
             provider_type=ProviderType.AZURE_BLOB,  # Not implemented yet

@@ -12,7 +12,7 @@ import pytest
 import tempfile
 import shutil
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from PyQt6.QtWidgets import QApplication
 
 from src.ui.components.cloud_tab import CloudTab

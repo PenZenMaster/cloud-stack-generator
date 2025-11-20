@@ -10,7 +10,7 @@ Author: Cloud Stack Generator Team
 
 import sys
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 import os
 
 # Add src directory to path for imports

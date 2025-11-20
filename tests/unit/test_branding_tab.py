@@ -12,11 +12,7 @@ Author: Cloud Stack Generator Team
 import sys
 import os
 import unittest
-from unittest.mock import Mock, patch
-from PyQt6.QtWidgets import QApplication, QComboBox, QLineEdit
-from PyQt6.QtCore import QTimer
-from PyQt6.QtTest import QTest
-from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import QApplication
 
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -527,7 +523,7 @@ def run_all_tests():
     error_tests = len(result.errors)
     passed_tests = total_tests - failed_tests - error_tests
 
-    print(f"📊 TEST SUMMARY:")
+    print("📊 TEST SUMMARY:")
     print(f"✅ Passed: {passed_tests}")
     print(f"❌ Failed: {failed_tests}")
     print(f"💥 Errors: {error_tests}")

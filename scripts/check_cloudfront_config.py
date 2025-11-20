@@ -10,7 +10,6 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.core.aws.s3_manager import S3Manager
-import json
 import boto3
 
 
@@ -26,7 +25,7 @@ def check_distribution_config(distribution_id: str, profile_name: str = "default
         # Create boto3 session with profile
         try:
             session = boto3.Session(profile_name=profile_name)
-        except Exception as profile_error:
+        except Exception:
             print(f"ERROR: Failed to load AWS profile '{profile_name}'", file=sys.stderr)
             print("\nAvailable profiles:", file=sys.stderr)
             available_profiles = boto3.Session().available_profiles
@@ -58,7 +57,7 @@ def check_distribution_config(distribution_id: str, profile_name: str = "default
             print(f"    Origin Path: '{origin.get('OriginPath', '')}'")
 
             if 'S3OriginConfig' in origin:
-                print(f"    Type: S3")
+                print("    Type: S3")
                 print(f"    OAI: {origin['S3OriginConfig'].get('OriginAccessIdentity', 'None')}")
 
         # Display default root object

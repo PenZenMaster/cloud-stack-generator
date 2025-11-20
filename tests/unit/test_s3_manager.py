@@ -3,7 +3,7 @@ Unit tests for S3Manager functionality
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch
 from pathlib import Path
 from datetime import datetime
 

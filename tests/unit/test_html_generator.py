@@ -21,10 +21,8 @@ Comments:
 
 import pytest
 import tempfile
-import json
-import re
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import patch, MagicMock
 from datetime import datetime
 import sys
 import os

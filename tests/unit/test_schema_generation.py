@@ -4,13 +4,13 @@ Tests breadcrumb schema generation added in schema enhancements
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 
 from src.core.generators.html_generator import HTMLGenerator
 from src.core.generators.enhanced_city_page_generator import EnhancedCityPageGenerator
 from src.core.config.models import (
     ClientConfig, BusinessConfig, ContactConfig, AddressConfig,
-    BrandingConfig, CloudConfig, CityPageConfig, CityImageConfig
+    BrandingConfig, CloudConfig
 )
 
 

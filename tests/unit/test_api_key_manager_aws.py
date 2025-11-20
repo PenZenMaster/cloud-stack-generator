@@ -5,8 +5,7 @@ Unit tests for enhanced API Key Manager AWS functionality
 import pytest
 import json
 import base64
-from unittest.mock import Mock, patch, mock_open
-from pathlib import Path
+from unittest.mock import patch, mock_open
 
 from src.core.security.api_key_manager import APIKeyManager
 

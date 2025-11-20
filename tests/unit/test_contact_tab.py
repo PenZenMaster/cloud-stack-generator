@@ -22,11 +22,8 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QGroupBox,
     QMessageBox,
-    QFrame,
-    QScrollArea,
 )
 from PyQt6.QtGui import QFont
-from PyQt6.QtCore import Qt
 
 # Add the project root to Python path
 project_root = os.path.dirname(os.path.abspath(__file__))

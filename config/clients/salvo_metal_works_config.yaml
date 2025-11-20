@@ -2,44 +2,49 @@ client:
   business_name: Salvo Metal Works
   domain: https://salvometalworks.com
   industry: Metal Fabrication
-  description: Bespoke architectural metal fabrication. Salvo Metal Works is a family-owned
-    and operated manufacturer of roofing products. We pride ourselves on our ability
-    to customize all of our products to fit any project's needs. We offer a comprehensive
-    range of chimney shrouds, cupolas, dormers, finials, leader boxes, roof vents,
-    snow guards, and more.
+  description: Salvo Metal Works specializes in bespoke architectural metal fabrication,
+    delivering custom roofing solutions like chimney shrouds, cupolas, and roof vents.
+    As a family-owned manufacturer, we combine expert craftsmanship with tailored
+    designs to elevate any project. Experience unparalleled quality and personalization
+    in every piece we create.
   tagline: Forging Function with Metal Mastery
   hero_subtitle: Professional metal fabrication services you can trust - serving Chicago
     and beyond!
   years_in_business: Over 40 years
-  company_overview: 'Located in the heart of Naperville, Illinois, Salvo Metal Works
-    proudly serves residential and commercial clients throughout the Chicago metropolitan
-    area and beyond. Our central location allows us to efficiently serve clients across
-    the region while maintaining the personal touch that comes with being a local
-    business.
+  company_overview: 'For over 40 years, Salvo Metal Works has been a cornerstone in
+    the metal fabrication industry, specializing in bespoke architectural metal solutions.
+    Founded as a family-owned business, we have cultivated a legacy of expert craftsmanship
+    and innovative design tailored to meet the unique needs of our clients. Our commitment
+    to quality is evident in every piece we create, from custom roofing solutions
+    like chimney shrouds and cupolas to intricately designed roof vents. We take pride
+    in our ability to elevate any architectural project through personalized service
+    and meticulous attention to detail.
 
 
-    Whether you''re a homeowner looking to add distinctive copper elements to your
-    residence, an architect specifying custom metalwork for a commercial project,
-    or a contractor seeking a reliable fabrication partner, Salvo Metal Works has
-    the expertise and capacity to meet your needs.
-
-
-    Ready to transform your building with custom copper architectural elements? Contact
-    us today to discuss your project and discover how Salvo Metal Works can bring
-    your vision to life with exceptional craftsmanship and attention to detail.'
-  mission_statement: "Salvo Metal Works exists to forge function with metal mastery\u2014\
-    designing and crafting bespoke architectural metal that elevates beauty, improves\
-    \ performance, and lasts for generations. We partner with architects, builders,\
-    \ and discerning homeowners to deliver precision-engineered cupolas, finials,\
-    \ dormers, roof vents, chimney shrouds, leader boxes, and snow guards that blend\
-    \ old-world craftsmanship with modern fabrication. Our mission is to protect and\
-    \ enhance the built environment through meticulous design, premium materials,\
-    \ and relentless attention to detail\u2014delivered on time, to spec, and built\
-    \ to outlast the roof beneath it."
+    At Salvo Metal Works, trust and reliability are at the heart of what we do. Our
+    seasoned team of experts combines years of experience with a passion for metal
+    fabrication, ensuring that each product we deliver not only meets but exceeds
+    our customers'' expectations. We understand that your projects deserve the highest
+    level of craftsmanship, and we are dedicated to providing solutions that stand
+    the test of time. Our approach is rooted in building lasting relationships with
+    our clients, reinforcing our reputation as a trusted partner in the industry.
+    With Salvo Metal Works, you can expect unparalleled quality, personalized service,
+    and a commitment to excellence that has defined us for generations.'
+  mission_statement: At Salvo Metal Works, our mission is to transform architectural
+    visions into reality through expert metal fabrication, delivering bespoke roofing
+    solutions that enhance both form and function. As a family-owned business, we
+    are committed to providing unparalleled quality and personalization, ensuring
+    that every piece we create not only meets but exceeds our clients' expectations.
+    We strive to set the standard in the industry, fostering innovation and craftsmanship
+    that elevates every project for generations to come.
   service_guarantee: We stand behind all of our work and offer an industry-leading
     customer satisfaction pledge.
-  service_area_description: Serving the greater Chicagoland area and beyond with bespoke
-    architectural metal fabrication
+  service_area_description: "At Salvo Metal Works, we proudly serve our local community\
+    \ and the surrounding areas with top-notch metal fabrication services. Our commitment\
+    \ to excellence and responsiveness ensures that we meet the unique needs of each\
+    \ client, whether you're in town or in the neighboring communities. With a strong\
+    \ focus on accessibility, we are here to provide tailored solutions that support\
+    \ our community\u2019s growth and development."
   why_choose_us:
   - title: Unmatched Expertise
     description: Our team brings years of experience in metal fabrication, understanding
@@ -384,12 +389,11 @@ client:
     - Home
     - Locations
     - Bellwood, Illinois
-    about_city: "Bellwood is a village in Proviso Township, Cook County, Illinois,\
-      \ United States. Located 13 miles (21\_km) west of Chicago's downtown Loop,\
-      \ the Village of Bellwood is bounded by the Eisenhower Expressway (south), the\
-      \ Proviso yards of the former Chicago & Northwestern, now Union Pacific Railroad\
-      \ (north), and the suburbs of Maywood (east) and Hillside and Berkeley (west).\
-      \ The population was 18,789 at the 2020 census."
+    about_city: Salvo Metal Works proudly serves the vibrant community of Bellwood,
+      Illinois, as well as the neighboring areas of Maywood, Hillside, and Berkeley.
+      Key landmarks include the Eisenhower Expressway and the Proviso yards, while
+      the village's close proximity to Chicago's downtown Loop enhances its accessibility
+      for clients throughout the region.
     city_image:
       image_url: https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg/330px-Mar_Thoma_Sleeha_Cathedral_-_Bellwood%2C_Illinois_01.jpg
       alt_text: View of Bellwood
@@ -397,8 +401,54 @@ client:
       credit: Wikipedia - Bellwood, Illinois
       source: https://en.wikipedia.org/wiki/Bellwood%2C_Illinois
       embed_code: ''
-    seo_content_title: ''
-    seo_content_body: ''
+    seo_content_title: '"Reliable Metal Fabrication Services for Bellwood, Illinois
+      Homes"'
+    seo_content_body: "Welcome to Salvo Metal Works, your premier metal fabrication\
+      \ partner in Bellwood, Illinois. Nestled in the heart of this vibrant community,\
+      \ we specialize in providing high-quality metal solutions tailored to meet the\
+      \ diverse needs of local businesses and residents. Whether you're looking for\
+      \ custom metal designs, structural components, or repair services, Salvo Metal\
+      \ Works is dedicated to delivering exceptional craftsmanship and outstanding\
+      \ customer service. With our extensive experience and commitment to quality,\
+      \ we aim to be your go-to source for all your metal fabrication needs right\
+      \ here in Bellwood.\n\nChoosing a metal fabrication partner can be daunting,\
+      \ especially when you want to ensure that your project is handled with skill\
+      \ and professionalism. At Salvo Metal Works, we pride ourselves on our years\
+      \ of experience in the industry, which allows us to understand and adapt to\
+      \ the specific needs of our Bellwood clientele. Our skilled team is not only\
+      \ proficient in the latest fabrication techniques but is also committed to maintaining\
+      \ the highest standards of quality and safety. We believe that our customers\
+      \ deserve the best, and we strive to exceed their expectations in every project\
+      \ we undertake. Additionally, our local presence means you can count on us for\
+      \ timely service and quick turnaround times, ensuring your projects stay on\
+      \ schedule.\n\nSalvo Metal Works offers a comprehensive range of services designed\
+      \ to cater to the unique demands of our Bellwood community. We specialize in\
+      \ custom metal fabrication, allowing us to create tailored solutions for businesses\
+      \ across various industries, including construction, manufacturing, and automotive.\
+      \ From intricate metal designs for artistic installations to robust structural\
+      \ components for buildings, our capabilities are vast and versatile. Our welding\
+      \ services, both MIG and TIG, ensure that your metal components are built to\
+      \ last. We also provide metal repair services, helping local businesses maintain\
+      \ their equipment and infrastructure without the need for costly replacements.\
+      \ By choosing Salvo Metal Works, you're investing in durable, high-quality metal\
+      \ solutions that will serve your needs for years to come.\n\nAs a business rooted\
+      \ in Bellwood, we take pride in our local expertise and community connection.\
+      \ We understand the specific challenges and requirements of businesses and residents\
+      \ in our area, allowing us to provide tailored solutions that truly make a difference.\
+      \ Our commitment to supporting the local economy means we prioritize working\
+      \ with local suppliers and partners, ensuring that our services contribute to\
+      \ the growth and sustainability of Bellwood. By choosing Salvo Metal Works,\
+      \ you\u2019re not just getting a service provider; you\u2019re collaborating\
+      \ with a business that genuinely cares about the well-being of our community.\n\
+      \nAt Salvo Metal Works, we recognize that every project is unique, and we are\
+      \ here to guide you through the process from start to finish. Whether you need\
+      \ a one-off custom piece or ongoing metal fabrication services for your business,\
+      \ our team is ready to assist you. If you have questions about our services\
+      \ or would like to discuss your metal fabrication needs, we encourage you to\
+      \ reach out. Our friendly and knowledgeable staff is here to help you every\
+      \ step of the way. Contact Salvo Metal Works today to discover how we can bring\
+      \ your metal fabrication projects to life, right here in Bellwood, Illinois.\
+      \ Let\u2019s work together to create something exceptional!"
     places_of_interest:
     - name: Bellwood Public Library
       embed_url: https://www.google.com/maps/search/Bellwood+Public+Library+123+Main+St,+Bellwood,+Illinois
@@ -1913,3 +1963,20 @@ client:
     featured_products: []
     city_map_embed: ''
     service_area_note: ''
+cloud:
+  aws_profile: AWS V2
+  aws_region: us-east-1
+  bucket_name: cool-metal
+  deployment_mode: cloudfront
+  deployment_url: ''
+  distribution_id: ''
+  custom_domain: ''
+  auto_invalidate_cache: true
+  site_type: main_site
+  main_site_url: ''
+  allow_indexing: true
+  meta_tags: {}
+  html_cache_control: max-age=300,public
+  asset_cache_control: max-age=86400,public
+  index_document: index.html
+  error_document: 404.html
