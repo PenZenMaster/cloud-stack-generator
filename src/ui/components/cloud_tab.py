@@ -523,7 +523,7 @@ class DeploymentWorker(QThread):
 
                 if origin_update_success:
                     result.message += f"\n[CloudFront] {origin_update_msg}"
-                    result.message += f"\n[CloudFront] NOTE: Changes may take 2-15 minutes to propagate"
+                    result.message += "\n[CloudFront] NOTE: Changes may take 2-15 minutes to propagate"
                 else:
                     result.message += f"\n[CloudFront] ERROR: {origin_update_msg}"
                     logging.error(f"CloudFront update failed: {origin_update_msg}")
@@ -570,16 +570,27 @@ class CloudTab(BaseTab):
         self.credentials_manager = AWSCredentialsManager()
         self.s3_manager = S3Manager()
         self.deployment_worker: Optional[DeploymentWorker] = None
-        
+
         # Client-specific AWS configuration
         self.aws_config_manager = get_client_aws_manager()
         self.current_client_aws_config: Optional[ClientAWSConfig] = None
         self.current_business_name: str = ""
         self.current_domain: str = ""
-        
+
         # Flag to prevent bucket clearing during client context loading
         self._loading_client_context: bool = False
-        
+
+        # Provider selection
+        self.provider_combo = None
+        self.current_provider = "aws_s3"  # Default to AWS
+
+        # Provider-specific sections (for show/hide)
+        self.aws_section = None
+        self.gcs_section = None
+        self.deployment_mode_section = None  # CloudFront settings (AWS-only)
+        self.bucket_section = None
+        self.meta_tags_section = None
+
         # UI components
         self.profile_combo = None
         self.bucket_combo = None
@@ -594,16 +605,31 @@ class CloudTab(BaseTab):
         self.progress_bar = None
         self.deploy_button = None
         self.status_text = None
-        
+
+        # GCS-specific components
+        self.gcs_project_input = None
+        self.gcs_credentials_input = None
+        self.gcs_bucket_input = None
+        self.gcs_region_combo = None
+
         super().__init__(parent)
     
     def setup_ui(self):
         """Setup cloud deployment UI"""
         layout = QVBoxLayout()
-        
+
+        # Provider Selection Section (NEW)
+        provider_group = self.create_provider_selection_section()
+        layout.addWidget(provider_group)
+
         # AWS Profile Section
-        profile_group = self.create_profile_section()
-        layout.addWidget(profile_group)
+        self.aws_section = self.create_profile_section()
+        layout.addWidget(self.aws_section)
+
+        # GCS Credentials Section (NEW)
+        self.gcs_section = self.create_gcs_credentials_section()
+        layout.addWidget(self.gcs_section)
+        self.gcs_section.setVisible(False)  # Hidden by default
         
         # Bucket Configuration Section
         bucket_group = self.create_bucket_section()
@@ -612,9 +638,9 @@ class CloudTab(BaseTab):
         # Two-column layout for CloudFront Settings and Meta Tags
         two_column_layout = QHBoxLayout()
 
-        # Left Column: Deployment Mode (with CloudFront Distribution Settings)
-        mode_group = self.create_deployment_mode_section()
-        two_column_layout.addWidget(mode_group)
+        # Left Column: Deployment Mode (with CloudFront Distribution Settings) - AWS-specific
+        self.deployment_mode_section = self.create_deployment_mode_section()
+        two_column_layout.addWidget(self.deployment_mode_section)
 
         # Right Column: SEO Meta Tags
         meta_tags_group = self.create_meta_tags_section()
@@ -635,6 +661,224 @@ class CloudTab(BaseTab):
 
         # Apply initial deployment mode state
         self.on_deployment_mode_changed()
+
+    def create_provider_selection_section(self) -> QGroupBox:
+        """Create cloud provider selection section"""
+        group = QGroupBox("Cloud Provider")
+        layout = QHBoxLayout()
+
+        layout.addWidget(QLabel("Provider:"))
+
+        self.provider_combo = QComboBox()
+        self.provider_combo.addItem("AWS S3", "aws_s3")
+        self.provider_combo.addItem("Google Cloud Storage", "google_gcs")
+        self.provider_combo.setToolTip("Select cloud storage provider for deployment")
+        self.provider_combo.currentIndexChanged.connect(self.on_provider_changed)
+        layout.addWidget(self.provider_combo)
+
+        layout.addStretch()
+
+        group.setLayout(layout)
+        return group
+
+    def create_gcs_credentials_section(self) -> QGroupBox:
+        """Create Google Cloud Storage credentials section"""
+        group = QGroupBox("Google Cloud Storage Configuration")
+        layout = QGridLayout()
+
+        # Project ID
+        layout.addWidget(QLabel("Project ID:"), 0, 0)
+        self.gcs_project_input = QLineEdit()
+        self.gcs_project_input.setPlaceholderText("my-gcp-project")
+        self.gcs_project_input.setToolTip("Your Google Cloud Platform project ID")
+        layout.addWidget(self.gcs_project_input, 0, 1)
+
+        # Service Account JSON
+        layout.addWidget(QLabel("Service Account JSON:"), 1, 0)
+        json_layout = QHBoxLayout()
+        self.gcs_credentials_input = QLineEdit()
+        self.gcs_credentials_input.setPlaceholderText("/path/to/service-account-key.json")
+        self.gcs_credentials_input.setToolTip("Path to your GCS service account JSON key file")
+        json_layout.addWidget(self.gcs_credentials_input)
+
+        browse_button = QPushButton("Browse...")
+        browse_button.clicked.connect(self.browse_gcs_credentials)
+        json_layout.addWidget(browse_button)
+
+        layout.addLayout(json_layout, 1, 1)
+
+        # Region
+        layout.addWidget(QLabel("Region:"), 2, 0)
+        self.gcs_region_combo = QComboBox()
+        self.gcs_region_combo.addItems([
+            "us-central1 (Iowa)",
+            "us-east1 (South Carolina)",
+            "us-west1 (Oregon)",
+            "europe-west1 (Belgium)",
+            "asia-southeast1 (Singapore)",
+            "us (Multi-region)",
+            "eu (Multi-region)",
+            "asia (Multi-region)"
+        ])
+        self.gcs_region_combo.setToolTip("Select Google Cloud Storage region")
+        layout.addWidget(self.gcs_region_combo, 2, 1)
+
+        # Test Connection button
+        test_gcs_button = QPushButton("Test GCS Connection")
+        test_gcs_button.clicked.connect(self.test_gcs_connection)
+        layout.addWidget(test_gcs_button, 3, 1)
+
+        group.setLayout(layout)
+        return group
+
+    def on_provider_changed(self):
+        """Handle provider selection change"""
+        provider_data = self.provider_combo.currentData()
+        self.current_provider = provider_data
+
+        # Clear bucket list when switching providers
+        if self.bucket_combo:
+            self.bucket_combo.clear()
+
+        # Show/hide provider-specific sections
+        if provider_data == "aws_s3":
+            # Show AWS-specific sections
+            self.aws_section.setVisible(True)
+            self.gcs_section.setVisible(False)
+            self.deployment_mode_section.setVisible(True)  # CloudFront settings
+
+            # Show AWS region selector in bucket section
+            if hasattr(self, 'aws_region_label') and self.aws_region_label:
+                self.aws_region_label.setVisible(True)
+            if self.region_combo:
+                self.region_combo.setVisible(True)
+
+            # Update refresh button tooltip
+            if self.refresh_buckets_button:
+                self.refresh_buckets_button.setToolTip("Refresh bucket list from AWS S3")
+        elif provider_data == "google_gcs":
+            # Show GCS-specific sections, hide AWS-specific sections
+            self.aws_section.setVisible(False)
+            self.gcs_section.setVisible(True)
+            self.deployment_mode_section.setVisible(False)  # Hide CloudFront settings
+
+            # Hide AWS region selector in bucket section (GCS has its own in GCS section)
+            if hasattr(self, 'aws_region_label') and self.aws_region_label:
+                self.aws_region_label.setVisible(False)
+            if self.region_combo:
+                self.region_combo.setVisible(False)
+
+            # Update refresh button tooltip
+            if self.refresh_buckets_button:
+                self.refresh_buckets_button.setToolTip("Refresh bucket list from Google Cloud Storage")
+
+    def browse_gcs_credentials(self):
+        """Browse for GCS service account JSON file"""
+        from PyQt6.QtWidgets import QFileDialog
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Service Account JSON File",
+            "",
+            "JSON Files (*.json);;All Files (*)"
+        )
+
+        if file_path:
+            self.gcs_credentials_input.setText(file_path)
+
+    def test_gcs_connection(self):
+        """Test Google Cloud Storage connection"""
+        from PyQt6.QtWidgets import QMessageBox
+
+        project_id = self.gcs_project_input.text().strip()
+        credentials_path = self.gcs_credentials_input.text().strip()
+
+        if not project_id or not credentials_path:
+            QMessageBox.warning(
+                self,
+                "Missing Information",
+                "Please provide both Project ID and Service Account JSON path."
+            )
+            return
+
+        try:
+            from ...core.deployment.providers import create_provider_from_dict
+
+            # Create GCS provider config
+            config_dict = {
+                "provider": "google_gcs",
+                "credentials": {
+                    "service_account_json": credentials_path,
+                    "project_id": project_id
+                },
+                "region": self.gcs_region_combo.currentText().split()[0]  # Extract region code
+            }
+
+            # Create provider and test connection
+            provider = create_provider_from_dict(config_dict)
+
+            if provider.authenticate():
+                success, message = provider.test_connection()
+
+                if success:
+                    # Save GCS credentials to client configuration
+                    self.save_gcs_credentials(
+                        project_id,
+                        credentials_path,
+                        self.gcs_region_combo.currentText().split()[0]
+                    )
+
+                    QMessageBox.information(
+                        self,
+                        "Connection Successful",
+                        f"Successfully connected to Google Cloud Storage!\n\n{message}\n\n"
+                        f"Your GCS credentials have been saved to this client's configuration."
+                    )
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "Connection Failed",
+                        f"Failed to connect to Google Cloud Storage.\n\n{message}"
+                    )
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Authentication Failed",
+                    "Failed to authenticate with Google Cloud Storage.\n\n"
+                    "Please check your credentials and try again."
+                )
+
+        except ImportError:
+            QMessageBox.warning(
+                self,
+                "GCS Support Not Available",
+                "Google Cloud Storage support requires the google-cloud-storage library.\n\n"
+                "Install it with: pip install google-cloud-storage"
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Connection Error",
+                f"Error testing GCS connection:\n\n{str(e)}"
+            )
+
+    def save_gcs_credentials(self, project_id: str, credentials_path: str, region: str):
+        """Save GCS credentials to client configuration"""
+        if not self.current_client_aws_config:
+            self.log_status("Warning: No client AWS config to save GCS credentials")
+            return
+
+        # Update GCS credentials in the config object
+        self.current_client_aws_config.gcs_project_id = project_id
+        self.current_client_aws_config.gcs_service_account_json = credentials_path
+        self.current_client_aws_config.gcs_region = region
+
+        # Save to persistent storage
+        success = self.aws_config_manager.save_client_aws_config(self.current_client_aws_config)
+        if success:
+            self.log_status(f"GCS credentials saved successfully for {self.current_business_name}")
+        else:
+            self.log_status("Warning: Failed to save GCS credentials")
 
     def create_profile_section(self) -> QGroupBox:
         """Create AWS profile configuration section"""
@@ -697,8 +941,8 @@ class CloudTab(BaseTab):
         return group
     
     def create_bucket_section(self) -> QGroupBox:
-        """Create S3 bucket configuration section"""
-        group = QGroupBox("S3 Bucket Configuration")
+        """Create cloud storage bucket configuration section"""
+        group = QGroupBox("Cloud Storage Bucket Configuration")
         layout = QGridLayout()
         
         # Bucket selection/creation
@@ -715,7 +959,7 @@ class CloudTab(BaseTab):
         
         self.refresh_buckets_button = QPushButton("Refresh")
         self.refresh_buckets_button.setMaximumWidth(80)
-        self.refresh_buckets_button.setToolTip("Refresh bucket list from AWS")
+        self.refresh_buckets_button.setToolTip("Refresh bucket list from selected cloud provider")
         bucket_layout.addWidget(self.refresh_buckets_button)
         
         layout.addLayout(bucket_layout, 0, 1)
@@ -745,9 +989,10 @@ class CloudTab(BaseTab):
         directory_layout.addWidget(self.create_directory_button)
         
         layout.addLayout(directory_layout, 1, 1, 1, 2)
-        
-        # Region
-        layout.addWidget(QLabel("Region:"), 2, 0)
+
+        # Region (AWS-specific)
+        self.aws_region_label = QLabel("Region:")
+        layout.addWidget(self.aws_region_label, 2, 0)
         self.region_combo = QComboBox()
         self.region_combo.addItems([
             "us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1",
@@ -763,7 +1008,7 @@ class CloudTab(BaseTab):
         group.setLayout(layout)
         
         # Connect signals
-        self.create_bucket_button.clicked.connect(self.create_s3_bucket)
+        self.create_bucket_button.clicked.connect(self.create_bucket)
         self.refresh_buckets_button.clicked.connect(self.refresh_bucket_list)
         self.refresh_directories_button.clicked.connect(self.refresh_directory_list)
         self.create_directory_button.clicked.connect(self.create_directory)
@@ -932,7 +1177,7 @@ class CloudTab(BaseTab):
 
     def create_meta_tags_section(self) -> QGroupBox:
         """Create SEO meta tags management section"""
-        from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
+        from PyQt6.QtWidgets import QTableWidget, QHeaderView
 
         group = QGroupBox("SEO Meta Tags")
         layout = QVBoxLayout()
@@ -1577,16 +1822,22 @@ class CloudTab(BaseTab):
         self.on_aws_config_changed()
     
     def refresh_bucket_list(self):
-        """Refresh the list of available S3 buckets with progress indication"""
+        """Refresh the list of available buckets with progress indication"""
+        # Check which provider is selected
+        if self.current_provider == "google_gcs":
+            self._refresh_gcs_bucket_list()
+            return
+
+        # AWS S3 path
         profile_name = self.profile_combo.currentText()
-        
+
         if not profile_name or profile_name == "No profiles configured":
-            QMessageBox.warning(self, "No Profile Selected", 
+            QMessageBox.warning(self, "No Profile Selected",
                               "Please select an AWS profile first.")
             return
-        
+
         if profile_name not in self.credentials_manager.profiles:
-            QMessageBox.warning(self, "Profile Not Found", 
+            QMessageBox.warning(self, "Profile Not Found",
                               f"Profile '{profile_name}' not found.")
             return
         
@@ -1681,7 +1932,96 @@ class CloudTab(BaseTab):
             # Hide progress and re-enable button
             self.bucket_progress.hide_progress()
             self.refresh_buckets_button.setEnabled(True)
-    
+
+    def _refresh_gcs_bucket_list(self):
+        """Refresh the list of available GCS buckets"""
+        from PyQt6.QtWidgets import QMessageBox
+
+        project_id = self.gcs_project_input.text().strip()
+        credentials_path = self.gcs_credentials_input.text().strip()
+
+        if not project_id or not credentials_path:
+            QMessageBox.warning(
+                self,
+                "Missing Configuration",
+                "Please provide both Project ID and Service Account JSON path."
+            )
+            return
+
+        try:
+            from ...core.deployment.providers import create_provider_from_dict
+
+            # Show progress
+            if not hasattr(self, 'bucket_progress'):
+                self.bucket_progress = ProgressWidget()
+                self.bucket_progress.set_status_height(80)
+                for i in range(self.layout().count()):
+                    item = self.layout().itemAt(i)
+                    if hasattr(item.widget(), 'title') and 'Bucket' in item.widget().title():
+                        self.layout().insertWidget(i + 1, self.bucket_progress)
+                        break
+
+            self.bucket_progress.show_progress("Refreshing GCS bucket list...", indeterminate=True)
+            self.refresh_buckets_button.setEnabled(False)
+
+            # Create GCS provider config
+            config_dict = {
+                "provider": "google_gcs",
+                "credentials": {
+                    "service_account_json": credentials_path,
+                    "project_id": project_id
+                },
+                "region": self.gcs_region_combo.currentText().split()[0]
+            }
+
+            provider = create_provider_from_dict(config_dict)
+
+            # Authenticate
+            if not provider.authenticate():
+                QMessageBox.warning(
+                    self,
+                    "Authentication Failed",
+                    "Failed to authenticate with Google Cloud Storage."
+                )
+                return
+
+            # Get bucket list
+            buckets = provider.list_buckets()
+
+            # Clear and populate combo
+            self.bucket_combo.clear()
+
+            if buckets:
+                for bucket_name in buckets:
+                    self.bucket_combo.addItem(bucket_name)
+                    self.bucket_combo.setItemData(self.bucket_combo.count() - 1, bucket_name)
+
+                self.bucket_progress.update_status(f"Found {len(buckets)} GCS buckets")
+                self.log_status(f"Found {len(buckets)} GCS buckets")
+            else:
+                self.bucket_combo.addItem("No buckets found")
+                self.bucket_progress.update_status("No buckets found in GCS project")
+                self.log_status("No buckets found in GCS project")
+
+        except ImportError:
+            QMessageBox.warning(
+                self,
+                "GCS Support Not Available",
+                "Google Cloud Storage support requires the google-cloud-storage library.\n\n"
+                "Install it with: pip install google-cloud-storage"
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to retrieve GCS bucket list:\n\n{str(e)}"
+            )
+            self.log_status(f"Error retrieving GCS buckets: {str(e)}")
+
+        finally:
+            self.bucket_progress.hide_progress()
+            self.refresh_buckets_button.setEnabled(True)
+
     def refresh_directory_list(self):
         """Refresh the list of directories in the selected bucket"""
         bucket_name = self._get_actual_bucket_name()
@@ -1759,17 +2099,39 @@ class CloudTab(BaseTab):
             )
     
     def create_directory(self):
-        """Create a new directory in the selected bucket"""
+        """Create a new directory in the selected bucket - routes to provider-specific method"""
+        if self.current_provider == "google_gcs":
+            self.create_directory_gcs()
+        else:
+            # Default to AWS S3
+            self.create_directory_s3()
+
+    def create_directory_gcs(self):
+        """GCS does not support directory creation (uses object prefixes)"""
+        from PyQt6.QtWidgets import QMessageBox
+
+        QMessageBox.information(
+            self,
+            "Directory Creation Not Applicable",
+            "Google Cloud Storage does not use directories.\n\n"
+            "Instead, use the directory/folder name as a prefix when uploading files.\n"
+            "For example, to create a 'clean-restroom-rental-fl' folder structure,\n"
+            "upload files with paths like: clean-restroom-rental-fl/index.html\n\n"
+            "The directory structure will be created automatically during deployment."
+        )
+
+    def create_directory_s3(self):
+        """Create a new directory in the selected S3 bucket"""
         bucket_name = self._get_actual_bucket_name()
         profile_name = self.profile_combo.currentText()
-        
+
         if not bucket_name or bucket_name == "No buckets found":
-            QMessageBox.warning(self, "No Bucket Selected", 
+            QMessageBox.warning(self, "No Bucket Selected",
                               "Please select a bucket first.")
             return
-        
+
         if not profile_name or profile_name == "No profiles configured":
-            QMessageBox.warning(self, "No Profile Selected", 
+            QMessageBox.warning(self, "No Profile Selected",
                               "Please select an AWS profile first.")
             return
         
@@ -1934,6 +2296,151 @@ class CloudTab(BaseTab):
         # Auto-save client AWS config
         self.on_aws_config_changed()
     
+    def create_bucket(self):
+        """Create cloud storage bucket - routes to provider-specific method"""
+        if self.current_provider == "google_gcs":
+            self.create_gcs_bucket()
+        else:
+            # Default to AWS S3
+            self.create_s3_bucket()
+
+    def create_gcs_bucket(self):
+        """Create GCS bucket with validation and confirmation"""
+        from PyQt6.QtWidgets import QMessageBox
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtWidgets import QApplication
+
+        bucket_name = self.bucket_combo.currentText().strip()
+        project_id = self.gcs_project_input.text().strip()
+        credentials_path = self.gcs_credentials_input.text().strip()
+        region = self.gcs_region_combo.currentText().split()[0]
+
+        if not project_id or not credentials_path:
+            QMessageBox.warning(
+                self,
+                "Missing Configuration",
+                "Please provide both Project ID and Service Account JSON path."
+            )
+            return
+
+        if not bucket_name:
+            QMessageBox.warning(
+                self,
+                "No Bucket Name",
+                "Please enter a bucket name"
+            )
+            return
+
+        try:
+            from ...core.deployment.providers import create_provider_from_dict
+
+            # Show progress
+            self.setCursor(Qt.CursorShape.WaitCursor)
+            self.create_bucket_button.setEnabled(False)
+            self.create_bucket_button.setText("Creating...")
+            QApplication.processEvents()
+
+            # Create GCS provider config
+            config_dict = {
+                "provider": "google_gcs",
+                "credentials": {
+                    "service_account_json": credentials_path,
+                    "project_id": project_id
+                },
+                "region": region
+            }
+
+            provider = create_provider_from_dict(config_dict)
+
+            # Authenticate
+            if not provider.authenticate():
+                QMessageBox.warning(
+                    self,
+                    "Authentication Failed",
+                    "Failed to authenticate with Google Cloud Storage."
+                )
+                return
+
+            # Check if bucket already exists
+            existing_buckets = provider.list_buckets()
+            if bucket_name in existing_buckets:
+                reply = QMessageBox.question(
+                    self,
+                    "Bucket Already Exists",
+                    f"Bucket '{bucket_name}' already exists in your GCS project.\n\n"
+                    f"Do you want to proceed with configuring the existing bucket?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.No
+                )
+
+                if reply == QMessageBox.StandardButton.No:
+                    return
+
+                # Configure existing bucket
+                if provider.configure_website_hosting(bucket_name):
+                    self.log_status(f"Configured existing GCS bucket '{bucket_name}' for static hosting")
+                    QMessageBox.information(
+                        self,
+                        "Success",
+                        f"Bucket '{bucket_name}' configured successfully for website hosting!"
+                    )
+                    self.refresh_bucket_list()
+                else:
+                    QMessageBox.critical(
+                        self,
+                        "Configuration Failed",
+                        f"Failed to configure bucket '{bucket_name}' for website hosting."
+                    )
+            else:
+                # Create new bucket
+                if provider.create_bucket(bucket_name):
+                    self.log_status(f"Created new GCS bucket '{bucket_name}' in region '{region}'")
+
+                    # Configure for website hosting
+                    if provider.configure_website_hosting(bucket_name):
+                        self.log_status(f"Website hosting configured for '{bucket_name}'")
+                        QMessageBox.information(
+                            self,
+                            "Success",
+                            f"Bucket '{bucket_name}' created with HTTPS Support!\n\n"
+                            f"The bucket has been configured for static website hosting."
+                        )
+                    else:
+                        QMessageBox.warning(
+                            self,
+                            "Configuration Warning",
+                            f"Bucket '{bucket_name}' created successfully, but website configuration failed."
+                        )
+
+                    self.refresh_bucket_list()
+                else:
+                    QMessageBox.critical(
+                        self,
+                        "Creation Failed",
+                        f"Failed to create bucket '{bucket_name}'."
+                    )
+
+        except ImportError:
+            QMessageBox.warning(
+                self,
+                "GCS Support Not Available",
+                "Google Cloud Storage support requires the google-cloud-storage library.\n\n"
+                "Install it with: pip install google-cloud-storage"
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to create GCS bucket:\n\n{str(e)}"
+            )
+            self.log_status(f"Error creating GCS bucket: {str(e)}")
+
+        finally:
+            # Restore UI state
+            self.setCursor(Qt.CursorShape.ArrowCursor)
+            self.create_bucket_button.setEnabled(True)
+            self.create_bucket_button.setText("Create Bucket")
+
     def create_s3_bucket(self):
         """Create S3 bucket with validation and confirmation"""
         profile_name = self.profile_combo.currentText()
@@ -2131,14 +2638,149 @@ class CloudTab(BaseTab):
         self.deploy_website(local_path)
     
     def deploy_website(self, website_path: str):
-        """Deploy generated website to cloud"""
+        """Deploy generated website to cloud - routes to provider-specific method"""
+        if self.current_provider == "google_gcs":
+            self.deploy_website_gcs(website_path)
+        else:
+            # Default to AWS S3
+            self.deploy_website_s3(website_path)
+
+    def deploy_website_gcs(self, website_path: str):
+        """Deploy generated website to Google Cloud Storage"""
+        from PyQt6.QtWidgets import QMessageBox
+
+        bucket_name = self.bucket_combo.currentText().strip()
+        project_id = self.gcs_project_input.text().strip()
+        credentials_path = self.gcs_credentials_input.text().strip()
+        region = self.gcs_region_combo.currentText().split()[0]
+
+        if not project_id or not credentials_path:
+            self.log_status("Error: GCS credentials not configured")
+            QMessageBox.warning(
+                self,
+                "Missing Configuration",
+                "Please configure GCS credentials first."
+            )
+            return
+
+        if not bucket_name:
+            self.log_status("Error: No bucket name configured")
+            return
+
+        try:
+            from ...core.deployment.providers import create_provider_from_dict
+            from pathlib import Path
+
+            self.log_status(f"Starting GCS deployment to bucket '{bucket_name}'...")
+
+            # Create GCS provider config
+            config_dict = {
+                "provider": "google_gcs",
+                "credentials": {
+                    "service_account_json": credentials_path,
+                    "project_id": project_id
+                },
+                "region": region
+            }
+
+            provider = create_provider_from_dict(config_dict)
+
+            # Authenticate
+            if not provider.authenticate():
+                self.log_status("Error: Failed to authenticate with GCS")
+                QMessageBox.warning(
+                    self,
+                    "Authentication Failed",
+                    "Failed to authenticate with Google Cloud Storage."
+                )
+                return
+
+            self.log_status("GCS authentication successful")
+
+            # Configure bucket for website hosting
+            self.log_status("Configuring bucket for static website hosting...")
+            if not provider.configure_website_hosting(bucket_name):
+                self.log_status("Warning: Failed to configure website hosting")
+
+            # Upload website files
+            self.log_status(f"Uploading files from {website_path}...")
+
+            # Progress callback
+            def progress_callback(current, total, filename):
+                percent = int((current / total) * 100)
+                self.log_status(f"Uploading [{current}/{total}] {percent}% - {filename}")
+
+            result = provider.upload_directory(
+                Path(website_path),
+                bucket_name,
+                prefix="",
+                progress_callback=progress_callback
+            )
+
+            if result.success:
+                self.log_status(f"Deployment successful! Uploaded {result.files_uploaded} files")
+                website_url = result.website_url
+
+                # Create deployment config and emit signal
+                from ...core.config.models import DeploymentConfig
+                from datetime import datetime
+
+                deployment_id = f"{bucket_name}"
+                deployment = DeploymentConfig(
+                    deployment_id=deployment_id,
+                    bucket=bucket_name,
+                    directory="",
+                    region=region,
+                    mode="gcs",
+                    cloudfront_distribution_id=None,
+                    cloudfront_domain=None,
+                    last_deployed=datetime.utcnow().isoformat() + "Z",
+                    deployment_url=website_url,
+                    meta_tags=self.get_meta_tags_from_table()
+                )
+
+                # Emit signal for parent to handle
+                self.deployment_created.emit(deployment)
+                self.log_status(f"Deployment record created: {deployment_id}")
+
+                self.log_status(f"Website URL: {website_url}")
+
+                # Update website URL label in UI
+                if self.website_url_label:
+                    self.website_url_label.setText(f'<a href="{website_url}">View Website: {website_url}</a>')
+
+                QMessageBox.information(
+                    self,
+                    "Deployment Successful",
+                    f"Website deployed successfully to GCS!\n\n"
+                    f"Files uploaded: {result.files_uploaded}\n"
+                    f"Website URL: {website_url}"
+                )
+            else:
+                self.log_status(f"Deployment failed: {', '.join(result.errors)}")
+                QMessageBox.critical(
+                    self,
+                    "Deployment Failed",
+                    f"Failed to deploy website:\n\n{', '.join(result.errors)}"
+                )
+
+        except Exception as e:
+            self.log_status(f"Error during GCS deployment: {str(e)}")
+            QMessageBox.critical(
+                self,
+                "Deployment Error",
+                f"Failed to deploy website to GCS:\n\n{str(e)}"
+            )
+
+    def deploy_website_s3(self, website_path: str):
+        """Deploy generated website to AWS S3"""
         profile_name = self.profile_combo.currentText()
         bucket_name = self._get_actual_bucket_name()
-        
+
         if not profile_name or profile_name == "No profiles configured":
             self.log_status("Error: No AWS profile selected")
             return
-        
+
         if not bucket_name:
             self.log_status("Error: No bucket name configured")
             return
@@ -2561,7 +3203,7 @@ class CloudTab(BaseTab):
         # Check if already disabled or needs wait
         if "already disabled" in message:
             # Already disabled, try deleting immediately
-            self.log_status(f"Distribution already disabled, attempting deletion...")
+            self.log_status("Distribution already disabled, attempting deletion...")
             self.oac_status_label.setText("⏳ Step 2/2: Deleting distribution...")
 
             delete_success, delete_message = self.s3_manager.delete_distribution(distribution_id)
@@ -2573,8 +3215,8 @@ class CloudTab(BaseTab):
                 QMessageBox.information(
                     self,
                     "Distribution Deleted",
-                    f"Distribution deleted successfully!\n\n"
-                    f"You can now deploy with Mode B to create a new distribution with OAC."
+                    "Distribution deleted successfully!\n\n"
+                    "You can now deploy with Mode B to create a new distribution with OAC."
                 )
             else:
                 self.oac_status_label.setText(f"⚠️ {delete_message}")
@@ -2588,16 +3230,16 @@ class CloudTab(BaseTab):
         else:
             # Disabled successfully, but needs to wait
             self.oac_status_label.setText(
-                f"⏳ Distribution disabled. Wait 5-10 minutes for status 'Deployed', "
-                f"then click 'Delete Distribution' again to complete deletion."
+                "⏳ Distribution disabled. Wait 5-10 minutes for status 'Deployed', "
+                "then click 'Delete Distribution' again to complete deletion."
             )
             self.oac_status_label.setStyleSheet("font-size: 10px; padding: 5px; color: #0066cc; background-color: #e6f2ff;")
             QMessageBox.information(
                 self,
                 "Distribution Disabled",
-                f"Distribution disabled successfully!\n\n"
-                f"Wait 5-10 minutes for CloudFront to finish deploying changes.\n\n"
-                f"Then click 'Delete Distribution' again to complete the deletion."
+                "Distribution disabled successfully!\n\n"
+                "Wait 5-10 minutes for CloudFront to finish deploying changes.\n\n"
+                "Then click 'Delete Distribution' again to complete the deletion."
             )
 
     def on_meta_tag_selection_changed(self):
@@ -2823,7 +3465,21 @@ class CloudTab(BaseTab):
             index = self.region_combo.findText(config.bucket_region)
             if index >= 0:
                 self.region_combo.setCurrentIndex(index)
-    
+
+        # Load GCS credentials if available
+        if hasattr(config, 'gcs_project_id') and config.gcs_project_id:
+            self.gcs_project_input.setText(config.gcs_project_id)
+
+        if hasattr(config, 'gcs_service_account_json') and config.gcs_service_account_json:
+            self.gcs_credentials_input.setText(config.gcs_service_account_json)
+
+        if hasattr(config, 'gcs_region') and config.gcs_region:
+            # Find the region in the combo box (it may have descriptive text after it)
+            for i in range(self.gcs_region_combo.count()):
+                if self.gcs_region_combo.itemText(i).startswith(config.gcs_region):
+                    self.gcs_region_combo.setCurrentIndex(i)
+                    break
+
     def _save_client_aws_config_from_ui(self):
         """Save current UI state to client AWS configuration"""
         if not self.current_client_aws_config:
@@ -2852,7 +3508,17 @@ class CloudTab(BaseTab):
         self.current_client_aws_config.bucket_name = self._get_actual_bucket_name()
         self.current_client_aws_config.directory = self.directory_combo.currentText().strip()
         self.current_client_aws_config.bucket_region = self.region_combo.currentText()
-        
+
+        # Update GCS credentials from UI if present
+        if hasattr(self.current_client_aws_config, 'gcs_project_id'):
+            gcs_project = self.gcs_project_input.text().strip()
+            gcs_credentials = self.gcs_credentials_input.text().strip()
+            gcs_region = self.gcs_region_combo.currentText().split()[0] if self.gcs_region_combo.currentText() else ""
+
+            self.current_client_aws_config.gcs_project_id = gcs_project
+            self.current_client_aws_config.gcs_service_account_json = gcs_credentials
+            self.current_client_aws_config.gcs_region = gcs_region
+
         # Save to persistent storage
         success = self.aws_config_manager.save_client_aws_config(self.current_client_aws_config)
         if success:

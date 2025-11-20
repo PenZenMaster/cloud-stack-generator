@@ -533,6 +533,11 @@ class CloudConfig:
     aws_profile: str = ""
     aws_region: str = "us-east-1"
 
+    # Google Cloud Storage authentication
+    gcs_project_id: str = ""
+    gcs_service_account_json: str = ""  # Path to JSON file
+    gcs_region: str = "us-central1"
+
     # Deployment settings
     bucket_name: str = ""
     deployment_mode: str = "s3"  # "s3" or "cloudfront"
