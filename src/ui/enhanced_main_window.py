@@ -1784,8 +1784,8 @@ class EnhancedMainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "About SEO Authority Website Generator",
-            "<h3>SEO Authority Website Generator v3.4.0</h3>"
-            "<p>Sprint 2 Week 2 - Enhanced Modular Architecture</p>"
+            "<h3>SEO Authority Website Generator v3.4.1</h3>"
+            "<p>Sprint 2 Week 2 - Technical Debt Remediation & Code Quality</p>"
             "<p><b>Features:</b></p>"
             "<ul>"
             "<li>Business Information Management</li>"
