@@ -78,3 +78,85 @@ class PermissionError:
 # ============================================================================
 # url_path (models.py:412)
 # has_enhanced_content (models.py:263)
+
+# ============================================================================
+# Intentional Public API Methods
+# These are part of the public API but may not be used internally yet
+# ============================================================================
+
+# Version management utilities (version.py:169-176)
+def update_version_for_feature(description):
+    """Update version for new feature"""
+    pass
+
+def update_version_for_bugfix(description):
+    """Update version for bug fix"""
+    pass
+
+# Progress widget API (progress_widget.py:128-142)
+def set_progress_range(min_value, max_value):
+    """Set progress bar range"""
+    pass
+
+def get_progress_value():
+    """Get current progress value"""
+    pass
+
+def is_indeterminate():
+    """Check if progress bar is in indeterminate mode"""
+    pass
+
+def clear_status():
+    """Clear status text"""
+    pass
+
+# Base tab API methods (base_tab.py)
+def has_warnings():
+    """Check if tab has warnings"""
+    pass
+
+def has_unsaved_changes():
+    """Check if tab has unsaved changes"""
+    pass
+
+# FAQ manager API (faq_manager.py)
+def get_by_category():
+    """Get FAQs by category"""
+    pass
+
+def get_categories():
+    """Get all FAQ categories"""
+    pass
+
+# API key manager (api_key_manager.py)
+def clear_all_keys():
+    """Clear all stored API keys"""
+    pass
+
+def has_aws_credentials():
+    """Check if AWS credentials exist"""
+    pass
+
+# Backup manager API (backup_manager.py)
+def get_all_backups():
+    """Get all available backups"""
+    pass
+
+# Template validator API (template_validator.py)
+def get_issues_by_level():
+    """Get validation issues by severity level"""
+    pass
+
+def get_issues_by_category():
+    """Get validation issues by category"""
+    pass
+
+# Enhanced error handler (enhanced_error_handler.py)
+def log_info():
+    """Log info message"""
+    pass
+
+# AWS config validation (client_aws_config.py)
+def is_valid_for_deployment():
+    """Check if config is valid for deployment"""
+    pass
