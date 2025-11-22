@@ -142,7 +142,7 @@ class SimpleTemplateEditor(QDialog):
         refresh_action = QAction("Refresh Preview", self)
         try:
             refresh_action.setShortcut(QKeySequence("F5"))
-        except:
+        except Exception:
             refresh_action.setShortcut("F5")
         refresh_action.triggered.connect(self._refresh_preview)
         edit_menu.addAction(refresh_action)
@@ -454,7 +454,7 @@ class SimpleTemplateEditor(QDialog):
             try:
                 date_obj = datetime.fromisoformat(str(date_input))
                 return date_obj.strftime(format_str)
-            except:
+            except Exception:
                 return str(date_input)
 
     def _urlencode_filter(self, text: str) -> str:

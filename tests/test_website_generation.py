@@ -285,7 +285,7 @@ def run_enhanced_generation_test():
         # Test that generator manager can be created
         from src.core.generators.generator_manager import GeneratorManager
 
-        generator_manager = GeneratorManager()
+        GeneratorManager()
         print("   ✅ Generator manager created")
 
         # Test configuration creation
@@ -311,7 +311,7 @@ def run_enhanced_generation_test():
             "services": {"services": []},
         }
 
-        client_config = main_window.create_client_config(config_data)
+        main_window.create_client_config(config_data)
         print("   ✅ ClientConfig creation from UI data works")
 
         return True

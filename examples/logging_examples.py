@@ -77,7 +77,7 @@ def example_exception_logging():
         return value * 2
 
     try:
-        result = process_data(-5)
+        process_data(-5)
     except ValueError:
         print("Exception was logged (check logs)")
 

@@ -96,7 +96,7 @@ class TestWikipediaCompatibility:
         
         for location, expected_valid, notes in wikipedia_test_cases:
             # Basic format detection rules
-            is_likely_wikipedia_compatible = (
+            (
                 # Major cities (simple names)
                 location in ["Chicago", "Detroit", "New York City"] or
                 # Cities with full state names

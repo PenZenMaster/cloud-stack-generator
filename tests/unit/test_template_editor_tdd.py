@@ -116,7 +116,7 @@ class TestTemplateSaveFunctionality:
         )
 
         # Then: File should be created successfully
-        assert result.success == True, "Template save should succeed with valid data"
+        assert result.success, "Template save should succeed with valid data"
 
         # And: Template file should exist
         template_file_path = temp_template_dir / f"{template_id}.html"
@@ -174,7 +174,7 @@ class TestTemplateSaveFunctionality:
         )
 
         # Then: Should fail gracefully
-        assert result.success == False, "Template save should fail with invalid path"
+        assert not result.success, "Template save should fail with invalid path"
         assert "path" in result.error_message.lower() or "directory" in result.error_message.lower(), \
             "Error message should mention path/directory issue"
 
@@ -219,7 +219,7 @@ class TestTemplateSaveFunctionality:
         )
 
         # Then: Should fail validation
-        assert result.success == False, "Template save should fail with missing required fields"
+        assert not result.success, "Template save should fail with missing required fields"
         assert "required" in result.error_message.lower() or "validation" in result.error_message.lower(), \
             "Error message should mention validation or required fields"
 
@@ -268,7 +268,7 @@ class TestTemplateSaveFunctionality:
         )
 
         # Then: Should succeed
-        assert result.success == True, "Template save should succeed when overwrite is confirmed"
+        assert result.success, "Template save should succeed when overwrite is confirmed"
 
         # And: File should contain new content
         with open(original_file_path, 'r', encoding='utf-8') as f:
@@ -304,7 +304,7 @@ class TestTemplateFormatCodeFunctionality:
         result = formatter.format_html_content(html_content)
 
         # Then: Should succeed
-        assert result.success == True, "Format code should succeed with valid HTML"
+        assert result.success, "Format code should succeed with valid HTML"
         assert result.formatted_content is not None, "Should return formatted content"
         assert len(result.formatted_content) > 0, "Formatted content should not be empty"
 
@@ -329,7 +329,7 @@ class TestTemplateFormatCodeFunctionality:
 
         # Get initial error count
         error_handler = get_error_handler()
-        initial_error_count = error_handler.get_error_statistics()['session_errors']
+        error_handler.get_error_statistics()['session_errors']
 
         # When: Format code is called
         from core.templates.template_formatter import TemplateFormatter
@@ -338,7 +338,7 @@ class TestTemplateFormatCodeFunctionality:
 
         # Then: Should handle malformed HTML (BeautifulSoup is robust, so this should actually pass)
         # BeautifulSoup is designed to handle malformed HTML gracefully
-        assert result.success == True, "Format code should handle malformed HTML gracefully"
+        assert result.success, "Format code should handle malformed HTML gracefully"
         assert result.formatted_content is not None, "Should return formatted content even with malformed input"
 
         # And: Content should be cleaned up by BeautifulSoup
@@ -373,7 +373,7 @@ class TestTemplateFormatCodeFunctionality:
             result = formatter.format_html_content(html_content)
 
         # Then: Should fail with appropriate classification
-        assert result.success == False, "Format code should fail when dependency missing"
+        assert not result.success, "Format code should fail when dependency missing"
         assert result.error_classification is not None, "Should provide error classification"
 
         # And: Should classify as configuration warning
@@ -412,7 +412,7 @@ class TestTemplatePreviewGeneration:
         result = preview_generator.generate_preview(template_content, sample_data)
 
         # Then: Should succeed
-        assert result.success == True, "Preview generation should succeed with valid template"
+        assert result.success, "Preview generation should succeed with valid template"
         assert result.html_content is not None, "Should return HTML content"
         assert "Test Title" in result.html_content, "Should render template variables"
         assert "Test Content" in result.html_content, "Should render template variables"
@@ -433,13 +433,13 @@ class TestTemplatePreviewGeneration:
 
         # Get initial error count
         error_handler = get_error_handler()
-        initial_error_count = error_handler.get_error_statistics()['session_errors']
+        error_handler.get_error_statistics()['session_errors']
 
         # When: Generate preview is called
         result = preview_generator.generate_preview(bad_template, sample_data)
 
         # Then: Should fail gracefully
-        assert result.success == False, "Preview generation should fail with bad template"
+        assert not result.success, "Preview generation should fail with bad template"
         assert result.error_classification is not None, "Should provide error classification"
 
         # And: Should classify as interface warning
@@ -486,7 +486,7 @@ class TestTemplateValidationWorkflow:
         result = validator.validate_template(valid_template)
 
         # Then: Should pass validation (is_valid=True means no ERROR level issues)
-        assert result.is_valid == True, "Valid template should pass validation"
+        assert result.is_valid, "Valid template should pass validation"
         # Note: Template may have warnings but still be valid (no errors)
         assert result.errors_count == 0, "Valid template should have no ERROR level issues"
 
@@ -515,7 +515,7 @@ class TestTemplateValidationWorkflow:
         result = validator.validate_template(incomplete_template)
 
         # Then: Should have validation issues
-        assert result.is_valid == False, "Incomplete template should fail validation"
+        assert not result.is_valid, "Incomplete template should fail validation"
         assert len(result.issues) > 0, "Should have validation issues"
 
         # And: Should identify missing title
@@ -564,14 +564,6 @@ class TemplateOperationResult:
     def __init__(self, success: bool, error_message: str = "", error_classification=None):
         self.success = success
         self.error_message = error_message
-        self.error_classification = error_classification
-
-
-class TemplateFormatResult:
-    """Result object for template formatting - to be implemented"""
-    def __init__(self, success: bool, formatted_content: str = "", error_classification=None):
-        self.success = success
-        self.formatted_content = formatted_content
         self.error_classification = error_classification
 
 

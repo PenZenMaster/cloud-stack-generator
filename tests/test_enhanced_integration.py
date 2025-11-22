@@ -167,11 +167,10 @@ def test_configuration_workflow():
                 print(f"   ❌ {section} configuration data missing")
 
         # Test creating ClientConfig object
-        client_config = main_window.create_client_config(config_data)
+        main_window.create_client_config(config_data)
         print("   ✅ ClientConfig object created successfully")
 
         # Test basic validation
-        validation_passed = True
         tabs_with_validation = [
             ("business_tab", main_window.business_tab),
             ("contact_tab", main_window.contact_tab),

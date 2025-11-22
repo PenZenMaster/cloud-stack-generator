@@ -235,7 +235,7 @@ Error: {error_message}
                 log_entry += f"File Modified: {datetime.fromtimestamp(stat.st_mtime)}\n"
             else:
                 log_entry += "File Status: Does not exist\n"
-        except:
+        except Exception:
             log_entry += "File Status: Unable to determine\n"
         
         log_entry += f"{'-'*60}\n"

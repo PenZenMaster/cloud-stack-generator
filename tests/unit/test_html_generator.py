@@ -148,7 +148,7 @@ class TestHTMLGeneratorInit:
         mock_env_instance = MagicMock()
         mock_env.return_value = mock_env_instance
 
-        generator = HTMLGenerator()
+        HTMLGenerator()
 
         # Verify FileSystemLoader was called with template directory
         mock_loader.assert_called_once()
@@ -175,7 +175,7 @@ class TestHTMLGeneratorInit:
             mock_env_instance = MagicMock()
             mock_env.return_value = mock_env_instance
 
-            generator = HTMLGenerator()
+            HTMLGenerator()
 
             # Verify filters were registered
             expected_filters = ['format_phone', 'format_price', 'slugify', 'truncate_words', 'date']
@@ -340,7 +340,7 @@ class TestPageGenerationMethods:
 
     def test_generate_contact_page(self, generator, config):
         """Test contact page generation"""
-        result = generator.generate_contact_page(config)
+        generator.generate_contact_page(config)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
@@ -353,7 +353,7 @@ class TestPageGenerationMethods:
 
     def test_generate_services_page(self, generator, config):
         """Test services page generation"""
-        result = generator.generate_services_page(config)
+        generator.generate_services_page(config)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
@@ -366,7 +366,7 @@ class TestPageGenerationMethods:
     def test_generate_services_page_empty_services(self, generator):
         """Test services page generation with empty services"""
         config = MockClientConfig(services=[])
-        result = generator.generate_services_page(config)
+        generator.generate_services_page(config)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
@@ -376,7 +376,7 @@ class TestPageGenerationMethods:
 
     def test_generate_products_page(self, generator, config):
         """Test products page generation"""
-        result = generator.generate_products_page(config)
+        generator.generate_products_page(config)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
@@ -389,7 +389,7 @@ class TestPageGenerationMethods:
     def test_generate_individual_service_page(self, generator, config):
         """Test individual service page generation"""
         service = MockService(name="Test Service")
-        result = generator.generate_individual_service_page(config, service)
+        generator.generate_individual_service_page(config, service)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
@@ -403,7 +403,7 @@ class TestPageGenerationMethods:
     def test_generate_individual_product_page(self, generator, config):
         """Test individual product page generation"""
         product = MockProduct(name="Test Product")
-        result = generator.generate_individual_product_page(config, product)
+        generator.generate_individual_product_page(config, product)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
@@ -421,7 +421,7 @@ class TestPageGenerationMethods:
             {'question': 'What do you do?', 'answer': 'We provide services.', 'category': 'General'}
         ]
         config = MockClientConfig(faq=faq_data)
-        result = generator.generate_faq_page(config)
+        generator.generate_faq_page(config)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
@@ -434,7 +434,7 @@ class TestPageGenerationMethods:
 
     def test_generate_privacy_page(self, generator, config):
         """Test privacy page generation"""
-        result = generator.generate_privacy_page(config)
+        generator.generate_privacy_page(config)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]

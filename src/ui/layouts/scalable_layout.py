@@ -51,7 +51,7 @@ class ScalableLayout(QVBoxLayout):
         try:
             dpi_ratio = QApplication.primaryScreen().devicePixelRatio()
             return max(int(base_spacing * dpi_ratio), base_spacing)
-        except:
+        except Exception:
             return base_spacing
     
     def _scaled_margins(self, left: int, top: int, right: int, bottom: int) -> Tuple[int, int, int, int]:
@@ -64,7 +64,7 @@ class ScalableLayout(QVBoxLayout):
                 max(int(right * dpi_ratio), right),
                 max(int(bottom * dpi_ratio), bottom)
             )
-        except:
+        except Exception:
             return (left, top, right, bottom)
     
     def addScalableWidget(self, widget: QWidget, stretch: int = 0):
@@ -162,7 +162,7 @@ class ResponsiveSection(QGroupBox):
         try:
             dpi_ratio = QApplication.primaryScreen().devicePixelRatio()
             return max(int(base_value * dpi_ratio), base_value)
-        except:
+        except Exception:
             return base_value
     
     def _scaled_margins(self, left: int, top: int, right: int, bottom: int) -> Tuple[int, int, int, int]:
@@ -175,7 +175,7 @@ class ResponsiveSection(QGroupBox):
                 max(int(right * dpi_ratio), right), 
                 max(int(bottom * dpi_ratio), bottom)
             )
-        except:
+        except Exception:
             return (left, top, right, bottom)
     
     def addContentWidget(self, widget: QWidget, stretch: int = 0):
@@ -258,7 +258,7 @@ class ResponsiveGrid(QWidget):
         try:
             dpi_ratio = QApplication.primaryScreen().devicePixelRatio()
             return max(int(base_value * dpi_ratio), base_value)
-        except:
+        except Exception:
             return base_value
     
     def _scaled_margins(self, left: int, top: int, right: int, bottom: int) -> Tuple[int, int, int, int]:
@@ -271,7 +271,7 @@ class ResponsiveGrid(QWidget):
                 max(int(right * dpi_ratio), right),
                 max(int(bottom * dpi_ratio), bottom)
             )
-        except:
+        except Exception:
             return (left, top, right, bottom)
     
     def addWidget(self, widget: QWidget, row: int, column: int, 

@@ -57,7 +57,7 @@ def get_current_user(iam_client):
     """Get current IAM user name"""
     try:
         # Try to get user info from STS
-        sts = iam_client._client_config.__dict__.get('_user_provided_options', {})
+        iam_client._client_config.__dict__.get('_user_provided_options', {})
 
         # Get caller identity to find username
         response = iam_client.meta.client.get_caller_identity()

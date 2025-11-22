@@ -40,7 +40,7 @@ from .content_tabs.faq_tab import FAQTab
 from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
 
 # Import core functionality
-from ..core.config.models import ClientConfig
+from ..core.config.models import ClientConfig, DeploymentConfig
 from ..core.config.parser import ConfigParser
 from ..version import get_version
 

@@ -87,7 +87,7 @@ class TestWebsiteGeneratorFacade:
     def test_generate_creates_index_page(self, sample_config, tmp_path):
         """Test that generation creates index.html"""
         generator = WebsiteGenerator(use_ai=False)
-        result = generator.generate(sample_config, output_dir=str(tmp_path))
+        generator.generate(sample_config, output_dir=str(tmp_path))
 
         # Check that index.html was created
         index_file = tmp_path / "index.html"
@@ -100,7 +100,7 @@ class TestWebsiteGeneratorFacade:
     def test_generate_sets_legacy_attributes(self, sample_config, tmp_path):
         """Test that generate() sets legacy instance variables"""
         generator = WebsiteGenerator(use_ai=False)
-        result = generator.generate(sample_config, output_dir=str(tmp_path))
+        generator.generate(sample_config, output_dir=str(tmp_path))
 
         # Check that legacy attributes were set
         assert generator.output_dir == str(tmp_path)

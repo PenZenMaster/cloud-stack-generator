@@ -197,7 +197,7 @@ class TestTemplateManager:
         """Test TemplateManager initialization with default path"""
         with patch('pathlib.Path') as mock_path:
             mock_path.return_value.parent.parent.parent = Path('/test/src')
-            manager = TemplateManager()
+            TemplateManager()
             # Should construct path relative to current file location
 
     def test_get_available_templates(self, template_manager):
