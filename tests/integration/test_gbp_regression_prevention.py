@@ -132,7 +132,7 @@ client:
             os.unlink(temp_config_path)
             if 'temp_output_path' in locals():
                 os.unlink(temp_output_path)
-        except:
+        except Exception:
             pass
 
 

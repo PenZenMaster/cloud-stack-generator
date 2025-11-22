@@ -353,7 +353,7 @@ class TestCloudTab:
         tab = CloudTab()
         
         # Add test profile
-        profile = tab.credentials_manager.add_sso_profile(
+        tab.credentials_manager.add_sso_profile(
             "test-profile", 
             "https://test.awsapps.com/start",
             region="us-west-2"
@@ -412,7 +412,7 @@ class TestCloudTab:
         
         # Mock the ConnectionTestWorker and QMessageBox to prevent UI blocking
         with patch('src.ui.components.cloud_tab.ConnectionTestWorker') as MockWorker, \
-             patch('src.ui.components.cloud_tab.QMessageBox.critical') as mock_msgbox:
+             patch('src.ui.components.cloud_tab.QMessageBox.critical'):
             mock_worker = MagicMock()
             MockWorker.return_value = mock_worker
 
@@ -458,7 +458,7 @@ class TestCloudTab:
         test_exception = Exception("Test exception")
 
         # Test that the method can be called without hanging
-        with patch('src.utils.error_logger.log_error_dialog') as mock_log_error:
+        with patch('src.utils.error_logger.log_error_dialog'):
             try:
                 tab._on_connection_test_error(error_message, test_exception)
                 # Method completed successfully - this is the main goal
@@ -697,7 +697,7 @@ class TestCloudTab:
         tab = CloudTab()
         
         # Add access key profile
-        profile = tab.credentials_manager.add_access_key_profile("test-keys", "us-east-1")
+        tab.credentials_manager.add_access_key_profile("test-keys", "us-east-1")
         tab.refresh_profiles()
         tab.profile_combo.setCurrentText("test-keys")
         
@@ -716,7 +716,7 @@ class TestCloudTab:
         tab = CloudTab()
         
         # Add SSO profile
-        profile = tab.credentials_manager.add_sso_profile("test-sso", "https://test.awsapps.com/start")
+        tab.credentials_manager.add_sso_profile("test-sso", "https://test.awsapps.com/start")
         tab.refresh_profiles()
         tab.profile_combo.setCurrentText("test-sso")
         
@@ -739,7 +739,7 @@ class TestCloudTab:
         tab = CloudTab()
         
         # Add SSO profile
-        profile = tab.credentials_manager.add_sso_profile("test-sso", "https://test.awsapps.com/start")
+        tab.credentials_manager.add_sso_profile("test-sso", "https://test.awsapps.com/start")
         tab.refresh_profiles()
         tab.profile_combo.setCurrentText("test-sso")
         
@@ -848,7 +848,7 @@ class TestCloudTab:
         
         # Verify buckets were added to combo (with SOP indicators)
         bucket_display_items = [tab.bucket_combo.itemText(i) for i in range(tab.bucket_combo.count())]
-        bucket_data_items = [tab.bucket_combo.itemData(i) for i in range(tab.bucket_combo.count())]
+        [tab.bucket_combo.itemData(i) for i in range(tab.bucket_combo.count())]
         assert "[-] bucket-1" in bucket_display_items
         assert "[-] bucket-2" in bucket_display_items
         assert "[+] client-website-sop" in bucket_display_items
@@ -858,7 +858,7 @@ class TestCloudTab:
         test_exception = Exception("Test exception")
         
         with patch('src.utils.error_logger.log_error_dialog') as mock_log_error, \
-             patch('PyQt6.QtWidgets.QMessageBox.critical') as mock_msgbox:
+             patch('PyQt6.QtWidgets.QMessageBox.critical'):
             tab._on_bucket_refresh_error(error_message, profile_name, test_exception)
             mock_log_error.assert_called_once_with(
                 title="Bucket Retrieval Error",

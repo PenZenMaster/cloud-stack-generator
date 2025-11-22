@@ -111,7 +111,7 @@ class ExpandingLineEdit(QLineEdit):
         try:
             dpi_ratio = QApplication.primaryScreen().devicePixelRatio()
             return max(int(base_value * dpi_ratio), base_value)
-        except:
+        except Exception:
             return base_value
 
 
@@ -175,7 +175,7 @@ class ScalableTextEdit(QTextEdit):
         try:
             dpi_ratio = QApplication.primaryScreen().devicePixelRatio()
             return max(int(base_value * dpi_ratio), base_value)
-        except:
+        except Exception:
             return base_value
     
     def setPlaceholderText(self, text: str):
@@ -263,7 +263,7 @@ class ColorPreviewLabel(QLabel):
         try:
             dpi_ratio = QApplication.primaryScreen().devicePixelRatio()
             return max(int(base_value * dpi_ratio), base_value)
-        except:
+        except Exception:
             return base_value
     
     def setColor(self, color: str):
@@ -335,5 +335,5 @@ class ResponsiveButton(QPushButton):
         try:
             dpi_ratio = QApplication.primaryScreen().devicePixelRatio()
             return max(int(base_value * dpi_ratio), base_value)
-        except:
+        except Exception:
             return base_value

@@ -255,7 +255,7 @@ class TestTemplateDataConsistency:
         advanced_dialog = TemplateEditorDialog()
         advanced_dialog.template_manager = Mock()
 
-        simple_editor = SimpleTemplateEditor()
+        SimpleTemplateEditor()
 
         # Get sample data from advanced editor
         advanced_data = advanced_dialog._generate_sample_data()

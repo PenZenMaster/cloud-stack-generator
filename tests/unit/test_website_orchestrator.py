@@ -157,7 +157,7 @@ class TestGenerateWorkflow:
         orchestrator = WebsiteOrchestrator(use_ai=False)
 
         with patch('os.makedirs'), patch('builtins.open', create=True):
-            result = orchestrator.generate(sample_config, str(tmp_path))
+            orchestrator.generate(sample_config, str(tmp_path))
 
         # Verify home page generation was called
         mock_content_coordinator.generate_home_page.assert_called_once_with(
@@ -442,7 +442,7 @@ class TestGenerateAssets:
         orchestrator = WebsiteOrchestrator()
 
         with patch('builtins.open', create=True):
-            assets = orchestrator._generate_assets(sample_config, str(tmp_path))
+            orchestrator._generate_assets(sample_config, str(tmp_path))
 
         # Verify CSS directory was created
         css_dir = tmp_path / "css"

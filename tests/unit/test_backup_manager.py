@@ -151,7 +151,7 @@ class TestTemplateBackupManager:
         templates_dir = temp_dir / "templates"
         templates_dir.mkdir()
 
-        manager = TemplateBackupManager(templates_dir)
+        TemplateBackupManager(templates_dir)
 
         backup_dir = templates_dir / "backups"
         assert backup_dir.exists()
@@ -242,7 +242,7 @@ class TestTemplateBackupManager:
 
         # Modify the original template
         template_file = templates_dir / "pages" / "test_template.html"
-        original_content = template_file.read_text()
+        template_file.read_text()
         template_file.write_text("<html><body>Modified content</body></html>")
 
         # Restore backup
@@ -331,7 +331,7 @@ class TestTemplateBackupManager:
             mock_datetime.fromisoformat = datetime.fromisoformat
 
             # Create backup
-            backup_id = backup_manager.create_backup("test_template", "Old backup")
+            backup_manager.create_backup("test_template", "Old backup")
 
             # Move time forward by 8 days
             future_time = current_time + timedelta(days=8)
@@ -557,7 +557,7 @@ class TestTemplateBackupManager:
     def test_backup_export_import_workflow(self, backup_manager, temp_dir):
         """Test complete export/import workflow"""
         # 1. Create template with backups
-        backup_id = backup_manager.create_backup("test_template", "Export test")
+        backup_manager.create_backup("test_template", "Export test")
 
         # 2. Export to archive
         export_path = temp_dir / "workflow_test.zip"

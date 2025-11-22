@@ -120,7 +120,7 @@ class TestAWSCredentialsManager:
     def test_add_assume_role_profile(self):
         """Test adding AssumeRole profile"""
         # First add source profile
-        source_profile = self.manager.add_sso_profile(
+        self.manager.add_sso_profile(
             name="source-profile",
             sso_start_url="https://test.awsapps.com/start"
         )
@@ -238,11 +238,11 @@ class TestAWSCredentialsManager:
         assert len(buckets) == 3  # All buckets with SOP compliance indicators
         # Buckets should be sorted: SOP-compliant first, then alphabetically
         assert buckets[0]['name'] == 'client-website-prod-789012'
-        assert buckets[0]['sop_compliant'] == True
+        assert buckets[0]['sop_compliant']
         assert buckets[1]['name'] == 'client-website-test-123456'
-        assert buckets[1]['sop_compliant'] == True
+        assert buckets[1]['sop_compliant']
         assert buckets[2]['name'] == 'other-bucket'
-        assert buckets[2]['sop_compliant'] == False
+        assert not buckets[2]['sop_compliant']
         assert buckets[0]['region'] == 'us-west-2'
         
         # Test SOP-only filtering
@@ -276,13 +276,13 @@ class TestAWSCredentialsManager:
         # Start with clean profiles (already mocked empty)
         
         # Add test profiles
-        sso_profile = self.manager.add_sso_profile(
+        self.manager.add_sso_profile(
             name="sso-profile",
             sso_start_url="https://test.awsapps.com/start",
             region="us-east-1"
         )
         
-        keys_profile = self.manager.add_access_key_profile(
+        self.manager.add_access_key_profile(
             name="keys-profile",
             region="us-west-2"
         )

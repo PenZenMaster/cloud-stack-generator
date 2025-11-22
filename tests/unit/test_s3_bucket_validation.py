@@ -20,7 +20,7 @@ class TestS3BucketValidation:
         bucket_name = "salvo-metal-works-fabrication"
         is_valid, message = self.s3_manager.validate_bucket_name(bucket_name)
         
-        assert is_valid == True
+        assert is_valid
         assert message == "Bucket name is valid"
     
     def test_client_website_pattern(self):
@@ -33,7 +33,7 @@ class TestS3BucketValidation:
         
         for name in valid_names:
             is_valid, message = self.s3_manager.validate_bucket_name(name)
-            assert is_valid == True, f"Expected {name} to be valid: {message}"
+            assert is_valid, f"Expected {name} to be valid: {message}"
     
     def test_business_website_pattern(self):
         """Test business-website SOP pattern"""
@@ -46,7 +46,7 @@ class TestS3BucketValidation:
         
         for name in valid_names:
             is_valid, message = self.s3_manager.validate_bucket_name(name)
-            assert is_valid == True, f"Expected {name} to be valid: {message}"
+            assert is_valid, f"Expected {name} to be valid: {message}"
     
     def test_business_specific_pattern(self):
         """Test business-specific naming pattern"""
@@ -61,7 +61,7 @@ class TestS3BucketValidation:
         
         for name in valid_names:
             is_valid, message = self.s3_manager.validate_bucket_name(name)
-            assert is_valid == True, f"Expected {name} to be valid: {message}"
+            assert is_valid, f"Expected {name} to be valid: {message}"
     
     def test_invalid_bucket_names(self):
         """Test invalid bucket names"""
@@ -76,27 +76,27 @@ class TestS3BucketValidation:
         
         for name in invalid_names:
             is_valid, message = self.s3_manager.validate_bucket_name(name)
-            assert is_valid == False, f"Expected {name} to be invalid but got: {message}"
+            assert not is_valid, f"Expected {name} to be invalid but got: {message}"
     
     def test_edge_cases(self):
         """Test edge cases for bucket naming"""
         # Minimum length (3 characters) with valid pattern
         is_valid, _ = self.s3_manager.validate_bucket_name("a-b")
-        assert is_valid == True
+        assert is_valid
         
         # Just under minimum
         is_valid, _ = self.s3_manager.validate_bucket_name("ab")
-        assert is_valid == False
+        assert not is_valid
         
         # Maximum length (63 characters) - valid pattern
         max_length_name = "a" * 60 + "-bc"  # 63 chars total, follows business pattern
         is_valid, _ = self.s3_manager.validate_bucket_name(max_length_name)
-        assert is_valid == True
+        assert is_valid
         
         # Over maximum length
         over_max_name = "a" * 64
         is_valid, _ = self.s3_manager.validate_bucket_name(over_max_name)
-        assert is_valid == False
+        assert not is_valid
     
     def test_real_world_client_names(self):
         """Test realistic client bucket names"""
@@ -112,7 +112,7 @@ class TestS3BucketValidation:
         
         for bucket_name in client_buckets:
             is_valid, message = self.s3_manager.validate_bucket_name(bucket_name)
-            assert is_valid == True, f"Real-world name '{bucket_name}' should be valid: {message}"
+            assert is_valid, f"Real-world name '{bucket_name}' should be valid: {message}"
     
     def test_sop_pattern_flexibility(self):
         """Test that SOP patterns are flexible for different business types"""
@@ -127,4 +127,4 @@ class TestS3BucketValidation:
         
         for name in business_types:
             is_valid, message = self.s3_manager.validate_bucket_name(name)
-            assert is_valid == True, f"Business type '{name}' should follow flexible SOP: {message}"
+            assert is_valid, f"Business type '{name}' should follow flexible SOP: {message}"

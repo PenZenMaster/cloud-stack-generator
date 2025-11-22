@@ -123,7 +123,7 @@ class UniformErrorHandler:
             caller_info = inspect.getframeinfo(caller_frame)
             if not component:
                 component = f"{Path(caller_info.filename).name}:{caller_info.function}"
-        except:
+        except Exception:
             component = component or "Unknown"
         finally:
             del frame

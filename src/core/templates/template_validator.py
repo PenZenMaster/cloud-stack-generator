@@ -154,7 +154,7 @@ class TemplateValidator:
             try:
                 date_obj = datetime.fromisoformat(str(date_input))
                 return date_obj.strftime(format_str)
-            except:
+            except Exception:
                 return str(date_input)
 
     def _urlencode_filter(self, text: str) -> str:

@@ -71,7 +71,7 @@ class StandardFormLayout(QWidget):
         try:
             dpi_ratio = QApplication.primaryScreen().devicePixelRatio()
             return max(int(base_value * dpi_ratio), base_value)
-        except:
+        except Exception:
             return base_value
     
     def _scaled_margins(self, left: int, top: int, right: int, bottom: int) -> Tuple[int, int, int, int]:
@@ -84,7 +84,7 @@ class StandardFormLayout(QWidget):
                 max(int(right * dpi_ratio), right),
                 max(int(bottom * dpi_ratio), bottom)
             )
-        except:
+        except Exception:
             return (left, top, right, bottom)
     
     def _create_error_label(self, field_name: str) -> QLabel:

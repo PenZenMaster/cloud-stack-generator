@@ -76,7 +76,7 @@ class DeploymentCard(QFrame):
             try:
                 dt = datetime.fromisoformat(self.deployment.last_deployed.replace('Z', '+00:00'))
                 last_deployed_str = dt.strftime("%Y-%m-%d %I:%M %p")
-            except:
+            except Exception:
                 last_deployed_str = self.deployment.last_deployed
 
             last_deployed_label = QLabel(f"<b>Last Deployed:</b> {last_deployed_str}")

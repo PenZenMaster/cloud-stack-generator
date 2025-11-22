@@ -402,10 +402,6 @@ class BaseTab(QWidget):
             except AttributeError:
                 # Fallback if indexOf/setTabText not available
                 pass
-    
-    def get_tab_name(self) -> str:
-        """Get the name of this tab - override in subclasses"""
-        return "Tab"
 
 
 class TabConfigurationError(Exception):

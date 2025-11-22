@@ -2951,7 +2951,7 @@ class CloudTab(BaseTab):
                     cloudfront = self.s3_manager.session.client('cloudfront')
                     response = cloudfront.get_distribution(Id=distribution_id)
                     cloudfront_domain = response['Distribution']['DomainName']
-                except:
+                except Exception:
                     pass  # CloudFront domain extraction failed, will use deployment URL
 
             # Get current meta tags from UI

@@ -185,50 +185,6 @@ class PageGenerator:
         """Generate main CSS content based on the configuration"""
         # Example implementation
         return f"/* Main CSS for {config.business.business_name} */\nbody {{ font-family: Arial, sans-serif; }}"
-        """Generate CSS files"""
-        try:
-            # Main stylesheet
-            main_css = self.css_generator.generate_css(config)
-            css_file = output_dir / "css" / "style.css"
-
-            with open(css_file, "w", encoding="utf-8") as f:
-                f.write(main_css)
-
-            result.add_generated_file(str(css_file))
-
-            # Generate print stylesheet
-            print_css = self._generate_print_css()
-            print_css_file = output_dir / "css" / "print.css"
-
-            with open(print_css_file, "w", encoding="utf-8") as f:
-                f.write(print_css)
-
-            result.add_generated_file(str(print_css_file))
-
-        except Exception as e:
-            result.add_error(f"Error generating CSS files: {str(e)}")
-        """Generate CSS files"""
-        try:
-            # Main stylesheet
-            main_css = self.css_generator.generate_css(config)
-            css_file = output_dir / "css" / "style.css"
-
-            with open(css_file, "w", encoding="utf-8") as f:
-                f.write(main_css)
-
-            result.add_generated_file(str(css_file))
-
-            # Generate print stylesheet
-            print_css = self._generate_print_css()
-            print_css_file = output_dir / "css" / "print.css"
-
-            with open(print_css_file, "w", encoding="utf-8") as f:
-                f.write(print_css)
-
-            result.add_generated_file(str(print_css_file))
-
-        except Exception as e:
-            result.add_error(f"Error generating CSS files: {str(e)}")
 
     def _generate_css_files(
         self, config: ClientConfig, output_dir: Path, result: GenerationResult

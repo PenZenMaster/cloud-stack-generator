@@ -169,7 +169,7 @@ class BackupSelectionDialog(QDialog):
                 from datetime import datetime
                 created_dt = datetime.fromisoformat(backup.created_date.replace('Z', '+00:00'))
                 date_str = created_dt.strftime('%Y-%m-%d %H:%M:%S')
-            except:
+            except Exception:
                 date_str = backup.created_date
             date_item = QTableWidgetItem(date_str)
             self.backup_table.setItem(row, 2, date_item)

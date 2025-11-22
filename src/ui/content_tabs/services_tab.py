@@ -41,6 +41,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from ..components.base_tab import BaseTab
+from ...core.config.models import FAQItem
 
 
 class ValidationResult:
@@ -960,7 +961,7 @@ class ServicesTab(BaseTab):
     def _add_faq(self):
         """Add FAQ from manual entry form"""
         # Create FAQ
-        faq = FAQ(
+        faq = FAQItem(
             question=self.faq_inputs["question"].toPlainText().strip(),
             answer=self.faq_inputs["answer"].toPlainText().strip(),
             category=self.faq_inputs["category"].currentText().strip(),
@@ -996,7 +997,7 @@ class ServicesTab(BaseTab):
 
     def _validate_current_faq(self):
         """Validate current FAQ in form"""
-        faq = FAQ(
+        faq = FAQItem(
             question=self.faq_inputs["question"].toPlainText().strip(),
             answer=self.faq_inputs["answer"].toPlainText().strip(),
             category=self.faq_inputs["category"].currentText().strip(),
@@ -1092,7 +1093,7 @@ class ServicesTab(BaseTab):
     def _update_faq(self, row: int):
         """Update FAQ at specified row"""
         # Create updated FAQ
-        updated_faq = FAQ(
+        updated_faq = FAQItem(
             question=self.faq_inputs["question"].toPlainText().strip(),
             answer=self.faq_inputs["answer"].toPlainText().strip(),
             category=self.faq_inputs["category"].currentText().strip(),
