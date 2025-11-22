@@ -1,7 +1,8 @@
 """
-Data management and CSV handling
+Data management package
+
+Note: CSV handling functionality has been archived.
+See archive/csv_import_feature/ for historical CSV manager code.
 """
 
-from .csv_manager import CSVManager, ValidationResult, ValidationError
-
-__all__ = ["CSVManager", "ValidationResult", "ValidationError"]
+__all__ = []
