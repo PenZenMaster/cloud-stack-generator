@@ -380,13 +380,10 @@ class CityPageConfig:
             import re
             self.slug = re.sub(r'[^a-zA-Z0-9\s]', '', self.city_name.lower())
             self.slug = re.sub(r'\s+', '-', self.slug.strip())
-        
-        if not self.title and self.city_name:
-            self.title = f"{self.city_name} — Custom Architectural Metal"
-        
-        if not self.hero_title and self.city_name:
-            self.hero_title = f"{self.city_name} — Custom Architectural Metal Fabrication"
-        
+
+        # Note: title and hero_title defaults are now set dynamically in the UI
+        # based on the industry from Business Info tab (enhanced_cities_tab.py)
+
         if not self.breadcrumbs:
             self.breadcrumbs = ["Home", "Locations", self.city_name]
     
