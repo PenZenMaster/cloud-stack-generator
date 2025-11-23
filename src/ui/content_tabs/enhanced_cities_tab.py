@@ -319,18 +319,32 @@ class EnhancedCitiesTab(BaseTab):
         
         self.slug_edit = QLineEdit(city_page.slug)
         layout.addRow("URL Slug:", self.slug_edit)
-        
-        self.title_edit = QLineEdit(city_page.title)
+
+        # Page Title with intelligent default
+        page_title = city_page.title
+        if not page_title and city_page.city_name:
+            # Generate default: "City Industry" (e.g., "Chicago Portable Toilet Rental")
+            industry = self._get_industry_from_business_tab()
+            if industry:
+                page_title = f"{city_page.city_name} {industry}"
+        self.title_edit = QLineEdit(page_title)
         layout.addRow("Page Title:", self.title_edit)
-        
+
         self.meta_description_edit = QTextEdit(city_page.meta_description)
         self.meta_description_edit.setMaximumHeight(80)
         layout.addRow("Meta Description:", self.meta_description_edit)
-        
+
         self.primary_keyword_edit = QLineEdit(city_page.primary_keyword)
         layout.addRow("Primary Keyword:", self.primary_keyword_edit)
-        
-        self.hero_title_edit = QLineEdit(city_page.hero_title)
+
+        # Hero Title with intelligent default
+        hero_title = city_page.hero_title
+        if not hero_title and city_page.city_name:
+            # Generate default: "Industry in City" (e.g., "Portable Toilet Rental in Chicago")
+            industry = self._get_industry_from_business_tab()
+            if industry:
+                hero_title = f"{industry} in {city_page.city_name}"
+        self.hero_title_edit = QLineEdit(hero_title)
         layout.addRow("Hero Title:", self.hero_title_edit)
         
         self.service_area_note_edit = QLineEdit(city_page.service_area_note)
@@ -735,14 +749,27 @@ class EnhancedCitiesTab(BaseTab):
         if self.worker_thread and self.worker_thread.isRunning():
             self.worker_thread.quit()
             self.worker_thread.wait()
-        
-        if self.wikipedia_worker:
-            self.wikipedia_worker.deleteLater()
-            self.wikipedia_worker = None
-        
+
         if self.worker_thread:
             self.worker_thread.deleteLater()
             self.worker_thread = None
+
+        if self.wikipedia_worker:
+            self.wikipedia_worker.deleteLater()
+            self.wikipedia_worker = None
+
+    def _get_industry_from_business_tab(self) -> str:
+        """Get industry from Business Info tab for intelligent defaults"""
+        try:
+            main_window = self.window()
+            if hasattr(main_window, 'business_tab'):
+                business_tab = main_window.business_tab
+                if hasattr(business_tab, 'industry_input'):
+                    industry = business_tab.industry_input.currentText()
+                    return industry if industry else ""
+        except Exception:
+            pass
+        return ""
     
     def update_word_count(self):
         """Update word count for SEO content"""
