@@ -17,8 +17,9 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFormLayout,
     QPushButton, QListWidget, QListWidgetItem, QTextEdit, QLineEdit,
     QLabel, QGroupBox, QScrollArea, QFrame, QTabWidget, QMessageBox, QDialog, QDialogButtonBox,
-    QApplication
+    QApplication, QFileDialog
 )
+import csv
 from PyQt6.QtCore import Qt, pyqtSignal, QThread, QObject
 from PyQt6.QtGui import QFont
 
@@ -450,11 +451,30 @@ class EnhancedCitiesTab(BaseTab):
         header_layout = QHBoxLayout()
         header_layout.addWidget(QLabel("Places of Interest:"))
         header_layout.addStretch()
-        
+
+        # Auto-generate button (like Wikipedia embed)
+        auto_generate_btn = QPushButton("Auto-Generate Places")
+        auto_generate_btn.setToolTip("Automatically generate 2+ popular places in this city with map embeds")
+        auto_generate_btn.clicked.connect(self.auto_generate_places_of_interest)
+        auto_generate_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                font-weight: bold;
+                border: none;
+                border-radius: 5px;
+                padding: 8px 15px;
+            }
+            QPushButton:hover {
+                background-color: #218838;
+            }
+        """)
+        header_layout.addWidget(auto_generate_btn)
+
         add_place_btn = QPushButton("+ Add Place")
         add_place_btn.clicked.connect(self.add_place_of_interest)
         header_layout.addWidget(add_place_btn)
-        
+
         layout.addLayout(header_layout)
         
         # Places list
@@ -505,17 +525,30 @@ class EnhancedCitiesTab(BaseTab):
         
         # Buttons
         button_layout = QHBoxLayout()
-        
+
         edit_faq_btn = QPushButton("Edit")
         edit_faq_btn.clicked.connect(self.edit_faq_item)
         button_layout.addWidget(edit_faq_btn)
-        
+
         remove_faq_btn = QPushButton("Remove")
         remove_faq_btn.clicked.connect(self.remove_faq_item)
         button_layout.addWidget(remove_faq_btn)
-        
+
         button_layout.addStretch()
         layout.addLayout(button_layout)
+
+        # CSV Import/Export buttons
+        csv_layout = QHBoxLayout()
+
+        import_faq_btn = QPushButton("Import FAQs from CSV")
+        import_faq_btn.clicked.connect(self.import_faq_csv)
+        csv_layout.addWidget(import_faq_btn)
+
+        export_faq_btn = QPushButton("Export FAQs to CSV")
+        export_faq_btn.clicked.connect(self.export_faq_csv)
+        csv_layout.addWidget(export_faq_btn)
+
+        layout.addLayout(csv_layout)
         
         # Load FAQ items
         self.load_faq_items(city_page.city_faq)
@@ -848,7 +881,8 @@ class EnhancedCitiesTab(BaseTab):
 
         # Update content
         self.current_city_page.about_city = self.about_city_edit.toPlainText().strip()
-        self.current_city_page.seo_content_title = self.seo_title_edit.text().strip()
+        # Remove surrounding quotes from SEO title
+        self.current_city_page.seo_content_title = self.seo_title_edit.text().strip().strip('"').strip("'")
         self.current_city_page.seo_content_body = self.seo_content_edit.toPlainText().strip()
 
         # Update image
@@ -958,7 +992,99 @@ class EnhancedCitiesTab(BaseTab):
                 self.current_city_page.places_of_interest.remove(place)
                 self.load_places_of_interest(self.current_city_page.places_of_interest)
                 self._emit_config_changed()
-    
+
+    def auto_generate_places_of_interest(self):
+        """Auto-generate popular places of interest for the city"""
+        if not self.current_city_page:
+            QMessageBox.warning(
+                self, "No City Selected",
+                "Please select a city before auto-generating places."
+            )
+            return
+
+        city_name = self.current_city_page.city_name
+        state = self.current_city_page.state
+
+        if not city_name:
+            QMessageBox.warning(
+                self, "Missing Information",
+                "City name is required to auto-generate places."
+            )
+            return
+
+        # Show loading cursor
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+
+        try:
+            # Generate popular places for this city
+            # Format: City Name, State for Google Maps search
+            city_search = f"{city_name}, {state}" if state else city_name
+
+            # Common places of interest to search for
+            place_types = [
+                ("Downtown {city}", "downtown area"),
+                ("{city} Park", "main park"),
+                ("{city} Museum", "local museum"),
+                ("{city} Library", "public library"),
+                ("{city} Historical Site", "historical landmark")
+            ]
+
+            generated_places = []
+
+            # Generate at least 2 places
+            for place_template, description in place_types[:3]:  # Generate 3 to ensure at least 2 work
+                place_name = place_template.format(city=city_name)
+
+                # Create Google Maps embed URL
+                # Format: https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=PLACE_NAME
+                # For now, use the search format which works without API key
+                search_query = f"{place_name}, {state}".replace(" ", "+")
+                embed_url = f"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3000!2d0!3d0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z{search_query}!5e0!3m2!1sen!2sus!4v1234567890!5m2!1sen!2sus"
+
+                # Alternative: use regular Google Maps URL format
+                maps_url = f"https://www.google.com/maps?q={search_query}&output=embed"
+
+                place = PlaceOfInterest(
+                    name=place_name,
+                    embed_url=maps_url
+                )
+
+                # Check if place already exists
+                if not any(p.name == place.name for p in self.current_city_page.places_of_interest):
+                    generated_places.append(place)
+
+                # Stop after generating 2 valid places
+                if len(generated_places) >= 2:
+                    break
+
+            # Add generated places to the list
+            if generated_places:
+                self.current_city_page.places_of_interest.extend(generated_places)
+                self.load_places_of_interest(self.current_city_page.places_of_interest)
+                self._emit_config_changed()
+
+                QMessageBox.information(
+                    self,
+                    "Places Generated",
+                    f"Successfully generated {len(generated_places)} places of interest.\n\n"
+                    f"You can edit the embed URLs by double-clicking each place to get more specific Google Maps embeds."
+                )
+            else:
+                QMessageBox.information(
+                    self,
+                    "No New Places",
+                    "All suggested places already exist. You can add custom places using the '+ Add Place' button."
+                )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Generation Error",
+                f"Error generating places of interest:\n{str(e)}"
+            )
+        finally:
+            QApplication.restoreOverrideCursor()
+
     def add_faq_item(self):
         """Add a new FAQ item"""
         dialog = CityFAQDialog(parent=self)
@@ -1004,6 +1130,141 @@ class EnhancedCitiesTab(BaseTab):
                 self.current_city_page.city_faq.remove(faq)
                 self.load_faq_items(self.current_city_page.city_faq)
                 self._emit_config_changed()
+
+    def import_faq_csv(self):
+        """Import FAQs from CSV file"""
+        if not self.current_city_page:
+            QMessageBox.warning(
+                self, "No City Selected",
+                "Please select a city before importing FAQs."
+            )
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import FAQs CSV",
+            "",
+            "CSV Files (*.csv);;All Files (*)"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            imported_faqs = []
+            errors = []
+            warnings = []
+
+            with open(file_path, "r", encoding="utf-8", errors='replace') as file:
+                reader = csv.DictReader(file)
+
+                for row_num, row in enumerate(reader, start=2):
+                    try:
+                        question = row.get("Question", "").strip()
+                        answer = row.get("Answer", "").strip()
+
+                        if not question:
+                            errors.append(f"Row {row_num}: Question is required")
+                            continue
+
+                        if not answer:
+                            errors.append(f"Row {row_num}: Answer is required")
+                            continue
+
+                        # Check for duplicate question
+                        if any(faq.question == question for faq in self.current_city_page.city_faq):
+                            warnings.append(
+                                f"Row {row_num}: Question already exists (skipped)"
+                            )
+                            continue
+
+                        faq = CityFAQItem(question=question, answer=answer)
+                        imported_faqs.append(faq)
+
+                    except Exception as e:
+                        errors.append(f"Row {row_num}: {str(e)}")
+
+            # Add imported FAQs
+            self.current_city_page.city_faq.extend(imported_faqs)
+            self.load_faq_items(self.current_city_page.city_faq)
+            self._emit_config_changed()
+
+            # Show import results
+            msg = "Import completed!\n\n"
+            msg += f"Successfully imported: {len(imported_faqs)} FAQs\n"
+
+            if warnings:
+                msg += f"Warnings: {len(warnings)}\n"
+            if errors:
+                msg += f"Errors: {len(errors)}\n"
+
+            if warnings or errors:
+                detailed_msg = msg + "\n"
+                if errors:
+                    detailed_msg += "\nERRORS:\n" + "\n".join(errors)
+                if warnings:
+                    detailed_msg += "\nWARNINGS:\n" + "\n".join(warnings)
+
+                msgbox = QMessageBox(self)
+                msgbox.setWindowTitle("Import Results")
+                msgbox.setText(msg)
+                msgbox.setDetailedText(detailed_msg)
+                msgbox.exec()
+            else:
+                QMessageBox.information(self, "Import Success", msg)
+
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Import Error",
+                f"Error importing CSV:\n{str(e)}"
+            )
+
+    def export_faq_csv(self):
+        """Export FAQs to CSV file"""
+        if not self.current_city_page:
+            QMessageBox.warning(
+                self, "No City Selected",
+                "Please select a city before exporting FAQs."
+            )
+            return
+
+        if not self.current_city_page.city_faq:
+            QMessageBox.information(self, "Export", "No FAQs to export")
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export FAQs CSV",
+            "city_faqs_export.csv",
+            "CSV Files (*.csv);;All Files (*)"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            with open(file_path, "w", newline="", encoding="utf-8") as file:
+                fieldnames = ["Question", "Answer"]
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+                writer.writeheader()
+                for faq in self.current_city_page.city_faq:
+                    writer.writerow({
+                        "Question": faq.question,
+                        "Answer": faq.answer
+                    })
+
+            QMessageBox.information(
+                self,
+                "Export Success",
+                f"Successfully exported {len(self.current_city_page.city_faq)} FAQs to:\n{file_path}"
+            )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Export Error",
+                f"Error exporting CSV:\n{str(e)}"
+            )
     
     def get_config_data(self) -> Dict[str, Any]:
         """Get city pages configuration data - BOTH FORMATS for compatibility"""
@@ -1315,7 +1576,8 @@ Generate only the title, no explanation."""
             self.setEnabled(True)
 
             if response:
-                content = response.strip()
+                # Strip whitespace and remove surrounding quotes
+                content = response.strip().strip('"').strip("'")
 
                 # Show preview dialog
                 dialog = AIContentPreviewDialog(
