@@ -33,8 +33,15 @@ from PyQt6.QtGui import QFont
 from typing import Dict, Any, List, Tuple
 from .base_tab import BaseTab, ValidationResult
 from ..dialogs.ai_content_preview_dialog import AIContentPreviewDialog
-from ...core.services.ai_content_service import AIContentService
-from ...core.generators.content.business_content_generator import BusinessContentGenerator
+
+# Use try/except for imports to support both package and direct imports
+try:
+    from core.services.ai_content_service import AIContentService
+    from core.generators.content.business_content_generator import BusinessContentGenerator
+except ImportError:
+    from ...core.services.ai_content_service import AIContentService
+    from ...core.generators.content.business_content_generator import BusinessContentGenerator
+
 import re
 
 
