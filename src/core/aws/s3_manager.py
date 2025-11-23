@@ -13,9 +13,10 @@ Created Date:
 2025-09-05
 
 Last Modified Date:
-2025-09-05
+2025-11-22
 
 Comments:
+* v1.01 - Fixed OAC naming to stay within CloudFront's 64-character limit
 * v1.00 - Initial implementation following SOP bucket naming and caching patterns
 """
 
@@ -26,6 +27,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import mimetypes
 import re
+import hashlib
 
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
@@ -834,8 +836,23 @@ class S3Manager:
             # S3 origin domain
             origin_domain = f"{bucket_name}.s3.{region}.amazonaws.com"
 
-            # Create OAC
-            oac_name = f"OAC-{bucket_name}-{origin_path.replace('/', '-') if origin_path else 'root'}"
+            # Create OAC with length-safe naming
+            # CloudFront OAC names have a 64-character limit
+            origin_suffix = origin_path.replace('/', '-') if origin_path else 'root'
+            base_name = f"OAC-{bucket_name}-{origin_suffix}"
+
+            # If name exceeds 64 chars, use a truncated version with hash for uniqueness
+            if len(base_name) > 64:
+                # Create a unique hash from the full identifier
+                full_id = f"{bucket_name}-{origin_path or 'root'}"
+                hash_suffix = hashlib.md5(full_id.encode()).hexdigest()[:8]
+                # Use first part of bucket name + hash (OAC-<name>-<hash>)
+                max_bucket_len = 64 - 4 - 1 - 8 - 1  # 64 - "OAC-" - "-" - hash - null = 50
+                truncated_bucket = bucket_name[:max_bucket_len]
+                oac_name = f"OAC-{truncated_bucket}-{hash_suffix}"
+            else:
+                oac_name = base_name
+
             oac_success, oac_id, oac_message = self.create_origin_access_control(
                 name=oac_name,
                 description=f"OAC for {bucket_name}{origin_path}"
