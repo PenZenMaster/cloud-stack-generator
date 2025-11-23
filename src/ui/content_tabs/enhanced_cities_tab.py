@@ -1044,9 +1044,6 @@ class EnhancedCitiesTab(BaseTab):
 
         try:
             # Generate popular places for this city
-            # Format: City Name, State for Google Maps search
-            city_search = f"{city_name}, {state}" if state else city_name
-
             # Common places of interest to search for
             place_types = [
                 ("Downtown {city}", "downtown area"),
@@ -1062,13 +1059,8 @@ class EnhancedCitiesTab(BaseTab):
             for place_template, description in place_types[:3]:  # Generate 3 to ensure at least 2 work
                 place_name = place_template.format(city=city_name)
 
-                # Create Google Maps embed URL
-                # Format: https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=PLACE_NAME
-                # For now, use the search format which works without API key
+                # Create Google Maps embed URL using search format
                 search_query = f"{place_name}, {state}".replace(" ", "+")
-                embed_url = f"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3000!2d0!3d0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z{search_query}!5e0!3m2!1sen!2sus!4v1234567890!5m2!1sen!2sus"
-
-                # Alternative: use regular Google Maps URL format
                 maps_url = f"https://www.google.com/maps?q={search_query}&output=embed"
 
                 place = PlaceOfInterest(
