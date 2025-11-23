@@ -1966,7 +1966,7 @@ client:
 cloud:
   aws_profile: AWS V2
   aws_region: us-east-1
-  bucket_name: cool-metal
+  bucket_name: No buckets found
   deployment_mode: cloudfront
   deployment_url: ''
   distribution_id: ''
