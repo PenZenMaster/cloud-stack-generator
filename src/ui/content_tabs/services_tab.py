@@ -13,13 +13,17 @@ Created Date:
 2025-08-11
 
 Last Modified Date:
-2025-11-18
+2025-11-22
 
 Comments:
 * v1.00 - Initial services management tab
 * v1.01 - Removed FAQ functionality (now in separate FAQ tab)
+* v1.02 - Added CSV import/export functionality matching Products and FAQ tabs
 """
 
+import csv
+import os
+import chardet
 from typing import Dict, Any, List, Tuple, Optional
 from PyQt6.QtWidgets import (
     QVBoxLayout,
@@ -30,6 +34,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
+    QFileDialog,
     QMessageBox,
     QGroupBox,
     QComboBox,
@@ -37,11 +42,13 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QAbstractItemView,
     QFrame,
+    QProgressBar,
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from ..components.base_tab import BaseTab
 from ...core.config.models import FAQItem
+from ...utils import log_file_operation_error
 
 
 class ValidationResult:
@@ -141,6 +148,7 @@ class ServicesTab(BaseTab):
     def __init__(self, parent=None):
         self.services: List[Service] = []
         self.has_changes = False
+        self.current_file_path = ""
         super().__init__(parent)
 
     def setup_ui(self):
@@ -149,11 +157,110 @@ class ServicesTab(BaseTab):
         main_layout.setSpacing(15)
 
         # Create services sections
+        self._create_import_section(main_layout)
         self._create_services_table_section(main_layout)
         self._create_service_entry_section(main_layout)
         self._create_services_actions_section(main_layout)
 
         self.setLayout(main_layout)
+
+    def _create_import_section(self, parent_layout: QVBoxLayout):
+        """Create CSV import & export section"""
+        # Section header
+        header_label = self._create_section_header("CSV Import & Export")
+        parent_layout.addWidget(header_label)
+
+        # Import group
+        import_group = QGroupBox()
+        import_layout = QGridLayout()
+        import_layout.setSpacing(10)
+
+        # File selection
+        file_label = QLabel("CSV File:")
+        file_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+
+        self.file_path_input = QLineEdit()
+        self.file_path_input.setPlaceholderText("Select CSV file to import services...")
+        self.file_path_input.setReadOnly(True)
+
+        self.browse_btn = QPushButton("Browse")
+        self.browse_btn.clicked.connect(self._browse_csv_file)
+
+        # Import controls
+        self.import_btn = QPushButton("Import CSV")
+        self.import_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #27ae60;
+                color: white;
+                font-weight: bold;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #219a52;
+            }
+            QPushButton:disabled {
+                background-color: #95a5a6;
+            }
+        """
+        )
+        self.import_btn.clicked.connect(self._import_csv)
+        self.import_btn.setEnabled(False)
+
+        self.validate_csv_btn = QPushButton("Validate CSV")
+        self.validate_csv_btn.clicked.connect(self._validate_csv_file)
+        self.validate_csv_btn.setEnabled(False)
+
+        # Export controls
+        self.export_btn = QPushButton("Export CSV")
+        self.export_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                font-weight: bold;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """
+        )
+        self.export_btn.clicked.connect(self._export_csv)
+
+        # Layout file selection
+        file_layout = QHBoxLayout()
+        file_layout.addWidget(self.file_path_input)
+        file_layout.addWidget(self.browse_btn)
+
+        # Layout buttons
+        buttons_layout = QHBoxLayout()
+        buttons_layout.addWidget(self.validate_csv_btn)
+        buttons_layout.addWidget(self.import_btn)
+        buttons_layout.addWidget(self.export_btn)
+        buttons_layout.addStretch()
+
+        # Status info
+        self.import_status = QLabel("Ready to import services from CSV")
+        self.import_status.setFont(QFont("Arial", 9))
+        self.import_status.setStyleSheet("color: #7f8c8d; font-style: italic;")
+
+        # Progress bar for import
+        self.import_progress = QProgressBar()
+        self.import_progress.hide()
+
+        import_layout.addWidget(file_label, 0, 0)
+        import_layout.addLayout(file_layout, 0, 1)
+        import_layout.addLayout(buttons_layout, 1, 0, 1, 2)
+        import_layout.addWidget(self.import_status, 2, 0, 1, 2)
+        import_layout.addWidget(self.import_progress, 3, 0, 1, 2)
+
+        import_group.setLayout(import_layout)
+        parent_layout.addWidget(import_group)
 
     def _create_services_table_section(self, parent_layout: QVBoxLayout):
         """Create services table section"""
@@ -1190,6 +1297,415 @@ class ServicesTab(BaseTab):
                 self, "Validation Success", f"✅ All {len(self.faqs)} FAQs are valid!"
             )
 
+    # CSV Import/Export Methods
+    def _browse_csv_file(self):
+        """Browse for CSV file"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Select Services CSV File", "", "CSV Files (*.csv);;All Files (*)"
+        )
+
+        if file_path:
+            self.file_path_input.setText(file_path)
+            self.current_file_path = file_path
+            self.import_btn.setEnabled(True)
+            self.validate_csv_btn.setEnabled(True)
+            self._update_import_status(f"Selected: {os.path.basename(file_path)}")
+
+    def _detect_file_encoding(self, file_path: str) -> str:
+        """Detect file encoding using chardet with fallback options"""
+        try:
+            # Read a sample of the file to detect encoding
+            with open(file_path, "rb") as f:
+                raw_data = f.read(10000)  # Read first 10KB for detection
+
+            if raw_data:
+                # Use chardet to detect encoding
+                result = chardet.detect(raw_data)
+                encoding = result.get("encoding", "utf-8").lower()
+                confidence = result.get("confidence", 0)
+
+                # Map common encoding variations
+                encoding_map = {
+                    "windows-1252": "cp1252",
+                    "iso-8859-1": "latin1",
+                    "ascii": "utf-8",
+                }
+
+                encoding = encoding_map.get(encoding, encoding)
+
+                # If confidence is low, try common fallbacks
+                if confidence < 0.7:
+                    fallback_encodings = ["utf-8", "cp1252", "latin1", "utf-16"]
+                    for fallback in fallback_encodings:
+                        try:
+                            with open(file_path, "r", encoding=fallback) as f:
+                                f.read(1000)  # Try to read some content
+                            return fallback
+                        except (UnicodeDecodeError, UnicodeError):
+                            continue
+
+                return encoding
+
+        except Exception:
+            pass
+
+        # Default fallback
+        return "utf-8"
+
+    def _validate_csv_file(self):
+        """Validate CSV file structure with automatic encoding detection"""
+        if not self.current_file_path:
+            return
+
+        try:
+            # Detect file encoding
+            encoding = self._detect_file_encoding(self.current_file_path)
+
+            with open(
+                self.current_file_path, "r", encoding=encoding, errors="replace"
+            ) as file:
+                reader = csv.DictReader(file)
+
+                # Check required columns
+                required_columns = ["Name", "Description"]
+                optional_columns = ["Category", "Price Range", "Duration", "Features"]
+
+                missing_required = [
+                    col for col in required_columns if col not in reader.fieldnames
+                ]
+                available_optional = [
+                    col for col in optional_columns if col in reader.fieldnames
+                ]
+
+                if missing_required:
+                    QMessageBox.warning(
+                        self,
+                        "CSV Validation Error",
+                        f"Missing required columns: {', '.join(missing_required)}\n\n"
+                        f"Required: {', '.join(required_columns)}\n"
+                        f"Optional: {', '.join(optional_columns)}",
+                    )
+                    return
+
+                # Count rows and validate each service
+                rows = list(reader)
+                row_count = len(rows)
+
+                validation_errors = []
+                validation_warnings = []
+                valid_services = 0
+
+                # Check for duplicates in CSV file
+                names = [row.get("Name", "").strip() for row in rows]
+                duplicate_names = [name for name in set(names) if names.count(name) > 1]
+
+                for row_num, row in enumerate(rows, start=2):  # Start at 2 for header
+                    try:
+                        # Parse features (can be pipe-separated or newline-separated)
+                        features_text = row.get("Features", "").strip()
+                        features = []
+                        if features_text:
+                            # Try pipe-separated first, then newline
+                            if "|" in features_text:
+                                features = [
+                                    f.strip()
+                                    for f in features_text.split("|")
+                                    if f.strip()
+                                ]
+                            else:
+                                features = [
+                                    f.strip()
+                                    for f in features_text.split("\n")
+                                    if f.strip()
+                                ]
+
+                        # Create temporary service for validation
+                        service = Service(
+                            name=row.get("Name", "").strip(),
+                            description=row.get("Description", "").strip(),
+                            category=row.get("Category", "General Services").strip(),
+                            price_range=row.get("Price Range", "").strip(),
+                            duration=row.get("Duration", "").strip(),
+                            features=features,
+                        )
+
+                        # Validate service data
+                        is_valid, service_errors = service.is_valid()
+                        if not is_valid:
+                            validation_errors.extend(
+                                [f"Row {row_num}: {error}" for error in service_errors]
+                            )
+                        else:
+                            valid_services += 1
+
+                        # Check for existing name in current services
+                        if any(
+                            s.name.lower() == service.name.lower()
+                            for s in self.services
+                        ):
+                            validation_warnings.append(
+                                f"Row {row_num}: Service '{service.name}' already exists in current services"
+                            )
+
+                    except Exception as e:
+                        validation_errors.append(f"Row {row_num}: {str(e)}")
+
+                # Add CSV duplicate warnings
+                for name in duplicate_names:
+                    if name:  # Only warn about non-empty names
+                        validation_warnings.append(
+                            f"Service name '{name}' appears multiple times in CSV file"
+                        )
+
+                # Show comprehensive validation results
+                if validation_errors:
+                    msg = "CSV Validation Failed!\n\n"
+                    msg += f"Total rows: {row_count}\n"
+                    msg += f"Valid services: {valid_services}\n"
+                    msg += f"Errors: {len(validation_errors)}\n"
+
+                    if validation_warnings:
+                        msg += f"Warnings: {len(validation_warnings)}\n"
+
+                    detailed_msg = msg + "\n\nERRORS:\n" + "\n".join(validation_errors)
+                    if validation_warnings:
+                        detailed_msg += "\n\nWARNINGS:\n" + "\n".join(
+                            validation_warnings
+                        )
+
+                    msgbox = QMessageBox(self)
+                    msgbox.setWindowTitle("CSV Validation Failed")
+                    msgbox.setIcon(QMessageBox.Icon.Warning)
+                    msgbox.setText(msg)
+                    msgbox.setDetailedText(detailed_msg)
+                    msgbox.exec()
+
+                    self._update_import_status(
+                        f"Validation failed - {len(validation_errors)} errors found"
+                    )
+
+                elif validation_warnings:
+                    msg = "CSV Validation Passed with Warnings!\n\n"
+                    msg += f"Total rows: {row_count}\n"
+                    msg += f"Valid services: {valid_services}\n"
+                    msg += f"Warnings: {len(validation_warnings)}\n"
+
+                    detailed_msg = (
+                        msg + "\n\nWARNINGS:\n" + "\n".join(validation_warnings)
+                    )
+
+                    msgbox = QMessageBox(self)
+                    msgbox.setWindowTitle("CSV Validation - Warnings Found")
+                    msgbox.setIcon(QMessageBox.Icon.Information)
+                    msgbox.setText(msg)
+                    msgbox.setDetailedText(detailed_msg)
+                    msgbox.exec()
+
+                    self._update_import_status(
+                        f"Valid CSV with {len(validation_warnings)} warnings - {valid_services} services ready"
+                    )
+
+                else:
+                    msg = "CSV Validation Successful!\n\n"
+                    msg += f"Total rows: {row_count}\n"
+                    msg += f"Valid services: {valid_services}\n"
+                    msg += f"Required columns: {', '.join(required_columns)}\n"
+                    msg += f"Optional columns found: {', '.join(available_optional)}"
+
+                    QMessageBox.information(self, "CSV Validation Results", msg)
+                    self._update_import_status(
+                        f"Valid CSV - {valid_services} services ready to import"
+                    )
+
+        except Exception as e:
+            error_msg = f"Error reading CSV file:\n{str(e)}"
+            log_file_operation_error(
+                operation="validate_csv",
+                file_path=self.current_file_path or "unknown",
+                error_message=error_msg,
+                exception=e,
+            )
+            QMessageBox.critical(self, "CSV Validation Error", error_msg)
+
+    def _import_csv(self):
+        """Import services from CSV file"""
+        if not self.current_file_path:
+            return
+
+        try:
+            self.import_progress.show()
+            self.import_progress.setRange(0, 0)  # Indeterminate progress
+
+            imported_services = []
+            errors = []
+            warnings = []
+
+            # Detect file encoding
+            encoding = self._detect_file_encoding(self.current_file_path)
+
+            with open(
+                self.current_file_path, "r", encoding=encoding, errors="replace"
+            ) as file:
+                reader = csv.DictReader(file)
+
+                for row_num, row in enumerate(reader, start=2):  # Start at 2 for header
+                    try:
+                        # Parse features (can be pipe-separated or newline-separated)
+                        features_text = row.get("Features", "").strip()
+                        features = []
+                        if features_text:
+                            # Try pipe-separated first, then newline
+                            if "|" in features_text:
+                                features = [
+                                    f.strip()
+                                    for f in features_text.split("|")
+                                    if f.strip()
+                                ]
+                            else:
+                                features = [
+                                    f.strip()
+                                    for f in features_text.split("\n")
+                                    if f.strip()
+                                ]
+
+                        service = Service(
+                            name=row.get("Name", "").strip(),
+                            description=row.get("Description", "").strip(),
+                            category=row.get("Category", "General Services").strip(),
+                            price_range=row.get("Price Range", "").strip(),
+                            duration=row.get("Duration", "").strip(),
+                            features=features,
+                        )
+
+                        # Validate service
+                        is_valid, service_errors = service.is_valid()
+                        if not is_valid:
+                            errors.extend(
+                                [f"Row {row_num}: {error}" for error in service_errors]
+                            )
+                            continue
+
+                        # Check for duplicate name (case-insensitive)
+                        if any(
+                            s.name.lower() == service.name.lower()
+                            for s in self.services
+                        ):
+                            warnings.append(
+                                f"Row {row_num}: Service '{service.name}' already exists (skipped)"
+                            )
+                            continue
+
+                        imported_services.append(service)
+
+                    except Exception as e:
+                        errors.append(f"Row {row_num}: {str(e)}")
+
+            # Add imported services
+            self.services.extend(imported_services)
+            self._refresh_services_table()
+            self._update_services_count()
+
+            self.import_progress.hide()
+
+            # Show import results
+            msg = "Import completed!\n\n"
+            msg += f"Successfully imported: {len(imported_services)} services\n"
+
+            if warnings:
+                msg += f"Warnings: {len(warnings)}\n"
+            if errors:
+                msg += f"Errors: {len(errors)}\n"
+
+            if warnings or errors:
+                detailed_msg = msg + "\n"
+                if errors:
+                    detailed_msg += "\nERRORS:\n" + "\n".join(errors)
+                if warnings:
+                    detailed_msg += "\nWARNINGS:\n" + "\n".join(warnings)
+
+                msgbox = QMessageBox(self)
+                msgbox.setWindowTitle("Import Results")
+                msgbox.setText(msg)
+                msgbox.setDetailedText(detailed_msg)
+                msgbox.exec()
+            else:
+                QMessageBox.information(self, "Import Success", msg)
+
+            self._update_import_status(f"Imported {len(imported_services)} services")
+            self._emit_config_changed()
+
+        except Exception as e:
+            self.import_progress.hide()
+            error_msg = f"Error importing CSV:\n{str(e)}"
+            log_file_operation_error(
+                operation="import_csv",
+                file_path=self.current_file_path,
+                error_message=error_msg,
+                exception=e,
+            )
+            QMessageBox.critical(self, "Import Error", error_msg)
+
+    def _export_csv(self):
+        """Export services to CSV file"""
+        if not self.services:
+            QMessageBox.information(self, "Export", "No services to export")
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Services CSV",
+            "services_export.csv",
+            "CSV Files (*.csv);;All Files (*)",
+        )
+
+        if not file_path:
+            return
+
+        try:
+            with open(file_path, "w", newline="", encoding="utf-8") as file:
+                fieldnames = [
+                    "Name",
+                    "Description",
+                    "Category",
+                    "Price Range",
+                    "Duration",
+                    "Features",
+                ]
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+                writer.writeheader()
+                for service in self.services:
+                    # Join features with pipe separator for CSV export
+                    features_str = (
+                        " | ".join(service.features) if service.features else ""
+                    )
+
+                    writer.writerow(
+                        {
+                            "Name": service.name,
+                            "Description": service.description,
+                            "Category": service.category,
+                            "Price Range": service.price_range,
+                            "Duration": service.duration,
+                            "Features": features_str,
+                        }
+                    )
+
+            QMessageBox.information(
+                self,
+                "Export Success",
+                f"Successfully exported {len(self.services)} services to:\n{file_path}",
+            )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self, "Export Error", f"Error exporting CSV:\n{str(e)}"
+            )
+
+    def _update_import_status(self, message: str):
+        """Update import status label"""
+        self.import_status.setText(message)
+
     # BaseTab implementation
     def connect_signals(self):
         """Connect UI signals to emit config_changed"""
@@ -1328,6 +1844,13 @@ class ServicesTab(BaseTab):
 
         # Clear search filters
         self.services_search_input.clear()
+
+        # Clear CSV import state
+        self.file_path_input.clear()
+        self.current_file_path = ""
+        self.import_btn.setEnabled(False)
+        self.validate_csv_btn.setEnabled(False)
+        self._update_import_status("Ready to import services from CSV")
 
         self.has_changes = False
 
