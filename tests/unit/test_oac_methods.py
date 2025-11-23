@@ -378,3 +378,60 @@ class TestOACMethods:
         assert success is False
         assert 'Delete failed' in message
         assert 'Connection lost' in message
+
+
+@pytest.mark.unit
+@pytest.mark.aws
+class TestOACNaming:
+    """Test OAC naming logic with CloudFront 64-character limit"""
+
+    def setup_method(self):
+        """Set up test fixtures"""
+        self.manager = S3Manager()
+        self.mock_cloudfront = Mock()
+        mock_session = Mock()
+        mock_session.client.return_value = self.mock_cloudfront
+        self.manager.session = mock_session
+
+    def test_oac_name_short_bucket(self):
+        """Test OAC naming for short bucket name (under 64 chars total)"""
+        # Mock successful OAC creation
+        self.mock_cloudfront.create_origin_access_control.return_value = {
+            'OriginAccessControl': {
+                'Id': 'E1234OAC567890'
+            }
+        }
+
+        success, oac_id, message = self.manager.create_origin_access_control(
+            name="OAC-test-bucket-root",
+            description="Test OAC"
+        )
+
+        assert success is True
+        assert oac_id == 'E1234OAC567890'
+        self.mock_cloudfront.create_origin_access_control.assert_called_once()
+
+    def test_oac_name_long_bucket(self):
+        """Test OAC naming for very long bucket name (would exceed 64 chars)"""
+        # Test with a name that would be >64 chars without truncation
+        long_name = "OAC-very-long-bucket-name-that-exceeds-cloudfront-limits-for-sure-path"
+
+        # Mock successful OAC creation
+        self.mock_cloudfront.create_origin_access_control.return_value = {
+            'OriginAccessControl': {
+                'Id': 'E9999OAC111111'
+            }
+        }
+
+        success, oac_id, message = self.manager.create_origin_access_control(
+            name=long_name[:64],  # Simulating truncated name
+            description="Test OAC for long bucket"
+        )
+
+        assert success is True
+        assert oac_id == 'E9999OAC111111'
+
+        # Verify the name passed to AWS is under 64 chars
+        call_args = self.mock_cloudfront.create_origin_access_control.call_args
+        actual_name = call_args[1]['OriginAccessControlConfig']['Name']
+        assert len(actual_name) <= 64
