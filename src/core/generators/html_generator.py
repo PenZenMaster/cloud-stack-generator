@@ -333,18 +333,15 @@ class HTMLGenerator:
         """
         Get the base URL for canonical tags and sitemaps.
 
-        For backlink sites: Use deployment_url (CloudFront) so Google indexes it independently
-        For main sites: Use deployment_url if specified, otherwise business.domain
+        Canonical URLs should match where the site is actually deployed.
+        If deployment_url is specified, use it (matches the deployed location).
+        Otherwise, fallback to business.domain.
         """
-        # For backlink sites, always use the deployed URL (CloudFront)
-        if hasattr(config.cloud, 'site_type') and config.cloud.site_type == "backlink_site" and config.cloud.deployment_url:
-            return config.cloud.deployment_url.rstrip("/")
-
-        # For main sites, prefer deployment_url if specified
+        # Always prefer deployment_url if specified (canonical matches deployment)
         if config.cloud.deployment_url:
             return config.cloud.deployment_url.rstrip("/")
 
-        # Fallback to business domain
+        # Fallback to business domain if no deployment URL specified
         return config.business.domain.rstrip("/")
 
     def _prepare_template_data(self, config: ClientConfig) -> Dict[str, Any]:
