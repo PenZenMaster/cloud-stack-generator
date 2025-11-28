@@ -2975,18 +2975,194 @@ class CloudTab(BaseTab):
             self.deployment_created.emit(deployment)
             self.log_status(f"Deployment record created: {deployment_id}")
 
+            # Check if we should prompt for canonical URL update (CloudFront Mode B only)
+            should_prompt_canonical_update = False
+
+            # Initialize flag if not exists
+            if not hasattr(self, '_canonical_update_in_progress'):
+                self._canonical_update_in_progress = False
+
+            if mode == "cloudfront" and cloudfront_domain:
+                cloudfront_url = f"https://{cloudfront_domain}"
+
+                # Get current deployment_url from loaded config
+                current_deployment_url = ""
+
+                # Find main window
+                parent_window = self.parent()
+                while parent_window and not hasattr(parent_window, 'loaded_config'):
+                    parent_window = parent_window.parent()
+
+                if parent_window and hasattr(parent_window, 'loaded_config') and parent_window.loaded_config:
+                    if hasattr(parent_window.loaded_config.cloud, 'deployment_url'):
+                        current_deployment_url = parent_window.loaded_config.cloud.deployment_url
+
+                # Check if deployment_url matches CloudFront URL
+                urls_match = current_deployment_url and current_deployment_url.rstrip('/') == cloudfront_url.rstrip('/')
+
+                if urls_match and self._canonical_update_in_progress:
+                    # Deployment_url now matches - clear the flag and log success
+                    self._canonical_update_in_progress = False
+                    self.log_status("Canonical URL update complete! Deployment URL now matches CloudFront.")
+
+                # Prompt if deployment_url is empty or different from CloudFront URL
+                # AND we're not in the middle of an update workflow
+                if not urls_match and not self._canonical_update_in_progress:
+                    should_prompt_canonical_update = True
+
             # Show success message
-            QMessageBox.information(
-                self,
-                "Deployment Successful",
+            success_msg = (
                 f"Website deployed successfully!\n\n"
                 f"URL: {website_url or 'Check AWS console for URL'}\n"
                 f"Files uploaded: {len(result.uploaded_files)}"
             )
+
+            if should_prompt_canonical_update:
+                success_msg += (
+                    f"\n\n"
+                    f"CloudFront URL: {cloudfront_url}\n\n"
+                    f"Note: Canonical URLs in your site may not match the CloudFront URL.\n"
+                    f"Would you like to update canonical URLs and redeploy?"
+                )
+
+                reply = QMessageBox.question(
+                    self,
+                    "Deployment Successful - Update Canonicals?",
+                    success_msg,
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes
+                )
+
+                if reply == QMessageBox.StandardButton.Yes:
+                    # Set flag to prevent prompt loop
+                    self._canonical_update_in_progress = True
+                    self._update_canonicals_and_redeploy(cloudfront_url)
+            else:
+                QMessageBox.information(
+                    self,
+                    "Deployment Successful",
+                    success_msg
+                )
         else:
             self.log_status(f"Deployment failed: {result.message}")
             QMessageBox.warning(self, "Deployment Failed", result.message)
-    
+
+    def _update_canonicals_and_redeploy(self, cloudfront_url: str):
+        """Update config with CloudFront URL, regenerate, and redeploy"""
+        try:
+            self.log_status(f"Updating deployment_url to: {cloudfront_url}")
+
+            # Find the main window by traversing parent hierarchy
+            parent_window = self.parent()
+            while parent_window and not hasattr(parent_window, 'current_config_file'):
+                parent_window = parent_window.parent()
+
+            if not parent_window:
+                QMessageBox.warning(
+                    self,
+                    "Update Failed",
+                    "Cannot find main window"
+                )
+                return
+
+            if not hasattr(parent_window, 'current_config_file') or not parent_window.current_config_file:
+                QMessageBox.warning(
+                    self,
+                    "Update Failed",
+                    "Cannot update config: No config file loaded.\nPlease save your configuration first."
+                )
+                return
+
+            config_file = parent_window.current_config_file
+            if not config_file:
+                QMessageBox.warning(
+                    self,
+                    "Update Failed",
+                    "Cannot update config: No config file path available"
+                )
+                return
+
+            # Update config file with deployment_url
+            import yaml
+            from pathlib import Path
+
+            config_path = Path(config_file)
+            if not config_path.exists():
+                QMessageBox.warning(
+                    self,
+                    "Update Failed",
+                    f"Config file not found: {config_file}"
+                )
+                return
+
+            # Load config YAML
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config_data = yaml.safe_load(f)
+
+            # Update deployment_url
+            if 'cloud' not in config_data:
+                config_data['cloud'] = {}
+            config_data['cloud']['deployment_url'] = cloudfront_url
+
+            # Save config
+            with open(config_path, 'w', encoding='utf-8') as f:
+                yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+            self.log_status(f"Config updated: deployment_url = {cloudfront_url}")
+
+            # Reload config in parent window
+            if hasattr(parent_window, 'load_config_file'):
+                parent_window.load_config_file(config_file)
+                self.log_status("Config reloaded in UI")
+
+            # Show progress dialog
+            progress = QMessageBox(self)
+            progress.setWindowTitle("Updating Canonical URLs")
+            progress.setText("Regenerating website with updated canonical URLs...\nThis may take a moment.")
+            progress.setStandardButtons(QMessageBox.StandardButton.NoButton)
+            progress.show()
+            QApplication.processEvents()
+
+            # Trigger regeneration from parent window
+            if hasattr(parent_window, 'generate_website'):
+                self.log_status("Triggering website regeneration...")
+
+                # Note: generate_website will prompt for output directory
+                # We need to ensure it uses the same directory as before
+                # For now, let the user select (they'll choose the same one)
+                progress.close()
+
+                QMessageBox.information(
+                    self,
+                    "Ready to Regenerate",
+                    f"Config updated with CloudFront URL:\n{cloudfront_url}\n\n"
+                    f"Step 1: Click OK to regenerate the website with updated canonical URLs.\n"
+                    f"Step 2: After regeneration completes, return to the Cloud Deploy tab.\n"
+                    f"Step 3: Click 'Deploy Website' again (you will NOT be prompted again).\n\n"
+                    f"The system will automatically deploy with corrected canonical URLs."
+                )
+
+                # Trigger generation (this will handle the rest)
+                parent_window.generate_website()
+
+                self.log_status("Canonical update workflow initiated. Waiting for regeneration and redeployment.")
+            else:
+                progress.close()
+                QMessageBox.information(
+                    self,
+                    "Config Updated",
+                    f"deployment_url updated to:\n{cloudfront_url}\n\n"
+                    f"Please regenerate the website manually to apply the changes."
+                )
+
+        except Exception as e:
+            self.log_status(f"Error updating canonicals: {str(e)}")
+            QMessageBox.critical(
+                self,
+                "Update Failed",
+                f"Failed to update canonical URLs:\n{str(e)}"
+            )
+
     def log_status(self, message: str):
         """Add message to status log"""
         from datetime import datetime
