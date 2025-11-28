@@ -31,7 +31,8 @@
       "Bash(git check-ignore:*)",
       "Bash([ -f docs/HANDOFF_SUMMARY.md ])",
       "Bash(test:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
