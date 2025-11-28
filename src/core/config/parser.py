@@ -245,8 +245,13 @@ class ConfigParser:
             body_text_color=branding_data.get("body_text_color", "#333333"),
             footer_background_color=branding_data.get("footer_background_color", "#2c3e50"),
             footer_text_color=branding_data.get("footer_text_color", "#ffffff"),
+            h1_text_color=branding_data.get("h1_text_color", "#2c3e50"),
+            h2_text_color=branding_data.get("h2_text_color", "#34495e"),
+            h3_text_color=branding_data.get("h3_text_color", "#34495e"),
+            main_menu_text_color=branding_data.get("main_menu_text_color", "#ffffff"),
             font_family=branding_data.get("font_family", "Arial, sans-serif"),
             logo_url=branding_data.get("logo_url", ""),
+            hero_background_image_url=branding_data.get("hero_background_image_url", ""),
         )
 
     def _parse_social_media_config(
@@ -614,8 +619,13 @@ class ConfigParser:
                     "body_text_color": config.branding.body_text_color,
                     "footer_background_color": config.branding.footer_background_color,
                     "footer_text_color": config.branding.footer_text_color,
+                    "h1_text_color": config.branding.h1_text_color,
+                    "h2_text_color": config.branding.h2_text_color,
+                    "h3_text_color": config.branding.h3_text_color,
+                    "main_menu_text_color": config.branding.main_menu_text_color,
                     "font_family": config.branding.font_family,
                     "logo_url": config.branding.logo_url,
+                    "hero_background_image_url": config.branding.hero_background_image_url,
                 },
                 "social_media": config.social_media.get_valid_links(),
                 "google_business_profile": config.google_business_profile,

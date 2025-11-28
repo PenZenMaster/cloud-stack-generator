@@ -1,11 +1,26 @@
 """
-Configuration data models using dataclasses
+Module/Script Name: models.py
+Path: src/core/config/models.py
 
-This module defines the core data structures for the SEO Authority Website Generator.
-All configuration data is represented using type-safe dataclasses.
+Description:
+Configuration data models using dataclasses. This module defines the core data
+structures for the SEO Authority Website Generator. All configuration data is
+represented using type-safe dataclasses.
 
-Version: 1.0.0
-Author: Cloud Stack Generator Team
+Author(s):
+Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
+
+Created Date:
+2024-08-15
+
+Last Modified Date:
+2025-11-25
+
+Version: 1.01
+
+Comments:
+* v1.01 - Added H1/H2/H3/Menu text colors and hero background image to BrandingConfig
+* v1.00 - Initial implementation with core configuration models
 """
 
 from dataclasses import dataclass, field
@@ -276,8 +291,13 @@ class BrandingConfig:
     body_text_color: str = "#333333"
     footer_background_color: str = "#2c3e50"
     footer_text_color: str = "#ffffff"
+    h1_text_color: str = "#2c3e50"
+    h2_text_color: str = "#34495e"
+    h3_text_color: str = "#34495e"
+    main_menu_text_color: str = "#ffffff"
     font_family: str = "Arial, sans-serif"
     logo_url: str = ""
+    hero_background_image_url: str = ""
 
     def __post_init__(self):
         """Validate color formats"""
@@ -287,6 +307,10 @@ class BrandingConfig:
         self._validate_color(self.body_text_color, "body_text_color")
         self._validate_color(self.footer_background_color, "footer_background_color")
         self._validate_color(self.footer_text_color, "footer_text_color")
+        self._validate_color(self.h1_text_color, "h1_text_color")
+        self._validate_color(self.h2_text_color, "h2_text_color")
+        self._validate_color(self.h3_text_color, "h3_text_color")
+        self._validate_color(self.main_menu_text_color, "main_menu_text_color")
 
     def _validate_color(self, color: str, field_name: str):
         """Validate hex color format"""
