@@ -1,10 +1,10 @@
 # main.py
 """
-SEO Authority Website Generator v3.6.0
+SEO Authority Website Generator v3.7.0
 Sprint 2 Week 2 - Enhanced Main Application Entry Point
 
 Updated: November 28, 2025
-Version: 3.6.0 - Canonical URL & Backlink Site Support
+Version: 3.7.0 - Schema Enhancements & Product Validation Fix
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 
