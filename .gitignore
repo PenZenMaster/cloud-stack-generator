@@ -84,8 +84,10 @@ awg-cloud-credentials.json
 # Temporary files
 *.tmp
 *.bak
+*.zip
 awg-cloud-stack_accessKeys.csv
 SECURITY_ALERT.md
+docs/webgen.txt
 
 # Windows artifact files
 nul
