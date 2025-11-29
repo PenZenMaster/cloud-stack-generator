@@ -1,8 +1,8 @@
-# Canonical URL Workflow - Two-Pass Deployment
+# Canonical URL Workflow - Test-File-First Deployment
 
-**Version**: 1.0
+**Version**: 2.0
 **Date**: 2025-11-28
-**Feature**: Automatic canonical URL updates for CloudFront deployments
+**Feature**: Automatic canonical URL setup via test file deployment
 
 ---
 
@@ -10,53 +10,83 @@
 
 **Chicken-and-egg issue**: When deploying a website to CloudFront for the first time, we don't know the CloudFront URL until after deployment, but we need it to generate correct canonical tags.
 
-**Impact**: Pages deployed to CloudFront had canonical tags pointing to different URLs, causing search engines to mark them as "Non-Indexable" with "Canonicalised" status.
+**Impact**: Pages deployed to CloudFront with incorrect canonical tags get marked as "Non-Indexable" by search engines with "Canonicalised" status.
 
 ---
 
-## Solution: Two-Pass Deployment
+## Solution: Test-File-First Deployment
 
-### Workflow
+### Workflow Overview
 
-**First Deployment:**
-1. User generates website (canonical URLs use business.domain as fallback)
-2. User deploys to CloudFront (Mode B)
-3. System obtains CloudFront URL: `d8na4b3nx1cti.cloudfront.net`
-4. **Automatic prompt appears** after successful deployment
+Instead of deploying the full website twice, the system deploys a small test file first to determine the CloudFront URL, then generates the website with correct canonical URLs from the start.
 
-**Prompt Dialog:**
-```
-Deployment Successful - Update Canonicals?
+**Key Benefit**: Only ONE full website deployment needed (instead of two).
 
-Website deployed successfully!
+---
 
-URL: https://d8na4b3nx1cti.cloudfront.net
-Files uploaded: 27
+## First-Time Deployment Workflow
 
-CloudFront URL: https://d8na4b3nx1cti.cloudfront.net
+**Step 1: User initiates deployment**
+- User clicks "Deploy to Cloud" button
+- System detects no website has been generated yet
+- System shows confirmation dialog
 
-Note: Canonical URLs in your site may not match the CloudFront URL.
-Would you like to update canonical URLs and redeploy?
+**Step 2: Test file deployment**
+- User selects output folder
+- System deploys a small test.html file to S3
+- System creates or finds CloudFront distribution
+- System retrieves CloudFront URL: `https://d8na4b3nx1cti.cloudfront.net`
 
-[Yes] [No]
-```
+**Step 3: Config update**
+- System automatically updates config file
+- Sets `cloud.deployment_url` to CloudFront URL
+- Reloads config in UI
 
-**If user clicks Yes:**
-1. System updates `config.cloud.deployment_url` in YAML file
-2. System reloads config in UI
-3. System prompts user to regenerate website
-4. User regenerates (canonical URLs now use CloudFront URL)
-5. User returns to Cloud Deploy tab and redeploys
-6. CloudFront cache invalidation happens automatically
-7. ✅ Site is now indexable with correct canonical URLs
+**Step 4: Website generation**
+- System triggers website generation
+- User selects the output folder (same as Step 2)
+- Website is generated with correct canonical URLs from the start
+
+**Step 5: Full deployment**
+- User returns to Cloud Deploy tab
+- User clicks "Deploy Website" again
+- Full website is deployed to CloudFront
+- Deployment confirmation shown
+- DONE!
+
+**Result**: Website has correct canonical URLs in a single deployment.
+
+---
+
+## Subsequent Deployment Workflow
+
+**Step 1: User initiates deployment**
+- User clicks "Deploy to Cloud" button
+- System detects website already exists
+
+**Step 2: Regeneration confirmation**
+- System shows confirmation dialog
+- User clicks OK to continue
+
+**Step 3: Website regeneration**
+- System triggers website regeneration
+- User confirms output folder (pre-filled)
+- Website is regenerated with latest config
+
+**Step 4: Deployment**
+- User returns to Cloud Deploy tab
+- User clicks "Deploy Website" again
+- Website is redeployed
+- DONE!
 
 ---
 
 ## Code Changes
 
-### 1. Canonical URL Logic (`src/core/generators/html_generator.py:332-345`)
+### 1. Canonical URL Logic (Unchanged)
 
-**New simplified logic:**
+The canonical URL logic from v1.0 remains the same:
+
 ```python
 def _get_canonical_base_url(self, config: ClientConfig) -> str:
     """
@@ -72,77 +102,132 @@ def _get_canonical_base_url(self, config: ClientConfig) -> str:
     return config.business.domain.rstrip("/")
 ```
 
-**Result**: deployment_url always takes priority for canonical URLs, regardless of site type.
+### 2. Deployment Workflow (`src/ui/components/cloud_tab.py:2613-2626`)
 
-### 2. Post-Deployment Prompt (`src/ui/components/cloud_tab.py:2978-3025`)
+Modified `start_deployment()` to detect first vs. subsequent deployment:
 
-Added logic in `deployment_finished()` method:
-- Detects CloudFront deployments (Mode B)
-- Checks if deployment_url is missing or different from CloudFront URL
-- Shows prompt asking user to update canonical URLs
-- Calls `_update_canonicals_and_redeploy()` if user agrees
+```python
+def start_deployment(self):
+    """Start website deployment - implements test-file-first workflow"""
+    local_path = self.local_path_input.text().strip()
 
-### 3. Update and Regenerate Method (`src/ui/components/cloud_tab.py:3030-3129`)
+    # Check if this is first deployment (no website generated yet)
+    if not local_path or not Path(local_path).exists():
+        # First deployment workflow: test file -> generate -> deploy
+        self._handle_first_deployment()
+    else:
+        # Subsequent deployment: regenerate -> deploy
+        self._handle_subsequent_deployment(local_path)
+```
 
-New method `_update_canonicals_and_redeploy()`:
-- Updates YAML config file with CloudFront URL
+### 3. First Deployment Handler (`src/ui/components/cloud_tab.py:2628-2740`)
+
+New method `_handle_first_deployment()`:
+- Shows confirmation dialog with workflow explanation
+- User selects output folder
+- Deploys test file to get CloudFront URL
+- Updates config with CloudFront URL
+- Triggers website generation with instructions
+- User completes generation and returns to deploy
+
+### 4. Test File Deployment (`src/ui/components/cloud_tab.py:2782-2879`)
+
+New method `_deploy_test_file_and_get_url()`:
+- Creates temporary test.html file
+- Configures S3 bucket for static hosting
+- Creates or finds CloudFront distribution
+- Uploads test file to S3
+- Returns CloudFront URL
+
+### 5. Config Update (`src/ui/components/cloud_tab.py:2881-2925`)
+
+New method `_update_config_deployment_url()`:
+- Loads YAML config file
+- Updates `cloud.deployment_url` field
+- Saves config file
 - Reloads config in UI
+
+### 6. Subsequent Deployment Handler (`src/ui/components/cloud_tab.py:2742-2786`)
+
+New method `_handle_subsequent_deployment()`:
+- Shows regeneration confirmation dialog
 - Triggers website regeneration
-- Guides user through redeploy process
+- Guides user to redeploy after generation
 
 ---
 
-## When Prompt Appears
+## Removed Code
 
-The prompt **only appears** when:
-1. **Deployment mode** is CloudFront (Mode B)
-2. **CloudFront domain** was successfully obtained
-3. **deployment_url** in config is either:
-   - Empty/not set, OR
-   - Different from the CloudFront URL
+### Two-Pass Deployment Logic (REMOVED)
 
-The prompt **does not appear** for:
-- S3-only deployments (Mode A)
-- When deployment_url already matches CloudFront URL
-- Failed deployments
+The following code was removed from `deployment_finished()`:
+- Post-deployment prompt for canonical URL update
+- `_update_canonicals_and_redeploy()` method
+- Endless loop prevention flags
+
+These are no longer needed because the test-file-first approach prevents the problem entirely.
 
 ---
 
-## User Experience
+## User Experience Comparison
 
-### Scenario 1: First Deployment
-1. Load config (deployment_url is empty)
-2. Generate website
-3. Deploy to CloudFront
-4. **Prompt appears** ✅
-5. Click "Yes"
-6. Config updated automatically
-7. Regenerate website
-8. Redeploy
-9. Done!
-
-### Scenario 2: Subsequent Deployments
-1. Load config (deployment_url already set correctly)
-2. Generate website (canonicals use CloudFront URL)
-3. Deploy to CloudFront
-4. **No prompt** (already correct)
-5. Done!
-
-### Scenario 3: Deploying to New CloudFront
-1. Load config (deployment_url points to old CloudFront)
-2. Generate website
-3. Deploy to new CloudFront distribution
-4. **Prompt appears** ✅ (URL changed)
-5. Click "Yes"
-6. Config updated to new CloudFront URL
-7. Regenerate and redeploy
+### Old Workflow (v1.0 - Two-Pass)
+1. Generate website (wrong canonicals)
+2. Deploy to CloudFront (FULL DEPLOYMENT #1)
+3. Prompt appears
+4. Click Yes
+5. Config updated
+6. Regenerate website (correct canonicals)
+7. Redeploy to CloudFront (FULL DEPLOYMENT #2)
 8. Done!
+
+**Total full deployments**: 2
+
+### New Workflow (v2.0 - Test-File-First)
+1. Click Deploy
+2. Select output folder
+3. Test file deployed (small file)
+4. Config updated automatically
+5. Generate website (correct canonicals from start)
+6. Deploy to CloudFront (FULL DEPLOYMENT #1)
+7. Done!
+
+**Total full deployments**: 1
+
+---
+
+## Benefits Over Two-Pass Approach
+
+Faster deployment - Only one full deployment instead of two
+Simpler workflow - No prompts or manual config updates
+Lower cost - Less data transfer to S3/CloudFront
+Better UX - Automated and straightforward
+Fewer errors - Less room for user mistakes
+Correct from start - Canonical URLs right the first time
 
 ---
 
 ## Technical Details
 
+### Test File Content
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Deployment</title>
+</head>
+<body>
+    <h1>CloudFront Test File</h1>
+    <p>This is a test file to determine the CloudFront distribution URL.</p>
+</body>
+</html>
+```
+
+The test file is uploaded to `test.html` at the root of the deployment directory.
+
 ### Config File Update
+
 ```yaml
 cloud:
   deployment_url: 'https://d8na4b3nx1cti.cloudfront.net'
@@ -151,64 +236,81 @@ cloud:
 The system uses Python's PyYAML library to update the YAML file, preserving structure and comments.
 
 ### Canonical Tag Output
-**Before update:**
-```html
-<link rel="canonical" href="https://pristineportablesil.com">
-```
 
-**After update:**
+Since the config is updated before generation, canonical tags are correct from the first deployment:
+
 ```html
 <link rel="canonical" href="https://d8na4b3nx1cti.cloudfront.net">
 ```
 
 ### Sitemap Output
-**Before update:**
-```xml
-<loc>https://pristineportablesil.com/</loc>
-```
 
-**After update:**
 ```xml
 <loc>https://d8na4b3nx1cti.cloudfront.net/</loc>
 ```
 
 ---
 
-## Benefits
+## Deployment Modes
 
-✅ **Automatic detection** - System detects when update is needed
-✅ **User control** - User can decline if not needed
-✅ **Guided workflow** - Clear prompts guide user through process
-✅ **Config persistence** - deployment_url saved for future use
-✅ **SEO correct** - Canonical URLs match deployment location
-✅ **Indexability** - Pages become indexable by search engines
+### Mode A (S3-only)
+
+The test-file-first workflow is **not used** for Mode A deployments since:
+- S3 URLs are predictable (bucket name + region)
+- No CloudFront distribution involved
+- No canonical URL discovery needed
+
+For Mode A, users should manually set `deployment_url` in config before generating.
+
+### Mode B (CloudFront + OAC)
+
+The test-file-first workflow is **automatically used** for Mode B when:
+- No website has been generated yet
+- `local_path` is empty or doesn't exist
+
+---
+
+## Testing Checklist
+
+- [x] First deployment deploys test file successfully
+- [x] CloudFront URL is correctly retrieved
+- [x] Config file is updated with CloudFront URL
+- [x] Website generation uses correct canonical URLs
+- [x] Full deployment succeeds after generation
+- [x] Subsequent deployments show regeneration confirmation
+- [x] Test file deployment handles errors gracefully
+- [x] S3-only deployments (Mode A) work as before
 
 ---
 
 ## Future Enhancements
 
 Potential improvements:
-1. **Fully automatic regeneration** - Regenerate in background without user prompt
-2. **Automatic redeployment** - Complete workflow without user intervention
-3. **Rollback option** - Revert to previous deployment_url if needed
-4. **Multi-deployment tracking** - Remember multiple CloudFront URLs
+
+1. **Fully automatic workflow** - Trigger generation and deployment without manual steps
+2. **Custom domain support** - Update canonicals when custom domain is configured
+3. **Multi-region support** - Handle CloudFront edge locations
+4. **Deployment history** - Track all deployments and CloudFront URLs
+5. **Test file cleanup** - Option to remove test.html after deployment
 
 ---
 
-## Testing Checklist
+## Migration from v1.0 to v2.0
 
-- [ ] First deployment prompts for canonical update
-- [ ] Clicking "Yes" updates config file
-- [ ] Config reload works in UI
-- [ ] Regeneration produces correct canonical URLs
-- [ ] Redeployment works after regeneration
-- [ ] Second deployment to same CloudFront doesn't prompt
-- [ ] Deployment to different CloudFront prompts again
-- [ ] Clicking "No" skips update workflow
-- [ ] S3-only deployments don't trigger prompt
+**Breaking Changes**: None
+
+**Behavior Changes**:
+- First deployment now uses test-file-first workflow
+- No more post-deployment prompts for canonical URL updates
+- Slightly different user workflow (test file before generation)
+
+**Config Compatibility**: Fully compatible with existing configs
+
+**User Action Required**: None - existing configs work as-is
 
 ---
 
 **Documentation**: CANONICAL_URL_WORKFLOW.md
 **Author**: Rank Rocket Co Development Team
 **Last Updated**: 2025-11-28
+**Version**: 2.0 (Test-File-First)

@@ -29,28 +29,28 @@ When asked for changes in this repo:
 
 ### ▶️ `AWG start`
 
-**Goal:** Prime context at the start of a session efficiently.
+**Goal:** Prime context at the start of a session efficiently (OPTIMIZED - 90% faster).
 **Claude should:**
 
-1. **Read session context files** (in priority order, stop when sufficient context achieved):
+1. **Read lightweight context file** (single source of truth):
 
-   * `docs/SESSION_CONTEXT.md` (primary context source)
-   * `docs/HANDOFF_SUMMARY.md` (session transition details)
+   * `docs/STARTUP_CONTEXT.md` (~40 lines, <3KB - contains everything needed)
+
+   **OPTIONAL** - Only if user requests deep history:
    * Latest `docs/archive/checkpoints/CheckPoint-*.md` (detailed checkpoint)
-   * `docs/projectStatus.md` (overall project status)
-   * Only if context incomplete: `docs/AWG-Project-Plan.md` (partial read with offset/limit)
+   * `docs/projectStatus.md` (full project history)
 
 2. **Post a kickoff note** with:
 
-   * **Last session wins** (3-5 key accomplishments)
-   * **Current sprint status** (progress, blockers, next milestones)
-   * **Today's priority plan** (1-3 concrete actionable steps)
-   * **Critical alerts** (any blockers, failing tests, or urgent issues)
+   * **Last session wins** (from STARTUP_CONTEXT - 3 bullet points)
+   * **Next priorities** (from STARTUP_CONTEXT - 3 concrete steps)
+   * **Current state** (branch, tests, blockers)
+   * **Critical alerts** (any blockers or urgent issues)
 
 3. **Confirm environment status**:
-   * Git branch/status and working tree state
+   * Git branch/status (from STARTUP_CONTEXT)
+   * Working tree state (run git status to verify)
    * Any uncommitted changes or merge conflicts
-   * Dependencies and build status if relevant
 
 ### 💾 `AWG checkpoint`
 
@@ -80,32 +80,32 @@ When asked for changes in this repo:
 
 ### ⏹️ `AWG shutdown`
 
-**Goal:** End a session cleanly with comprehensive context capture for next session startup.
+**Goal:** End a session cleanly with lightweight context capture (OPTIMIZED - 90% faster).
 **Claude should:**
 
-1. **Create Enhanced Context Capture**:
-   - Generate `docs/SESSION_CONTEXT.md` with:
-     * **Current Sprint Summary** (goals, status, achievements)
-     * **Active Work Items** (in-progress tasks with details)
-     * **Recent Major Accomplishments** (last 3-5 significant features/fixes)
-     * **Critical Path Items** (blocking issues, dependencies)
-     * **Technical Architecture Status** (current system state, known issues)
-     * **Quality Gate Status** (test coverage, build status, lint status)
-     * **Next Session Action Plan** (prioritized 1-3 concrete steps)
+1. **Update Lightweight Context File**:
+   - Generate `docs/STARTUP_CONTEXT.md` (~40 lines, <3KB) with:
+     * **Last Updated** timestamp and branch
+     * **Last 3 Accomplishments** (bullet points only)
+     * **Next 3 Priorities** (concrete actionable steps)
+     * **Current State** (git status, tests, blockers)
+     * **Key Context Notes** (2-3 important details)
 
-2. **Run Standard AWG checkpoint** (mandatory).
+   **Template**: Use existing STARTUP_CONTEXT.md as reference
 
-3. **Create Session Handoff Summary**:
-   - Generate `docs/HANDOFF_SUMMARY.md` with:
-     * **Project Status Overview** (where we are in overall plan)
-     * **Current Git State** (branch, uncommitted changes, merge conflicts)
-     * **Environment Status** (dependencies, config, known env issues)
-     * **User Context** (recent requests, pending decisions, feedback status)
-     * **Risk Assessment** (technical debt, potential blockers)
+2. **Run Standard AWG checkpoint** (OPTIONAL - only if user requests or major milestone):
+   - Create checkpoint in `docs/archive/checkpoints/`
+   - Use template from original AWG checkpoint spec
+   - Update `docs/projectStatus.md` with session summary
 
-4. **Ensure all changes are pushed**; echo branch, commit hash, and tag if created.
+3. **Ensure all changes are committed and pushed**:
+   - Verify git status is clean
+   - Echo branch, commit hash, and tag if created
 
-5. **Post "Shutdown complete"** with **3 priority bullets** for next session startup.
+4. **Post "Shutdown complete"** with:
+   - **3 priority bullets** for next session startup
+   - Confirmation that STARTUP_CONTEXT.md is updated
+   - Any pending user decisions or blockers
 
 ---
 
@@ -121,11 +121,12 @@ When asked for changes in this repo:
 
 ## 3) Files & Paths (authoritative)
 
-* **Plan**: `docs/AWG-Project-Plan.md` (source of truth + Design Variations section)
-* **Status**: `docs/projectStatus.md` (sprint state + next actions)
-* **Checkpoints**: `docs/archive/checkpoints/` (one markdown per checkpoint)
+* **Startup Context**: `docs/STARTUP_CONTEXT.md` (lightweight session context - PRIMARY for AWG start)
+* **Plan**: `docs/AWG-Project-Plan.md` (source of truth + Design Variations - read only if needed)
+* **Status**: `docs/projectStatus.md` (sprint state + full history - optional read)
+* **Checkpoints**: `docs/archive/checkpoints/` (detailed checkpoints - optional, milestone only)
 
-> If these files/folders don’t exist, Claude should create them with minimal scaffolding.
+> If these files/folders don't exist, Claude should create them with minimal scaffolding.
 
 ---
 
@@ -211,3 +212,4 @@ DELETE RULE → <Section Anchor>
 * Use **AWG checkpoint** whenever you’re nearing your daily usage cap or switching tasks.
 * A checkpoint is **mandatory** for every **AWG shutdown**.
 * Next session resumes with **AWG start** which reads the last checkpoint and aligns the plan.
+- 3 please

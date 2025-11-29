@@ -333,11 +333,16 @@ class HTMLGenerator:
         """
         Get the base URL for canonical tags and sitemaps.
 
-        Canonical URLs should match where the site is actually deployed.
-        If deployment_url is specified, use it (matches the deployed location).
-        Otherwise, fallback to business.domain.
+        Priority order:
+        1. Backlink sites -> main_site_url (if site_type is backlink_site)
+        2. Main sites -> deployment_url (if specified)
+        3. Fallback -> business.domain
         """
-        # Always prefer deployment_url if specified (canonical matches deployment)
+        # For backlink sites, canonical should point to the main site
+        if config.cloud.site_type == "backlink_site" and config.cloud.main_site_url:
+            return config.cloud.main_site_url.rstrip("/")
+
+        # For main sites, prefer deployment_url if specified (canonical matches deployment)
         if config.cloud.deployment_url:
             return config.cloud.deployment_url.rstrip("/")
 

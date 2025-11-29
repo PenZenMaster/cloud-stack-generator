@@ -32,7 +32,9 @@
       "Bash([ -f docs/HANDOFF_SUMMARY.md ])",
       "Bash(test:*)",
       "Bash(pip install:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash([ -f docs/STARTUP_CONTEXT.md ])",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

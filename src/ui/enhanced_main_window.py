@@ -1720,15 +1720,51 @@ class EnhancedMainWindow(QMainWindow):
                     config.google_business_profile = self.loaded_config.google_business_profile
             
             # Ask user for output directory (use last used directory or default)
-            last_output_dir = self.settings.value("last_output_directory", str(Path.cwd() / "output" / "websites"))
+            last_output_dir = self.settings.value("last_output_directory", str(Path.cwd() / "output" / "clients"))
             output_dir = QFileDialog.getExistingDirectory(
                 self,
                 "Select Output Directory for Website",
                 last_output_dir
             )
-            
+
             if not output_dir:
                 return  # User cancelled
+
+            # Warn user if output directory is not empty
+            output_path = Path(output_dir)
+            if output_path.exists() and any(output_path.iterdir()):
+                # Check if locations directory exists
+                locations_dir = output_path / "locations"
+                has_locations = locations_dir.exists() and any(locations_dir.iterdir())
+
+                warning_msg = (
+                    f"The selected directory is not empty:\n{output_dir}\n\n"
+                )
+
+                if has_locations:
+                    warning_msg += (
+                        "WARNING: This directory contains city pages from a previous generation.\n"
+                        "These old pages will be automatically cleaned up before generating new content.\n\n"
+                    )
+
+                warning_msg += (
+                    "The generator will:\n"
+                    "- Clean old city pages from 'locations/' directory\n"
+                    "- Overwrite existing HTML files\n"
+                    "- Keep CSS, JS, and image assets\n\n"
+                    "Continue with generation?"
+                )
+
+                reply = QMessageBox.question(
+                    self,
+                    "Directory Not Empty",
+                    warning_msg,
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes
+                )
+
+                if reply != QMessageBox.StandardButton.Yes:
+                    return  # User cancelled
 
             # Disable generate button during generation
             self.generate_btn.setEnabled(False)

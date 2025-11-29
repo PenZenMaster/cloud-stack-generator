@@ -350,6 +350,15 @@ class PageGenerator:
         """Generate individual city pages"""
         locations_dir = output_dir / "locations"
 
+        # Clean up old city pages to prevent cross-contamination between configs
+        if locations_dir.exists():
+            import shutil
+            try:
+                shutil.rmtree(locations_dir)
+                logger.info(f"Cleaned old city pages from {locations_dir}")
+            except Exception as e:
+                logger.warning(f"Failed to clean locations directory: {str(e)}")
+
         # Import the unified city page generator
         from .city_page_generator import CityPageGenerator
         city_generator = CityPageGenerator(config)

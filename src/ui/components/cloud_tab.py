@@ -602,6 +602,12 @@ class CloudTab(BaseTab):
         self.cloudfront_settings_group = None  # Container for CloudFront settings
         self.distribution_id_input = None
         self.auto_invalidate_checkbox = None
+
+        # SEO and canonical URL settings
+        self.site_type_main_radio = None
+        self.site_type_backlink_radio = None
+        self.main_site_url_input = None
+
         self.progress_bar = None
         self.deploy_button = None
         self.status_text = None
@@ -1179,8 +1185,55 @@ class CloudTab(BaseTab):
         """Create SEO meta tags management section"""
         from PyQt6.QtWidgets import QTableWidget, QHeaderView
 
-        group = QGroupBox("SEO Meta Tags")
+        group = QGroupBox("SEO Configuration")
         layout = QVBoxLayout()
+
+        # Canonical URL Settings
+        canonical_label = QLabel("Canonical URLs:")
+        canonical_label.setStyleSheet("font-weight: bold;")
+        layout.addWidget(canonical_label)
+
+        # Site Type selection
+        site_type_layout = QHBoxLayout()
+        site_type_label = QLabel("Site Type:")
+        site_type_layout.addWidget(site_type_label)
+
+        self.site_type_main_radio = QRadioButton("Main Site")
+        self.site_type_main_radio.setChecked(True)
+        self.site_type_main_radio.setToolTip("Primary business website - canonical URLs point to this site")
+        self.site_type_main_radio.toggled.connect(self.on_site_type_changed)
+        site_type_layout.addWidget(self.site_type_main_radio)
+
+        self.site_type_backlink_radio = QRadioButton("Backlink Site")
+        self.site_type_backlink_radio.setToolTip("Satellite/city site - canonical URLs point to main site")
+        self.site_type_backlink_radio.toggled.connect(self.on_site_type_changed)
+        site_type_layout.addWidget(self.site_type_backlink_radio)
+
+        site_type_layout.addStretch()
+        layout.addLayout(site_type_layout)
+
+        # Main Site URL (only enabled for backlink sites)
+        main_site_layout = QHBoxLayout()
+        main_site_label = QLabel("Main Site URL:")
+        main_site_layout.addWidget(main_site_label)
+
+        self.main_site_url_input = QLineEdit()
+        self.main_site_url_input.setPlaceholderText("https://mainsite.com")
+        self.main_site_url_input.setToolTip("For backlink sites: URL of the main production site (canonical URLs will point here)")
+        self.main_site_url_input.setEnabled(False)  # Disabled by default (main site selected)
+        main_site_layout.addWidget(self.main_site_url_input)
+
+        layout.addLayout(main_site_layout)
+
+        # Separator
+        separator = QLabel()
+        separator.setStyleSheet("border-top: 1px solid #ccc; margin: 10px 0;")
+        layout.addWidget(separator)
+
+        # Meta Tags section header
+        meta_tags_header = QLabel("Meta Tags:")
+        meta_tags_header.setStyleSheet("font-weight: bold;")
+        layout.addWidget(meta_tags_header)
 
         # Info label
         info_label = QLabel("Paste complete meta tag (Google provides the full tag)")
@@ -2598,7 +2651,20 @@ class CloudTab(BaseTab):
                 self.cloudfront_settings_group.setTitle("CloudFront Distribution (Auto-Created)")
                 # Restore normal appearance
                 self.cloudfront_settings_group.setStyleSheet("")
-    
+
+    def on_site_type_changed(self):
+        """Handle site type change (Main Site vs Backlink Site)"""
+        if not hasattr(self, 'main_site_url_input') or self.main_site_url_input is None:
+            return  # UI not fully initialized yet
+
+        # Enable/disable Main Site URL input based on selection
+        is_backlink_site = self.site_type_backlink_radio.isChecked()
+        self.main_site_url_input.setEnabled(is_backlink_site)
+
+        # Clear the field if switching to main site
+        if not is_backlink_site:
+            self.main_site_url_input.clear()
+
     def update_deploy_button_state(self):
         """Update deploy button enabled state"""
         if not hasattr(self, 'deploy_button') or self.deploy_button is None:
@@ -2611,32 +2677,345 @@ class CloudTab(BaseTab):
         self.deploy_button.setEnabled(profile_selected and bucket_configured)
     
     def start_deployment(self):
-        """Start website deployment"""
+        """Start website deployment - implements test-file-first workflow"""
+        from PyQt6.QtWidgets import QFileDialog, QMessageBox
+
+        # Check if generation is in progress from first deployment
+        if hasattr(self, '_generation_in_progress') and self._generation_in_progress:
+            # User clicked Deploy while generation is in progress
+            # Check if they've now selected an output directory (which means generation completed)
+            local_path = self.local_path_input.text().strip()
+            if local_path and Path(local_path).exists() and (Path(local_path) / "index.html").exists():
+                # Generation completed! Clear flag and proceed with deployment
+                self._generation_in_progress = False
+                self.log_status(f"Generation completed. Ready to deploy from: {local_path}")
+                # Continue to deployment below
+            else:
+                # Generation still in progress or failed
+                QMessageBox.warning(
+                    self,
+                    "Generation In Progress",
+                    "Website generation is still in progress.\n\n"
+                    "Please wait for the generation to complete before deploying.\n"
+                    "You'll see a completion dialog when it's ready.\n\n"
+                    "After generation completes, you may need to manually set the\n"
+                    "Local Website Path field to your output directory before deploying."
+                )
+                return
+
         # Get the local website path
         local_path = self.local_path_input.text().strip()
-        
-        if not local_path:
-            QMessageBox.warning(
+
+        # Check if this is first deployment (no website generated yet)
+        if not local_path or not Path(local_path).exists():
+            # First deployment workflow: test file -> generate -> deploy
+            self._handle_first_deployment()
+        else:
+            # Subsequent deployment: regenerate -> deploy
+            self._handle_subsequent_deployment(local_path)
+
+    def _handle_first_deployment(self):
+        """Handle first-time deployment with test file workflow"""
+        from PyQt6.QtWidgets import QFileDialog, QMessageBox
+        import tempfile
+        import yaml
+
+        # Only support CloudFront Mode B for first deployment canonical URL workflow
+        is_mode_b = self.cloudfront_mode_radio.isChecked()
+        if not is_mode_b:
+            QMessageBox.information(
                 self,
-                "No Website to Deploy",
-                "No website has been generated yet.\n\n"
+                "First Deployment",
+                "This appears to be your first deployment.\n\n"
                 "Please generate a website first using the main application, "
-                "then return to this tab to deploy it."
+                "then return to this tab to deploy it.\n\n"
+                "For Mode A (S3-only), the canonical URL workflow is not automated."
             )
             return
-        
-        if not Path(local_path).exists():
+
+        # Show message confirming first deployment workflow
+        reply = QMessageBox.question(
+            self,
+            "First Deployment",
+            "This website has not been deployed yet.\n\n"
+            "The app will:\n"
+            "1. Deploy a test file to determine the CloudFront URL\n"
+            "2. Update your config with the CloudFront URL\n"
+            "3. Trigger website generation (you'll select output folder)\n"
+            "4. After generation completes, deploy the full website\n\n"
+            "Continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        # Step 1: Deploy test file to get CloudFront URL
+        self.log_status("Step 1: Deploying test file to determine CloudFront URL...")
+        cloudfront_url = self._deploy_test_file_and_get_url()
+
+        if not cloudfront_url:
+            QMessageBox.critical(
+                self,
+                "Deployment Failed",
+                "Failed to deploy test file and retrieve CloudFront URL.\n"
+                "Please check the logs and try again."
+            )
+            return
+
+        self.log_status(f"CloudFront URL determined: {cloudfront_url}")
+
+        # Step 2: Update config with CloudFront URL
+        self.log_status("Step 2: Updating config with CloudFront URL...")
+        if not self._update_config_deployment_url(cloudfront_url):
+            QMessageBox.critical(
+                self,
+                "Configuration Update Failed",
+                "Failed to update configuration with CloudFront URL.\n"
+                "Please update the deployment_url manually in your config."
+            )
+            return
+
+        # Step 3: Generate website with correct canonical URLs
+        self.log_status("Step 3: Generating website with correct canonical URLs...")
+
+        # Find parent window and trigger generation
+        parent_window = self.parent()
+        while parent_window and not hasattr(parent_window, 'generate_website'):
+            parent_window = parent_window.parent()
+
+        if not parent_window or not hasattr(parent_window, 'generate_website'):
+            QMessageBox.critical(
+                self,
+                "Generation Failed",
+                "Cannot trigger website generation: Main window not found.\n"
+                "Please generate the website manually."
+            )
+            return
+
+        # Set flag to block deployment during generation
+        self._generation_in_progress = True
+        self._pending_output_dir = None  # Will be set by user during generation
+
+        # Show instructions to user
+        QMessageBox.information(
+            self,
+            "Step 3: Generate Website",
+            f"CloudFront URL determined: {cloudfront_url}\n"
+            f"Config updated successfully!\n\n"
+            f"NEXT STEPS:\n"
+            f"1. Click OK to start website generation\n"
+            f"2. Select output folder when prompted\n"
+            f"   (Recommended: output/clients/[client-name])\n"
+            f"3. Wait for generation to complete (several minutes)\n"
+            f"4. After generation dialog closes, return to Cloud Deploy tab\n"
+            f"5. Click 'Deploy Website' to deploy the generated site\n\n"
+            f"IMPORTANT: Do NOT click 'Deploy Website' until generation completes!\n"
+            f"The website will be generated with correct canonical URLs."
+        )
+
+        # Trigger generation
+        parent_window.generate_website()
+
+        # Note: local_path will be set when user clicks Deploy after generation completes
+
+    def _handle_subsequent_deployment(self, local_path: str):
+        """Handle subsequent deployment with regeneration confirmation"""
+        from PyQt6.QtWidgets import QMessageBox
+
+        # Show generation confirmation dialog (per webgen.txt workflow)
+        reply = QMessageBox.information(
+            self,
+            "Website Generation Confirmation",
+            f"The website will be regenerated and deployed.\n\n"
+            f"Output folder: {local_path}\n\n"
+            f"Click OK to continue.",
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Ok
+        )
+
+        if reply == QMessageBox.StandardButton.Cancel:
+            self.log_status("Deployment cancelled by user")
+            return
+
+        # Trigger regeneration
+        parent_window = self.parent()
+        while parent_window and not hasattr(parent_window, 'generate_website'):
+            parent_window = parent_window.parent()
+
+        if parent_window and hasattr(parent_window, 'generate_website'):
+            self.log_status("Regenerating website...")
+            parent_window.generate_website()
+
+            QMessageBox.information(
+                self,
+                "Generation Started",
+                "Website regeneration started.\n\n"
+                "After generation completes, return to the Cloud Deploy tab\n"
+                "and click 'Deploy Website' to deploy the updated site."
+            )
+        else:
+            # Fallback: Deploy existing website if can't regenerate
             QMessageBox.warning(
                 self,
-                "Website Not Found",
-                f"The website directory does not exist:\n{local_path}\n\n"
-                "Please regenerate the website first."
+                "Cannot Regenerate",
+                "Cannot trigger website regeneration (main window not found).\n\n"
+                "Deploying existing website files instead.\n"
+                "To regenerate, use the main application first."
             )
-            return
-        
-        # Deploy the website
-        self.deploy_website(local_path)
-    
+            self.deploy_website(local_path)
+
+    def _deploy_test_file_and_get_url(self) -> str:
+        """Deploy a test file to S3/CloudFront and return the CloudFront URL"""
+        import tempfile
+        from pathlib import Path
+
+        # Get deployment settings
+        profile_name = self.profile_combo.currentText()
+        bucket_name = self._get_actual_bucket_name()
+        directory = self.directory_combo.currentText().strip()
+        if directory == "/ (root)" or directory == "/":
+            directory = ""
+
+        if not profile_name or not bucket_name:
+            self.log_status("Error: Missing AWS profile or bucket name")
+            return ""
+
+        try:
+            # Create temporary test file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as tf:
+                tf.write("""<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Deployment</title>
+</head>
+<body>
+    <h1>CloudFront Test File</h1>
+    <p>This is a test file to determine the CloudFront distribution URL.</p>
+</body>
+</html>""")
+                test_file_path = tf.name
+
+            test_file = Path(test_file_path)
+
+            # Activate AWS profile
+            if not self.credentials_manager.set_active_profile(profile_name):
+                self.log_status("Error: Failed to activate AWS profile")
+                test_file.unlink()
+                return ""
+
+            session = self.credentials_manager.get_active_session()
+            self.s3_manager.set_session(session)
+
+            # Configure bucket for static website hosting
+            success, message = self.s3_manager.configure_public_website(bucket_name)
+            if not success:
+                self.log_status(f"Error configuring bucket: {message}")
+                test_file.unlink()
+                return ""
+
+            # Get or create CloudFront distribution
+            comment = f"Auto-created for {bucket_name}"
+            if directory:
+                comment += f" (directory: {directory})"
+
+            success, dist_id, cf_domain, is_new, msg = self.s3_manager.get_or_create_distribution(
+                bucket_name=bucket_name,
+                origin_path=directory,
+                comment=comment
+            )
+
+            if not success:
+                self.log_status(f"Error: {msg}")
+                test_file.unlink()
+                return ""
+
+            # Store distribution ID for later
+            self.distribution_id_input.setText(dist_id)
+
+            # Upload test file to S3
+            s3 = self.s3_manager.session.client('s3')
+            s3_key = "test.html"
+            if directory:
+                s3_key = f"{directory.rstrip('/')}/{s3_key}"
+
+            s3.upload_file(
+                str(test_file),
+                bucket_name,
+                s3_key,
+                ExtraArgs={
+                    'ContentType': 'text/html',
+                    'CacheControl': 'public, max-age=31536000, immutable'
+                }
+            )
+
+            self.log_status(f"Test file uploaded to s3://{bucket_name}/{s3_key}")
+
+            # Clean up temp file
+            test_file.unlink()
+
+            # Return CloudFront URL
+            cloudfront_url = f"https://{cf_domain}"
+            return cloudfront_url
+
+        except Exception as e:
+            self.log_status(f"Error deploying test file: {str(e)}")
+            if test_file_path and Path(test_file_path).exists():
+                Path(test_file_path).unlink()
+            return ""
+
+    def _update_config_deployment_url(self, cloudfront_url: str) -> bool:
+        """Update config file with deployment_url"""
+        import yaml
+        from pathlib import Path
+
+        try:
+            # Find main window
+            parent_window = self.parent()
+            while parent_window and not hasattr(parent_window, 'current_config_file'):
+                parent_window = parent_window.parent()
+
+            if not parent_window or not parent_window.current_config_file:
+                self.log_status("Error: No config file loaded")
+                return False
+
+            config_file = Path(parent_window.current_config_file)
+            if not config_file.exists():
+                self.log_status(f"Error: Config file not found: {config_file}")
+                return False
+
+            # Load config YAML
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config_data = yaml.safe_load(f)
+
+            # Update deployment_url
+            if 'cloud' not in config_data:
+                config_data['cloud'] = {}
+            config_data['cloud']['deployment_url'] = cloudfront_url
+
+            # Save config
+            with open(config_file, 'w', encoding='utf-8') as f:
+                yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+            self.log_status(f"Config updated: deployment_url = {cloudfront_url}")
+
+            # CRITICAL: Update Cloud Tab's in-memory config to prevent auto-save from overwriting
+            if hasattr(self, 'current_client_aws_config') and self.current_client_aws_config:
+                self.current_client_aws_config.deployment_url = cloudfront_url
+                self.log_status("Cloud Tab in-memory config updated with deployment_url")
+
+            # Reload config in parent window
+            if hasattr(parent_window, 'load_config_file'):
+                parent_window.load_config_file(str(config_file))
+                self.log_status("Config reloaded in UI")
+
+            return True
+
+        except Exception as e:
+            self.log_status(f"Error updating config: {str(e)}")
+            return False
+
     def deploy_website(self, website_path: str):
         """Deploy generated website to cloud - routes to provider-specific method"""
         if self.current_provider == "google_gcs":
@@ -2975,41 +3354,6 @@ class CloudTab(BaseTab):
             self.deployment_created.emit(deployment)
             self.log_status(f"Deployment record created: {deployment_id}")
 
-            # Check if we should prompt for canonical URL update (CloudFront Mode B only)
-            should_prompt_canonical_update = False
-
-            # Initialize flag if not exists
-            if not hasattr(self, '_canonical_update_in_progress'):
-                self._canonical_update_in_progress = False
-
-            if mode == "cloudfront" and cloudfront_domain:
-                cloudfront_url = f"https://{cloudfront_domain}"
-
-                # Get current deployment_url from loaded config
-                current_deployment_url = ""
-
-                # Find main window
-                parent_window = self.parent()
-                while parent_window and not hasattr(parent_window, 'loaded_config'):
-                    parent_window = parent_window.parent()
-
-                if parent_window and hasattr(parent_window, 'loaded_config') and parent_window.loaded_config:
-                    if hasattr(parent_window.loaded_config.cloud, 'deployment_url'):
-                        current_deployment_url = parent_window.loaded_config.cloud.deployment_url
-
-                # Check if deployment_url matches CloudFront URL
-                urls_match = current_deployment_url and current_deployment_url.rstrip('/') == cloudfront_url.rstrip('/')
-
-                if urls_match and self._canonical_update_in_progress:
-                    # Deployment_url now matches - clear the flag and log success
-                    self._canonical_update_in_progress = False
-                    self.log_status("Canonical URL update complete! Deployment URL now matches CloudFront.")
-
-                # Prompt if deployment_url is empty or different from CloudFront URL
-                # AND we're not in the middle of an update workflow
-                if not urls_match and not self._canonical_update_in_progress:
-                    should_prompt_canonical_update = True
-
             # Show success message
             success_msg = (
                 f"Website deployed successfully!\n\n"
@@ -3017,151 +3361,14 @@ class CloudTab(BaseTab):
                 f"Files uploaded: {len(result.uploaded_files)}"
             )
 
-            if should_prompt_canonical_update:
-                success_msg += (
-                    f"\n\n"
-                    f"CloudFront URL: {cloudfront_url}\n\n"
-                    f"Note: Canonical URLs in your site may not match the CloudFront URL.\n"
-                    f"Would you like to update canonical URLs and redeploy?"
-                )
-
-                reply = QMessageBox.question(
-                    self,
-                    "Deployment Successful - Update Canonicals?",
-                    success_msg,
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                    QMessageBox.StandardButton.Yes
-                )
-
-                if reply == QMessageBox.StandardButton.Yes:
-                    # Set flag to prevent prompt loop
-                    self._canonical_update_in_progress = True
-                    self._update_canonicals_and_redeploy(cloudfront_url)
-            else:
-                QMessageBox.information(
-                    self,
-                    "Deployment Successful",
-                    success_msg
-                )
+            QMessageBox.information(
+                self,
+                "Deployment Successful",
+                success_msg
+            )
         else:
             self.log_status(f"Deployment failed: {result.message}")
             QMessageBox.warning(self, "Deployment Failed", result.message)
-
-    def _update_canonicals_and_redeploy(self, cloudfront_url: str):
-        """Update config with CloudFront URL, regenerate, and redeploy"""
-        try:
-            self.log_status(f"Updating deployment_url to: {cloudfront_url}")
-
-            # Find the main window by traversing parent hierarchy
-            parent_window = self.parent()
-            while parent_window and not hasattr(parent_window, 'current_config_file'):
-                parent_window = parent_window.parent()
-
-            if not parent_window:
-                QMessageBox.warning(
-                    self,
-                    "Update Failed",
-                    "Cannot find main window"
-                )
-                return
-
-            if not hasattr(parent_window, 'current_config_file') or not parent_window.current_config_file:
-                QMessageBox.warning(
-                    self,
-                    "Update Failed",
-                    "Cannot update config: No config file loaded.\nPlease save your configuration first."
-                )
-                return
-
-            config_file = parent_window.current_config_file
-            if not config_file:
-                QMessageBox.warning(
-                    self,
-                    "Update Failed",
-                    "Cannot update config: No config file path available"
-                )
-                return
-
-            # Update config file with deployment_url
-            import yaml
-            from pathlib import Path
-
-            config_path = Path(config_file)
-            if not config_path.exists():
-                QMessageBox.warning(
-                    self,
-                    "Update Failed",
-                    f"Config file not found: {config_file}"
-                )
-                return
-
-            # Load config YAML
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config_data = yaml.safe_load(f)
-
-            # Update deployment_url
-            if 'cloud' not in config_data:
-                config_data['cloud'] = {}
-            config_data['cloud']['deployment_url'] = cloudfront_url
-
-            # Save config
-            with open(config_path, 'w', encoding='utf-8') as f:
-                yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
-
-            self.log_status(f"Config updated: deployment_url = {cloudfront_url}")
-
-            # Reload config in parent window
-            if hasattr(parent_window, 'load_config_file'):
-                parent_window.load_config_file(config_file)
-                self.log_status("Config reloaded in UI")
-
-            # Show progress dialog
-            progress = QMessageBox(self)
-            progress.setWindowTitle("Updating Canonical URLs")
-            progress.setText("Regenerating website with updated canonical URLs...\nThis may take a moment.")
-            progress.setStandardButtons(QMessageBox.StandardButton.NoButton)
-            progress.show()
-            QApplication.processEvents()
-
-            # Trigger regeneration from parent window
-            if hasattr(parent_window, 'generate_website'):
-                self.log_status("Triggering website regeneration...")
-
-                # Note: generate_website will prompt for output directory
-                # We need to ensure it uses the same directory as before
-                # For now, let the user select (they'll choose the same one)
-                progress.close()
-
-                QMessageBox.information(
-                    self,
-                    "Ready to Regenerate",
-                    f"Config updated with CloudFront URL:\n{cloudfront_url}\n\n"
-                    f"Step 1: Click OK to regenerate the website with updated canonical URLs.\n"
-                    f"Step 2: After regeneration completes, return to the Cloud Deploy tab.\n"
-                    f"Step 3: Click 'Deploy Website' again (you will NOT be prompted again).\n\n"
-                    f"The system will automatically deploy with corrected canonical URLs."
-                )
-
-                # Trigger generation (this will handle the rest)
-                parent_window.generate_website()
-
-                self.log_status("Canonical update workflow initiated. Waiting for regeneration and redeployment.")
-            else:
-                progress.close()
-                QMessageBox.information(
-                    self,
-                    "Config Updated",
-                    f"deployment_url updated to:\n{cloudfront_url}\n\n"
-                    f"Please regenerate the website manually to apply the changes."
-                )
-
-        except Exception as e:
-            self.log_status(f"Error updating canonicals: {str(e)}")
-            QMessageBox.critical(
-                self,
-                "Update Failed",
-                f"Failed to update canonical URLs:\n{str(e)}"
-            )
 
     def log_status(self, message: str):
         """Add message to status log"""
@@ -3462,14 +3669,22 @@ class CloudTab(BaseTab):
 
     def get_config_data(self) -> Dict[str, Any]:
         """Get cloud configuration data"""
+        # Get deployment_url from current_client_aws_config if available
+        deployment_url = ''
+        if hasattr(self, 'current_client_aws_config') and self.current_client_aws_config:
+            deployment_url = getattr(self.current_client_aws_config, 'deployment_url', '')
+
         return {
             'aws_profile': self.profile_combo.currentText() if self.profile_combo.currentText() != "No profiles configured" else "",
             'aws_region': self.region_combo.currentText(),
             'bucket_name': self._get_actual_bucket_name(),
             'directory': self.directory_combo.currentText().strip(),
             'deployment_mode': 's3' if self.s3_mode_radio.isChecked() else 'cloudfront',
+            'deployment_url': deployment_url,
             'distribution_id': self.distribution_id_input.text().strip(),
             'auto_invalidate_cache': self.auto_invalidate_checkbox.isChecked(),
+            'site_type': 'backlink_site' if self.site_type_backlink_radio.isChecked() else 'main_site',
+            'main_site_url': self.main_site_url_input.text().strip(),
             'meta_tags': self.get_meta_tags_from_table()
         }
     
@@ -3549,6 +3764,17 @@ class CloudTab(BaseTab):
 
         auto_invalidate = data.get('auto_invalidate_cache', True)
         self.auto_invalidate_checkbox.setChecked(auto_invalidate)
+
+        # Load SEO and canonical URL settings
+        site_type = data.get('site_type', 'main_site')
+        if site_type == 'backlink_site':
+            self.site_type_backlink_radio.setChecked(True)
+        else:
+            self.site_type_main_radio.setChecked(True)
+
+        main_site_url = data.get('main_site_url', '')
+        if main_site_url:
+            self.main_site_url_input.setText(main_site_url)
 
     def validate_data(self) -> tuple[bool, list[str]]:
         """Validate cloud configuration"""
