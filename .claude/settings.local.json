@@ -34,7 +34,15 @@
       "Bash(pip install:*)",
       "Bash(git mv:*)",
       "Bash([ -f docs/STARTUP_CONTEXT.md ])",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:dfoay4cvr1g82.cloudfront.net)",
+      "WebFetch(domain:d2kqaxeqy8leud.cloudfront.net)",
+      "Bash(aws s3 sync:*)",
+      "Bash(aws configure:*)",
+      "Bash(aws sso login:*)",
+      "Bash(aws cloudfront create-invalidation:*)",
+      "Bash(aws cloudfront get-distribution:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

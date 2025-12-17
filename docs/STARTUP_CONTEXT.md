@@ -57,4 +57,4 @@
 
 ## Model Configuration
 
-User switched to **Opus 4.5** in settings.json - next session will use Opus for deeper reasoning capability.
+**Sonnet 4.5** (default) - Configured in global settings.json for optimal performance and cost efficiency.

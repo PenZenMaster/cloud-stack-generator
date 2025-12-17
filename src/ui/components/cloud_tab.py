@@ -3779,11 +3779,11 @@ class CloudTab(BaseTab):
     def validate_data(self) -> tuple[bool, list[str]]:
         """Validate cloud configuration"""
         errors = []
-        
+
         profile_name = self.profile_combo.currentText()
         if not profile_name or profile_name == "No profiles configured":
             errors.append("AWS profile is required for cloud deployment")
-        
+
         bucket_name = self._get_actual_bucket_name()
         if not bucket_name or bucket_name == "No buckets found":
             errors.append("S3 bucket name is required")
@@ -3791,7 +3791,15 @@ class CloudTab(BaseTab):
             is_valid, message = self.s3_manager.validate_bucket_name(bucket_name)
             if not is_valid:
                 errors.append(f"Invalid bucket name: {message}")
-        
+
+        # Validate backlink site configuration
+        if self.site_type_backlink_radio.isChecked():
+            main_site_url = self.main_site_url_input.text().strip()
+            if not main_site_url:
+                errors.append("Main Site URL is required when 'Backlink Site' is selected")
+            elif not main_site_url.startswith(('http://', 'https://')):
+                errors.append("Main Site URL must start with http:// or https://")
+
         return len(errors) == 0, errors
     
     def set_client_context(self, business_name: str, domain: str):
