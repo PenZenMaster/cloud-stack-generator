@@ -67,7 +67,21 @@ class CityPageGenerator:
             ai_service=self.ai_service,
             cache=self.cache
         )
-        
+
+    def _get_canonical_base_url(self) -> str:
+        """
+        Get the base URL for canonical tags.
+
+        For backlink sites to provide SEO value, they must be indexed independently.
+        This requires canonical tags pointing to the CloudFront deployment URL.
+        """
+        # Use deployment_url for both main and backlink sites
+        if self.config.cloud.deployment_url:
+            return self.config.cloud.deployment_url.rstrip("/")
+
+        # Fallback to business domain
+        return self.config.business.domain.rstrip("/")
+
     def generate_city_page(self, city_page: CityPageConfig, output_dir: str, use_ai: bool = True) -> str:
         """Generate a single enhanced city page using Jinja2 templates with AI content"""
         try:
@@ -304,7 +318,7 @@ class CityPageGenerator:
             'industry_sections': industry_sections,
             
             # Page metadata
-            'page_url': f"locations/{city_page.slug}.html",
+            'page_url': f"{self._get_canonical_base_url()}/locations/{city_page.slug}.html",
             'current_year': 2025,
             'current_date': current_date,
             

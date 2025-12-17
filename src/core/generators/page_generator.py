@@ -67,6 +67,17 @@ class PageGenerator:
         start_time = datetime.now()
 
         try:
+            # Validate configuration before generation
+            validation_errors = self._validate_config(config)
+            if validation_errors:
+                for error in validation_errors:
+                    result.add_error(error)
+                logger.error(
+                    "Configuration validation failed",
+                    extra={"extra_fields": {"errors": validation_errors}}
+                )
+                return result
+
             # Create output directory
             output_dir = self._create_output_directory(config)
             result.output_directory = str(output_dir)
@@ -161,6 +172,31 @@ class PageGenerator:
             (output_dir / "locations").mkdir(exist_ok=True)
 
         return output_dir
+
+    def _validate_config(self, config: ClientConfig) -> List[str]:
+        """
+        Validate configuration before generation
+
+        Returns:
+            List of error messages (empty if valid)
+        """
+        errors = []
+
+        # Validate backlink site configuration
+        if hasattr(config, 'cloud') and config.cloud:
+            if config.cloud.site_type == "backlink_site":
+                main_site_url = getattr(config.cloud, 'main_site_url', '')
+                if not main_site_url or not main_site_url.strip():
+                    errors.append(
+                        "Main Site URL is required when site_type is 'backlink_site'. "
+                        "Please specify the URL of your main production site for canonical tags."
+                    )
+                elif not main_site_url.startswith(('http://', 'https://')):
+                    errors.append(
+                        f"Main Site URL must start with http:// or https://. Got: {main_site_url}"
+                    )
+
+        return errors
 
     def _calculate_total_pages(self, config: ClientConfig) -> int:
         """Calculate total number of pages to be generated"""
@@ -450,18 +486,18 @@ class PageGenerator:
         """
         Get the base URL for canonical tags and sitemaps.
 
-        For backlink sites: Use deployment_url (CloudFront) so Google indexes it independently
-        For main sites: Use deployment_url if specified, otherwise business.domain
-        """
-        # For backlink sites, always use the deployed URL (CloudFront)
-        if config.cloud.site_type == "backlink_site" and config.cloud.deployment_url:
-            return config.cloud.deployment_url.rstrip("/")
+        For backlink sites to work, they MUST:
+        1. Be indexed independently by Google
+        2. Have canonicals pointing to their own CloudFront URL
+        3. Have content backlinks to main site
 
-        # For main sites, prefer deployment_url if specified
+        Therefore: Use deployment_url for both backlink and main sites
+        """
+        # For both backlink and main sites, use deployment_url if available
         if config.cloud.deployment_url:
             return config.cloud.deployment_url.rstrip("/")
 
-        # Fallback to business domain
+        # Fallback to business domain (should not happen for properly configured sites)
         return config.business.domain.rstrip("/")
 
     def _generate_sitemap(self, config: ClientConfig) -> str:

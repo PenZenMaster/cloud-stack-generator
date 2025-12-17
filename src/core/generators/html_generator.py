@@ -333,20 +333,17 @@ class HTMLGenerator:
         """
         Get the base URL for canonical tags and sitemaps.
 
-        Priority order:
-        1. Backlink sites -> main_site_url (if site_type is backlink_site)
-        2. Main sites -> deployment_url (if specified)
-        3. Fallback -> business.domain
-        """
-        # For backlink sites, canonical should point to the main site
-        if config.cloud.site_type == "backlink_site" and config.cloud.main_site_url:
-            return config.cloud.main_site_url.rstrip("/")
+        For backlink sites to provide SEO value, they must be indexed independently.
+        This requires canonical tags pointing to the CloudFront deployment URL,
+        NOT to the main site (which would make it a duplicate/mirror).
 
-        # For main sites, prefer deployment_url if specified (canonical matches deployment)
+        Backlinks are provided through content links (in templates), not canonical tags.
+        """
+        # Use deployment_url for both main and backlink sites
         if config.cloud.deployment_url:
             return config.cloud.deployment_url.rstrip("/")
 
-        # Fallback to business domain if no deployment URL specified
+        # Fallback to business domain
         return config.business.domain.rstrip("/")
 
     def _prepare_template_data(self, config: ClientConfig) -> Dict[str, Any]:
