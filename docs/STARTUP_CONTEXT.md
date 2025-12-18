@@ -1,60 +1,66 @@
-# AWG Startup Context
-**Last Updated**: November 28, 2025
-**Branch**: feature/v3.5.0-ui-improvements
-**Last Commit**: 3f4c499
+# AWG Startup Context - Lightweight Session Resume
 
----
+**Last Updated**: 2025-12-17 17:19
+**Branch**: feature/v3.5.0-ui-improvements
+**Last Commit**: b74409e
 
 ## Last 3 Accomplishments
 
-1. **v3.6.0 - Canonical URL & Backlink Site Support** ✅
-   - Added site_type field (main_site/backlink_site) to CloudConfig
-   - Created UI controls in Cloud Deploy tab (SEO Configuration section)
-   - Updated canonical URL logic to support backlink sites pointing to main site
+1. **v3.7.1 - Backlink Site Bug Fix** - Fixed critical bug where backlink sites pointed canonicals to main site (creating duplicates). Updated 3 generators to use deployment_url for canonicals. Both CloudFront sites (d2kqaxeqy8leud, dfoay4cvr1g82) now properly configured with independent indexing.
 
-2. **v3.7.0 - Schema Enhancements** ✅
-   - Added breadcrumb schema to 6 missing page templates (about, contact, services, products, service-detail, product-detail)
-   - Fixed product schema validation (always include offers + aggregateRating)
-   - Resolved 10+ Google Rich Results validation errors
+2. **Validation Added** - Implemented two-layer validation (UI + generator) requiring main_site_url for backlink sites. Prevents misconfiguration and deployment without proper URLs.
 
-3. **QA Testing Passed** ✅
-   - User confirmed all product schema errors resolved
-   - Canonical URL workflow tested and working
-   - All changes committed and pushed to feature branch
-
----
+3. **Missing Canonical Tags Fixed** - Added canonical tags to city page templates (was completely missing). Fixed relative URL bug in city_page_generator.py.
 
 ## Next 3 Priorities
 
-1. **Test Google Rich Results** - Validate all schema changes in production
-2. **Priority #3: Error Logging & Monitoring** - Implement structured logging framework
-3. **Priority #4: FAQ System Enhancements** - Bulk import/export, category management
+1. **Submit Sitemaps to GSC** - Submit both CloudFront sitemaps to Google Search Console, monitor indexing status
 
----
+2. **Priority #3: Error Logging & Monitoring** - Implement structured logging framework across generators
+
+3. **Priority #4: FAQ System Enhancements** - Bulk import/export, category management UI
 
 ## Current State
 
-**Git Status**: Clean (working tree clean, all changes pushed)
-**Tests**: 113/113 passing ✅
-**Branch**: feature/v3.5.0-ui-improvements
-**Latest Commits**:
-- 3f4c499 - chore: Add *.zip and docs/webgen.txt to .gitignore
-- 9b09d2f - feat(schema): Add breadcrumb schema + fix product validation (v3.7.0)
-- 89196f8 - feat(canonical): Add backlink site support with configurable canonical URLs (v3.6.0)
+**Git**:
+- Branch: feature/v3.5.0-ui-improvements
+- Commit: b74409e (fix(backlink): Fix backlink site canonical URLs and validation)
+- Status: Clean (checkpoint pending QA confirmation)
 
-**No Blockers** - All features working, QA passed
+**Tests**: 113/113 passing (no new tests added for backlink fixes - manual verification only)
 
----
+**Deployed Sites**:
+- d2kqaxeqy8leud.cloudfront.net - Live ✅
+- dfoay4cvr1g82.cloudfront.net - Live ✅
+
+**Blockers**: None
 
 ## Key Context Notes
 
-1. **Schema Coverage Complete**: All page types now have breadcrumb schema, product schema includes offers + rating for Google validation
-2. **Backlink Site Workflow**: User workflow is Scenario 2 - backlink sites point to main CloudFront URL (cannot deploy to custom domains yet)
-3. **UI Responsiveness**: Minor issue with SEO Configuration section at default window size - added to backlog as LOW priority
-4. **Google Search Console**: User already knows how to set up GSC - removed from priorities
+1. **Backlink Site Architecture** - For backlink sites to work, canonical tags MUST point to deployment_url (CloudFront), NOT main_site_url. Backlinks come from page content, not canonicals.
 
----
+2. **Config Files Gitignored** - Config changes for backlink sites are NOT in git (gitignored). Changes only in local files.
 
-## Model Configuration
+3. **CloudFront Origin Paths** - Both distributions use subdirectories:
+   - d2kqaxeqy8leud: /structural-engineer
+   - dfoay4cvr1g82: /commercial-structural-repair
 
-**Sonnet 4.5** (default) - Configured in global settings.json for optimal performance and cost efficiency.
+## Files Modified This Session (Committed)
+
+- src/core/generators/html_generator.py
+- src/core/generators/page_generator.py
+- src/core/generators/city_page_generator.py
+- src/ui/components/cloud_tab.py
+- src/templates/pages/seo_authority_city_page.html
+- docs/BACKLINK_SITE_BUG_FIX.md (new)
+- docs/BACKLINK_SITE_IMPLEMENTATION.md
+
+## Quick Reference
+
+**Backlink Site Workflow**:
+1. Set `site_type: backlink_site` in cloud config
+2. Set `main_site_url` (target for content backlinks) - REQUIRED
+3. Set `deployment_url` (CloudFront URL for canonicals) - REQUIRED
+4. Regenerate site
+5. Deploy to S3 (check CloudFront origin path!)
+6. Verify: canonicals point to CloudFront, content has backlinks to main site
