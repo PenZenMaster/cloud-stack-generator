@@ -676,6 +676,7 @@ class ClientConfig:
     created_date: datetime = field(default_factory=datetime.now)
     last_modified: datetime = field(default_factory=datetime.now)
     version: str = "2.3.0"
+    config_file_path: Optional[str] = None  # Path to the config file (for asset resolution)
 
     def __post_init__(self):
         """Post-initialization validation and setup"""

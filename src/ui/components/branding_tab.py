@@ -364,7 +364,9 @@ class BrandingTab(BaseTab):
 
         # Help text for logo
         help_label = QLabel(
-            "Upload a logo image (PNG, JPG, SVG recommended) or provide a URL. Logo will be displayed in the website header."
+            "Upload a logo image (PNG, JPG, SVG recommended) or provide a URL. When you upload a file, "
+            "it will be automatically copied to your client's assets directory when saving. "
+            "The logo will be displayed in the website header."
         )
         help_label.setFont(QFont("Arial", 9))
         help_label.setStyleSheet("color: #666; font-style: italic;")
@@ -396,7 +398,10 @@ class BrandingTab(BaseTab):
 
         # Help text for hero background
         hero_help_label = QLabel(
-            "Upload a hero background image (JPG, PNG recommended) or provide a URL. This image will be used as the background for the hero section on the home page. If not provided, the gradient colors will be used."
+            "Upload a hero background image (JPG, PNG recommended) or provide a URL. When you upload a file, "
+            "it will be automatically copied to your client's assets directory when saving. "
+            "This image will be used as the background for the hero section on the home page. "
+            "If not provided, the gradient colors will be used."
         )
         hero_help_label.setFont(QFont("Arial", 9))
         hero_help_label.setStyleSheet("color: #666; font-style: italic;")
@@ -641,8 +646,11 @@ class BrandingTab(BaseTab):
             self.branding_inputs["logo_url"].setText(file_path)
             QMessageBox.information(
                 self,
-                "Logo Uploaded",
-                f"Logo file selected: {os.path.basename(file_path)}",
+                "Logo Selected",
+                f"Logo file selected: {os.path.basename(file_path)}\n\n"
+                f"The logo will be automatically copied to your client's assets directory "
+                f"when you save the configuration.\n\n"
+                f"It will be saved to: config/clients/[client-name]/assets/"
             )
 
     def _upload_hero_background_file(self):
@@ -659,8 +667,11 @@ class BrandingTab(BaseTab):
             self.branding_inputs["hero_background_image_url"].setText(file_path)
             QMessageBox.information(
                 self,
-                "Hero Background Uploaded",
-                f"Hero background image selected: {os.path.basename(file_path)}",
+                "Hero Background Selected",
+                f"Hero background image selected: {os.path.basename(file_path)}\n\n"
+                f"The image will be automatically copied to your client's assets directory "
+                f"when you save the configuration.\n\n"
+                f"It will be saved to: config/clients/[client-name]/assets/"
             )
 
     def get_config_data(self) -> Dict[str, Any]:

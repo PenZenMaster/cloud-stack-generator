@@ -42,7 +42,12 @@
       "Bash(aws sso login:*)",
       "Bash(aws cloudfront create-invalidation:*)",
       "Bash(aws cloudfront get-distribution:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "WebFetch(domain:www.rankingtactics.com)",
+      "Bash(ls:*)",
+      "WebFetch(domain:www.unitedstructuralsystems.com)",
+      "Bash(aws sts get-caller-identity:*)",
+      "WebFetch(domain:d130v1khque84k.cloudfront.net)"
     ],
     "deny": [],
     "ask": []

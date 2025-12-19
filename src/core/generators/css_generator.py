@@ -437,14 +437,15 @@ footer a:hover, .footer a:hover {
         return """/* Component Styles */
 
 /* Header Styles */
-header {
+header, .site-header {
     background: var(--primary-color);
     color: white;
     padding: var(--spacing-lg) 0;
+    width: 100%;
 }
 
 .header-content {
-    max-width: 1200px;
+    max-width: 1440px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
     display: flex;
