@@ -802,7 +802,10 @@ class ConfigParser:
 def load_config_from_file(file_path: str) -> ClientConfig:
     """Load configuration from YAML file"""
     parser = ConfigParser()
-    return parser.parse_yaml_file(file_path)
+    config = parser.parse_yaml_file(file_path)
+    # Store the absolute path to the config file for asset resolution
+    config.config_file_path = str(Path(file_path).resolve())
+    return config
 
 
 def save_config_to_file(config: ClientConfig, file_path: str) -> bool:

@@ -30,54 +30,64 @@
     {% include 'components/header.html' %}
 
     <main>
+    <!-- Hero Section with Image -->
+    <section class="service-hero-banner" {% if service.image_url %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ service.image_url }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% else %}style="background: linear-gradient(135deg, var(--primary-color, #3498db), var(--secondary-color, #2c3e50));"{% endif %}>
+        <div class="container">
+            <div class="hero-content">
+                <div class="breadcrumb" style="color: rgba(255,255,255,0.9); margin-bottom: 1rem;">
+                    <a href="{{ base_path | default('../') }}index.html" style="color: white;">Home</a> >
+                    <a href="{{ base_path | default('../') }}services.html" style="color: white;">Services</a> >
+                    <span style="color: white;">{{ service.name }}</span>
+                </div>
+
+                <h1 style="color: white; font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">{{ service.name }}</h1>
+
+                {% if service.description %}
+                <p class="hero-description" style="color: white; font-size: 1.2rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); max-width: 700px;">{{ service.description[:200] }}{% if service.description|length > 200 %}...{% endif %}</p>
+                {% else %}
+                <p class="hero-description" style="color: white; font-size: 1.2rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); max-width: 700px;">Professional {{ service.name.lower() }} from {{ business.business_name }}. Expert service tailored to your needs.</p>
+                {% endif %}
+
+                <div class="service-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="{{ base_path | default('../') }}contact.html" class="btn btn-primary" style="padding: 1rem 2rem; background: var(--accent-color, #e74c3c); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s ease;">Get Quote</a>
+                    <a href="tel:{{ contact.phone if contact and contact.phone else '' }}" class="btn btn-secondary" style="padding: 1rem 2rem; background: white; color: var(--primary-color, #3498db); text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s ease;">Call Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Details -->
     <div class="container">
         <div class="service-detail">
-            <div class="breadcrumb">
-                <a href="{{ base_path | default('../') }}index.html">Home</a> >
-                <a href="{{ base_path | default('../') }}services.html">Services</a> >
-                {{ service.name }}
+            <div class="service-info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 3rem 0; padding: 2rem; background: #f8f9fa; border-radius: 12px;">
+                {% if service.category %}
+                <div class="info-item">
+                    <p class="info-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">Category</p>
+                    <p class="info-value" style="font-size: 1.1rem; font-weight: 600; color: var(--primary-color, #3498db);">{{ service.category }}</p>
+                </div>
+                {% endif %}
+
+                {% if service.price_range %}
+                <div class="info-item">
+                    <p class="info-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">Price Range</p>
+                    <p class="info-value" style="font-size: 1.1rem; font-weight: 600; color: var(--primary-color, #3498db);">{{ service.price_range }}</p>
+                </div>
+                {% endif %}
+
+                {% if service.duration %}
+                <div class="info-item">
+                    <p class="info-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">Typical Duration</p>
+                    <p class="info-value" style="font-size: 1.1rem; font-weight: 600; color: var(--primary-color, #3498db);">{{ service.duration }}</p>
+                </div>
+                {% endif %}
             </div>
 
-            <div class="service-hero">
-                <div class="service-image">
-                    {% if service.image_url %}
-                    <img src="{{ service.image_url }}" alt="{{ service.name }}" class="main-service-image">
-                    {% else %}
-                    <div class="placeholder-image">
-                        <span>{{ service.name }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <div class="service-info">
-                    <h1>{{ service.name }}</h1>
-
-                    {% if service.category %}
-                    <p class="service-category">Category: {{ service.category }}</p>
-                    {% endif %}
-
-                    {% if service.price_range %}
-                    <p class="service-price">Price Range: {{ service.price_range }}</p>
-                    {% endif %}
-
-                    {% if service.duration %}
-                    <p class="service-duration">Duration: {{ service.duration }}</p>
-                    {% endif %}
-
-                    <div class="service-description">
-                        {% if service.description %}
-                        <p>{{ service.description }}</p>
-                        {% else %}
-                        <p>Professional {{ service.name.lower() }} from {{ business.business_name }}. Contact us for more details about this service.</p>
-                        {% endif %}
-                    </div>
-
-                    <div class="service-actions">
-                        <a href="{{ base_path | default('../') }}contact.html" class="btn btn-primary">Get Quote</a>
-                        <a href="{{ base_path | default('../') }}contact.html" class="btn btn-secondary">Ask Questions</a>
-                    </div>
-                </div>
+            {% if service.description %}
+            <div class="service-full-description" style="margin: 3rem 0; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h2 style="color: var(--primary-color, #3498db); margin-bottom: 1.5rem;">About This Service</h2>
+                <div style="line-height: 1.8; color: #333;">{{ service.description }}</div>
             </div>
+            {% endif %}
 
             {% if service.features or service_features %}
             <div class="service-details-section">

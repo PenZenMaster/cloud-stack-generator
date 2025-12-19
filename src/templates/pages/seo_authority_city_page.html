@@ -152,15 +152,19 @@
             padding: 0 20px;
         }
 
-        /* Header */
+        /* Header - Full Width */
         .site-header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             padding: 1rem 0;
             box-shadow: var(--shadow);
+            width: 100%;
         }
 
         .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1009,11 +1013,12 @@
                     {% for place in city_page.places_of_interest %}
                     <div class="poi-card">
                         {% if place.embed_url %}
-                            {% if place.embed_url.startswith('https://www.google.com/maps/embed') %}
-                            <iframe src="{{ place.embed_url }}" title="{{ place.name }} - {{ city_page.city_name }}" loading="lazy"></iframe>
-                            {% else %}
-                            <div class="poi-link-container">
-                                <a href="{{ place.embed_url }}" target="_blank" rel="noopener" class="poi-map-link">📍 View {{ place.name }} on Google Maps</a>
+                            {% if 'google.com/maps/embed' in place.embed_url or place.embed_url.startswith('https://www.google.com/maps/embed') %}
+                            <iframe src="{{ place.embed_url }}" title="{{ place.name }} - {{ city_page.city_name }}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            {% elif 'google.com/maps' in place.embed_url %}
+                            <div class="poi-link-container" style="padding: 1rem; text-align: center; background: var(--bg-light);">
+                                <a href="{{ place.embed_url }}" target="_blank" rel="noopener" class="poi-map-link" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">📍 View {{ place.name }} on Google Maps</a>
+                                <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">Click to open in Google Maps</p>
                             </div>
                             {% endif %}
                         {% endif %}

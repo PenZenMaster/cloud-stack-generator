@@ -122,7 +122,7 @@ class PageGenerator:
             self._generate_additional_files(config, output_dir, result)
 
             # Copy static assets
-            self._copy_static_assets(output_dir, result)
+            self._copy_static_assets(config, output_dir, result)
 
             result.success = len(result.errors) == 0
             result.generation_time = (datetime.now() - start_time).total_seconds()
@@ -454,10 +454,10 @@ class PageGenerator:
         except Exception as e:
             result.add_error(f"Error generating additional files: {str(e)}")
 
-    def _copy_static_assets(self, output_dir: Path, result: GenerationResult):
-        """Copy static assets if they exist"""
+    def _copy_static_assets(self, config: ClientConfig, output_dir: Path, result: GenerationResult):
+        """Copy static assets if they exist (global assets first, then client-specific assets)"""
         try:
-            # Check for static assets directory
+            # 1. Copy global static assets first
             static_dir = self.template_dir / "static"
             if static_dir.exists():
                 # Copy images
@@ -478,6 +478,29 @@ class PageGenerator:
                     for js_file in (static_dir / "js").glob("*.js"):
                         shutil.copy2(js_file, output_dir / "js")
                         result.add_generated_file(str(output_dir / "js" / js_file.name))
+
+            # 2. Copy client-specific assets (overrides global assets)
+            if config.config_file_path:
+                config_dir = Path(config.config_file_path).parent
+                client_assets_dir = config_dir / "assets"
+
+                if client_assets_dir.exists():
+                    logger.info(f"Copying client-specific assets from {client_assets_dir}")
+
+                    # Copy client-specific images
+                    if (client_assets_dir / "images").exists():
+                        for image_file in (client_assets_dir / "images").rglob("*"):
+                            if image_file.is_file():
+                                dest_file = output_dir / "images" / image_file.name
+                                shutil.copy2(image_file, dest_file)
+                                logger.info(f"Copied client asset: {image_file.name}")
+
+                    # Support for logo directly in assets/ directory
+                    for asset_file in client_assets_dir.glob("*"):
+                        if asset_file.is_file() and asset_file.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp']:
+                            dest_file = output_dir / "images" / asset_file.name
+                            shutil.copy2(asset_file, dest_file)
+                            logger.info(f"Copied client asset: {asset_file.name}")
 
         except Exception as e:
             result.add_warning(f"Could not copy static assets: {str(e)}")

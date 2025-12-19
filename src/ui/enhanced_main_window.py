@@ -734,6 +734,75 @@ class EnhancedMainWindow(QMainWindow):
         # Emit signal for other components
         self.config_loaded.emit(self.get_all_config_data())
 
+    def _copy_branding_assets_to_client_dir(self, config_file_path: str, config_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Copy uploaded branding assets (logo, hero background) to client-specific assets directory
+        and convert file paths to relative paths.
+
+        Args:
+            config_file_path: Path where the config file will be saved
+            config_data: Configuration data dictionary
+
+        Returns:
+            Updated configuration data with relative paths
+        """
+        import shutil
+        import os
+
+        # Get client directory (parent of config file)
+        config_path = Path(config_file_path)
+        client_dir = config_path.parent
+        assets_dir = client_dir / "assets"
+
+        # Create assets directory if it doesn't exist
+        assets_dir.mkdir(parents=True, exist_ok=True)
+
+        # Handle logo upload
+        if "logo" in config_data and "logo_url" in config_data["logo"]:
+            logo_path = config_data["logo"]["logo_url"]
+
+            # Check if it's a local file path (not a URL)
+            if logo_path and os.path.exists(logo_path):
+                # Copy logo to assets directory
+                logo_filename = Path(logo_path).name
+                dest_path = assets_dir / logo_filename
+
+                try:
+                    shutil.copy2(logo_path, dest_path)
+                    # Update config to use relative path
+                    config_data["logo"]["logo_url"] = f"images/{logo_filename}"
+                    self.status_label.setText(f"Copied logo to client assets: {logo_filename}")
+                except Exception as e:
+                    QMessageBox.warning(
+                        self,
+                        "Asset Copy Warning",
+                        f"Could not copy logo file:\n{str(e)}\n\nThe original path will be used."
+                    )
+
+        # Handle hero background upload
+        if "logo" in config_data and "hero_background_image_url" in config_data["logo"]:
+            hero_path = config_data["logo"]["hero_background_image_url"]
+
+            # Check if it's a local file path (not a URL)
+            if hero_path and os.path.exists(hero_path):
+                # Copy hero background to assets directory
+                hero_filename = Path(hero_path).name
+                dest_path = assets_dir / hero_filename
+
+                try:
+                    shutil.copy2(hero_path, dest_path)
+                    # Update config to use relative path
+                    config_data["logo"]["hero_background_image_url"] = f"images/{hero_filename}"
+                    self.status_label.setText(f"Copied hero background to client assets: {hero_filename}")
+                except Exception as e:
+                    QMessageBox.warning(
+                        self,
+                        "Asset Copy Warning",
+                        f"Could not copy hero background file:\n{str(e)}\n\nThe original path will be used."
+                    )
+
+        return config_data
+
     def save_configuration(self) -> bool:
         """Save current configuration"""
         if not self.current_config_file:
@@ -790,6 +859,10 @@ class EnhancedMainWindow(QMainWindow):
         try:
             # Get configuration from all tabs
             config_data = self.get_all_config_data()
+
+            # Copy branding assets (logo, hero background) to client-specific directory
+            # and update paths to be relative
+            config_data = self._copy_branding_assets_to_client_dir(file_path, config_data)
 
             # Create ClientConfig object
             config = self.create_client_config(config_data)
