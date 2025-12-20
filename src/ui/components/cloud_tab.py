@@ -13,9 +13,14 @@ Created Date:
 2025-09-05
 
 Last Modified Date:
-2025-09-05
+2025-12-20
+
+Version: v1.02
 
 Comments:
+* v1.02 - Fixed friendly name format (removed '+' separator, use spaces),
+  Fixed deployment history persistence (unique timestamp-based deployment IDs)
+* v1.01 - Added friendly name feature and deployment tracking
 * v1.00 - Initial implementation following existing UI patterns and SOP workflow
 """
 
@@ -1133,7 +1138,7 @@ class CloudTab(BaseTab):
         friendly_name_layout.addWidget(QLabel("Friendly Name (Optional):"))
 
         self.friendly_name_input = QLineEdit()
-        self.friendly_name_input.setPlaceholderText("Leave empty to auto-generate from Business Name + Industry + Date")
+        self.friendly_name_input.setPlaceholderText("Leave empty to auto-generate from Business Name, Industry, Date")
         self.friendly_name_input.setToolTip("Custom name for this deployment. If left empty, will auto-generate from business info.")
         friendly_name_layout.addWidget(self.friendly_name_input)
 
@@ -3134,7 +3139,9 @@ class CloudTab(BaseTab):
                         directory=""
                     )
 
-                deployment_id = f"{bucket_name}"
+                # Generate unique deployment ID with timestamp to preserve full history
+                timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+                deployment_id = f"{bucket_name}-{timestamp}"
                 deployment = DeploymentConfig(
                     deployment_id=deployment_id,
                     bucket=bucket_name,
@@ -3350,10 +3357,13 @@ class CloudTab(BaseTab):
             if directory == "/ (root)" or directory == "/":
                 directory = ""
 
-            # Generate deployment ID
+            # Generate unique deployment ID with timestamp to preserve full history
+            # Each deployment creates a new entry, even when deploying to same bucket/directory
+            timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
             deployment_id = f"{bucket_name}"
             if directory:
                 deployment_id += f"-{directory}"
+            deployment_id += f"-{timestamp}"
 
             # Get mode and CloudFront settings
             mode = "s3" if self.s3_mode_radio.isChecked() else "cloudfront"
@@ -3436,8 +3446,8 @@ class CloudTab(BaseTab):
     ) -> str:
         """
         Generate user-friendly default name for deployment.
-        Format: "{Business Name} + {Industry} + MM/DD/YYYY"
-        Example: "United Structural Systems + Residential Foundation Repair + 12/20/2025"
+        Format: "{Business Name} {Industry} MM/DD/YYYY"
+        Example: "United Structural Systems Residential Foundation Repair 12/20/2025"
         """
         from datetime import datetime
 
@@ -3460,7 +3470,7 @@ class CloudTab(BaseTab):
 
         parts.append(date_str)
 
-        return ' + '.join(parts)
+        return ' '.join(parts)
 
     def log_status(self, message: str):
         """Add message to status log"""

@@ -1,10 +1,26 @@
 """
-Deployment History Tab - Multi-deployment management UI
+Module/Script Name: Deployment History Tab
+Path: src/ui/components/deployment_history_tab.py
 
-Shows all deployments for the current client configuration with ability to
-re-deploy, update meta tags, and delete deployments.
+Description:
+Multi-deployment management UI showing all deployments for the current client
+configuration with ability to delete deployments and edit friendly names inline.
 
-Phase 2 Implementation (v3.2.0)
+Author(s):
+Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
+
+Created Date:
+2025-09-15
+
+Last Modified Date:
+2025-12-20
+
+Version: v3.21
+
+Comments:
+* v3.21 - Standardized text sizing across all deployment card labels (10pt Arial)
+* v3.20 - Added inline friendly name editing, removed non-functional buttons
+* v3.2.0 - Phase 2 Implementation baseline
 """
 
 from PyQt6.QtWidgets import (
@@ -63,12 +79,14 @@ class DeploymentCard(QFrame):
         # Technical ID (if different from friendly name)
         if self.deployment.friendly_name:
             tech_id_label = QLabel(f"<small><i>ID: {self.deployment.deployment_id}</i></small>")
+            tech_id_label.setFont(QFont("Arial", 9))
             tech_id_label.setStyleSheet("color: #666;")
             layout.addWidget(tech_id_label)
 
         # Industry snapshot line
         if self.deployment.industry:
             industry_label = QLabel(f"<b>Industry:</b> {self.deployment.industry}")
+            industry_label.setFont(QFont("Arial", 10))
             industry_label.setStyleSheet("color: #2c5282; font-weight: 500;")
             layout.addWidget(industry_label)
 
@@ -77,6 +95,7 @@ class DeploymentCard(QFrame):
             f"<b>Bucket:</b> {self.deployment.bucket} "
             f"<b>Directory:</b> {self.deployment.directory or '(root)'}"
         )
+        bucket_dir_label.setFont(QFont("Arial", 10))
         layout.addWidget(bucket_dir_label)
 
         # Info line 2: Mode and region
@@ -85,6 +104,7 @@ class DeploymentCard(QFrame):
             f"<b>Mode:</b> {mode_text} | "
             f"<b>Region:</b> {self.deployment.region}"
         )
+        mode_region_label.setFont(QFont("Arial", 10))
         layout.addWidget(mode_region_label)
 
         # Info line 3: CloudFront details (if Mode B)
@@ -92,6 +112,7 @@ class DeploymentCard(QFrame):
             cf_label = QLabel(
                 f"<b>Distribution:</b> {self.deployment.cloudfront_distribution_id}"
             )
+            cf_label.setFont(QFont("Arial", 10))
             layout.addWidget(cf_label)
 
         # Info line 4: Last deployed
@@ -103,12 +124,14 @@ class DeploymentCard(QFrame):
                 last_deployed_str = self.deployment.last_deployed
 
             last_deployed_label = QLabel(f"<b>Last Deployed:</b> {last_deployed_str}")
+            last_deployed_label.setFont(QFont("Arial", 10))
             layout.addWidget(last_deployed_label)
 
         # Info line 5: Website URL
         website_url = self.deployment.get_website_url()
         if website_url:
             url_label = QLabel(f'<b>URL:</b> <a href="{website_url}">{website_url}</a>')
+            url_label.setFont(QFont("Arial", 10))
             url_label.setOpenExternalLinks(True)
             url_label.setWordWrap(True)
             layout.addWidget(url_label)
@@ -116,6 +139,7 @@ class DeploymentCard(QFrame):
         # Info line 6: Meta tags count
         if self.deployment.meta_tags:
             meta_tags_label = QLabel(f"<b>Meta Tags:</b> {len(self.deployment.meta_tags)} configured")
+            meta_tags_label.setFont(QFont("Arial", 10))
             layout.addWidget(meta_tags_label)
 
         # Action buttons
@@ -160,7 +184,9 @@ class DeploymentHistoryTab(QWidget):
         layout = QVBoxLayout()
 
         # Header
-        header = QLabel("<h2>Deployment History</h2>")
+        from PyQt6.QtGui import QFont
+        header = QLabel("Deployment History")
+        header.setFont(QFont("Arial", 16, QFont.Weight.Bold))
         layout.addWidget(header)
 
         # Description
@@ -168,6 +194,7 @@ class DeploymentHistoryTab(QWidget):
             "Manage multiple deployments for this client. Each deployment can have "
             "different meta tags, CloudFront settings, and destination directories."
         )
+        description.setFont(QFont("Arial", 10))
         description.setWordWrap(True)
         layout.addWidget(description)
 

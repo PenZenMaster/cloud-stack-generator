@@ -14,11 +14,13 @@ Created Date:
 2024-09-15
 
 Last Modified Date:
-2025-11-25
+2025-12-20
 
-Version: 3.04
+Version: 3.05
 
 Comments:
+* v3.05 - CRITICAL FIX: Include embed_code when loading city_image data (line 1332) to prevent
+  data loss during auto-save after deployment
 * v3.04 - Styled Validate All and Save Configuration buttons with proper design patterns
 * v3.03 - Added support for new branding fields (H1/H2/H3/Menu colors, hero background)
 * v3.02 - Fixed config_file_path and generated_files attribute access issues
@@ -1155,6 +1157,7 @@ class EnhancedMainWindow(QMainWindow):
         if not target_cities:
             target_cities = [cp.city_name for cp in city_pages if cp.city_name]
         seo_content = cities_data.get("seo_content", {})
+        wikipedia_embeds = cities_data.get("wikipedia_embeds", {})
 
         # Create cloud config
         cloud_data = config_data.get("cloud", {})
@@ -1206,6 +1209,7 @@ class EnhancedMainWindow(QMainWindow):
             city_pages=city_pages,  # Save rich city page data
             target_cities=target_cities,  # Keep for backward compatibility
             seo_content=seo_content,
+            wikipedia_embeds=wikipedia_embeds,  # Wikipedia image embeds from Cities Tab
         )
 
     def load_config_into_tabs(self, config: ClientConfig):
@@ -1302,7 +1306,11 @@ class EnhancedMainWindow(QMainWindow):
 
         # Load enhanced cities data from config
         enhanced_cities_data = {
-            "city_pages": []
+            "city_pages": [],
+            "target_cities": getattr(config, 'target_cities', []),
+            "seo_content": getattr(config, 'seo_content', {}),
+            "google_maps": {"cities": getattr(config.google_maps, 'cities', {}) if hasattr(config, 'google_maps') else {}},
+            "wikipedia_embeds": getattr(config, 'wikipedia_embeds', {}),
         }
         if hasattr(config, 'city_pages') and config.city_pages:
             enhanced_cities_data["city_pages"] = [
@@ -1323,6 +1331,7 @@ class EnhancedMainWindow(QMainWindow):
                         "caption": cp.city_image.caption,
                         "credit": cp.city_image.credit,
                         "source": cp.city_image.source,
+                        "embed_code": getattr(cp.city_image, 'embed_code', ''),
                     },
                     "places_of_interest": [
                         {

@@ -1,7 +1,7 @@
 """
 Enhanced Cities Tab for managing rich city page content
 
-This tab provides a comprehensive interface for creating and managing 
+This tab provides a comprehensive interface for creating and managing
 city pages with the full Chicago.html structure including:
 - City information and Wikipedia content
 - SEO content sections (800+ words)
@@ -9,8 +9,13 @@ city pages with the full Chicago.html structure including:
 - City-specific FAQ sections
 - Image management with attribution
 
-Version: 2.3.0
+Version: 2.31
+Last Modified: 2025-12-20
 Author: Cloud Stack Generator Team
+
+Changes:
+* v2.31 - Fixed Wikipedia embed preview not displaying on city load (line 660-661)
+* v2.30 - Previous baseline
 """
 
 from PyQt6.QtWidgets import (
@@ -656,6 +661,9 @@ class EnhancedCitiesTab(BaseTab):
         if not hasattr(city_page.city_image, 'embed_code'):
             city_page.city_image.embed_code = ''
         self.embed_code_edit.setPlainText(city_page.city_image.embed_code)
+        # Also populate the preview widget if embed code exists
+        if city_page.city_image.embed_code:
+            self.embed_preview.setPlainText(city_page.city_image.embed_code)
         layout.addRow("Embed Code:", self.embed_code_edit)
         
         fields_group.setLayout(layout)
