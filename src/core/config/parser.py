@@ -517,6 +517,8 @@ class ConfigParser:
                     last_deployed=deployment_item.get("last_deployed"),
                     deployment_url=deployment_item.get("deployment_url"),
                     meta_tags=deployment_item.get("meta_tags", {}),
+                    friendly_name=deployment_item.get("friendly_name"),
+                    industry=deployment_item.get("industry")
                 )
                 deployments.append(deployment)
             except Exception as e:
@@ -736,6 +738,10 @@ class ConfigParser:
                     deployment_dict["deployment_url"] = deployment.deployment_url
                 if deployment.meta_tags:
                     deployment_dict["meta_tags"] = deployment.meta_tags
+                if deployment.friendly_name:
+                    deployment_dict["friendly_name"] = deployment.friendly_name
+                if deployment.industry:
+                    deployment_dict["industry"] = deployment.industry
 
                 deployments_data.append(deployment_dict)
 

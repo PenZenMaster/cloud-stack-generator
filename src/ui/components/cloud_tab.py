@@ -577,6 +577,9 @@ class CloudTab(BaseTab):
         self.current_business_name: str = ""
         self.current_domain: str = ""
 
+        # Store full config for deployment tracking (v3.5.0)
+        self.current_config = None
+
         # Flag to prevent bucket clearing during client context loading
         self._loading_client_context: bool = False
 
@@ -1124,7 +1127,18 @@ class CloudTab(BaseTab):
         """Create deployment controls section"""
         group = QGroupBox("Deployment")
         layout = QVBoxLayout()
-        
+
+        # Friendly Name (Optional)
+        friendly_name_layout = QHBoxLayout()
+        friendly_name_layout.addWidget(QLabel("Friendly Name (Optional):"))
+
+        self.friendly_name_input = QLineEdit()
+        self.friendly_name_input.setPlaceholderText("Leave empty to auto-generate from Business Name + Industry + Date")
+        self.friendly_name_input.setToolTip("Custom name for this deployment. If left empty, will auto-generate from business info.")
+        friendly_name_layout.addWidget(self.friendly_name_input)
+
+        layout.addLayout(friendly_name_layout)
+
         # Local path selection
         path_layout = QHBoxLayout()
         path_layout.addWidget(QLabel("Local Website:"))
@@ -3104,6 +3118,22 @@ class CloudTab(BaseTab):
                 from ...core.config.models import DeploymentConfig
                 from datetime import datetime
 
+                # Snapshot industry from current config
+                snapshotted_industry = None
+                if hasattr(self, 'current_config') and self.current_config:
+                    snapshotted_industry = self.current_config.business.industry
+
+                # Use custom friendly name if provided, otherwise auto-generate
+                custom_name = self.friendly_name_input.text().strip() if hasattr(self, 'friendly_name_input') else ""
+                if custom_name:
+                    friendly_name = custom_name
+                else:
+                    friendly_name = self._generate_default_friendly_name(
+                        business_name=self.current_config.business.business_name if self.current_config else None,
+                        industry=snapshotted_industry,
+                        directory=""
+                    )
+
                 deployment_id = f"{bucket_name}"
                 deployment = DeploymentConfig(
                     deployment_id=deployment_id,
@@ -3115,12 +3145,18 @@ class CloudTab(BaseTab):
                     cloudfront_domain=None,
                     last_deployed=datetime.utcnow().isoformat() + "Z",
                     deployment_url=website_url,
-                    meta_tags=self.get_meta_tags_from_table()
+                    meta_tags=self.get_meta_tags_from_table(),
+                    friendly_name=friendly_name,
+                    industry=snapshotted_industry
                 )
 
                 # Emit signal for parent to handle
                 self.deployment_created.emit(deployment)
                 self.log_status(f"Deployment record created: {deployment_id}")
+
+                # Clear friendly name input for next deployment
+                if hasattr(self, 'friendly_name_input'):
+                    self.friendly_name_input.clear()
 
                 self.log_status(f"Website URL: {website_url}")
 
@@ -3336,6 +3372,22 @@ class CloudTab(BaseTab):
             # Get current meta tags from UI
             meta_tags = self.get_meta_tags_from_table()
 
+            # Snapshot industry from current config
+            snapshotted_industry = None
+            if hasattr(self, 'current_config') and self.current_config:
+                snapshotted_industry = self.current_config.business.industry
+
+            # Use custom friendly name if provided, otherwise auto-generate
+            custom_name = self.friendly_name_input.text().strip() if hasattr(self, 'friendly_name_input') else ""
+            if custom_name:
+                friendly_name = custom_name
+            else:
+                friendly_name = self._generate_default_friendly_name(
+                    business_name=self.current_config.business.business_name if self.current_config else None,
+                    industry=snapshotted_industry,
+                    directory=directory
+                )
+
             # Create deployment config
             deployment = DeploymentConfig(
                 deployment_id=deployment_id,
@@ -3347,12 +3399,18 @@ class CloudTab(BaseTab):
                 cloudfront_domain=cloudfront_domain if mode == "cloudfront" else None,
                 last_deployed=datetime.utcnow().isoformat() + "Z",
                 deployment_url=website_url,
-                meta_tags=meta_tags
+                meta_tags=meta_tags,
+                friendly_name=friendly_name,
+                industry=snapshotted_industry
             )
 
             # Emit signal for parent to handle
             self.deployment_created.emit(deployment)
             self.log_status(f"Deployment record created: {deployment_id}")
+
+            # Clear friendly name input for next deployment
+            if hasattr(self, 'friendly_name_input'):
+                self.friendly_name_input.clear()
 
             # Show success message
             success_msg = (
@@ -3369,6 +3427,40 @@ class CloudTab(BaseTab):
         else:
             self.log_status(f"Deployment failed: {result.message}")
             QMessageBox.warning(self, "Deployment Failed", result.message)
+
+    def _generate_default_friendly_name(
+        self,
+        business_name: Optional[str],
+        industry: Optional[str],
+        directory: str
+    ) -> str:
+        """
+        Generate user-friendly default name for deployment.
+        Format: "{Business Name} + {Industry} + MM/DD/YYYY"
+        Example: "United Structural Systems + Residential Foundation Repair + 12/20/2025"
+        """
+        from datetime import datetime
+
+        now = datetime.now()
+        date_str = now.strftime("%m/%d/%Y")  # MM/DD/YYYY format
+
+        parts = []
+
+        if business_name:
+            # Use FULL business name (no abbreviation or truncation)
+            parts.append(business_name)
+        else:
+            # Fallback: use directory
+            clean_dir = directory.replace('-', ' ').replace('_', ' ').title()
+            parts.append(clean_dir)
+
+        if industry:
+            # Use FULL industry (no truncation)
+            parts.append(industry)
+
+        parts.append(date_str)
+
+        return ' + '.join(parts)
 
     def log_status(self, message: str):
         """Add message to status log"""
@@ -3688,6 +3780,10 @@ class CloudTab(BaseTab):
             'meta_tags': self.get_meta_tags_from_table()
         }
     
+    def set_config(self, config):
+        """Store full config for deployment tracking (v3.5.0)"""
+        self.current_config = config
+
     def set_config_data(self, data: Dict[str, Any]):
         """Set cloud configuration data"""
         # Refresh profiles first
