@@ -117,6 +117,11 @@ When asked for changes in this repo:
 * **Idempotency**: Safe reruns (dedupe by slug/ID, skip already‑processed).
 * **Performance**: Keep templates lean; avoid blocking calls; stream large I/O.
 
+### Refactoring & Code Lifecycle Rules
+
+* **DO NOT RENAME modules** when refactoring unless the rename is required to bring the rest of the codebase into sync to use or call the correct modules.
+* **DELETE obsolete code** immediately: If a code module becomes obsolete as a result of a refactor, DELETE the obsolete code as part of the commit of the QA-accepted code. Do not leave dead/unused modules in the codebase.
+
 ---
 
 ## 3) Files & Paths (authoritative)

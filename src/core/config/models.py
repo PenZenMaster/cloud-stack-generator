@@ -14,11 +14,12 @@ Created Date:
 2024-08-15
 
 Last Modified Date:
-2025-11-25
+2025-12-20
 
-Version: 1.01
+Version: 1.02
 
 Comments:
+* v1.02 - Added wikipedia_embeds field to ClientConfig for Wikipedia image embed persistence
 * v1.01 - Added H1/H2/H3/Menu text colors and hero background image to BrandingConfig
 * v1.00 - Initial implementation with core configuration models
 """
@@ -672,7 +673,8 @@ class ClientConfig:
     # Cities and local SEO data (legacy support)
     target_cities: List[str] = field(default_factory=list)
     seo_content: Dict[str, str] = field(default_factory=dict)
-    
+    wikipedia_embeds: Dict[str, Dict[str, str]] = field(default_factory=dict)  # Wikipedia image embeds by city name
+
     # API keys for integrations
     api_keys: Dict[str, str] = field(default_factory=dict)
 
