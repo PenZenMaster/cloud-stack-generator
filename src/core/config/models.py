@@ -522,6 +522,10 @@ class DeploymentConfig:
     last_deployed: Optional[str] = None  # ISO format datetime string
     deployment_url: Optional[str] = None  # Full URL to deployed site
 
+    # NEW FIELDS FOR v3.5.0
+    friendly_name: Optional[str] = None  # User-editable display name (e.g., "USS - Helical Tieback Dec 2025")
+    industry: Optional[str] = None  # Snapshotted industry at deployment time
+
     # SEO meta tags specific to this deployment
     meta_tags: Dict[str, str] = field(default_factory=dict)
 

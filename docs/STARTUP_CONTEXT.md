@@ -1,90 +1,71 @@
 # AWG Startup Context - Lightweight Session Resume
 
-**Last Updated**: 2025-12-18 17:09
+**Last Updated**: 2025-12-20 10:30
 **Branch**: feature/v3.5.0-ui-improvements
-**Last Commit**: 9662ffc
+**Last Commit**: 96de7c7
 
 ## Last 3 Accomplishments
 
-1. **Client-Specific Assets System** - Implemented complete infrastructure for managing client assets (logos, images) in `config/clients/{client-name}/assets/` with automatic copying during generation and UI save operations
+1. **Deployment Tracking System (v3.5.0)** - Implemented friendly names and industry snapshots for deployments. Added `friendly_name` and `industry` fields to DeploymentConfig model with full YAML serialization support and backward compatibility.
 
-2. **UI Integration for Asset Uploads** - Enhanced branding tab with automatic asset management for logo and hero background uploads, including path conversion and file copying on save
+2. **Deployment UI Enhancements** - Added friendly name input field to Cloud Tab (optional, auto-generates if empty), inline editing in Deployment History Tab, removed non-functional UI buttons (Re-Deploy, Update Meta Tags).
 
-3. **Template & UI Fixes** - Fixed full-width header (1440px content width), hero background image display, dropdown menu initialization, and Google Maps embed errors across multiple templates
+3. **Bug Fixes** - Fixed CloudTab config access AttributeError, updated both S3 and GCS deployment paths with new fields, improved friendly name display with proper formatting and readability.
 
 ## Next 3 Priorities
 
-1. **User QA Confirmation** - Await testing confirmation of deployed site (https://d2kqaxeqy8leud.cloudfront.net/) for hero images, full-width header, and dropdown menu behavior
+1. **Address User Feedback** - Fix friendly name format (remove "+" separator), standardize text sizing in Deployment History, fix deployment history persistence issue (redeployments replacing instead of adding).
 
-2. **Commit Changes** - After QA approval, commit all changes with comprehensive feat(assets) message covering the client-specific assets system
+2. **Semantic Versioning** - Update file version numbers per project standards (v1.00 baseline, +0.01 minor, +1.00 major).
 
-3. **Template Consistency Review** - Ensure all page templates have proper dropdown initialization JavaScript (currently added to index.html, check other templates)
+3. **Wikipedia Image Persistence** - Fix Cities tab Wikipedia image embed not persisting from session to session.
 
 ## Current State
 
 **Git**:
 - Branch: feature/v3.5.0-ui-improvements
-- Commit: 9662ffc (chore: Update startup context for v3.6.0-v3.7.0 session)
-- Status: Modified (11 files), Untracked (4 files) - awaiting QA before commit
+- Commit: 96de7c7 (feat(assets): Implement client-specific assets system with UI integration)
+- Status: Modified (5 files) - deployment tracking implementation
 
-**Tests**: Not applicable (template/UI changes)
+**Tests**: Manual QA in progress
 
 **Deployed Sites**:
-- d2kqaxeqy8leud.cloudfront.net - Live with new assets ✅
+- d20sn5sqv0dset.cloudfront.net - Test deployment with friendly name feature
 
-**Blockers**: None - awaiting user QA feedback only
+**Blockers**: None - addressing user feedback
 
 ## Key Context Notes
 
-1. **Asset Workflow** - Assets stored per-client in `config/clients/{client-name}/assets/`, automatically copied during generation and UI save operations
+1. **Deployment Tracking Architecture** - Uses existing DeploymentConfig model with two new optional fields (friendly_name, industry). Snapshots industry at deployment time for historical accuracy.
 
-2. **Logo Upload Flow** - UI upload → temp path stored → on save → copied to client assets → path converted to relative (`images/filename.png`)
+2. **Friendly Name Auto-Generation** - Format: "{Business Name} + {Industry} + MM/DD/YYYY". User feedback: remove "+" separator, use spaces only.
 
-3. **United Structural Systems Deployed** - Logo (structural-logo.png 225KB) and hero background (red-brick.png 2.5MB) deployed to CloudFront
+3. **Deployment History Issue** - When redeploying to same bucket/directory, system updates existing deployment instead of creating new entry. User wants full history preserved.
 
-4. **Header Width Change** - Header content max-width changed from 1200px to 1440px per user request for wider layout
+4. **Inline Editing** - Deployment History uses QLineEdit for direct editing (like Business Name field), no popup dialogs.
 
 ## Files Modified This Session (Uncommitted)
 
-**Core System (5 files)**:
-- src/core/config/models.py - Added config_file_path field
-- src/core/config/parser.py - Store config path on load
-- src/core/generators/css_generator.py - Header width changes
-- src/core/generators/page_generator.py - Client asset copying
+**Core System (2 files)**:
+- src/core/config/models.py - Added friendly_name and industry fields to DeploymentConfig
+- src/core/config/parser.py - YAML parsing/serialization for new fields
 
-**Templates (4 files)**:
-- src/templates/components/header.html - Added site-header class
-- src/templates/pages/index.html - Hero background + dropdown JS
-- src/templates/pages/seo_authority_city_page.html - Full-width header + Maps fix
-- src/templates/pages/service-detail.html - Modern hero banner
-
-**UI Components (2 files)**:
-- src/ui/components/branding_tab.py - Upload messaging
-- src/ui/enhanced_main_window.py - Asset copying on save
-
-**New Documentation (4 files)**:
-- LOGO_DOWNLOAD_INSTRUCTIONS.txt
-- docs/BLOG_SYSTEM_SPECIFICATION.md
-- docs/CLIENT_ASSETS_GUIDE.md
-- docs/LOGO_UPLOAD_WORKFLOW.md
+**UI Components (3 files)**:
+- src/ui/components/cloud_tab.py - Added friendly name input, snapshot logic, auto-generation method
+- src/ui/components/deployment_history_tab.py - Inline editing, removed non-functional buttons, improved display
+- src/ui/enhanced_main_window.py - Added set_config call for CloudTab
 
 ## Quick Reference
 
-**Deploy Commands**:
-```bash
-# Generate site
-python generate_site.py "config/clients/unites-structural-systems/united_structural_systems_of_illinois_inc_structural_engineer_config.yaml" "output/clients/united-structural-systems/structural-engineer"
+**Current Issues to Fix**:
+1. Remove "+" separator from auto-generated friendly names (use spaces)
+2. Standardize text size in Deployment History Tab
+3. Check for remaining non-functional UI elements (Delete button functionality?)
+4. Fix deployment history persistence (create new vs update existing)
+5. Apply semantic versioning to modified files
+6. Cities tab Wikipedia image persistence
 
-# Deploy to S3
-aws s3 sync "output/clients/united-structural-systems/structural-engineer/" "s3://structural-engineering-services/" --delete --profile AWS
-
-# Invalidate CloudFront
-aws cloudfront create-invalidation --distribution-id E2DTGAWJC4B22N --paths "/*" --profile AWS
+**Test Config**:
 ```
-
-**Commit After QA**:
-```bash
-git add -A
-git commit -m "feat(assets): Implement client-specific assets system with UI integration"
-git push
+E:\projects\cloud-stack-generator\config\clients\unites-structural-systems\united_structural_systems_of_illinois_inc_residential_foundation_repair_config.yaml
 ```

@@ -25,6 +25,7 @@ class DeploymentCard(QFrame):
     redeploy_requested = pyqtSignal(str)  # deployment_id
     edit_requested = pyqtSignal(str)  # deployment_id
     delete_requested = pyqtSignal(str)  # deployment_id
+    friendly_name_changed = pyqtSignal(str, str)  # deployment_id, new_name
 
     def __init__(self, deployment: DeploymentConfig, parent=None):
         super().__init__(parent)
@@ -39,15 +40,37 @@ class DeploymentCard(QFrame):
         layout = QVBoxLayout()
         layout.setContentsMargins(10, 10, 10, 10)
 
-        # Header: Deployment ID
+        # Header: Friendly Name (PRIMARY) - Inline Editable
         header_layout = QHBoxLayout()
 
-        deployment_label = QLabel(f"<b>{self.deployment.deployment_id}</b>")
-        deployment_label.setWordWrap(True)
-        header_layout.addWidget(deployment_label)
+        # Display friendly name as editable line edit (inline editing like Business Name)
+        display_name = self.deployment.friendly_name or self.deployment.deployment_id
+
+        from PyQt6.QtWidgets import QLineEdit
+        from PyQt6.QtGui import QFont
+
+        self.friendly_name_input = QLineEdit()
+        self.friendly_name_input.setText(display_name)
+        self.friendly_name_input.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        self.friendly_name_input.setMinimumWidth(400)
+        self.friendly_name_input.setPlaceholderText("Enter deployment name...")
+        self.friendly_name_input.editingFinished.connect(self.on_friendly_name_edited)
+        header_layout.addWidget(self.friendly_name_input)
         header_layout.addStretch()
 
         layout.addLayout(header_layout)
+
+        # Technical ID (if different from friendly name)
+        if self.deployment.friendly_name:
+            tech_id_label = QLabel(f"<small><i>ID: {self.deployment.deployment_id}</i></small>")
+            tech_id_label.setStyleSheet("color: #666;")
+            layout.addWidget(tech_id_label)
+
+        # Industry snapshot line
+        if self.deployment.industry:
+            industry_label = QLabel(f"<b>Industry:</b> {self.deployment.industry}")
+            industry_label.setStyleSheet("color: #2c5282; font-weight: 500;")
+            layout.addWidget(industry_label)
 
         # Info line 1: Bucket and directory
         bucket_dir_label = QLabel(
@@ -98,15 +121,8 @@ class DeploymentCard(QFrame):
         # Action buttons
         button_layout = QHBoxLayout()
 
-        self.redeploy_button = QPushButton("Re-Deploy")
-        self.redeploy_button.setToolTip("Deploy to this location again")
-        self.redeploy_button.clicked.connect(lambda: self.redeploy_requested.emit(self.deployment.deployment_id))
-        button_layout.addWidget(self.redeploy_button)
-
-        self.edit_button = QPushButton("Update Meta Tags")
-        self.edit_button.setToolTip("Edit meta tags for this deployment")
-        self.edit_button.clicked.connect(lambda: self.edit_requested.emit(self.deployment.deployment_id))
-        button_layout.addWidget(self.edit_button)
+        # NOTE: Re-Deploy and Update Meta Tags buttons removed (non-functional stubs)
+        # Only keep functional Delete button
 
         self.delete_button = QPushButton("Delete")
         self.delete_button.setToolTip("Remove this deployment configuration")
@@ -117,6 +133,17 @@ class DeploymentCard(QFrame):
         layout.addLayout(button_layout)
 
         self.setLayout(layout)
+
+    def on_friendly_name_edited(self):
+        """Handle inline friendly name editing when user finishes editing"""
+        new_name = self.friendly_name_input.text().strip()
+
+        if new_name and new_name != self.deployment.friendly_name:
+            # Update deployment
+            self.deployment.friendly_name = new_name
+
+            # Emit signal to parent to save config
+            self.friendly_name_changed.emit(self.deployment.deployment_id, new_name)
 
 
 class DeploymentHistoryTab(QWidget):
@@ -203,6 +230,7 @@ class DeploymentHistoryTab(QWidget):
             card.redeploy_requested.connect(self.on_redeploy)
             card.edit_requested.connect(self.on_edit_deployment)
             card.delete_requested.connect(self.on_delete_deployment)
+            card.friendly_name_changed.connect(self.on_friendly_name_changed)
 
             self.deployment_cards.append(card)
             self.deployments_layout.addWidget(card)
@@ -265,6 +293,22 @@ class DeploymentHistoryTab(QWidget):
                     f"Deployment configuration removed: {deployment_id}\n\n"
                     f"Remember to save your configuration."
                 )
+
+    def on_friendly_name_changed(self, deployment_id: str, new_name: str):
+        """Handle friendly name change"""
+        if self.current_config:
+            for deployment in self.current_config.deployments:
+                if deployment.deployment_id == deployment_id:
+                    deployment.friendly_name = new_name
+                    break
+
+            # Notify user to save
+            QMessageBox.information(
+                self,
+                "Name Updated",
+                f"Friendly name updated to: {new_name}\n\n"
+                f"Remember to save your configuration."
+            )
 
     def get_config_data(self) -> dict:
         """Get deployment data for saving (compatibility with other tabs)"""

@@ -1420,6 +1420,7 @@ class EnhancedMainWindow(QMainWindow):
             "last_deployment": config.cloud.last_deployment,
         }
         self.cloud_tab.set_config_data(cloud_data)
+        self.cloud_tab.set_config(config)  # Store full config for deployment tracking (v3.5.0)
 
         # Load deployment history (v3.2.0 - Phase 2)
         self.deployment_history_tab.set_config(config)
