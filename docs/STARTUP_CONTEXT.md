@@ -1,8 +1,9 @@
 # AWG Startup Context - Lightweight Session Resume
 
-**Last Updated**: 2025-12-21 08:30
-**Branch**: feature/v3.5.0-ui-improvements
-**Last Commit**: 2dd8736
+**Last Updated**: 2025-12-21 14:00
+**Branch**: main
+**Last Commit**: (to be updated after merge)
+**Version**: 3.6.0
 
 ## Last 3 Accomplishments
 
