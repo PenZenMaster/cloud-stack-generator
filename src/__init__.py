@@ -2,4 +2,4 @@
 Core business logic and data management
 """
 
-__version__ = "1.0.0"
+__version__ = "3.6.0"
