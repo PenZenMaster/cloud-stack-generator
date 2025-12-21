@@ -25,11 +25,15 @@ Comments:
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QFrame, QMessageBox
+    QScrollArea, QFrame, QMessageBox, QStackedWidget,
+    QTableWidget, QTableWidgetItem, QHeaderView, QLineEdit,
+    QFileDialog
 )
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QColor, QFont
 from typing import List, Optional
 from datetime import datetime
+import csv
 
 from src.core.config.models import DeploymentConfig, ClientConfig
 
@@ -184,7 +188,6 @@ class DeploymentHistoryTab(QWidget):
         layout = QVBoxLayout()
 
         # Header
-        from PyQt6.QtGui import QFont
         header = QLabel("Deployment History")
         header.setFont(QFont("Arial", 16, QFont.Weight.Bold))
         layout.addWidget(header)
@@ -197,6 +200,43 @@ class DeploymentHistoryTab(QWidget):
         description.setFont(QFont("Arial", 10))
         description.setWordWrap(True)
         layout.addWidget(description)
+
+        # View toggle buttons
+        view_toggle_layout = QHBoxLayout()
+
+        self.card_view_button = QPushButton("Card View")
+        self.card_view_button.clicked.connect(lambda: self.switch_view(0))
+        self.card_view_button.setCheckable(True)
+        self.card_view_button.setChecked(True)
+        view_toggle_layout.addWidget(self.card_view_button)
+
+        self.grid_view_button = QPushButton("Grid View")
+        self.grid_view_button.clicked.connect(lambda: self.switch_view(1))
+        self.grid_view_button.setCheckable(True)
+        view_toggle_layout.addWidget(self.grid_view_button)
+
+        view_toggle_layout.addStretch()
+        layout.addLayout(view_toggle_layout)
+
+        # Stacked widget for view switching
+        self.view_stack = QStackedWidget()
+
+        # Card View (Index 0 - Default)
+        card_view_widget = self.create_card_view()
+        self.view_stack.addWidget(card_view_widget)
+
+        # Grid View (Index 1)
+        grid_view_widget = self.create_grid_view()
+        self.view_stack.addWidget(grid_view_widget)
+
+        layout.addWidget(self.view_stack)
+
+        self.setLayout(layout)
+
+    def create_card_view(self) -> QWidget:
+        """Create card view widget"""
+        card_widget = QWidget()
+        layout = QVBoxLayout()
 
         # Scroll area for deployment cards
         scroll_area = QScrollArea()
@@ -224,7 +264,82 @@ class DeploymentHistoryTab(QWidget):
         add_button_layout.addStretch()
         layout.addLayout(add_button_layout)
 
-        self.setLayout(layout)
+        card_widget.setLayout(layout)
+        return card_widget
+
+    def create_grid_view(self) -> QWidget:
+        """Create grid view widget"""
+        grid_widget = QWidget()
+        layout = QVBoxLayout()
+
+        # Toolbar
+        toolbar = QHBoxLayout()
+
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Search deployments...")
+        self.search_input.textChanged.connect(self.filter_deployments)
+        toolbar.addWidget(self.search_input)
+
+        toolbar.addStretch()
+
+        self.export_csv_button = QPushButton("Export to CSV")
+        self.export_csv_button.clicked.connect(self.export_deployments_to_csv)
+        toolbar.addWidget(self.export_csv_button)
+
+        self.refresh_button = QPushButton("Refresh")
+        self.refresh_button.clicked.connect(self.populate_grid)
+        toolbar.addWidget(self.refresh_button)
+
+        layout.addLayout(toolbar)
+
+        # Table
+        self.deployments_table = QTableWidget()
+        self.deployments_table.setColumnCount(8)
+        self.deployments_table.setHorizontalHeaderLabels([
+            "Client",
+            "Industry",
+            "Deployed URL",
+            "Deployment Mode",
+            "Friendly Name",
+            "Date-Time Deployed",
+            "Bucket",
+            "Directory"
+        ])
+
+        # Configure columns
+        header = self.deployments_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Client
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # Industry
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)           # URL
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)  # Mode
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)           # Friendly Name
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)  # Date
+        header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)  # Bucket
+        header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)  # Directory
+
+        # Enable sorting
+        self.deployments_table.setSortingEnabled(True)
+
+        # Selection
+        self.deployments_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.deployments_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+
+        layout.addWidget(self.deployments_table)
+
+        grid_widget.setLayout(layout)
+        return grid_widget
+
+    def switch_view(self, index: int):
+        """Switch between card and grid view"""
+        self.view_stack.setCurrentIndex(index)
+
+        # Update button states
+        self.card_view_button.setChecked(index == 0)
+        self.grid_view_button.setChecked(index == 1)
+
+        # Refresh grid if switching to it
+        if index == 1:
+            self.populate_grid()
 
     def set_config(self, config: ClientConfig):
         """Load deployments from config"""
@@ -336,6 +451,166 @@ class DeploymentHistoryTab(QWidget):
                 f"Friendly name updated to: {new_name}\n\n"
                 f"Remember to save your configuration."
             )
+
+    def populate_grid(self):
+        """Populate grid with deployments from current config"""
+        if not self.current_config or not self.current_config.deployments:
+            self.deployments_table.setRowCount(0)
+            return
+
+        # Disable sorting while populating
+        self.deployments_table.setSortingEnabled(False)
+        self.deployments_table.setRowCount(len(self.current_config.deployments))
+
+        for row, deployment in enumerate(self.current_config.deployments):
+            # Client (Business Name)
+            business_name = self.current_config.business.business_name or "N/A"
+            self.deployments_table.setItem(row, 0, QTableWidgetItem(business_name))
+
+            # Industry (snapshotted at deployment time)
+            industry = deployment.industry or "N/A"
+            self.deployments_table.setItem(row, 1, QTableWidgetItem(industry))
+
+            # Deployed URL
+            url = deployment.deployment_url or deployment.get_website_url() or "N/A"
+            url_item = QTableWidgetItem(url)
+            url_item.setForeground(QColor("#0066cc"))  # Blue for links
+            self.deployments_table.setItem(row, 2, url_item)
+
+            # Deployment Mode
+            mode = deployment.mode.upper() if deployment.mode else "N/A"
+            mode_item = QTableWidgetItem(mode)
+            if mode == "CLOUDFRONT":
+                mode_item.setBackground(QColor("#e6f7ff"))  # Light blue background
+            self.deployments_table.setItem(row, 3, mode_item)
+
+            # Friendly Name
+            friendly_name = deployment.friendly_name or deployment.deployment_id
+            self.deployments_table.setItem(row, 4, QTableWidgetItem(friendly_name))
+
+            # Date-Time Deployed (formatted)
+            if deployment.last_deployed:
+                # Parse ISO format: "2025-12-20T16:30:45Z"
+                dt = datetime.fromisoformat(deployment.last_deployed.replace("Z", "+00:00"))
+                formatted_date = dt.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                formatted_date = "N/A"
+            self.deployments_table.setItem(row, 5, QTableWidgetItem(formatted_date))
+
+            # Bucket
+            bucket = deployment.bucket or "N/A"
+            self.deployments_table.setItem(row, 6, QTableWidgetItem(bucket))
+
+            # Directory
+            directory = deployment.directory or "(root)"
+            self.deployments_table.setItem(row, 7, QTableWidgetItem(directory))
+
+        # Re-enable sorting
+        self.deployments_table.setSortingEnabled(True)
+
+    def export_deployments_to_csv(self):
+        """Export all deployments to CSV file"""
+        if not self.current_config or not self.current_config.deployments:
+            QMessageBox.information(
+                self,
+                "Export Deployments",
+                "No deployments to export"
+            )
+            return
+
+        # Generate default filename with business name and timestamp
+        business_name = self.current_config.business.business_name or "client"
+        safe_name = business_name.replace(" ", "_").lower()
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_filename = f"{safe_name}_deployments_{timestamp}.csv"
+
+        # Let user choose file location
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Deployment History",
+            default_filename,
+            "CSV Files (*.csv);;All Files (*)"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            with open(file_path, "w", newline="", encoding="utf-8") as file:
+                fieldnames = [
+                    "Client",
+                    "Industry",
+                    "Deployed URL",
+                    "Deployment Mode",
+                    "Friendly Deployment Name",
+                    "Date-Time Deployed",
+                    "Bucket",
+                    "Directory",
+                    "CloudFront Distribution ID",
+                    "CloudFront Domain",
+                    "Region",
+                    "Deployment ID",
+                    "Google Verification Code"
+                ]
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+                writer.writeheader()
+
+                for deployment in self.current_config.deployments:
+                    # Extract Google verification code from meta_tags
+                    google_code = deployment.meta_tags.get("google-site-verification", "")
+
+                    # Format date
+                    if deployment.last_deployed:
+                        dt = datetime.fromisoformat(deployment.last_deployed.replace("Z", "+00:00"))
+                        formatted_date = dt.strftime("%Y-%m-%d %H:%M:%S")
+                    else:
+                        formatted_date = ""
+
+                    writer.writerow({
+                        "Client": self.current_config.business.business_name or "",
+                        "Industry": deployment.industry or "",
+                        "Deployed URL": deployment.deployment_url or deployment.get_website_url() or "",
+                        "Deployment Mode": deployment.mode.upper() if deployment.mode else "",
+                        "Friendly Deployment Name": deployment.friendly_name or "",
+                        "Date-Time Deployed": formatted_date,
+                        "Bucket": deployment.bucket or "",
+                        "Directory": deployment.directory or "",
+                        "CloudFront Distribution ID": deployment.cloudfront_distribution_id or "",
+                        "CloudFront Domain": deployment.cloudfront_domain or "",
+                        "Region": deployment.region or "",
+                        "Deployment ID": deployment.deployment_id or "",
+                        "Google Verification Code": google_code
+                    })
+
+            QMessageBox.information(
+                self,
+                "Export Success",
+                f"Successfully exported {len(self.current_config.deployments)} deployments to:\n{file_path}"
+            )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Export Error",
+                f"Error exporting CSV:\n{str(e)}"
+            )
+
+    def filter_deployments(self, search_text: str):
+        """Filter table rows based on search text"""
+        search_text = search_text.lower()
+
+        for row in range(self.deployments_table.rowCount()):
+            should_show = False
+
+            # Search in all columns
+            for col in range(self.deployments_table.columnCount()):
+                item = self.deployments_table.item(row, col)
+                if item and search_text in item.text().lower():
+                    should_show = True
+                    break
+
+            self.deployments_table.setRowHidden(row, not should_show)
 
     def get_config_data(self) -> dict:
         """Get deployment data for saving (compatibility with other tabs)"""
