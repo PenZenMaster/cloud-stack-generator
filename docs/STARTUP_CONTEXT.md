@@ -1,60 +1,99 @@
 # AWG Startup Context - Lightweight Session Resume
 
-**Last Updated**: 2025-12-20 16:30
+**Last Updated**: 2025-12-21 08:30
 **Branch**: feature/v3.5.0-ui-improvements
-**Last Commit**: 4f7705b
+**Last Commit**: 2dd8736
 
 ## Last 3 Accomplishments
 
-1. **GCS Auto-populate Fix** - Fixed GCS Project ID not auto-populating from service account JSON key file. Updated cloud_tab.py v1.03 to read JSON and extract project_id field with proper error handling.
+1. **Google Search Console Integration** - Complete GSC verification system with OAuth2 authentication, site verification dialog, and API integration. Added google_search_console.py (308 lines), gsc_verification_dialog.py (386 lines), integrated with cloud_tab.py. Includes domain/URL prefix verification, HTML file/meta tag/DNS methods.
 
-2. **GCS Deployment Success** - User successfully configured and deployed test site to Google Cloud Storage, confirming GCS integration is working.
+2. **Deployment History Grid View** - Enhanced deployment tracking with grid/list view toggle and CSV export functionality. Added 278 lines to deployment_history_tab.py with sortable columns, friendly name editing, and full export capabilities.
 
-3. **Wikipedia Embed Fix Verified** - Previous session's critical Wikipedia embed persistence fix (enhanced_main_window.py:1332, enhanced_cities_tab.py:660-661) is deployed and working on AWS S3.
+3. **Wikipedia Embed Persistence Fix** - Critical fix for Wikipedia embed images not persisting through deployments. Fixed enhanced_main_window.py:1332 and enhanced_cities_tab.py:660-661. Deleted obsolete cities_tab.py (1046 lines removed). Cleaned up QA artifacts and updated CLAUDE.md with refactoring rules.
 
 ## Next 3 Priorities
 
-1. **Verify Wikipedia Embed on GCS** - Test the Wikipedia embed persistence through multiple GCS deployments to ensure the fix works for both AWS S3 and GCS platforms (10-step QA test).
+1. **Final v3.5.0 Testing** - Complete comprehensive regression testing across all UI improvements: deployment history, GSC integration, Wikipedia embeds, cloud provider support (AWS S3 and GCS).
 
-2. **Commit GCS Auto-populate Fix** - Commit and push cloud_tab.py v1.03 changes after user QA confirms everything works.
+2. **GCS Deployment Validation** - Verify Wikipedia embed persistence and all features work correctly on Google Cloud Storage deployments (test with united-structural-systems config).
 
-3. **Final Testing & Validation** - Complete full regression testing across both cloud providers (AWS S3 and GCS) to verify all v3.5.0 UI improvements.
+3. **Prepare v3.5.0 for Merge** - Final code review, ensure all debug output removed, update version numbers, create PR to merge feature/v3.5.0-ui-improvements into main.
 
 ## Current State
 
 **Git**:
 - Branch: feature/v3.5.0-ui-improvements
-- Commit: 4f7705b (chore(checkpoint): 2025-12-20_1030 - Deployment tracking v3.5.0)
-- Status: Modified (cloud_tab.py v1.03 - uncommitted changes)
+- Commit: 2dd8736 (chore(checkpoint): 2025-12-21_0115 - GSC integration and deployment grid v3.5.0)
+- Status: Clean working tree, all changes committed and pushed
+- Origin: Up to date with origin/feature/v3.5.0-ui-improvements
 
-**Tests**: All 113 unit tests passing (full test suite running in background)
+**Tests**: 113 unit tests (last known passing state)
 
-**Deployed Sites**:
-- dtkqs1u4dz079.cloudfront.net - AWS S3 test deployment with Wikipedia embed (verified persistent)
-- GCS test site - Successfully deployed (URL pending user confirmation)
+**Deployed Test Sites**:
+- AWS S3: d2kqaxeqy8leud.cloudfront.net (United Structural Systems - structural engineer)
+- AWS S3: dtkqs1u4dz079.cloudfront.net (test deployment - Wikipedia embed verified)
+- GCS: Test site deployed successfully (URL needs confirmation from user)
 
 **Blockers**: None
 
 ## Key Context Notes
 
-1. **GCS Integration Working** - User successfully set up GCS service account, configured credentials, and deployed test site to Google Cloud Storage.
+1. **GSC Feature Complete** - Full Google Search Console integration ready for production use. Supports domain and URL prefix properties, all verification methods (HTML file, meta tag, DNS TXT, Google Analytics, Tag Manager). OAuth credentials stored securely in .env.
 
-2. **Auto-populate Implementation** - Added JSON parsing to browse_gcs_credentials method (cloud_tab.py:789-828) to automatically extract and populate project_id from service account key file.
+2. **Deployment Tracking Enhanced** - deployment.yaml now includes friendly_name and industry fields. Backward compatible with existing deployments. Grid view shows deployment_date, provider, bucket/project, URL, friendly name (editable), and industry.
 
-3. **Pending QA** - Need to verify Wikipedia embed persistence works correctly on GCS deployments (same 10-step test that passed for AWS S3).
+3. **Code Cleanup Completed** - Removed obsolete cities_tab.py module (replaced by enhanced_cities_tab.py). Removed old QA artifacts. Updated project CLAUDE.md with explicit refactoring rules (DELETE obsolete code immediately, don't rename modules unnecessarily).
 
-4. **Usage Limit** - User session paused due to usage limits, resuming in ~2 hours.
+4. **v3.5.0 Feature Set** - This branch includes: client-specific assets system, Wikipedia embed fixes, deployment history enhancements, GSC verification integration, GCS auto-populate from JSON key file, grid view with CSV export.
 
-## Files Modified This Session (Uncommitted)
+## Files Modified Since Last Checkpoint (All Committed)
 
-**UI Components (1 file)**:
-- src/ui/components/cloud_tab.py v1.03 - Added GCS Project ID auto-populate from JSON key file
+**Integrations (New Module)**:
+- src/integrations/__init__.py (new)
+- src/integrations/google_search_console.py (new - 308 lines)
+
+**UI Components**:
+- src/ui/dialogs/gsc_verification_dialog.py (new - 386 lines)
+- src/ui/components/cloud_tab.py (updated - GSC integration, GCS auto-populate)
+- src/ui/components/deployment_history_tab.py (updated - grid view, CSV export)
+- src/ui/content_tabs/enhanced_cities_tab.py (updated - Wikipedia embed fix)
+- src/ui/enhanced_main_window.py (updated - Wikipedia embed persistence)
+
+**Config & Dependencies**:
+- src/core/config/models.py (updated - deployment tracking fields)
+- requirements.txt (updated - google-auth, google-auth-oauthlib, google-api-python-client)
+- .gitignore (updated - GSC credentials)
+
+**Documentation**:
+- docs/GoogleSearchConsole.txt (new - 89 lines)
+- .claude/claude.md (updated - refactoring rules)
+
+**Deleted**:
+- src/ui/components/cities_tab.py (obsolete - 1046 lines removed)
+- qa_artifacts/*.jpg, *.PNG (cleaned up old screenshots)
 
 ## Quick Reference
 
-**Test Config (GCS Testing)**:
+**Test Configs**:
 ```
+# United Structural Systems (all variants)
+E:\projects\cloud-stack-generator\config\clients\unites-structural-systems\*.yaml
+
+# GCS test config (helical pile)
 E:\projects\cloud-stack-generator\config\clients\unites-structural-systems\united_structural_systems_of_illinois_inc_commercial_helical_pileconfig.yaml
 ```
 
-**Next Task**: When user returns, verify Wikipedia embed persistence on GCS deployment, then commit cloud_tab.py v1.03
+**Key Commands**:
+```bash
+# Run full test suite
+pytest -q
+
+# Generate and deploy (AWS S3)
+python -m src.ui.app  # Use GUI
+
+# Check deployment history
+cat deployment.yaml
+```
+
+**Next Session**: Focus on final validation testing and preparing v3.5.0 for merge to main branch.
