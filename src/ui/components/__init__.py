@@ -21,14 +21,14 @@ except ImportError:
 
 # Import specialized tab components
 try:
-    from .business_tab import BusinessTab
+    from .business_tab import BusinessTab  # noqa: F401
 
     __all__.append("BusinessTab")
 except ImportError:
     print("Warning: BusinessTab not available")
 
 try:
-    from .contact_tab import ContactTab, ValidationResult
+    from .contact_tab import ContactTab, ValidationResult  # noqa: F401
 
     __all__.extend(["ContactTab", "ValidationResult"])
 except ImportError:

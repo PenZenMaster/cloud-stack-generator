@@ -1,12 +1,31 @@
 """
-Filename: branding_tab_fixed.py
-Path: E:/projects/cloud-stack-generator/src/ui/components/branding_tab_fixed.py
-Description: Branding configuration tab with fixed layout issues
-Simple, working layout that displays correctly in all screen modes
+Module/Script Name: branding_tab.py
+Path: src/ui/components/branding_tab.py
 
-Version: 2.1.0
-Date: 2025-08-15
-Author: Cloud Stack Generator Team
+Description:
+Branding configuration tab with color customization and asset management.
+Provides intuitive UI for configuring brand colors, typography, logo, and
+hero background images.
+
+Author(s):
+Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
+
+Created Date:
+2025-08-15
+
+Last Modified Date:
+2025-11-25
+
+Version: 2.06
+
+Comments:
+* v2.06 - Applied consistent button styling pattern from main window buttons
+* v2.05 - Fixed Pick Color button with natural sizing and proper padding
+* v2.04 - Improved Pick Color button styling for better readability
+* v2.03 - Improved Brand Colors section with two-column layout for better UX
+* v2.02 - Added H1/H2/H3/Menu text color controls and hero background image upload
+* v2.01 - Enhanced template system integration
+* v2.00 - Fixed layout issues and improved UX
 """
 
 import re
@@ -50,6 +69,10 @@ class BrandingTab(BaseTab):
     DEFAULT_BODY_TEXT = "#333333"
     DEFAULT_FOOTER_BACKGROUND = "#2c3e50"
     DEFAULT_FOOTER_TEXT = "#ffffff"
+    DEFAULT_H1_TEXT = "#2c3e50"
+    DEFAULT_H2_TEXT = "#34495e"
+    DEFAULT_H3_TEXT = "#34495e"
+    DEFAULT_MENU_TEXT = "#ffffff"
 
     # Web-safe fonts
     WEB_FONTS = [
@@ -76,6 +99,10 @@ class BrandingTab(BaseTab):
             "body_text": self.DEFAULT_BODY_TEXT,
             "footer_background": self.DEFAULT_FOOTER_BACKGROUND,
             "footer_text": self.DEFAULT_FOOTER_TEXT,
+            "h1_text": self.DEFAULT_H1_TEXT,
+            "h2_text": self.DEFAULT_H2_TEXT,
+            "h3_text": self.DEFAULT_H3_TEXT,
+            "menu_text": self.DEFAULT_MENU_TEXT,
         }
         self.has_changes = False
         super().__init__(parent)
@@ -147,14 +174,14 @@ class BrandingTab(BaseTab):
         header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
         parent_layout.addWidget(header)
 
-        # Color form in group box
+        # Color form in group box with two-column layout
         color_group = QGroupBox()
-        color_group.setMaximumHeight(350)
+        color_group.setMaximumHeight(280)
         color_layout = QGridLayout()
         color_layout.setSpacing(15)
 
-        # Color fields with updated names and new options
-        colors = [
+        # Column 1: Background and text colors
+        colors_column1 = [
             (
                 "Header Background Color 1",
                 "primary",
@@ -179,11 +206,20 @@ class BrandingTab(BaseTab):
             ("Footer Text Color", "footer_text", "Text color for footer content"),
         ]
 
-        for row, (label_text, color_key, description) in enumerate(colors):
+        # Column 2: Heading and menu colors
+        colors_column2 = [
+            ("H1 Text Color", "h1_text", "Color for H1 heading text"),
+            ("H2 Text Color", "h2_text", "Color for H2 heading text"),
+            ("H3 Text Color", "h3_text", "Color for H3 heading text"),
+            ("Main Menu Text Color", "menu_text", "Color for navigation menu text"),
+        ]
+
+        # Helper function to create color row
+        def create_color_row(label_text, color_key, row, col_offset):
             # Label
             label = QLabel(f"* {label_text}")
             label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-            color_layout.addWidget(label, row, 0)
+            color_layout.addWidget(label, row, col_offset)
 
             # Color container
             color_container = QHBoxLayout()
@@ -214,9 +250,26 @@ class BrandingTab(BaseTab):
             )
             color_container.addWidget(color_preview)
 
-            # Pick color button
+            # Pick color button - EXACT SAME PATTERN as Validate All button
             pick_button = QPushButton("Pick Color")
-            pick_button.setMaximumWidth(80)
+            pick_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+            pick_button.setStyleSheet(
+                """
+                QPushButton {
+                    background-color: #007bff;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 4px;
+                }
+                QPushButton:hover {
+                    background-color: #0056b3;
+                }
+                QPushButton:pressed {
+                    background-color: #004085;
+                }
+            """
+            )
             pick_button.clicked.connect(
                 lambda checked, key=color_key: self._open_color_picker(key)
             )
@@ -232,7 +285,15 @@ class BrandingTab(BaseTab):
             # Add to grid
             container_widget = QWidget()
             container_widget.setLayout(color_container)
-            color_layout.addWidget(container_widget, row, 1)
+            color_layout.addWidget(container_widget, row, col_offset + 1)
+
+        # Add column 1 colors
+        for row, (label_text, color_key, description) in enumerate(colors_column1):
+            create_color_row(label_text, color_key, row, 0)
+
+        # Add column 2 colors
+        for row, (label_text, color_key, description) in enumerate(colors_column2):
+            create_color_row(label_text, color_key, row, 2)
 
         color_group.setLayout(color_layout)
         parent_layout.addWidget(color_group)
@@ -268,7 +329,7 @@ class BrandingTab(BaseTab):
         parent_layout.addWidget(font_group)
 
     def _create_logo_section(self, parent_layout: QVBoxLayout):
-        """Create logo upload section"""
+        """Create logo and hero background image upload section"""
         # Section header
         header = QLabel("Logo & Branding Assets (Optional)")
         header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
@@ -277,11 +338,15 @@ class BrandingTab(BaseTab):
 
         # Logo form in group box
         logo_group = QGroupBox()
-        logo_group.setMaximumHeight(120)
+        logo_group.setMaximumHeight(220)
         logo_layout = QVBoxLayout()
         logo_layout.setSpacing(10)
 
         # Logo URL field with button
+        logo_label = QLabel("Logo Image")
+        logo_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        logo_layout.addWidget(logo_label)
+
         url_container = QHBoxLayout()
 
         logo_url_input = QLineEdit()
@@ -297,9 +362,11 @@ class BrandingTab(BaseTab):
 
         logo_layout.addLayout(url_container)
 
-        # Help text
+        # Help text for logo
         help_label = QLabel(
-            "Upload a logo image (PNG, JPG, SVG recommended) or provide a URL. Logo will be displayed in the website header."
+            "Upload a logo image (PNG, JPG, SVG recommended) or provide a URL. When you upload a file, "
+            "it will be automatically copied to your client's assets directory when saving. "
+            "The logo will be displayed in the website header."
         )
         help_label.setFont(QFont("Arial", 9))
         help_label.setStyleSheet("color: #666; font-style: italic;")
@@ -307,6 +374,41 @@ class BrandingTab(BaseTab):
         logo_layout.addWidget(help_label)
 
         self.branding_inputs["logo_url"] = logo_url_input
+
+        # Hero Background Image field with button
+        hero_label = QLabel("Home Page Hero Background Image")
+        hero_label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        hero_label.setStyleSheet("margin-top: 10px;")
+        logo_layout.addWidget(hero_label)
+
+        hero_container = QHBoxLayout()
+
+        hero_bg_input = QLineEdit()
+        hero_bg_input.setFont(QFont("Arial", 10))
+        hero_bg_input.setPlaceholderText("Enter hero background image URL or upload file")
+        hero_bg_input.textChanged.connect(self._emit_config_changed)
+        hero_container.addWidget(hero_bg_input)
+
+        hero_upload_button = QPushButton("Upload Image")
+        hero_upload_button.setMaximumWidth(100)
+        hero_upload_button.clicked.connect(self._upload_hero_background_file)
+        hero_container.addWidget(hero_upload_button)
+
+        logo_layout.addLayout(hero_container)
+
+        # Help text for hero background
+        hero_help_label = QLabel(
+            "Upload a hero background image (JPG, PNG recommended) or provide a URL. When you upload a file, "
+            "it will be automatically copied to your client's assets directory when saving. "
+            "This image will be used as the background for the hero section on the home page. "
+            "If not provided, the gradient colors will be used."
+        )
+        hero_help_label.setFont(QFont("Arial", 9))
+        hero_help_label.setStyleSheet("color: #666; font-style: italic;")
+        hero_help_label.setWordWrap(True)
+        logo_layout.addWidget(hero_help_label)
+
+        self.branding_inputs["hero_background_image_url"] = hero_bg_input
 
         logo_group.setLayout(logo_layout)
         parent_layout.addWidget(logo_group)
@@ -544,8 +646,32 @@ class BrandingTab(BaseTab):
             self.branding_inputs["logo_url"].setText(file_path)
             QMessageBox.information(
                 self,
-                "Logo Uploaded",
-                f"Logo file selected: {os.path.basename(file_path)}",
+                "Logo Selected",
+                f"Logo file selected: {os.path.basename(file_path)}\n\n"
+                f"The logo will be automatically copied to your client's assets directory "
+                f"when you save the configuration.\n\n"
+                f"It will be saved to: config/clients/[client-name]/assets/"
+            )
+
+    def _upload_hero_background_file(self):
+        """Handle hero background image file upload"""
+        file_dialog = QFileDialog()
+        file_path, _ = file_dialog.getOpenFileName(
+            self,
+            "Select Hero Background Image",
+            "",
+            "Image Files (*.png *.jpg *.jpeg *.webp *.gif *.bmp)",
+        )
+
+        if file_path:
+            self.branding_inputs["hero_background_image_url"].setText(file_path)
+            QMessageBox.information(
+                self,
+                "Hero Background Selected",
+                f"Hero background image selected: {os.path.basename(file_path)}\n\n"
+                f"The image will be automatically copied to your client's assets directory "
+                f"when you save the configuration.\n\n"
+                f"It will be saved to: config/clients/[client-name]/assets/"
             )
 
     def get_config_data(self) -> Dict[str, Any]:
@@ -570,6 +696,18 @@ class BrandingTab(BaseTab):
                 "footer_text_color": self.current_colors.get(
                     "footer_text", self.DEFAULT_FOOTER_TEXT
                 ),
+                "h1_text_color": self.current_colors.get(
+                    "h1_text", self.DEFAULT_H1_TEXT
+                ),
+                "h2_text_color": self.current_colors.get(
+                    "h2_text", self.DEFAULT_H2_TEXT
+                ),
+                "h3_text_color": self.current_colors.get(
+                    "h3_text", self.DEFAULT_H3_TEXT
+                ),
+                "main_menu_text_color": self.current_colors.get(
+                    "menu_text", self.DEFAULT_MENU_TEXT
+                ),
             },
             "typography": {
                 "font_family": (
@@ -583,7 +721,12 @@ class BrandingTab(BaseTab):
                     self.branding_inputs["logo_url"].text()
                     if "logo_url" in self.branding_inputs
                     else ""
-                )
+                ),
+                "hero_background_image_url": (
+                    self.branding_inputs["hero_background_image_url"].text()
+                    if "hero_background_image_url" in self.branding_inputs
+                    else ""
+                ),
             },
             # Note: Template system will be redesigned in future updates
         }
@@ -634,6 +777,10 @@ class BrandingTab(BaseTab):
                     ("body_text_color", "body_text"),
                     ("footer_background_color", "footer_background"),
                     ("footer_text_color", "footer_text"),
+                    ("h1_text_color", "h1_text"),
+                    ("h2_text_color", "h2_text"),
+                    ("h3_text_color", "h3_text"),
+                    ("main_menu_text_color", "menu_text"),
                 ]
 
                 for config_key, internal_key in color_mappings:
@@ -667,6 +814,10 @@ class BrandingTab(BaseTab):
                 logo_url = data["logo"].get("logo_url", "")
                 if "logo_url" in self.branding_inputs:
                     self.branding_inputs["logo_url"].setText(logo_url)
+
+                hero_bg_url = data["logo"].get("hero_background_image_url", "")
+                if "hero_background_image_url" in self.branding_inputs:
+                    self.branding_inputs["hero_background_image_url"].setText(hero_bg_url)
 
             # Template data handling removed - template system will be redesigned
 
@@ -719,6 +870,69 @@ class BrandingTab(BaseTab):
     def connect_signals(self):
         """Connect UI signals"""
         pass
+
+    def _emit_config_changed(self):
+        """Override base class method to set has_changes flag"""
+        if not self._is_loading:
+            self.has_changes = True
+            self.config_changed.emit()
+
+    def clear_data(self):
+        """Reset all fields to default values"""
+        # Reset color inputs to defaults
+        self.branding_inputs["primary"].setText(self.DEFAULT_PRIMARY)
+        self.branding_inputs["secondary"].setText(self.DEFAULT_SECONDARY)
+        self.branding_inputs["body_background"].setText(self.DEFAULT_BODY_BACKGROUND)
+        self.branding_inputs["body_text"].setText(self.DEFAULT_BODY_TEXT)
+        self.branding_inputs["footer_background"].setText(self.DEFAULT_FOOTER_BACKGROUND)
+        self.branding_inputs["footer_text"].setText(self.DEFAULT_FOOTER_TEXT)
+        self.branding_inputs["h1_text"].setText(self.DEFAULT_H1_TEXT)
+        self.branding_inputs["h2_text"].setText(self.DEFAULT_H2_TEXT)
+        self.branding_inputs["h3_text"].setText(self.DEFAULT_H3_TEXT)
+        self.branding_inputs["menu_text"].setText(self.DEFAULT_MENU_TEXT)
+
+        # Reset color tracking
+        self.current_colors = {
+            "primary": self.DEFAULT_PRIMARY,
+            "secondary": self.DEFAULT_SECONDARY,
+            "body_background": self.DEFAULT_BODY_BACKGROUND,
+            "body_text": self.DEFAULT_BODY_TEXT,
+            "footer_background": self.DEFAULT_FOOTER_BACKGROUND,
+            "footer_text": self.DEFAULT_FOOTER_TEXT,
+            "h1_text": self.DEFAULT_H1_TEXT,
+            "h2_text": self.DEFAULT_H2_TEXT,
+            "h3_text": self.DEFAULT_H3_TEXT,
+            "menu_text": self.DEFAULT_MENU_TEXT,
+        }
+
+        # Update preview labels
+        for color_key in self.current_colors:
+            if color_key in self.preview_labels:
+                self.preview_labels[color_key].setStyleSheet(
+                    f"""
+                    QLabel {{
+                        background-color: {self.current_colors[color_key]};
+                        border: 2px solid #ccc;
+                        border-radius: 4px;
+                    }}
+                """
+                )
+
+        # Reset font to default
+        if "font_family" in self.branding_inputs:
+            self.branding_inputs["font_family"].setCurrentText("Arial, sans-serif")
+
+        # Clear logo and hero background
+        if "logo_url" in self.branding_inputs:
+            self.branding_inputs["logo_url"].setText("")
+        if "hero_background_image_url" in self.branding_inputs:
+            self.branding_inputs["hero_background_image_url"].setText("")
+
+        # Update preview
+        self._update_preview()
+
+        # Reset changes flag
+        self.has_changes = False
 
     def _initialize_template_system(self):
         """Initialize the template system"""

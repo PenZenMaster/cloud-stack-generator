@@ -81,11 +81,22 @@ config/api_keys.*.json
 *.secret
 awg-cloud-credentials.json
 
+# Google OAuth credentials
+credentials.json
+gsc_token.json
+token.json
+
+# Google service account keys
+*-[0-9a-f]*.json
+flight-deck-*.json
+
 # Temporary files
 *.tmp
 *.bak
+*.zip
 awg-cloud-stack_accessKeys.csv
 SECURITY_ALERT.md
+docs/webgen.txt
 
 # Windows artifact files
 nul

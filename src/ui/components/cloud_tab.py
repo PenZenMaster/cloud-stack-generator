@@ -13,9 +13,15 @@ Created Date:
 2025-09-05
 
 Last Modified Date:
-2025-09-05
+2025-12-20
+
+Version: v1.03
 
 Comments:
+* v1.03 - Added auto-populate GCS Project ID from service account JSON key file
+* v1.02 - Fixed friendly name format (removed '+' separator, use spaces),
+  Fixed deployment history persistence (unique timestamp-based deployment IDs)
+* v1.01 - Added friendly name feature and deployment tracking
 * v1.00 - Initial implementation following existing UI patterns and SOP workflow
 """
 
@@ -23,7 +29,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QLabel, QLineEdit,
     QPushButton, QComboBox, QRadioButton, QButtonGroup, QTextEdit,
     QProgressBar, QMessageBox, QDialog, QDialogButtonBox, QApplication,
-    QCheckBox
+    QCheckBox, QTableWidgetItem
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from typing import Dict, Any, Optional, List
@@ -40,6 +46,7 @@ from ...core.aws.s3_manager import S3Manager, UploadProgress, UploadResult
 from ...core.config.client_aws_config import ClientAWSConfig, get_client_aws_manager
 from ...core.config.models import DeploymentConfig
 from ...utils.error_logger import log_error_dialog
+from ..dialogs.gsc_verification_dialog import GSCVerificationDialog
 
 
 class AWSProfileDialog(QDialog):
@@ -577,6 +584,9 @@ class CloudTab(BaseTab):
         self.current_business_name: str = ""
         self.current_domain: str = ""
 
+        # Store full config for deployment tracking (v3.5.0)
+        self.current_config = None
+
         # Flag to prevent bucket clearing during client context loading
         self._loading_client_context: bool = False
 
@@ -602,6 +612,12 @@ class CloudTab(BaseTab):
         self.cloudfront_settings_group = None  # Container for CloudFront settings
         self.distribution_id_input = None
         self.auto_invalidate_checkbox = None
+
+        # SEO and canonical URL settings
+        self.site_type_main_radio = None
+        self.site_type_backlink_radio = None
+        self.main_site_url_input = None
+
         self.progress_bar = None
         self.deploy_button = None
         self.status_text = None
@@ -774,7 +790,8 @@ class CloudTab(BaseTab):
 
     def browse_gcs_credentials(self):
         """Browse for GCS service account JSON file"""
-        from PyQt6.QtWidgets import QFileDialog
+        from PyQt6.QtWidgets import QFileDialog, QMessageBox
+        import json
 
         file_path, _ = QFileDialog.getOpenFileName(
             self,
@@ -785,6 +802,32 @@ class CloudTab(BaseTab):
 
         if file_path:
             self.gcs_credentials_input.setText(file_path)
+
+            # Auto-populate project ID from JSON key file
+            try:
+                with open(file_path, 'r') as f:
+                    credentials_data = json.load(f)
+                    project_id = credentials_data.get('project_id', '')
+                    if project_id:
+                        self.gcs_project_input.setText(project_id)
+                    else:
+                        QMessageBox.warning(
+                            self,
+                            "Project ID Not Found",
+                            "Could not find 'project_id' in the selected JSON file. Please enter it manually."
+                        )
+            except json.JSONDecodeError:
+                QMessageBox.warning(
+                    self,
+                    "Invalid JSON",
+                    "The selected file is not a valid JSON file. Please check the file and try again."
+                )
+            except Exception as e:
+                QMessageBox.warning(
+                    self,
+                    "Error Reading File",
+                    f"Could not read the JSON file: {str(e)}"
+                )
 
     def test_gcs_connection(self):
         """Test Google Cloud Storage connection"""
@@ -1118,7 +1161,18 @@ class CloudTab(BaseTab):
         """Create deployment controls section"""
         group = QGroupBox("Deployment")
         layout = QVBoxLayout()
-        
+
+        # Friendly Name (Optional)
+        friendly_name_layout = QHBoxLayout()
+        friendly_name_layout.addWidget(QLabel("Friendly Name (Optional):"))
+
+        self.friendly_name_input = QLineEdit()
+        self.friendly_name_input.setPlaceholderText("Leave empty to auto-generate from Business Name, Industry, Date")
+        self.friendly_name_input.setToolTip("Custom name for this deployment. If left empty, will auto-generate from business info.")
+        friendly_name_layout.addWidget(self.friendly_name_input)
+
+        layout.addLayout(friendly_name_layout)
+
         # Local path selection
         path_layout = QHBoxLayout()
         path_layout.addWidget(QLabel("Local Website:"))
@@ -1179,8 +1233,55 @@ class CloudTab(BaseTab):
         """Create SEO meta tags management section"""
         from PyQt6.QtWidgets import QTableWidget, QHeaderView
 
-        group = QGroupBox("SEO Meta Tags")
+        group = QGroupBox("SEO Configuration")
         layout = QVBoxLayout()
+
+        # Canonical URL Settings
+        canonical_label = QLabel("Canonical URLs:")
+        canonical_label.setStyleSheet("font-weight: bold;")
+        layout.addWidget(canonical_label)
+
+        # Site Type selection
+        site_type_layout = QHBoxLayout()
+        site_type_label = QLabel("Site Type:")
+        site_type_layout.addWidget(site_type_label)
+
+        self.site_type_main_radio = QRadioButton("Main Site")
+        self.site_type_main_radio.setChecked(True)
+        self.site_type_main_radio.setToolTip("Primary business website - canonical URLs point to this site")
+        self.site_type_main_radio.toggled.connect(self.on_site_type_changed)
+        site_type_layout.addWidget(self.site_type_main_radio)
+
+        self.site_type_backlink_radio = QRadioButton("Backlink Site")
+        self.site_type_backlink_radio.setToolTip("Satellite/city site - canonical URLs point to main site")
+        self.site_type_backlink_radio.toggled.connect(self.on_site_type_changed)
+        site_type_layout.addWidget(self.site_type_backlink_radio)
+
+        site_type_layout.addStretch()
+        layout.addLayout(site_type_layout)
+
+        # Main Site URL (only enabled for backlink sites)
+        main_site_layout = QHBoxLayout()
+        main_site_label = QLabel("Main Site URL:")
+        main_site_layout.addWidget(main_site_label)
+
+        self.main_site_url_input = QLineEdit()
+        self.main_site_url_input.setPlaceholderText("https://mainsite.com")
+        self.main_site_url_input.setToolTip("For backlink sites: URL of the main production site (canonical URLs will point here)")
+        self.main_site_url_input.setEnabled(False)  # Disabled by default (main site selected)
+        main_site_layout.addWidget(self.main_site_url_input)
+
+        layout.addLayout(main_site_layout)
+
+        # Separator
+        separator = QLabel()
+        separator.setStyleSheet("border-top: 1px solid #ccc; margin: 10px 0;")
+        layout.addWidget(separator)
+
+        # Meta Tags section header
+        meta_tags_header = QLabel("Meta Tags:")
+        meta_tags_header.setStyleSheet("font-weight: bold;")
+        layout.addWidget(meta_tags_header)
 
         # Info label
         info_label = QLabel("Paste complete meta tag (Google provides the full tag)")
@@ -1219,6 +1320,13 @@ class CloudTab(BaseTab):
         button_layout.addWidget(self.remove_meta_tag_button)
 
         button_layout.addStretch()
+
+        # Google Search Console integration button
+        self.gsc_button = QPushButton("Get Google Verification Tag")
+        self.gsc_button.clicked.connect(self.open_gsc_verification_dialog)
+        self.gsc_button.setStyleSheet("background-color: #4285f4; color: white;")
+        button_layout.addWidget(self.gsc_button)
+
         layout.addLayout(button_layout)
 
         group.setLayout(layout)
@@ -2598,7 +2706,20 @@ class CloudTab(BaseTab):
                 self.cloudfront_settings_group.setTitle("CloudFront Distribution (Auto-Created)")
                 # Restore normal appearance
                 self.cloudfront_settings_group.setStyleSheet("")
-    
+
+    def on_site_type_changed(self):
+        """Handle site type change (Main Site vs Backlink Site)"""
+        if not hasattr(self, 'main_site_url_input') or self.main_site_url_input is None:
+            return  # UI not fully initialized yet
+
+        # Enable/disable Main Site URL input based on selection
+        is_backlink_site = self.site_type_backlink_radio.isChecked()
+        self.main_site_url_input.setEnabled(is_backlink_site)
+
+        # Clear the field if switching to main site
+        if not is_backlink_site:
+            self.main_site_url_input.clear()
+
     def update_deploy_button_state(self):
         """Update deploy button enabled state"""
         if not hasattr(self, 'deploy_button') or self.deploy_button is None:
@@ -2611,32 +2732,343 @@ class CloudTab(BaseTab):
         self.deploy_button.setEnabled(profile_selected and bucket_configured)
     
     def start_deployment(self):
-        """Start website deployment"""
+        """Start website deployment - implements test-file-first workflow"""
+        from PyQt6.QtWidgets import QMessageBox
+
+        # Check if generation is in progress from first deployment
+        if hasattr(self, '_generation_in_progress') and self._generation_in_progress:
+            # User clicked Deploy while generation is in progress
+            # Check if they've now selected an output directory (which means generation completed)
+            local_path = self.local_path_input.text().strip()
+            if local_path and Path(local_path).exists() and (Path(local_path) / "index.html").exists():
+                # Generation completed! Clear flag and proceed with deployment
+                self._generation_in_progress = False
+                self.log_status(f"Generation completed. Ready to deploy from: {local_path}")
+                # Continue to deployment below
+            else:
+                # Generation still in progress or failed
+                QMessageBox.warning(
+                    self,
+                    "Generation In Progress",
+                    "Website generation is still in progress.\n\n"
+                    "Please wait for the generation to complete before deploying.\n"
+                    "You'll see a completion dialog when it's ready.\n\n"
+                    "After generation completes, you may need to manually set the\n"
+                    "Local Website Path field to your output directory before deploying."
+                )
+                return
+
         # Get the local website path
         local_path = self.local_path_input.text().strip()
-        
-        if not local_path:
-            QMessageBox.warning(
+
+        # Check if this is first deployment (no website generated yet)
+        if not local_path or not Path(local_path).exists():
+            # First deployment workflow: test file -> generate -> deploy
+            self._handle_first_deployment()
+        else:
+            # Subsequent deployment: regenerate -> deploy
+            self._handle_subsequent_deployment(local_path)
+
+    def _handle_first_deployment(self):
+        """Handle first-time deployment with test file workflow"""
+        from PyQt6.QtWidgets import QMessageBox
+
+        # Only support CloudFront Mode B for first deployment canonical URL workflow
+        is_mode_b = self.cloudfront_mode_radio.isChecked()
+        if not is_mode_b:
+            QMessageBox.information(
                 self,
-                "No Website to Deploy",
-                "No website has been generated yet.\n\n"
+                "First Deployment",
+                "This appears to be your first deployment.\n\n"
                 "Please generate a website first using the main application, "
-                "then return to this tab to deploy it."
+                "then return to this tab to deploy it.\n\n"
+                "For Mode A (S3-only), the canonical URL workflow is not automated."
             )
             return
-        
-        if not Path(local_path).exists():
+
+        # Show message confirming first deployment workflow
+        reply = QMessageBox.question(
+            self,
+            "First Deployment",
+            "This website has not been deployed yet.\n\n"
+            "The app will:\n"
+            "1. Deploy a test file to determine the CloudFront URL\n"
+            "2. Update your config with the CloudFront URL\n"
+            "3. Trigger website generation (you'll select output folder)\n"
+            "4. After generation completes, deploy the full website\n\n"
+            "Continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        # Step 1: Deploy test file to get CloudFront URL
+        self.log_status("Step 1: Deploying test file to determine CloudFront URL...")
+        cloudfront_url = self._deploy_test_file_and_get_url()
+
+        if not cloudfront_url:
+            QMessageBox.critical(
+                self,
+                "Deployment Failed",
+                "Failed to deploy test file and retrieve CloudFront URL.\n"
+                "Please check the logs and try again."
+            )
+            return
+
+        self.log_status(f"CloudFront URL determined: {cloudfront_url}")
+
+        # Step 2: Update config with CloudFront URL
+        self.log_status("Step 2: Updating config with CloudFront URL...")
+        if not self._update_config_deployment_url(cloudfront_url):
+            QMessageBox.critical(
+                self,
+                "Configuration Update Failed",
+                "Failed to update configuration with CloudFront URL.\n"
+                "Please update the deployment_url manually in your config."
+            )
+            return
+
+        # Step 3: Generate website with correct canonical URLs
+        self.log_status("Step 3: Generating website with correct canonical URLs...")
+
+        # Find parent window and trigger generation
+        parent_window = self.parent()
+        while parent_window and not hasattr(parent_window, 'generate_website'):
+            parent_window = parent_window.parent()
+
+        if not parent_window or not hasattr(parent_window, 'generate_website'):
+            QMessageBox.critical(
+                self,
+                "Generation Failed",
+                "Cannot trigger website generation: Main window not found.\n"
+                "Please generate the website manually."
+            )
+            return
+
+        # Set flag to block deployment during generation
+        self._generation_in_progress = True
+        self._pending_output_dir = None  # Will be set by user during generation
+
+        # Show instructions to user
+        QMessageBox.information(
+            self,
+            "Step 3: Generate Website",
+            f"CloudFront URL determined: {cloudfront_url}\n"
+            f"Config updated successfully!\n\n"
+            f"NEXT STEPS:\n"
+            f"1. Click OK to start website generation\n"
+            f"2. Select output folder when prompted\n"
+            f"   (Recommended: output/clients/[client-name])\n"
+            f"3. Wait for generation to complete (several minutes)\n"
+            f"4. After generation dialog closes, return to Cloud Deploy tab\n"
+            f"5. Click 'Deploy Website' to deploy the generated site\n\n"
+            f"IMPORTANT: Do NOT click 'Deploy Website' until generation completes!\n"
+            f"The website will be generated with correct canonical URLs."
+        )
+
+        # Trigger generation
+        parent_window.generate_website()
+
+        # Note: local_path will be set when user clicks Deploy after generation completes
+
+    def _handle_subsequent_deployment(self, local_path: str):
+        """Handle subsequent deployment with regeneration confirmation"""
+        from PyQt6.QtWidgets import QMessageBox
+
+        # Show generation confirmation dialog (per webgen.txt workflow)
+        reply = QMessageBox.information(
+            self,
+            "Website Generation Confirmation",
+            f"The website will be regenerated and deployed.\n\n"
+            f"Output folder: {local_path}\n\n"
+            f"Click OK to continue.",
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Ok
+        )
+
+        if reply == QMessageBox.StandardButton.Cancel:
+            self.log_status("Deployment cancelled by user")
+            return
+
+        # Trigger regeneration
+        parent_window = self.parent()
+        while parent_window and not hasattr(parent_window, 'generate_website'):
+            parent_window = parent_window.parent()
+
+        if parent_window and hasattr(parent_window, 'generate_website'):
+            self.log_status("Regenerating website...")
+            parent_window.generate_website()
+
+            QMessageBox.information(
+                self,
+                "Generation Started",
+                "Website regeneration started.\n\n"
+                "After generation completes, return to the Cloud Deploy tab\n"
+                "and click 'Deploy Website' to deploy the updated site."
+            )
+        else:
+            # Fallback: Deploy existing website if can't regenerate
             QMessageBox.warning(
                 self,
-                "Website Not Found",
-                f"The website directory does not exist:\n{local_path}\n\n"
-                "Please regenerate the website first."
+                "Cannot Regenerate",
+                "Cannot trigger website regeneration (main window not found).\n\n"
+                "Deploying existing website files instead.\n"
+                "To regenerate, use the main application first."
             )
-            return
-        
-        # Deploy the website
-        self.deploy_website(local_path)
-    
+            self.deploy_website(local_path)
+
+    def _deploy_test_file_and_get_url(self) -> str:
+        """Deploy a test file to S3/CloudFront and return the CloudFront URL"""
+        import tempfile
+        from pathlib import Path
+
+        # Get deployment settings
+        profile_name = self.profile_combo.currentText()
+        bucket_name = self._get_actual_bucket_name()
+        directory = self.directory_combo.currentText().strip()
+        if directory == "/ (root)" or directory == "/":
+            directory = ""
+
+        if not profile_name or not bucket_name:
+            self.log_status("Error: Missing AWS profile or bucket name")
+            return ""
+
+        try:
+            # Create temporary test file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as tf:
+                tf.write("""<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Deployment</title>
+</head>
+<body>
+    <h1>CloudFront Test File</h1>
+    <p>This is a test file to determine the CloudFront distribution URL.</p>
+</body>
+</html>""")
+                test_file_path = tf.name
+
+            test_file = Path(test_file_path)
+
+            # Activate AWS profile
+            if not self.credentials_manager.set_active_profile(profile_name):
+                self.log_status("Error: Failed to activate AWS profile")
+                test_file.unlink()
+                return ""
+
+            session = self.credentials_manager.get_active_session()
+            self.s3_manager.set_session(session)
+
+            # Configure bucket for static website hosting
+            success, message = self.s3_manager.configure_public_website(bucket_name)
+            if not success:
+                self.log_status(f"Error configuring bucket: {message}")
+                test_file.unlink()
+                return ""
+
+            # Get or create CloudFront distribution
+            comment = f"Auto-created for {bucket_name}"
+            if directory:
+                comment += f" (directory: {directory})"
+
+            success, dist_id, cf_domain, is_new, msg = self.s3_manager.get_or_create_distribution(
+                bucket_name=bucket_name,
+                origin_path=directory,
+                comment=comment
+            )
+
+            if not success:
+                self.log_status(f"Error: {msg}")
+                test_file.unlink()
+                return ""
+
+            # Store distribution ID for later
+            self.distribution_id_input.setText(dist_id)
+
+            # Upload test file to S3
+            s3 = self.s3_manager.session.client('s3')
+            s3_key = "test.html"
+            if directory:
+                s3_key = f"{directory.rstrip('/')}/{s3_key}"
+
+            s3.upload_file(
+                str(test_file),
+                bucket_name,
+                s3_key,
+                ExtraArgs={
+                    'ContentType': 'text/html',
+                    'CacheControl': 'public, max-age=31536000, immutable'
+                }
+            )
+
+            self.log_status(f"Test file uploaded to s3://{bucket_name}/{s3_key}")
+
+            # Clean up temp file
+            test_file.unlink()
+
+            # Return CloudFront URL
+            cloudfront_url = f"https://{cf_domain}"
+            return cloudfront_url
+
+        except Exception as e:
+            self.log_status(f"Error deploying test file: {str(e)}")
+            if test_file_path and Path(test_file_path).exists():
+                Path(test_file_path).unlink()
+            return ""
+
+    def _update_config_deployment_url(self, cloudfront_url: str) -> bool:
+        """Update config file with deployment_url"""
+        import yaml
+        from pathlib import Path
+
+        try:
+            # Find main window
+            parent_window = self.parent()
+            while parent_window and not hasattr(parent_window, 'current_config_file'):
+                parent_window = parent_window.parent()
+
+            if not parent_window or not parent_window.current_config_file:
+                self.log_status("Error: No config file loaded")
+                return False
+
+            config_file = Path(parent_window.current_config_file)
+            if not config_file.exists():
+                self.log_status(f"Error: Config file not found: {config_file}")
+                return False
+
+            # Load config YAML
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config_data = yaml.safe_load(f)
+
+            # Update deployment_url
+            if 'cloud' not in config_data:
+                config_data['cloud'] = {}
+            config_data['cloud']['deployment_url'] = cloudfront_url
+
+            # Save config
+            with open(config_file, 'w', encoding='utf-8') as f:
+                yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+            self.log_status(f"Config updated: deployment_url = {cloudfront_url}")
+
+            # CRITICAL: Update Cloud Tab's in-memory config to prevent auto-save from overwriting
+            if hasattr(self, 'current_client_aws_config') and self.current_client_aws_config:
+                self.current_client_aws_config.deployment_url = cloudfront_url
+                self.log_status("Cloud Tab in-memory config updated with deployment_url")
+
+            # Reload config in parent window
+            if hasattr(parent_window, 'load_config_file'):
+                parent_window.load_config_file(str(config_file))
+                self.log_status("Config reloaded in UI")
+
+            return True
+
+        except Exception as e:
+            self.log_status(f"Error updating config: {str(e)}")
+            return False
+
     def deploy_website(self, website_path: str):
         """Deploy generated website to cloud - routes to provider-specific method"""
         if self.current_provider == "google_gcs":
@@ -2725,7 +3157,25 @@ class CloudTab(BaseTab):
                 from ...core.config.models import DeploymentConfig
                 from datetime import datetime
 
-                deployment_id = f"{bucket_name}"
+                # Snapshot industry from current config
+                snapshotted_industry = None
+                if hasattr(self, 'current_config') and self.current_config:
+                    snapshotted_industry = self.current_config.business.industry
+
+                # Use custom friendly name if provided, otherwise auto-generate
+                custom_name = self.friendly_name_input.text().strip() if hasattr(self, 'friendly_name_input') else ""
+                if custom_name:
+                    friendly_name = custom_name
+                else:
+                    friendly_name = self._generate_default_friendly_name(
+                        business_name=self.current_config.business.business_name if self.current_config else None,
+                        industry=snapshotted_industry,
+                        directory=""
+                    )
+
+                # Generate unique deployment ID with timestamp to preserve full history
+                timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+                deployment_id = f"{bucket_name}-{timestamp}"
                 deployment = DeploymentConfig(
                     deployment_id=deployment_id,
                     bucket=bucket_name,
@@ -2736,12 +3186,18 @@ class CloudTab(BaseTab):
                     cloudfront_domain=None,
                     last_deployed=datetime.utcnow().isoformat() + "Z",
                     deployment_url=website_url,
-                    meta_tags=self.get_meta_tags_from_table()
+                    meta_tags=self.get_meta_tags_from_table(),
+                    friendly_name=friendly_name,
+                    industry=snapshotted_industry
                 )
 
                 # Emit signal for parent to handle
                 self.deployment_created.emit(deployment)
                 self.log_status(f"Deployment record created: {deployment_id}")
+
+                # Clear friendly name input for next deployment
+                if hasattr(self, 'friendly_name_input'):
+                    self.friendly_name_input.clear()
 
                 self.log_status(f"Website URL: {website_url}")
 
@@ -2935,10 +3391,13 @@ class CloudTab(BaseTab):
             if directory == "/ (root)" or directory == "/":
                 directory = ""
 
-            # Generate deployment ID
+            # Generate unique deployment ID with timestamp to preserve full history
+            # Each deployment creates a new entry, even when deploying to same bucket/directory
+            timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
             deployment_id = f"{bucket_name}"
             if directory:
                 deployment_id += f"-{directory}"
+            deployment_id += f"-{timestamp}"
 
             # Get mode and CloudFront settings
             mode = "s3" if self.s3_mode_radio.isChecked() else "cloudfront"
@@ -2957,6 +3416,22 @@ class CloudTab(BaseTab):
             # Get current meta tags from UI
             meta_tags = self.get_meta_tags_from_table()
 
+            # Snapshot industry from current config
+            snapshotted_industry = None
+            if hasattr(self, 'current_config') and self.current_config:
+                snapshotted_industry = self.current_config.business.industry
+
+            # Use custom friendly name if provided, otherwise auto-generate
+            custom_name = self.friendly_name_input.text().strip() if hasattr(self, 'friendly_name_input') else ""
+            if custom_name:
+                friendly_name = custom_name
+            else:
+                friendly_name = self._generate_default_friendly_name(
+                    business_name=self.current_config.business.business_name if self.current_config else None,
+                    industry=snapshotted_industry,
+                    directory=directory
+                )
+
             # Create deployment config
             deployment = DeploymentConfig(
                 deployment_id=deployment_id,
@@ -2968,25 +3443,69 @@ class CloudTab(BaseTab):
                 cloudfront_domain=cloudfront_domain if mode == "cloudfront" else None,
                 last_deployed=datetime.utcnow().isoformat() + "Z",
                 deployment_url=website_url,
-                meta_tags=meta_tags
+                meta_tags=meta_tags,
+                friendly_name=friendly_name,
+                industry=snapshotted_industry
             )
 
             # Emit signal for parent to handle
             self.deployment_created.emit(deployment)
             self.log_status(f"Deployment record created: {deployment_id}")
 
+            # Clear friendly name input for next deployment
+            if hasattr(self, 'friendly_name_input'):
+                self.friendly_name_input.clear()
+
             # Show success message
-            QMessageBox.information(
-                self,
-                "Deployment Successful",
+            success_msg = (
                 f"Website deployed successfully!\n\n"
                 f"URL: {website_url or 'Check AWS console for URL'}\n"
                 f"Files uploaded: {len(result.uploaded_files)}"
             )
+
+            QMessageBox.information(
+                self,
+                "Deployment Successful",
+                success_msg
+            )
         else:
             self.log_status(f"Deployment failed: {result.message}")
             QMessageBox.warning(self, "Deployment Failed", result.message)
-    
+
+    def _generate_default_friendly_name(
+        self,
+        business_name: Optional[str],
+        industry: Optional[str],
+        directory: str
+    ) -> str:
+        """
+        Generate user-friendly default name for deployment.
+        Format: "{Business Name} {Industry} MM/DD/YYYY"
+        Example: "United Structural Systems Residential Foundation Repair 12/20/2025"
+        """
+        from datetime import datetime
+
+        now = datetime.now()
+        date_str = now.strftime("%m/%d/%Y")  # MM/DD/YYYY format
+
+        parts = []
+
+        if business_name:
+            # Use FULL business name (no abbreviation or truncation)
+            parts.append(business_name)
+        else:
+            # Fallback: use directory
+            clean_dir = directory.replace('-', ' ').replace('_', ' ').title()
+            parts.append(clean_dir)
+
+        if industry:
+            # Use FULL industry (no truncation)
+            parts.append(industry)
+
+        parts.append(date_str)
+
+        return ' '.join(parts)
+
     def log_status(self, message: str):
         """Add message to status log"""
         from datetime import datetime
@@ -3284,19 +3803,69 @@ class CloudTab(BaseTab):
 
         return meta_tags
 
+    def open_gsc_verification_dialog(self):
+        """Open Google Search Console verification dialog"""
+        # Get current deployment URL if available
+        deployment_url = ""
+
+        # Try to get URL from current deployment
+        if hasattr(self, 'current_client_aws_config') and self.current_client_aws_config:
+            deployment_url = getattr(self.current_client_aws_config, 'deployment_url', '')
+
+        # If no deployment URL, try to construct from current UI state
+        if not deployment_url:
+            if self.cloudfront_mode_radio.isChecked():
+                domain = self.cloudfront_domain_input.text().strip()
+                if domain:
+                    deployment_url = f"https://{domain}/"
+            else:
+                bucket = self._get_actual_bucket_name()
+                region = self.region_combo.currentText()
+                if bucket and region:
+                    deployment_url = f"https://{bucket}.s3.{region}.amazonaws.com/"
+
+        # Open dialog
+        dialog = GSCVerificationDialog(deployment_url, parent=self)
+        dialog.meta_tag_generated.connect(self.add_meta_tag_from_gsc)
+        dialog.exec()
+
+    def add_meta_tag_from_gsc(self, name: str, content: str):
+        """Add meta tag from GSC to table"""
+        # Construct full meta tag HTML
+        meta_tag_html = f'<meta name="{name}" content="{content}" />'
+
+        # Add row to meta tags table
+        row_count = self.meta_tags_table.rowCount()
+        self.meta_tags_table.insertRow(row_count)
+        self.meta_tags_table.setItem(row_count, 0, QTableWidgetItem(meta_tag_html))
+
+        self.log_status(f"Added Google verification meta tag: {name}")
+
     def get_config_data(self) -> Dict[str, Any]:
         """Get cloud configuration data"""
+        # Get deployment_url from current_client_aws_config if available
+        deployment_url = ''
+        if hasattr(self, 'current_client_aws_config') and self.current_client_aws_config:
+            deployment_url = getattr(self.current_client_aws_config, 'deployment_url', '')
+
         return {
             'aws_profile': self.profile_combo.currentText() if self.profile_combo.currentText() != "No profiles configured" else "",
             'aws_region': self.region_combo.currentText(),
             'bucket_name': self._get_actual_bucket_name(),
             'directory': self.directory_combo.currentText().strip(),
             'deployment_mode': 's3' if self.s3_mode_radio.isChecked() else 'cloudfront',
+            'deployment_url': deployment_url,
             'distribution_id': self.distribution_id_input.text().strip(),
             'auto_invalidate_cache': self.auto_invalidate_checkbox.isChecked(),
+            'site_type': 'backlink_site' if self.site_type_backlink_radio.isChecked() else 'main_site',
+            'main_site_url': self.main_site_url_input.text().strip(),
             'meta_tags': self.get_meta_tags_from_table()
         }
     
+    def set_config(self, config):
+        """Store full config for deployment tracking (v3.5.0)"""
+        self.current_config = config
+
     def set_config_data(self, data: Dict[str, Any]):
         """Set cloud configuration data"""
         # Refresh profiles first
@@ -3374,14 +3943,25 @@ class CloudTab(BaseTab):
         auto_invalidate = data.get('auto_invalidate_cache', True)
         self.auto_invalidate_checkbox.setChecked(auto_invalidate)
 
+        # Load SEO and canonical URL settings
+        site_type = data.get('site_type', 'main_site')
+        if site_type == 'backlink_site':
+            self.site_type_backlink_radio.setChecked(True)
+        else:
+            self.site_type_main_radio.setChecked(True)
+
+        main_site_url = data.get('main_site_url', '')
+        if main_site_url:
+            self.main_site_url_input.setText(main_site_url)
+
     def validate_data(self) -> tuple[bool, list[str]]:
         """Validate cloud configuration"""
         errors = []
-        
+
         profile_name = self.profile_combo.currentText()
         if not profile_name or profile_name == "No profiles configured":
             errors.append("AWS profile is required for cloud deployment")
-        
+
         bucket_name = self._get_actual_bucket_name()
         if not bucket_name or bucket_name == "No buckets found":
             errors.append("S3 bucket name is required")
@@ -3389,7 +3969,15 @@ class CloudTab(BaseTab):
             is_valid, message = self.s3_manager.validate_bucket_name(bucket_name)
             if not is_valid:
                 errors.append(f"Invalid bucket name: {message}")
-        
+
+        # Validate backlink site configuration
+        if self.site_type_backlink_radio.isChecked():
+            main_site_url = self.main_site_url_input.text().strip()
+            if not main_site_url:
+                errors.append("Main Site URL is required when 'Backlink Site' is selected")
+            elif not main_site_url.startswith(('http://', 'https://')):
+                errors.append("Main Site URL must start with http:// or https://")
+
         return len(errors) == 0, errors
     
     def set_client_context(self, business_name: str, domain: str):

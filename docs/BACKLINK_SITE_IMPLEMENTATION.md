@@ -1,8 +1,21 @@
-# Backlink Site Implementation - Complete
+# Backlink Site Implementation - v3.6.0+
 
 ## Summary
 
 Successfully implemented a complete backlink site architecture that enables CloudFront satellite sites to provide SEO value to main production sites through strategic linking.
+
+## Version History
+
+- **v3.5.0**: Initial implementation - backlink sites used `deployment_url` for canonicals
+- **v3.6.0**: Updated implementation - backlink sites now use `main_site_url` for canonicals (points to main site)
+- **v3.7.1**: Added validation - requires `main_site_url` when `site_type` is `backlink_site`
+
+## IMPORTANT: v3.6.0+ Behavior Change
+
+**OLD (v3.5.0)**: Backlink sites used CloudFront URL for canonical tags
+**NEW (v3.6.0+)**: Backlink sites use `main_site_url` for canonical tags
+
+This change better aligns with the original backlink strategy where satellite sites point TO the main site via canonicals.
 
 ## Changes Implemented
 
@@ -31,21 +44,26 @@ class CloudConfig:
 - `src/core/generators/enhanced_city_page_generator.py`
 - `src/core/generators/page_generator.py`
 
-**Key Method Added**:
+**Key Method (v3.6.0+)**:
 ```python
 def _get_canonical_base_url(self, config: ClientConfig) -> str:
     """
     Get the base URL for canonical tags and sitemaps.
 
-    For backlink sites: Use deployment_url (CloudFront) so Google indexes it independently
-    For main sites: Use deployment_url if specified, otherwise business.domain
+    Priority order:
+    1. Backlink sites -> main_site_url (canonical points to main production site)
+    2. Main sites -> deployment_url (if specified)
+    3. Fallback -> business.domain
     """
-    if config.cloud.site_type == "backlink_site" and config.cloud.deployment_url:
-        return config.cloud.deployment_url.rstrip("/")
+    # For backlink sites, canonical should point to the main site
+    if config.cloud.site_type == "backlink_site" and config.cloud.main_site_url:
+        return config.cloud.main_site_url.rstrip("/")
 
+    # For main sites, prefer deployment_url if specified (canonical matches deployment)
     if config.cloud.deployment_url:
         return config.cloud.deployment_url.rstrip("/")
 
+    # Fallback to business domain if no deployment URL specified
     return config.business.domain.rstrip("/")
 ```
 
@@ -151,7 +169,7 @@ template_data = {
 
 **File**: `config/clients/clean_restroom_rental_virgina_config.yaml`
 
-**Added Section**:
+**Added Section (v3.6.0+)**:
 ```yaml
 # Cloud deployment configuration for backlink site
 cloud:
@@ -161,11 +179,13 @@ cloud:
   distribution_id: E3VQJQK8Z5Z5Z5
   deployment_url: https://dslmqk0s3vj23.cloudfront.net
   site_type: backlink_site
-  main_site_url: https://restroomrentalsvirginia.com
+  main_site_url: https://restroomrentalsvirginia.com  # REQUIRED for backlink sites (v3.7.1+)
   allow_indexing: true
 ```
 
 **Purpose**: Configures Clean Restroom Rental Virginia site as a backlink site targeting the main production URL.
+
+**IMPORTANT (v3.7.1+)**: `main_site_url` is now **REQUIRED** when `site_type: backlink_site`. Validation will prevent deployment if this field is empty or invalid.
 
 ## How It Works
 
@@ -210,10 +230,12 @@ cloud:
 
 ## Testing Checklist
 
-After regenerating the site:
+After regenerating the site (v3.6.0+):
 
-- [ ] Canonical tags point to CloudFront URL
-- [ ] Sitemap.xml contains CloudFront URLs
+- [ ] **VALIDATION**: `main_site_url` is populated in cloud config when `site_type: backlink_site`
+- [ ] **VALIDATION**: UI prevents deployment without valid `main_site_url` for backlink sites
+- [ ] Canonical tags point to **main site URL** (NOT CloudFront)
+- [ ] Sitemap.xml contains CloudFront deployment URLs
 - [ ] robots.txt allows indexing (Allow: /)
 - [ ] robots.txt sitemap points to CloudFront sitemap
 - [ ] Strategic backlinks to main site present on city pages
@@ -222,6 +244,20 @@ After regenerating the site:
 - [ ] Contact CTAs link to main site (for backlink sites)
 - [ ] Deploy to CloudFront and verify live
 - [ ] Submit CloudFront sitemap to Google Search Console
+
+### Validation (v3.7.1+)
+
+The system now enforces the following rules:
+
+**UI Validation** (Cloud Deploy Tab):
+- Prevents deployment when "Backlink Site" is selected without a valid `main_site_url`
+- Shows error: "Main Site URL is required when 'Backlink Site' is selected"
+- Validates URL format (must start with `http://` or `https://`)
+
+**Generator Validation** (page_generator.py):
+- Prevents generation with invalid backlink configuration
+- Returns error: "Main Site URL is required when site_type is 'backlink_site'"
+- Catches manual config file edits that bypass UI
 
 ## SEO Timeline Expectations
 

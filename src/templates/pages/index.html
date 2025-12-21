@@ -48,7 +48,7 @@
 
     <main>
         <!-- Hero Section -->
-        <section class="hero">
+        <section class="hero" {% if branding.hero_background_image_url %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ branding.hero_background_image_url }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
             <div class="hero-content">
                 <h1>{{ business.tagline or ("Professional " + business.industry + " Services") }}</h1>
                 <p class="hero-subtitle">{{ business.description or ("Quality " + business.industry.lower() + " services you can trust - serving " + (contact.address.city or "your area") + " and beyond!") }}</p>
@@ -163,5 +163,96 @@
     </main>
 
     {% include 'components/footer.html' %}
+
+    <script>
+        // Enhanced dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownItems = document.querySelectorAll('.has-dropdown');
+            let resizeTimeoutId;
+
+            dropdownItems.forEach(function(dropdownItem) {
+                const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                const dropdown = dropdownItem.querySelector('.dropdown');
+                let timeoutId;
+
+                if (trigger && dropdown) {
+                    // Initialize dropdown state
+                    dropdown.style.display = 'none';
+                    trigger.setAttribute('aria-expanded', 'false');
+
+                    dropdownItem.addEventListener('mouseenter', function() {
+                        clearTimeout(timeoutId);
+                        dropdown.style.display = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+                        trigger.setAttribute('aria-expanded', 'true');
+                    });
+
+                    dropdownItem.addEventListener('mouseleave', function() {
+                        timeoutId = setTimeout(function() {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }, 200);
+                    });
+
+                    trigger.addEventListener('click', function(e) {
+                        if (window.innerWidth <= 768) {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            const displayType = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+
+                            dropdownItems.forEach(function(other) {
+                                if (other !== dropdownItem) {
+                                    const otherDropdown = other.querySelector('.dropdown');
+                                    const otherTrigger = other.querySelector('a[aria-haspopup="true"]');
+                                    if (otherDropdown) otherDropdown.style.display = 'none';
+                                    if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+
+                            dropdown.style.display = isVisible ? 'none' : displayType;
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        }
+                    });
+
+                    trigger.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            dropdown.style.display = isVisible ? 'none' : (dropdown.classList.contains('grid-layout') ? 'grid' : 'flex');
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        } else if (e.key === 'Escape') {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                            trigger.focus();
+                        }
+                    });
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.has-dropdown')) {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown) dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeoutId);
+                resizeTimeoutId = setTimeout(function() {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown && window.innerWidth > 768) {
+                            dropdown.style.display = 'none';
+                            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                }, 150);
+            });
+        });
+    </script>
 </body>
 </html>

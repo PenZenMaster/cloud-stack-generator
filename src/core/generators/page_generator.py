@@ -67,6 +67,17 @@ class PageGenerator:
         start_time = datetime.now()
 
         try:
+            # Validate configuration before generation
+            validation_errors = self._validate_config(config)
+            if validation_errors:
+                for error in validation_errors:
+                    result.add_error(error)
+                logger.error(
+                    "Configuration validation failed",
+                    extra={"extra_fields": {"errors": validation_errors}}
+                )
+                return result
+
             # Create output directory
             output_dir = self._create_output_directory(config)
             result.output_directory = str(output_dir)
@@ -111,7 +122,7 @@ class PageGenerator:
             self._generate_additional_files(config, output_dir, result)
 
             # Copy static assets
-            self._copy_static_assets(output_dir, result)
+            self._copy_static_assets(config, output_dir, result)
 
             result.success = len(result.errors) == 0
             result.generation_time = (datetime.now() - start_time).total_seconds()
@@ -161,6 +172,31 @@ class PageGenerator:
             (output_dir / "locations").mkdir(exist_ok=True)
 
         return output_dir
+
+    def _validate_config(self, config: ClientConfig) -> List[str]:
+        """
+        Validate configuration before generation
+
+        Returns:
+            List of error messages (empty if valid)
+        """
+        errors = []
+
+        # Validate backlink site configuration
+        if hasattr(config, 'cloud') and config.cloud:
+            if config.cloud.site_type == "backlink_site":
+                main_site_url = getattr(config.cloud, 'main_site_url', '')
+                if not main_site_url or not main_site_url.strip():
+                    errors.append(
+                        "Main Site URL is required when site_type is 'backlink_site'. "
+                        "Please specify the URL of your main production site for canonical tags."
+                    )
+                elif not main_site_url.startswith(('http://', 'https://')):
+                    errors.append(
+                        f"Main Site URL must start with http:// or https://. Got: {main_site_url}"
+                    )
+
+        return errors
 
     def _calculate_total_pages(self, config: ClientConfig) -> int:
         """Calculate total number of pages to be generated"""
@@ -350,6 +386,15 @@ class PageGenerator:
         """Generate individual city pages"""
         locations_dir = output_dir / "locations"
 
+        # Clean up old city pages to prevent cross-contamination between configs
+        if locations_dir.exists():
+            import shutil
+            try:
+                shutil.rmtree(locations_dir)
+                logger.info(f"Cleaned old city pages from {locations_dir}")
+            except Exception as e:
+                logger.warning(f"Failed to clean locations directory: {str(e)}")
+
         # Import the unified city page generator
         from .city_page_generator import CityPageGenerator
         city_generator = CityPageGenerator(config)
@@ -409,10 +454,10 @@ class PageGenerator:
         except Exception as e:
             result.add_error(f"Error generating additional files: {str(e)}")
 
-    def _copy_static_assets(self, output_dir: Path, result: GenerationResult):
-        """Copy static assets if they exist"""
+    def _copy_static_assets(self, config: ClientConfig, output_dir: Path, result: GenerationResult):
+        """Copy static assets if they exist (global assets first, then client-specific assets)"""
         try:
-            # Check for static assets directory
+            # 1. Copy global static assets first
             static_dir = self.template_dir / "static"
             if static_dir.exists():
                 # Copy images
@@ -434,6 +479,29 @@ class PageGenerator:
                         shutil.copy2(js_file, output_dir / "js")
                         result.add_generated_file(str(output_dir / "js" / js_file.name))
 
+            # 2. Copy client-specific assets (overrides global assets)
+            if config.config_file_path:
+                config_dir = Path(config.config_file_path).parent
+                client_assets_dir = config_dir / "assets"
+
+                if client_assets_dir.exists():
+                    logger.info(f"Copying client-specific assets from {client_assets_dir}")
+
+                    # Copy client-specific images
+                    if (client_assets_dir / "images").exists():
+                        for image_file in (client_assets_dir / "images").rglob("*"):
+                            if image_file.is_file():
+                                dest_file = output_dir / "images" / image_file.name
+                                shutil.copy2(image_file, dest_file)
+                                logger.info(f"Copied client asset: {image_file.name}")
+
+                    # Support for logo directly in assets/ directory
+                    for asset_file in client_assets_dir.glob("*"):
+                        if asset_file.is_file() and asset_file.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp']:
+                            dest_file = output_dir / "images" / asset_file.name
+                            shutil.copy2(asset_file, dest_file)
+                            logger.info(f"Copied client asset: {asset_file.name}")
+
         except Exception as e:
             result.add_warning(f"Could not copy static assets: {str(e)}")
 
@@ -441,18 +509,18 @@ class PageGenerator:
         """
         Get the base URL for canonical tags and sitemaps.
 
-        For backlink sites: Use deployment_url (CloudFront) so Google indexes it independently
-        For main sites: Use deployment_url if specified, otherwise business.domain
-        """
-        # For backlink sites, always use the deployed URL (CloudFront)
-        if config.cloud.site_type == "backlink_site" and config.cloud.deployment_url:
-            return config.cloud.deployment_url.rstrip("/")
+        For backlink sites to work, they MUST:
+        1. Be indexed independently by Google
+        2. Have canonicals pointing to their own CloudFront URL
+        3. Have content backlinks to main site
 
-        # For main sites, prefer deployment_url if specified
+        Therefore: Use deployment_url for both backlink and main sites
+        """
+        # For both backlink and main sites, use deployment_url if available
         if config.cloud.deployment_url:
             return config.cloud.deployment_url.rstrip("/")
 
-        # Fallback to business domain
+        # Fallback to business domain (should not happen for properly configured sites)
         return config.business.domain.rstrip("/")
 
     def _generate_sitemap(self, config: ClientConfig) -> str:

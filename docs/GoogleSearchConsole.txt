@@ -1,0 +1,89 @@
+Feature Requests
+User Story - As the number of deplyed websites increases keeping track of which client and keyword the website was deployed for becomes increasinly difficult
+prticularly when it comes to adding them to Google Search Console and making sure that correct google verification meta tag is used.
+It would significantly increase user productivity and decrease the possibilty for error if the verification meta tag could be retrieved 
+progromatically, added to the deployment and added to the deployment history
+Benefit - Prevent accidentail reuse of a Google Meta tag and streamline the workflow where the user deploys a website, goes 
+to Google Search Console, retrieves the meta tag, adds it to the website deployment and then goes back to Google Search Console
+to manually verify ownership.
+Google documentation https://developers.google.com/site-verification
+
+Here is a minimal end‑to‑end Python example that:
+Authenticates with OAuth (installed app flow).
+Requests an HTML file verification token.
+
+Calls insert to complete verification after you have placed the token file.
+Assumes you have created a Google Cloud project, enabled the Site Verification API, and downloaded credentials.json (OAuth client ID for Desktop app).
+ Python
+ from __future__ import print_function
+
+import os
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+
+# Scope for managing site verification
+SCOPES = ["https://www.googleapis.com/auth/siteverification"]
+
+def get_credentials():
+    flow = InstalledAppFlow.from_client_secrets_file(
+        "credentials.json", SCOPES
+    )
+    creds = flow.run_local_server(port=0)
+    return creds
+
+def main():
+    # 1) Auth
+    creds = get_credentials()
+    service = build("siteVerification", "v1", credentials=creds)
+
+    site_url = "https://example.com/"  # change to your URL prefix
+
+    # 2) Get verification token (HTML file method)
+    token_request_body = {
+        "site": {
+            "identifier": site_url,
+            "type": "SITE"          # or "INET_DOMAIN" for domain-level
+        },
+        "verificationMethod": "FILE"   # FILE | META | DNS_TXT, etc.
+    }
+
+    token_response = service.webResource().getToken(
+        body=token_request_body
+    ).execute()
+
+    token = token_response["token"]
+    print("Token:", token)
+
+    # You must now:
+    # - Create the HTML file with the name/content that Google specifies
+    #   (see token doc in Search Console help), and
+    # - Upload it to the root of your site so Google can see it.
+    input("Place the verification file on your site, then press Enter...")
+
+    # 3) Attempt verification
+    insert_body = {
+        "site": {
+            "identifier": site_url,
+            "type": "SITE"
+        },
+        # owners is optional; Google sets the current user as owner
+    }
+
+    verification = service.webResource().insert(
+        verificationMethod="FILE",
+        body=insert_body
+    ).execute()
+
+    print("Verified! Resource ID:", verification["id"])
+
+if __name__ == "__main__":
+    main()
+
+
+Key bits:
+
+webResource().getToken() generates the token; the site.type can be SITE or INET_DOMAIN, and verificationMethod can be FILE, META, or DNS_TXT depending on how you want to verify.
+​
+
+webResource().insert(verificationMethod="FILE", body=...) actually attempts verification once the token is correctly placed.
+​
