@@ -23,7 +23,7 @@ except ImportError:
     __all__ = []
 
 try:
-    from .services_tab import (
+    from .services_tab import (  # noqa: F401
         ServicesTab,
         Service,
         FAQ,
@@ -35,7 +35,7 @@ except ImportError:
     print("Warning: ServicesTab not available")
 
 try:
-    from .faq_tab import FAQTab
+    from .faq_tab import FAQTab  # noqa: F401
 
     __all__.append("FAQTab")
 except ImportError:

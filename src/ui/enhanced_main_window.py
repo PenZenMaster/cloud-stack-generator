@@ -1,7 +1,31 @@
 # src/ui/enhanced_main_window.py
 """
-Enhanced main window with integrated modular tab system
-Sprint 2 Week 2 - Day 6 Implementation
+Module/Script Name: enhanced_main_window.py
+Path: src/ui/enhanced_main_window.py
+
+Description:
+Enhanced main window with integrated modular tab system. Provides the main
+application interface with tabbed sections for configuration management.
+
+Author(s):
+Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
+
+Created Date:
+2024-09-15
+
+Last Modified Date:
+2025-12-20
+
+Version: 3.05
+
+Comments:
+* v3.05 - CRITICAL FIX: Include embed_code when loading city_image data (line 1332) to prevent
+  data loss during auto-save after deployment
+* v3.04 - Styled Validate All and Save Configuration buttons with proper design patterns
+* v3.03 - Added support for new branding fields (H1/H2/H3/Menu colors, hero background)
+* v3.02 - Fixed config_file_path and generated_files attribute access issues
+* v3.01 - Fixed current_config attribute initialization for deployment tracking
+* v3.00 - Enhanced main window with full modular tab integration
 """
 
 from PyQt6.QtWidgets import (
@@ -104,6 +128,8 @@ class EnhancedMainWindow(QMainWindow):
         # Initialize components
         self.config_parser = ConfigParser()
         self.current_config_file = None
+        self.current_config: Optional[ClientConfig] = None
+        self.loaded_config: Optional[ClientConfig] = None
         self.unsaved_changes = False
         self.generation_worker: Optional[GenerationWorker] = None
 
@@ -376,10 +402,44 @@ class EnhancedMainWindow(QMainWindow):
 
         self.validate_btn = QPushButton("Validate All")
         self.validate_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.validate_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #6c757d;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #5a6268;
+            }
+            QPushButton:pressed {
+                background-color: #545b62;
+            }
+        """
+        )
         self.validate_btn.clicked.connect(self.validate_all_tabs)
 
         self.save_btn = QPushButton("Save Configuration")
         self.save_btn.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        self.save_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #17a2b8;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #138496;
+            }
+            QPushButton:pressed {
+                background-color: #117a8b;
+            }
+        """
+        )
         self.save_btn.clicked.connect(self.save_configuration)
 
         self.preview_btn = QPushButton("Website Preview")
@@ -527,7 +587,7 @@ class EnhancedMainWindow(QMainWindow):
         self.update_window_title()
 
         # Auto-save config after deployment
-        if self.config_file_path:
+        if self.current_config_file:
             try:
                 self.save_configuration()
                 self.status_label.setText(f"Deployment saved: {deployment.deployment_id}")
@@ -618,6 +678,8 @@ class EnhancedMainWindow(QMainWindow):
         self.services_tab.clear_data()
 
         self.current_config_file = None
+        self.current_config = None
+        self.loaded_config = None
         self.unsaved_changes = False
         self.update_window_title()
         self.status_label.setText("New configuration created")
@@ -647,6 +709,7 @@ class EnhancedMainWindow(QMainWindow):
             # Parse the YAML file and store the config
             config = self.config_parser.parse_yaml_file(file_path)
             self.loaded_config = config  # Store for website generation
+            self.current_config = config  # Store for deployment tracking
         except Exception as e:
             error_msg = f"Failed to load configuration:\n{str(e)}"
             log_file_operation_error(
@@ -672,6 +735,75 @@ class EnhancedMainWindow(QMainWindow):
 
         # Emit signal for other components
         self.config_loaded.emit(self.get_all_config_data())
+
+    def _copy_branding_assets_to_client_dir(self, config_file_path: str, config_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Copy uploaded branding assets (logo, hero background) to client-specific assets directory
+        and convert file paths to relative paths.
+
+        Args:
+            config_file_path: Path where the config file will be saved
+            config_data: Configuration data dictionary
+
+        Returns:
+            Updated configuration data with relative paths
+        """
+        import shutil
+        import os
+
+        # Get client directory (parent of config file)
+        config_path = Path(config_file_path)
+        client_dir = config_path.parent
+        assets_dir = client_dir / "assets"
+
+        # Create assets directory if it doesn't exist
+        assets_dir.mkdir(parents=True, exist_ok=True)
+
+        # Handle logo upload
+        if "logo" in config_data and "logo_url" in config_data["logo"]:
+            logo_path = config_data["logo"]["logo_url"]
+
+            # Check if it's a local file path (not a URL)
+            if logo_path and os.path.exists(logo_path):
+                # Copy logo to assets directory
+                logo_filename = Path(logo_path).name
+                dest_path = assets_dir / logo_filename
+
+                try:
+                    shutil.copy2(logo_path, dest_path)
+                    # Update config to use relative path
+                    config_data["logo"]["logo_url"] = f"images/{logo_filename}"
+                    self.status_label.setText(f"Copied logo to client assets: {logo_filename}")
+                except Exception as e:
+                    QMessageBox.warning(
+                        self,
+                        "Asset Copy Warning",
+                        f"Could not copy logo file:\n{str(e)}\n\nThe original path will be used."
+                    )
+
+        # Handle hero background upload
+        if "logo" in config_data and "hero_background_image_url" in config_data["logo"]:
+            hero_path = config_data["logo"]["hero_background_image_url"]
+
+            # Check if it's a local file path (not a URL)
+            if hero_path and os.path.exists(hero_path):
+                # Copy hero background to assets directory
+                hero_filename = Path(hero_path).name
+                dest_path = assets_dir / hero_filename
+
+                try:
+                    shutil.copy2(hero_path, dest_path)
+                    # Update config to use relative path
+                    config_data["logo"]["hero_background_image_url"] = f"images/{hero_filename}"
+                    self.status_label.setText(f"Copied hero background to client assets: {hero_filename}")
+                except Exception as e:
+                    QMessageBox.warning(
+                        self,
+                        "Asset Copy Warning",
+                        f"Could not copy hero background file:\n{str(e)}\n\nThe original path will be used."
+                    )
+
+        return config_data
 
     def save_configuration(self) -> bool:
         """Save current configuration"""
@@ -729,6 +861,10 @@ class EnhancedMainWindow(QMainWindow):
         try:
             # Get configuration from all tabs
             config_data = self.get_all_config_data()
+
+            # Copy branding assets (logo, hero background) to client-specific directory
+            # and update paths to be relative
+            config_data = self._copy_branding_assets_to_client_dir(file_path, config_data)
 
             # Create ClientConfig object
             config = self.create_client_config(config_data)
@@ -902,8 +1038,17 @@ class EnhancedMainWindow(QMainWindow):
         branding = BrandingConfig(
             primary_color=colors.get("primary_color", "#007bff"),
             secondary_color=colors.get("secondary_color", "#6c757d"),
+            body_background_color=colors.get("body_background_color", "#ffffff"),
+            body_text_color=colors.get("body_text_color", "#333333"),
+            footer_background_color=colors.get("footer_background_color", "#2c3e50"),
+            footer_text_color=colors.get("footer_text_color", "#ffffff"),
+            h1_text_color=colors.get("h1_text_color", "#2c3e50"),
+            h2_text_color=colors.get("h2_text_color", "#34495e"),
+            h3_text_color=colors.get("h3_text_color", "#34495e"),
+            main_menu_text_color=colors.get("main_menu_text_color", "#ffffff"),
             font_family=typography.get("font_family", "Arial, sans-serif"),
             logo_url=logo.get("logo_url", ""),
+            hero_background_image_url=logo.get("hero_background_image_url", ""),
         )
 
         # Create products list
@@ -1012,6 +1157,7 @@ class EnhancedMainWindow(QMainWindow):
         if not target_cities:
             target_cities = [cp.city_name for cp in city_pages if cp.city_name]
         seo_content = cities_data.get("seo_content", {})
+        wikipedia_embeds = cities_data.get("wikipedia_embeds", {})
 
         # Create cloud config
         cloud_data = config_data.get("cloud", {})
@@ -1063,6 +1209,7 @@ class EnhancedMainWindow(QMainWindow):
             city_pages=city_pages,  # Save rich city page data
             target_cities=target_cities,  # Keep for backward compatibility
             seo_content=seo_content,
+            wikipedia_embeds=wikipedia_embeds,  # Wikipedia image embeds from Cities Tab
         )
 
     def load_config_into_tabs(self, config: ClientConfig):
@@ -1136,12 +1283,21 @@ class EnhancedMainWindow(QMainWindow):
             "colors": {
                 "primary_color": config.branding.primary_color,
                 "secondary_color": config.branding.secondary_color,
+                "body_background_color": getattr(config.branding, 'body_background_color', '#ffffff'),
+                "body_text_color": getattr(config.branding, 'body_text_color', '#333333'),
+                "footer_background_color": getattr(config.branding, 'footer_background_color', '#2c3e50'),
+                "footer_text_color": getattr(config.branding, 'footer_text_color', '#ffffff'),
+                "h1_text_color": getattr(config.branding, 'h1_text_color', '#2c3e50'),
+                "h2_text_color": getattr(config.branding, 'h2_text_color', '#34495e'),
+                "h3_text_color": getattr(config.branding, 'h3_text_color', '#34495e'),
+                "main_menu_text_color": getattr(config.branding, 'main_menu_text_color', '#ffffff'),
             },
             "typography": {
                 "font_family": config.branding.font_family,
             },
             "logo": {
                 "logo_url": config.branding.logo_url,
+                "hero_background_image_url": getattr(config.branding, 'hero_background_image_url', ''),
             },
         }
         self.branding_tab.set_config_data(branding_data)
@@ -1150,7 +1306,11 @@ class EnhancedMainWindow(QMainWindow):
 
         # Load enhanced cities data from config
         enhanced_cities_data = {
-            "city_pages": []
+            "city_pages": [],
+            "target_cities": getattr(config, 'target_cities', []),
+            "seo_content": getattr(config, 'seo_content', {}),
+            "google_maps": {"cities": getattr(config.google_maps, 'cities', {}) if hasattr(config, 'google_maps') else {}},
+            "wikipedia_embeds": getattr(config, 'wikipedia_embeds', {}),
         }
         if hasattr(config, 'city_pages') and config.city_pages:
             enhanced_cities_data["city_pages"] = [
@@ -1171,6 +1331,7 @@ class EnhancedMainWindow(QMainWindow):
                         "caption": cp.city_image.caption,
                         "credit": cp.city_image.credit,
                         "source": cp.city_image.source,
+                        "embed_code": getattr(cp.city_image, 'embed_code', ''),
                     },
                     "places_of_interest": [
                         {
@@ -1268,6 +1429,7 @@ class EnhancedMainWindow(QMainWindow):
             "last_deployment": config.cloud.last_deployment,
         }
         self.cloud_tab.set_config_data(cloud_data)
+        self.cloud_tab.set_config(config)  # Store full config for deployment tracking (v3.5.0)
 
         # Load deployment history (v3.2.0 - Phase 2)
         self.deployment_history_tab.set_config(config)
@@ -1630,7 +1792,10 @@ class EnhancedMainWindow(QMainWindow):
             # This ensures users see exactly what they've configured in the UI
             config_data = self.get_all_config_data()
             config = self.create_client_config(config_data)
-            
+
+            # Update current_config for deployment tracking
+            self.current_config = config
+
             # Preserve essential data from loaded config that isn't in UI
             if hasattr(self, 'loaded_config') and self.loaded_config:
                 # Preserve Google Business Profile data
@@ -1638,15 +1803,51 @@ class EnhancedMainWindow(QMainWindow):
                     config.google_business_profile = self.loaded_config.google_business_profile
             
             # Ask user for output directory (use last used directory or default)
-            last_output_dir = self.settings.value("last_output_directory", str(Path.cwd() / "output" / "websites"))
+            last_output_dir = self.settings.value("last_output_directory", str(Path.cwd() / "output" / "clients"))
             output_dir = QFileDialog.getExistingDirectory(
                 self,
                 "Select Output Directory for Website",
                 last_output_dir
             )
-            
+
             if not output_dir:
                 return  # User cancelled
+
+            # Warn user if output directory is not empty
+            output_path = Path(output_dir)
+            if output_path.exists() and any(output_path.iterdir()):
+                # Check if locations directory exists
+                locations_dir = output_path / "locations"
+                has_locations = locations_dir.exists() and any(locations_dir.iterdir())
+
+                warning_msg = (
+                    f"The selected directory is not empty:\n{output_dir}\n\n"
+                )
+
+                if has_locations:
+                    warning_msg += (
+                        "WARNING: This directory contains city pages from a previous generation.\n"
+                        "These old pages will be automatically cleaned up before generating new content.\n\n"
+                    )
+
+                warning_msg += (
+                    "The generator will:\n"
+                    "- Clean old city pages from 'locations/' directory\n"
+                    "- Overwrite existing HTML files\n"
+                    "- Keep CSS, JS, and image assets\n\n"
+                    "Continue with generation?"
+                )
+
+                reply = QMessageBox.question(
+                    self,
+                    "Directory Not Empty",
+                    warning_msg,
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes
+                )
+
+                if reply != QMessageBox.StandardButton.Yes:
+                    return  # User cancelled
 
             # Disable generate button during generation
             self.generate_btn.setEnabled(False)
@@ -1692,14 +1893,8 @@ class EnhancedMainWindow(QMainWindow):
             # Save the output directory for next time
             self.settings.setValue("last_output_directory", output_dir)
 
-            result = type('obj', (object,), {
-                'success': True,
-                'generated_files': generated_files,
-                'errors': []
-            })()
-
             display_message = "Website generated successfully!\n\nFiles created:\n"
-            for file_path in result.generated_files:
+            for file_path in generated_files:
                 display_message += f"+ {Path(file_path).name}\n"
             display_message += f"\nLocation: {output_dir}"
 

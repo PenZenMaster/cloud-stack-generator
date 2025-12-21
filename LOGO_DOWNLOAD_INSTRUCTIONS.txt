@@ -1,0 +1,49 @@
+UNITED STRUCTURAL SYSTEMS LOGO - DOWNLOAD INSTRUCTIONS
+=====================================================
+
+The logo hotlink has been replaced with a local path to avoid bot protection issues.
+
+UPDATED CONFIG FILES:
+- config/clients/unites-structural-systems/united_structural_systems_of_illinois_inc_config.yaml
+- config/clients/unites-structural-systems/united_structural_systems_of_illinois_inc_structural_engineer_config.yaml
+- config/clients/unites-structural-systems/united_structural_systems_of_illinois_inc_municipal_dtructural_engineer_config.yaml
+
+All now use: logo_url: images/united-structural-systems-logo.png
+
+CLIENT-SPECIFIC ASSETS SYSTEM:
+===============================
+
+The generator now supports client-specific assets stored alongside config files.
+Each client can have their own logos and images in a dedicated assets directory.
+
+TO COMPLETE THE FIX:
+====================
+
+1. Open this URL in your browser:
+   https://www.unitedstructuralsystems.com/wp-content/uploads/2021/03/big-uss-logo-footer-300x197.png
+
+2. Complete the captcha if prompted
+
+3. Right-click the image and select "Save Image As..."
+
+4. Save it to this CLIENT-SPECIFIC location:
+   E:\projects\cloud-stack-generator\config\clients\unites-structural-systems\assets\united-structural-systems-logo.png
+
+5. Regenerate the sites - the logo will be automatically copied to each site's images directory
+
+HOW IT WORKS:
+=============
+
+- Client assets are stored in: config/clients/{client-name}/assets/
+- During generation, assets are copied to: output/clients/{client-name}/{site-variant}/images/
+- Each client's assets are isolated from other clients
+- Global assets (if any) are copied first, then client-specific assets override them
+
+VERIFICATION:
+=============
+
+After regeneration, check that the logo appears in:
+- config/clients/unites-structural-systems/assets/united-structural-systems-logo.png (source file)
+- output/clients/united-structural-systems/*/images/united-structural-systems-logo.png (deployed to each site variant)
+
+The images directory is automatically included in S3 sync deployments.

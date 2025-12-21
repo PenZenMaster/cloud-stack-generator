@@ -1,10 +1,26 @@
 # src/core/generators/css_generator.py
 """
-CSS Generator - Responsive Styling and Branding
-Sprint 2 Week 2 - Days 7-8 Implementation
+Module/Script Name: css_generator.py
+Path: src/core/generators/css_generator.py
 
-Generates CSS from branding configuration with responsive design
-and professional styling.
+Description:
+CSS Generator - Responsive Styling and Branding. Generates CSS from branding
+configuration with responsive design and professional styling.
+
+Author(s):
+Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
+
+Created Date:
+2024-09-15
+
+Last Modified Date:
+2025-11-25
+
+Version: 1.01
+
+Comments:
+* v1.01 - Added H1/H2/H3/Menu text color variables and hero background image support
+* v1.00 - Initial implementation with responsive styling
 """
 
 from ..config.models import ClientConfig, BrandingConfig
@@ -121,6 +137,11 @@ body {
         body_text_color = getattr(branding, 'body_text_color', '#333333')
         footer_bg_color = getattr(branding, 'footer_background_color', '#2c3e50')
         footer_text_color = getattr(branding, 'footer_text_color', '#ffffff')
+        h1_text_color = getattr(branding, 'h1_text_color', '#2c3e50')
+        h2_text_color = getattr(branding, 'h2_text_color', '#34495e')
+        h3_text_color = getattr(branding, 'h3_text_color', '#34495e')
+        menu_text_color = getattr(branding, 'main_menu_text_color', '#ffffff')
+        hero_bg_image = getattr(branding, 'hero_background_image_url', '')
         
         return f"""/* CSS Custom Properties for Branding */
 :root {{
@@ -133,13 +154,24 @@ body {
     --primary-dark: {primary_dark};
     --secondary-light: {secondary_light};
     --secondary-dark: {secondary_dark};
-    
+
     /* New Body and Footer Colors */
     --body-bg-color: {body_bg_color};
     --body-text-color: {body_text_color};
     --footer-bg-color: {footer_bg_color};
     --footer-text-color: {footer_text_color};
-    
+
+    /* Heading Text Colors */
+    --h1-text-color: {h1_text_color};
+    --h2-text-color: {h2_text_color};
+    --h3-text-color: {h3_text_color};
+
+    /* Navigation Colors */
+    --menu-text-color: {menu_text_color};
+
+    /* Hero Background */
+    --hero-bg-image: {'url(' + hero_bg_image + ')' if hero_bg_image else 'none'};
+
     /* Typography */
     --font-family: {branding.font_family};
     --font-size-base: 16px;
@@ -244,16 +276,17 @@ h1, h2, h3, h4, h5, h6 {{
 
 h1 {{
     font-size: var(--font-size-3xl);
-    color: var(--primary-color);
+    color: var(--h1-text-color);
 }}
 
 h2 {{
     font-size: var(--font-size-2xl);
-    color: var(--primary-dark);
+    color: var(--h2-text-color);
 }}
 
 h3 {{
     font-size: var(--font-size-xl);
+    color: var(--h3-text-color);
 }}
 
 h4 {{
@@ -404,14 +437,15 @@ footer a:hover, .footer a:hover {
         return """/* Component Styles */
 
 /* Header Styles */
-header {
+header, .site-header {
     background: var(--primary-color);
     color: white;
     padding: var(--spacing-lg) 0;
+    width: 100%;
 }
 
 .header-content {
-    max-width: 1200px;
+    max-width: 1440px;
     margin: 0 auto;
     padding: 0 var(--spacing-lg);
     display: flex;
@@ -445,7 +479,7 @@ nav ul {
 }
 
 nav a {
-    color: white;
+    color: var(--menu-text-color);
     text-decoration: none;
     font-weight: 500;
     padding: var(--spacing-sm) var(--spacing-md);
@@ -581,6 +615,10 @@ nav a:hover {
 /* Hero Section */
 .hero {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background-image: var(--hero-bg-image);
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: overlay;
     color: white;
     padding: var(--spacing-3xl) 0;
     text-align: center;

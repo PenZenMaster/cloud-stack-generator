@@ -432,12 +432,20 @@
             padding: 2rem 0;
         }
 
-        .content-section h3 {
+        .content-section h2 {
             font-size: 1.8rem;
             color: var(--primary-color);
             margin-bottom: 1.5rem;
             border-bottom: 2px solid var(--accent-color);
             padding-bottom: 0.5rem;
+        }
+
+        .content-section h3 {
+            font-size: 1.6rem;
+            color: var(--primary-color);
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 0.4rem;
         }
 
         .content-section h4 {
@@ -500,6 +508,14 @@
             margin: 3rem 0;
         }
 
+        .poi-section h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
         .poi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -537,6 +553,14 @@
         /* FAQ Section */
         .faq-section {
             margin: 3rem 0;
+        }
+
+        .faq-section h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
         }
 
         .faq-item {
@@ -643,7 +667,7 @@
             margin: 3rem 0;
         }
 
-        .contact-cta h3 {
+        .contact-cta h2 {
             font-size: 2rem;
             margin-bottom: 1rem;
         }
@@ -826,9 +850,9 @@
      <article class="main-article">
       <!-- Introduction (150-200 words) -->
       <section class="content-section">
-       <h3>
+       <h2>
         {{ business.industry }} Excellence in {{ city_page.city_name }}
-       </h3>
+       </h2>
        {% if city_page.about_city %}
        <p>
         {{ city_page.about_city }}
@@ -844,9 +868,9 @@
       </section>
       <!-- Comprehensive Services Section (200-250 words) -->
       <section class="content-section">
-       <h3>
+       <h2>
         Comprehensive {{ business.industry }} Services for {{ city_page.city_name }}
-       </h3>
+       </h2>
        <p>
         Our full-service approach ensures {{ city_page.city_name }} clients receive complete solutions from initial consultation through project completion. Each service is tailored to meet local building codes, climate considerations, and architectural styles common throughout the area.
        </p>
@@ -868,9 +892,9 @@
       </section>
       <!-- Local Area Expertise Section (150-200 words) -->
       <section class="content-section">
-       <h3>
+       <h2>
         Deep Local Knowledge of {{ city_page.city_name }}
-       </h3>
+       </h2>
        {% if city_page.seo_content_body %}
        <div>
         {{ city_page.seo_content_body|markdown_basic|safe }}
@@ -889,9 +913,9 @@
       </section>
       <!-- Areas We Serve Section (100-150 words) -->
       <section class="content-section">
-       <h3>
+       <h2>
         {{ city_page.city_name }} Areas We Serve
-       </h3>
+       </h2>
        <p>
         Our service area covers all {{ city_page.city_name }} neighborhoods and surrounding communities. We're familiar with the specific needs of each area and maintain the flexibility to serve both residential and commercial clients throughout the region.
        </p>
@@ -951,9 +975,9 @@
       {% endif %}
       <!-- Why Choose Us Section (150-200 words) -->
       <section class="content-section">
-       <h3>
+       <h2>
         Why {{ city_page.city_name }} Chooses {{ business.business_name }}
-       </h3>
+       </h2>
        <h4>
         Local Experience &amp; Expertise
        </h4>
@@ -1039,9 +1063,9 @@
     <!-- Places of Interest -->
     {% if city_page.places_of_interest %}
     <section class="poi-section">
-     <h3>
+     <h2>
       {{ city_page.city_name }} Places of Interest
-     </h3>
+     </h2>
      <p>
       While we work on your project, explore these notable {{ city_page.city_name }} locations and attractions.
      </p>
@@ -1075,9 +1099,9 @@
     {% endif %}
     <!-- FAQ Section -->
     <section class="faq-section">
-     <h3>
+     <h2>
       Frequently Asked Questions - {{ city_page.city_name }} {{ business.industry }}
-     </h3>
+     </h2>
      {% if city_page.city_faq %}
                 {% for faq in city_page.city_faq %}
      <div class="faq-item">
@@ -1183,9 +1207,9 @@
     </section>
     <!-- Contact CTA -->
     <section class="contact-cta" id="contact">
-     <h3>
+     <h2>
       Ready to Start Your {{ city_page.city_name }} Project?
-     </h3>
+     </h2>
      <p>
       Get a free, detailed quote for your {{ business.industry.lower() }} needs in {{ city_page.city_name }}. Our local team is ready to help you achieve outstanding results.
      </p>
