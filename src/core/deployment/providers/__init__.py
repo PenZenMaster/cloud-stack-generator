@@ -35,7 +35,7 @@ from .abstract_provider import (
 
 # Import provider implementations
 try:
-    from .gcs_provider import GCSProvider
+    from .gcs_provider import GCSProvider  # noqa: F401
     __all_providers = ["GCSProvider"]
 except ImportError:
     __all_providers = []
