@@ -1231,7 +1231,7 @@ class CloudTab(BaseTab):
 
     def create_meta_tags_section(self) -> QGroupBox:
         """Create SEO meta tags management section"""
-        from PyQt6.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem
+        from PyQt6.QtWidgets import QTableWidget, QHeaderView
 
         group = QGroupBox("SEO Configuration")
         layout = QVBoxLayout()
@@ -2733,7 +2733,7 @@ class CloudTab(BaseTab):
     
     def start_deployment(self):
         """Start website deployment - implements test-file-first workflow"""
-        from PyQt6.QtWidgets import QFileDialog, QMessageBox
+        from PyQt6.QtWidgets import QMessageBox
 
         # Check if generation is in progress from first deployment
         if hasattr(self, '_generation_in_progress') and self._generation_in_progress:
@@ -2771,9 +2771,7 @@ class CloudTab(BaseTab):
 
     def _handle_first_deployment(self):
         """Handle first-time deployment with test file workflow"""
-        from PyQt6.QtWidgets import QFileDialog, QMessageBox
-        import tempfile
-        import yaml
+        from PyQt6.QtWidgets import QMessageBox
 
         # Only support CloudFront Mode B for first deployment canonical URL workflow
         is_mode_b = self.cloudfront_mode_radio.isChecked()
