@@ -15,9 +15,10 @@ Created Date:
 Last Modified Date:
 2025-12-20
 
-Version: v1.02
+Version: v1.03
 
 Comments:
+* v1.03 - Added auto-populate GCS Project ID from service account JSON key file
 * v1.02 - Fixed friendly name format (removed '+' separator, use spaces),
   Fixed deployment history persistence (unique timestamp-based deployment IDs)
 * v1.01 - Added friendly name feature and deployment tracking
@@ -28,7 +29,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QGridLayout, QGroupBox, QLabel, QLineEdit,
     QPushButton, QComboBox, QRadioButton, QButtonGroup, QTextEdit,
     QProgressBar, QMessageBox, QDialog, QDialogButtonBox, QApplication,
-    QCheckBox
+    QCheckBox, QTableWidgetItem
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from typing import Dict, Any, Optional, List
@@ -45,6 +46,7 @@ from ...core.aws.s3_manager import S3Manager, UploadProgress, UploadResult
 from ...core.config.client_aws_config import ClientAWSConfig, get_client_aws_manager
 from ...core.config.models import DeploymentConfig
 from ...utils.error_logger import log_error_dialog
+from ..dialogs.gsc_verification_dialog import GSCVerificationDialog
 
 
 class AWSProfileDialog(QDialog):
@@ -788,7 +790,8 @@ class CloudTab(BaseTab):
 
     def browse_gcs_credentials(self):
         """Browse for GCS service account JSON file"""
-        from PyQt6.QtWidgets import QFileDialog
+        from PyQt6.QtWidgets import QFileDialog, QMessageBox
+        import json
 
         file_path, _ = QFileDialog.getOpenFileName(
             self,
@@ -799,6 +802,32 @@ class CloudTab(BaseTab):
 
         if file_path:
             self.gcs_credentials_input.setText(file_path)
+
+            # Auto-populate project ID from JSON key file
+            try:
+                with open(file_path, 'r') as f:
+                    credentials_data = json.load(f)
+                    project_id = credentials_data.get('project_id', '')
+                    if project_id:
+                        self.gcs_project_input.setText(project_id)
+                    else:
+                        QMessageBox.warning(
+                            self,
+                            "Project ID Not Found",
+                            "Could not find 'project_id' in the selected JSON file. Please enter it manually."
+                        )
+            except json.JSONDecodeError:
+                QMessageBox.warning(
+                    self,
+                    "Invalid JSON",
+                    "The selected file is not a valid JSON file. Please check the file and try again."
+                )
+            except Exception as e:
+                QMessageBox.warning(
+                    self,
+                    "Error Reading File",
+                    f"Could not read the JSON file: {str(e)}"
+                )
 
     def test_gcs_connection(self):
         """Test Google Cloud Storage connection"""
@@ -1202,7 +1231,7 @@ class CloudTab(BaseTab):
 
     def create_meta_tags_section(self) -> QGroupBox:
         """Create SEO meta tags management section"""
-        from PyQt6.QtWidgets import QTableWidget, QHeaderView
+        from PyQt6.QtWidgets import QTableWidget, QHeaderView, QTableWidgetItem
 
         group = QGroupBox("SEO Configuration")
         layout = QVBoxLayout()
@@ -1291,6 +1320,13 @@ class CloudTab(BaseTab):
         button_layout.addWidget(self.remove_meta_tag_button)
 
         button_layout.addStretch()
+
+        # Google Search Console integration button
+        self.gsc_button = QPushButton("Get Google Verification Tag")
+        self.gsc_button.clicked.connect(self.open_gsc_verification_dialog)
+        self.gsc_button.setStyleSheet("background-color: #4285f4; color: white;")
+        button_layout.addWidget(self.gsc_button)
+
         layout.addLayout(button_layout)
 
         group.setLayout(layout)
@@ -3768,6 +3804,44 @@ class CloudTab(BaseTab):
                 meta_tags[tag_name] = tag_content
 
         return meta_tags
+
+    def open_gsc_verification_dialog(self):
+        """Open Google Search Console verification dialog"""
+        # Get current deployment URL if available
+        deployment_url = ""
+
+        # Try to get URL from current deployment
+        if hasattr(self, 'current_client_aws_config') and self.current_client_aws_config:
+            deployment_url = getattr(self.current_client_aws_config, 'deployment_url', '')
+
+        # If no deployment URL, try to construct from current UI state
+        if not deployment_url:
+            if self.cloudfront_mode_radio.isChecked():
+                domain = self.cloudfront_domain_input.text().strip()
+                if domain:
+                    deployment_url = f"https://{domain}/"
+            else:
+                bucket = self._get_actual_bucket_name()
+                region = self.region_combo.currentText()
+                if bucket and region:
+                    deployment_url = f"https://{bucket}.s3.{region}.amazonaws.com/"
+
+        # Open dialog
+        dialog = GSCVerificationDialog(deployment_url, parent=self)
+        dialog.meta_tag_generated.connect(self.add_meta_tag_from_gsc)
+        dialog.exec()
+
+    def add_meta_tag_from_gsc(self, name: str, content: str):
+        """Add meta tag from GSC to table"""
+        # Construct full meta tag HTML
+        meta_tag_html = f'<meta name="{name}" content="{content}" />'
+
+        # Add row to meta tags table
+        row_count = self.meta_tags_table.rowCount()
+        self.meta_tags_table.insertRow(row_count)
+        self.meta_tags_table.setItem(row_count, 0, QTableWidgetItem(meta_tag_html))
+
+        self.log_status(f"Added Google verification meta tag: {name}")
 
     def get_config_data(self) -> Dict[str, Any]:
         """Get cloud configuration data"""
