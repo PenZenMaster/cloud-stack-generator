@@ -1,0 +1,103 @@
+name: Test Coverage Gap
+description: Report missing or inadequate test coverage
+title: "[TEST]: "
+labels: ["testing", "quality"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Test Coverage Gap
+        Report areas that need better test coverage or identify failing/missing tests.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Coverage Gap Type
+      description: What type of test coverage is needed?
+      options:
+        - Unit Tests Missing
+        - Integration Tests Missing
+        - E2E Tests Missing
+        - Test Coverage Too Low
+        - Failing Test
+        - Flaky Test
+    validations:
+      required: true
+
+  - type: textarea
+    id: module
+    attributes:
+      label: Module/Component
+      description: Which module or component needs test coverage?
+      placeholder: |
+        File path: src/core/generators/html_generator.py
+        Class/Function: _render_template method
+        Current Coverage: 0% or Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Test Scenarios Needed
+      description: What scenarios should be tested?
+      placeholder: |
+        - Test case 1: ...
+        - Test case 2: ...
+        - Edge case: ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How critical is this test coverage?
+      options:
+        - Critical (Core functionality, no coverage)
+        - High (Important feature, low coverage)
+        - Medium (Good to have, partial coverage)
+        - Low (Nice to have, mostly covered)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Test Phase
+      description: Which testing phase does this belong to?
+      options:
+        - Phase 1 (Core Business Logic)
+        - Phase 2 (UI Components)
+        - Phase 3 (Recent Features)
+        - Phase 4 (Content Generators)
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: complexity
+    attributes:
+      label: Testing Complexity
+      description: What makes this challenging to test?
+      placeholder: |
+        - Requires complex mocking (PyQt6, boto3, etc.)
+        - External dependencies (APIs, databases)
+        - State management complexity
+        - Asynchronous behavior
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: What defines adequate test coverage?
+      placeholder: |
+        - Minimum 80% line coverage
+        - All critical paths tested
+        - Edge cases covered
+        - Error scenarios handled
+    validations:
+      required: false

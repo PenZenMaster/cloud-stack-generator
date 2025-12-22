@@ -1,0 +1,126 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE]: "
+labels: ["enhancement", "triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request
+        Thank you for suggesting a new feature! Please provide as much detail as possible.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Describe the problem this feature would solve
+      placeholder: |
+        **Current Situation**: What is the current limitation or pain point?
+        **Impact**: How does this affect users or the workflow?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed solution
+      placeholder: |
+        **Feature Description**: What should the feature do?
+        **User Stories**: Who would benefit and how?
+        **Acceptance Criteria**: What defines success?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered alternative solutions?
+      placeholder: Describe any alternative approaches...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - High (Critical for business operations)
+        - Medium (Would significantly improve workflow)
+        - Low (Nice to have enhancement)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What type of feature is this?
+      options:
+        - UI Enhancement
+        - Template System
+        - Content Generation
+        - SEO Optimization
+        - Cloud Deployment
+        - API Integration
+        - Testing & Quality
+        - Documentation
+        - Performance
+        - Security
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this feature is to implement?
+      options:
+        - Low (1-3 days)
+        - Medium (1-2 weeks)
+        - High (2-4 weeks)
+        - Very High (1+ months)
+        - Unknown
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies & Blockers
+      description: Are there any dependencies or blockers?
+      placeholder: |
+        - Requires X feature to be completed first
+        - Blocks Y feature from being implemented
+        - Depends on external library Z
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add mockups, examples, or references
+      placeholder: |
+        - Screenshots or mockups
+        - Links to similar features in other tools
+        - Technical specifications
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: Implementation Considerations
+      description: Check all that apply
+      options:
+        - label: Breaking change (requires migration)
+        - label: Requires database/config schema changes
+        - label: Affects existing APIs or interfaces
+        - label: Requires new dependencies
+        - label: Needs comprehensive testing
+        - label: Requires documentation updates

@@ -1,0 +1,117 @@
+name: Documentation Improvement
+description: Suggest improvements to documentation
+title: "[DOCS]: "
+labels: ["documentation"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Documentation Improvement
+        Help us improve our documentation by identifying gaps, errors, or areas that need clarification.
+
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation needs improvement?
+      options:
+        - End User Documentation
+        - Administration Guide
+        - Architecture Documentation
+        - API Documentation
+        - Code Comments
+        - README
+        - Changelog
+        - Tutorial/Guide
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue Type
+      description: What kind of issue is this?
+      options:
+        - Missing Documentation
+        - Incorrect Information
+        - Outdated Content
+        - Unclear Explanation
+        - Missing Examples
+        - Typo/Grammar
+        - Formatting Issue
+        - Broken Link
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Document Location
+      description: Where is the documentation that needs improvement?
+      placeholder: |
+        - File: docs/ARCHITECTURE.md
+        - Section: "Database Schema"
+        - Lines: 150-175
+        - URL: https://github.com/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current Documentation
+      description: What does the current documentation say (if applicable)?
+      placeholder: Copy the current text or describe what's missing...
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed Improvement
+      description: How should it be improved?
+      placeholder: |
+        - What should be added, changed, or removed?
+        - Provide corrected text if applicable
+        - Suggest better examples or diagrams
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this improvement?
+      options:
+        - High (Critical missing info or major error)
+        - Medium (Helpful improvement)
+        - Low (Minor enhancement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: User Impact
+      description: Who is affected by this documentation issue?
+      placeholder: |
+        - New users trying to set up the application
+        - Developers extending the codebase
+        - Administrators deploying to production
+        - End users following guides
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information or examples
+      placeholder: |
+        - Screenshots of confusing sections
+        - Links to related documentation
+        - Examples from other projects
+    validations:
+      required: false
