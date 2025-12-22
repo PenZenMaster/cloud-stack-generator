@@ -1,0 +1,37 @@
+Website Generation Work Flow – Website has not beengenerated and deployed
+1.	Open App
+2.	Open Configuration
+3.	Navigate to the Cloud Deploy tab
+4.	Bucket Name Click Refresh
+5.	Select/Create Bucket
+6.	Select/Create Directory
+7.	Select Deployment Mode Mode B
+8.	Click Deploy to Cloud
+9.	Message – This website has not been deployed. Select output folder.
+10.	The window to select a folder opens
+11.	Select folder
+12.	App generates and deploys a test file and retrieves the correct canonical for URLs
+13.	App generates a website and deploys to the cloud
+14.	The deployment confirmation dialog is displayed.
+15.	App will persists
+a.	Bucket deployed to
+b.	Directory deployed to
+c.	Distribution ID
+d.	Local website file generation location
+e.	Display URL for the deployed website
+Website has been generated and deployed
+1.	Open App
+2.	Open Configuration
+3.	Navigate to the Cloud Deploy tab
+4.	App displays the configuration for the last deployment
+a.	Bucket deployed to
+b.	Directory deployed to
+c.	Distribution ID
+d.	Local website file generation location
+e.	Display URL for the deployed website
+5.	Click deploy to cloud
+6.	The app will regenerate the website and display the generation confirmation dialog.
+7.	User clicks OK in the confirmation dialog
+8.	App deploys website
+9.	App displays the deployment confirmation dialog
+10.	User clicks OK in the confirmation dialog.
