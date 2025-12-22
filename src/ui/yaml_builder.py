@@ -711,7 +711,6 @@ class YAMLBuilderWidget(QWidget):
                 f"This usually means the YAML file structure doesn't match what's expected.\n"
                 f"You may need to create a new configuration.",
             )
-            print(f"DEBUG - Config structure: {config}")  # For debugging
 
     def build_social_media(self) -> Optional[Dict[str, str]]:
         """Build social media dict from inputs"""

@@ -1480,7 +1480,6 @@ class EnhancedMainWindow(QMainWindow):
                         all_valid = False
 
                 except Exception as e:
-                    print(f"DEBUG: Exception during validation of {tab_name}: {e}")
                     validation_results[tab_name] = {
                         "valid": False,
                         "errors": [f"Validation error: {str(e)}"],
@@ -1539,7 +1538,6 @@ class EnhancedMainWindow(QMainWindow):
                         all_valid = False
 
                 except Exception as e:
-                    print(f"DEBUG: Exception during validation of {tab_name}: {e}")
                     validation_results[tab_name] = {
                         "valid": False,
                         "errors": [f"Validation error: {str(e)}"],
