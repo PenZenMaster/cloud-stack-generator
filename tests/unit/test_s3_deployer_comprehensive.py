@@ -586,28 +586,55 @@ class TestDeployClientWebsite:
             region="us-east-1"
         )
 
+    @patch('src.core.deployment.s3_deployer.S3WebsiteDeployer')
     @patch('src.core.deployment.s3_deployer.Path')
-    def test_deploy_client_website_not_found(self, mock_path_class):
+    def test_deploy_client_website_not_found(self, mock_path_class, mock_deployer_class):
         """Test client website deployment when directory doesn't exist"""
-        # Create a mock that represents the file path resolution chain
-        mock_output_path = Mock()
-        mock_output_path.exists.return_value = False
+        # Create a mock path that doesn't exist
+        mock_output_path = MagicMock()
+        # Explicitly configure exists() to return False (mock calls need explicit configuration)
+        mock_output_path.exists = MagicMock(return_value=False)
+        mock_output_path.__str__ = MagicMock(return_value="/path/to/output/clients/nonexistent_client")
 
-        # Mock the entire Path(...).parent.parent.parent.parent / "output" / "clients" / client_slug chain
+        # Track how many times path division happens
+        division_count = [0]
+
+        # Mock the path division operator to build the chain
         def path_div_side_effect(arg):
-            result = Mock()
-            if arg == "output" or arg == "clients" or isinstance(arg, str):
-                result.__truediv__ = Mock(side_effect=path_div_side_effect)
-                result.exists.return_value = False
-                return result
-            return mock_output_path
+            """Mock the / operator for path building - returns intermediate or final path"""
+            division_count[0] += 1
+            # After 3 divisions (output, clients, client_slug), return final path that doesn't exist
+            if division_count[0] >= 3:
+                return mock_output_path
+            # For intermediate divisions, return something that supports further division
+            intermediate = MagicMock()
+            intermediate.__truediv__ = MagicMock(side_effect=path_div_side_effect)
+            return intermediate
 
-        mock_path_instance = Mock()
-        mock_path_instance.parent.parent.parent.parent.__truediv__ = Mock(side_effect=path_div_side_effect)
-        mock_path_class.return_value = mock_path_instance
+        # Setup Path(__file__) to return a mock with proper parent chain
+        # Use MagicMock to support __truediv__ operator
+        mock_parent_4 = MagicMock()
+        mock_parent_4.__truediv__ = MagicMock(side_effect=path_div_side_effect)
+
+        mock_parent_3 = MagicMock()
+        mock_parent_3.parent = mock_parent_4
+
+        mock_parent_2 = MagicMock()
+        mock_parent_2.parent = mock_parent_3
+
+        mock_parent_1 = MagicMock()
+        mock_parent_1.parent = mock_parent_2
+
+        mock_file_path = MagicMock()
+        mock_file_path.parent = mock_parent_1
+
+        mock_path_class.return_value = mock_file_path
 
         result = deploy_client_website("nonexistent_client")
 
+        # Should fail before trying to create S3WebsiteDeployer
         assert result['success'] is False
         assert len(result['errors']) > 0
         assert 'not found' in result['errors'][0].lower()
+        # Verify S3WebsiteDeployer was never instantiated
+        mock_deployer_class.assert_not_called()

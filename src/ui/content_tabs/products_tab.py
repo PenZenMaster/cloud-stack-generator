@@ -562,9 +562,7 @@ class ProductsTab(BaseTab):
                 result = chardet.detect(raw_data)
                 encoding = result.get('encoding', 'utf-8').lower()
                 confidence = result.get('confidence', 0)
-                
-                print(f"DEBUG: Detected encoding: {encoding} (confidence: {confidence:.2f})")
-                
+
                 # Map common encoding variations
                 encoding_map = {
                     'windows-1252': 'cp1252',
@@ -581,16 +579,15 @@ class ProductsTab(BaseTab):
                         try:
                             with open(file_path, 'r', encoding=fallback) as f:
                                 f.read(1000)  # Try to read some content
-                            print(f"DEBUG: Using fallback encoding: {fallback}")
                             return fallback
                         except (UnicodeDecodeError, UnicodeError):
                             continue
                 
                 return encoding
             
-        except Exception as e:
-            print(f"DEBUG: Error detecting encoding: {e}")
-        
+        except Exception:
+            pass
+
         # Default fallback
         return 'utf-8'
 
@@ -602,8 +599,7 @@ class ProductsTab(BaseTab):
         try:
             # Detect file encoding
             encoding = self._detect_file_encoding(self.current_file_path)
-            print(f"DEBUG: Using encoding {encoding} for CSV validation")
-            
+
             with open(self.current_file_path, "r", encoding=encoding, errors='replace') as file:
                 reader = csv.DictReader(file)
 
@@ -752,8 +748,7 @@ class ProductsTab(BaseTab):
 
             # Detect file encoding
             encoding = self._detect_file_encoding(self.current_file_path)
-            print(f"DEBUG: Using encoding {encoding} for CSV import")
-            
+
             with open(self.current_file_path, "r", encoding=encoding, errors='replace') as file:
                 reader = csv.DictReader(file)
 
