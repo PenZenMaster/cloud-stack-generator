@@ -3814,15 +3814,14 @@ class CloudTab(BaseTab):
 
         # If no deployment URL, try to construct from current UI state
         if not deployment_url:
-            if self.cloudfront_mode_radio.isChecked():
-                domain = self.cloudfront_domain_input.text().strip()
-                if domain:
-                    deployment_url = f"https://{domain}/"
-            else:
+            # For S3 mode, construct URL from bucket and region
+            if self.s3_mode_radio.isChecked():
                 bucket = self._get_actual_bucket_name()
                 region = self.region_combo.currentText()
                 if bucket and region:
-                    deployment_url = f"https://{bucket}.s3.{region}.amazonaws.com/"
+                    deployment_url = f"https://{bucket}.s3-website-{region}.amazonaws.com/"
+            # For CloudFront mode, deployment_url must come from config after deployment
+            # (CloudFront domain is not a UI input - it's retrieved from AWS)
 
         # Open dialog
         dialog = GSCVerificationDialog(deployment_url, parent=self)
