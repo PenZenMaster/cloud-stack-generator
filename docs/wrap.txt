@@ -1,4 +1,0 @@
-Create a Check Point. Commit and Sync all changes.
-Update docs/AWG-Project-Plan.md with any significant variations from the original design. Add notes as to why the change was made.
-Update docs/ProjectStaus.md with work accomplished in the current Sprint and the next sessions work items. 
-Add items to the backlog if any exist in the current sprint. Until the next session, good day.
