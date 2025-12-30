@@ -26,7 +26,13 @@ from typing import List, Dict, Any, Optional
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
-from ..config.models import ClientConfig, CityPageConfig, CityImageConfig, PlaceOfInterest, CityFAQItem
+from ..config.models import (
+    ClientConfig,
+    CityPageConfig,
+    CityImageConfig,
+    PlaceOfInterest,
+    CityFAQItem,
+)
 from ..services.ai_content_service import AIContentService
 from ..services.content_cache import ContentCache
 from ..utils.logger import get_logger
@@ -43,20 +49,25 @@ class CityPageGenerator:
         self,
         config: ClientConfig,
         ai_service: Optional[AIContentService] = None,
-        cache: Optional[ContentCache] = None
+        cache: Optional[ContentCache] = None,
+        google_maps_api_key: Optional[str] = None,
     ):
         self.config = config
+        self.google_maps_api_key = google_maps_api_key
         self.template_dir = Path(__file__).parent.parent.parent / "templates"
         self.jinja_env = Environment(
             loader=FileSystemLoader(str(self.template_dir)),
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
 
         # Add custom filters
-        self.jinja_env.filters['markdown_basic'] = self._markdown_basic_filter
-        self.jinja_env.filters['slugify'] = self._slugify_filter
-        self.jinja_env.filters['date'] = self._date_filter
+        self.jinja_env.filters["markdown_basic"] = self._markdown_basic_filter
+        self.jinja_env.filters["slugify"] = self._slugify_filter
+        self.jinja_env.filters["date"] = self._date_filter
+        self.jinja_env.filters["striptags"] = self._striptags_filter
+        self.jinja_env.filters["fix_maps_url"] = self._fix_maps_url_filter
+        self.jinja_env.filters["generate_embed_url"] = self._generate_embed_url_filter
 
         # Initialize AI content generation
         self.ai_service = ai_service or AIContentService()
@@ -64,8 +75,7 @@ class CityPageGenerator:
 
         # Initialize city content generator with AI support
         self.city_gen = CityContentGenerator(
-            ai_service=self.ai_service,
-            cache=self.cache
+            ai_service=self.ai_service, cache=self.cache
         )
 
     def _get_canonical_base_url(self) -> str:
@@ -82,11 +92,13 @@ class CityPageGenerator:
         # Fallback to business domain
         return self.config.business.domain.rstrip("/")
 
-    def generate_city_page(self, city_page: CityPageConfig, output_dir: str, use_ai: bool = True) -> str:
+    def generate_city_page(
+        self, city_page: CityPageConfig, output_dir: str, use_ai: bool = True
+    ) -> str:
         """Generate a single enhanced city page using Jinja2 templates with AI content"""
         try:
             # Load the SEO authority template
-            template = self.jinja_env.get_template('pages/seo_authority_city_page.html')
+            template = self.jinja_env.get_template("pages/seo_authority_city_page.html")
 
             # Prepare template context
             context = self._build_template_context(city_page)
@@ -94,9 +106,7 @@ class CityPageGenerator:
             # Use AI-powered content generation if available
             if use_ai and self.city_gen.use_ai:
                 ai_content = self.city_gen.generate_city_content(
-                    self.config,
-                    city=city_page.city_name,
-                    use_ai=True
+                    self.config, city=city_page.city_name, use_ai=True
                 )
                 if ai_content:
                     context["ai_generated_content"] = ai_content
@@ -108,18 +118,22 @@ class CityPageGenerator:
             output_path = Path(output_dir) / f"{city_page.slug}.html"
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
 
             return str(output_path)
 
         except Exception as e:
-            raise Exception(f"Error generating city page for {city_page.city_name}: {str(e)}")
-    
-    def generate_city_page_from_string(self, city: str, output_dir: str, use_ai: bool = True) -> str:
+            raise Exception(
+                f"Error generating city page for {city_page.city_name}: {str(e)}"
+            )
+
+    def generate_city_page_from_string(
+        self, city: str, output_dir: str, use_ai: bool = True
+    ) -> str:
         """Legacy method: Generate city page from string - creates enhanced city page with AI"""
         # Parse city string into components
-        parts = city.split(',')
+        parts = city.split(",")
         city_name = parts[0].strip()
         state = parts[1].strip() if len(parts) > 1 else ""
 
@@ -128,76 +142,95 @@ class CityPageGenerator:
 
         # Generate using unified method with AI support
         return self.generate_city_page(city_page, output_dir, use_ai=use_ai)
-    
-    def generate_all_city_pages(self, output_dir: str, use_ai: bool = True) -> List[str]:
+
+    def generate_all_city_pages(
+        self, output_dir: str, use_ai: bool = True
+    ) -> List[str]:
         """Generate all city pages with AI support - supports both enhanced city_pages and legacy target_cities"""
         generated_files = []
 
         # Priority 1: Use enhanced city_pages if available
-        if hasattr(self.config, 'city_pages') and self.config.city_pages:
+        if hasattr(self.config, "city_pages") and self.config.city_pages:
             for city_page in self.config.city_pages:
                 try:
-                    file_path = self.generate_city_page(city_page, output_dir, use_ai=use_ai)
+                    file_path = self.generate_city_page(
+                        city_page, output_dir, use_ai=use_ai
+                    )
                     generated_files.append(file_path)
-                    ai_status = " (AI-powered)" if use_ai and self.city_gen.use_ai else ""
+                    ai_status = (
+                        " (AI-powered)" if use_ai and self.city_gen.use_ai else ""
+                    )
                     logger.info(
                         f"Generated enhanced city page: {city_page.city_name}{ai_status}",
-                        extra={"extra_fields": {
-                            "city": city_page.city_name,
-                            "ai_powered": use_ai and self.city_gen.use_ai
-                        }}
+                        extra={
+                            "extra_fields": {
+                                "city": city_page.city_name,
+                                "ai_powered": use_ai and self.city_gen.use_ai,
+                            }
+                        },
                     )
                 except Exception as e:
                     logger.error(
                         f"Error generating enhanced page for {city_page.city_name}",
-                        extra={"extra_fields": {
-                            "city": city_page.city_name,
-                            "error": str(e)
-                        }}
+                        extra={
+                            "extra_fields": {
+                                "city": city_page.city_name,
+                                "error": str(e),
+                            }
+                        },
                     )
 
         # Fallback: Migrate legacy target_cities if no enhanced pages exist
-        elif hasattr(self.config, 'target_cities') and self.config.target_cities:
+        elif hasattr(self.config, "target_cities") and self.config.target_cities:
             logger.info("Migrating legacy target_cities to enhanced city pages...")
             for city in self.config.target_cities:
                 try:
-                    file_path = self.generate_city_page_from_string(city, output_dir, use_ai=use_ai)
+                    file_path = self.generate_city_page_from_string(
+                        city, output_dir, use_ai=use_ai
+                    )
                     generated_files.append(file_path)
-                    ai_status = " (AI-powered)" if use_ai and self.city_gen.use_ai else ""
+                    ai_status = (
+                        " (AI-powered)" if use_ai and self.city_gen.use_ai else ""
+                    )
                     logger.info(
                         f"Generated city page from legacy config: {city}{ai_status}",
-                        extra={"extra_fields": {
-                            "city": city,
-                            "ai_powered": use_ai and self.city_gen.use_ai,
-                            "from_legacy": True
-                        }}
+                        extra={
+                            "extra_fields": {
+                                "city": city,
+                                "ai_powered": use_ai and self.city_gen.use_ai,
+                                "from_legacy": True,
+                            }
+                        },
                     )
                 except Exception as e:
                     logger.error(
                         f"Error generating page for {city}",
-                        extra={"extra_fields": {
-                            "city": city,
-                            "error": str(e)
-                        }}
+                        extra={"extra_fields": {"city": city, "error": str(e)}},
                     )
         else:
             logger.warning("No city pages or target cities configured for generation")
 
         return generated_files
-    
-    def create_sample_city_page(self, city_name: str, state: str = "") -> CityPageConfig:
+
+    def create_sample_city_page(
+        self, city_name: str, state: str = ""
+    ) -> CityPageConfig:
         """Create a sample city page configuration for testing or migration"""
         return CityPageConfig(
             city_name=city_name,
             state=state,
             meta_description=f"{self.config.business.business_name} serves {city_name} with custom {self.config.business.industry.lower()} services. Professional craftsmanship and local expertise.",
             primary_keyword=f"custom {self.config.business.industry.lower()}",
-            secondary_keywords=[city_name.lower(), f"{self.config.business.industry.lower()} services", "local business"],
-            about_city=f"{city_name} is a vibrant community known for its architectural diversity and rich heritage. " +
-                      f"The city presents unique opportunities and challenges for {self.config.business.industry.lower()} projects, " +
-                      "requiring specialized knowledge of local building codes, climate considerations, and architectural styles. " +
-                      f"Our team at {self.config.business.business_name} understands these local nuances and delivers solutions " +
-                      f"that complement {city_name}'s distinctive character while meeting the highest standards of quality and durability.",
+            secondary_keywords=[
+                city_name.lower(),
+                f"{self.config.business.industry.lower()} services",
+                "local business",
+            ],
+            about_city=f"{city_name} is a vibrant community known for its architectural diversity and rich heritage. "
+            + f"The city presents unique opportunities and challenges for {self.config.business.industry.lower()} projects, "
+            + "requiring specialized knowledge of local building codes, climate considerations, and architectural styles. "
+            + f"Our team at {self.config.business.business_name} understands these local nuances and delivers solutions "
+            + f"that complement {city_name}'s distinctive character while meeting the highest standards of quality and durability.",
             city_image=CityImageConfig(
                 image_url="images/placeholder-city.jpg",
                 alt_text=f"{city_name} skyline and landmarks",
@@ -207,157 +240,228 @@ class CityPageGenerator:
                 embed_code=f"""<div class="wikipedia-embed">
                     <img src="images/placeholder-city.jpg" alt="{city_name} skyline and landmarks">
                     <p class="image-caption">Caption: {city_name} cityscape highlighting local architecture.</p>
-                </div>"""
+                </div>""",
             ),
             seo_content_title=f"Professional {self.config.business.industry} Services for {city_name}",
             seo_content_body=self._generate_sample_seo_content(city_name),
             places_of_interest=[
                 PlaceOfInterest(
                     name=f"{city_name} Downtown",
-                    embed_url=self._generate_maps_embed(f"{city_name} Downtown")
+                    embed_url=self._generate_maps_embed(f"{city_name} Downtown"),
                 ),
                 PlaceOfInterest(
                     name=f"{city_name} Historic District",
-                    embed_url=self._generate_maps_embed(f"{city_name} Historic District")
+                    embed_url=self._generate_maps_embed(
+                        f"{city_name} Historic District"
+                    ),
                 ),
                 PlaceOfInterest(
                     name=f"{city_name} Main Street",
-                    embed_url=self._generate_maps_embed(f"{city_name} Main Street")
+                    embed_url=self._generate_maps_embed(f"{city_name} Main Street"),
                 ),
                 PlaceOfInterest(
                     name=f"{city_name} City Hall",
-                    embed_url=self._generate_maps_embed(f"{city_name} City Hall")
-                )
+                    embed_url=self._generate_maps_embed(f"{city_name} City Hall"),
+                ),
             ],
             city_faq=[
                 CityFAQItem(
                     question=f"Do you provide {self.config.business.industry.lower()} services in {city_name}?",
-                    answer=f"Yes, {self.config.business.business_name} proudly serves {city_name} and surrounding areas with professional {self.config.business.industry.lower()} services."
+                    answer=f"Yes, {self.config.business.business_name} proudly serves {city_name} and surrounding areas with professional {self.config.business.industry.lower()} services.",
                 ),
                 CityFAQItem(
                     question=f"What makes your {self.config.business.industry.lower()} services ideal for {city_name}?",
-                    answer=f"Our team understands {city_name}'s unique architectural styles, local building requirements, and climate considerations, ensuring our {self.config.business.industry.lower()} solutions are perfectly suited to the area."
+                    answer=f"Our team understands {city_name}'s unique architectural styles, local building requirements, and climate considerations, ensuring our {self.config.business.industry.lower()} solutions are perfectly suited to the area.",
                 ),
                 CityFAQItem(
                     question=f"How quickly can you respond to {city_name} service requests?",
-                    answer=f"We strive to respond to all {city_name} service requests within 24 hours. For urgent projects, we offer expedited scheduling when possible."
+                    answer=f"We strive to respond to all {city_name} service requests within 24 hours. For urgent projects, we offer expedited scheduling when possible.",
                 ),
                 CityFAQItem(
                     question=f"Do you offer consultations for {city_name} projects?",
-                    answer=f"Absolutely! We provide free consultations for all {city_name} projects, including site visits, project assessments, and detailed quotes."
+                    answer=f"Absolutely! We provide free consultations for all {city_name} projects, including site visits, project assessments, and detailed quotes.",
                 ),
                 CityFAQItem(
                     question=f"What areas around {city_name} do you serve?",
-                    answer=f"In addition to {city_name}, we serve the entire metropolitan area and surrounding communities. Contact us to confirm service availability for your specific location."
-                )
+                    answer=f"In addition to {city_name}, we serve the entire metropolitan area and surrounding communities. Contact us to confirm service availability for your specific location.",
+                ),
             ],
-            featured_products=[service.slug for service in self.config.services[:7]] if self.config.services else [],
+            featured_products=(
+                [service.slug for service in self.config.services[:7]]
+                if self.config.services
+                else []
+            ),
             city_map_embed=self._generate_maps_embed(f"{city_name}, {state}"),
-            service_area_note=f"Service Area: {city_name} and surrounding communities."
+            service_area_note=f"Service Area: {city_name} and surrounding communities.",
         )
-    
+
     def migrate_legacy_cities(self) -> List[CityPageConfig]:
         """Migrate legacy target_cities to enhanced city pages"""
         migrated_pages = []
-        
-        if not hasattr(self.config, 'target_cities') or not self.config.target_cities:
+
+        if not hasattr(self.config, "target_cities") or not self.config.target_cities:
             return migrated_pages
-            
+
         for city_str in self.config.target_cities:
             # Parse city and state from string
-            parts = city_str.split(',')
+            parts = city_str.split(",")
             city_name = parts[0].strip()
             state = parts[1].strip() if len(parts) > 1 else ""
-            
+
             # Check if already exists in city_pages
             existing_cities = []
-            if hasattr(self.config, 'city_pages') and self.config.city_pages:
-                existing_cities = [cp.city_name.lower() for cp in self.config.city_pages]
-            
+            if hasattr(self.config, "city_pages") and self.config.city_pages:
+                existing_cities = [
+                    cp.city_name.lower() for cp in self.config.city_pages
+                ]
+
             if city_name.lower() not in existing_cities:
                 city_page = self.create_sample_city_page(city_name, state)
                 migrated_pages.append(city_page)
-                
+
         return migrated_pages
-    
+
     def _build_template_context(self, city_page: CityPageConfig) -> Dict[str, Any]:
         """Build template context with all necessary data"""
         # Get other cities for strategic interlinking
         other_cities = []
-        if hasattr(self.config, 'city_pages') and self.config.city_pages:
-            other_cities = [cp for cp in self.config.city_pages if cp.city_name != city_page.city_name]
-        
+        if hasattr(self.config, "city_pages") and self.config.city_pages:
+            other_cities = [
+                cp
+                for cp in self.config.city_pages
+                if cp.city_name != city_page.city_name
+            ]
+
         # Get current date for content freshness
         from datetime import datetime
+
         current_date = datetime.now().strftime("%B %Y")
-        
+
         # Get industry-specific content sections
-        industry_sections = self._get_industry_specific_sections(city_page.city_name, self.config.business.industry)
-        
+        industry_sections = self._get_industry_specific_sections(
+            city_page.city_name, self.config.business.industry
+        )
+
+        # Assign city image from pool if available and city doesn't have one
+        self._assign_city_image_from_pool(city_page)
+
         return {
             # City page data
-            'city_page': city_page,
-            
+            "city_page": city_page,
             # Business data
-            'business': self.config.business,
-            'contact': self.config.contact,
-            'branding': self.config.branding,
-            
+            "business": self.config.business,
+            "contact": self.config.contact,
+            "branding": self.config.branding,
             # Content data
-            'services': self.config.services if hasattr(self.config, 'services') else [],
-            'products': self.config.products if hasattr(self.config, 'products') else [],
-            'social_media': getattr(self.config, 'social_media', None),
-            'google_business_profile': getattr(self.config, 'google_business_profile', None),
-            'google_business': getattr(self.config, 'google_business', None),
-            
+            "services": (
+                self.config.services if hasattr(self.config, "services") else []
+            ),
+            "products": (
+                self.config.products if hasattr(self.config, "products") else []
+            ),
+            "social_media": getattr(self.config, "social_media", None),
+            "google_business_profile": getattr(
+                self.config, "google_business_profile", None
+            ),
+            "google_business": getattr(self.config, "google_business", None),
             # Strategic interlinking
-            'other_cities': other_cities,
-            'related_services': self._get_related_services(city_page),
-            
+            "other_cities": other_cities,
+            "related_services": self._get_related_services(city_page),
             # Industry-specific content sections
-            'industry_sections': industry_sections,
-            
+            "industry_sections": industry_sections,
             # Page metadata
-            'page_url': f"{self._get_canonical_base_url()}/locations/{city_page.slug}.html",
-            'current_year': 2025,
-            'current_date': current_date,
-            
+            "page_url": f"{self._get_canonical_base_url()}/locations/{city_page.slug}.html",
+            "current_year": 2025,
+            "current_date": current_date,
             # Template utilities
-            'css_file': '../css/style.css',
-            'base_path': '../',
-            
+            "css_file": "../css/style.css",
+            "base_path": "../",
             # SEO and schema data
-            'schema_data': self._build_schema_data(city_page)
+            "schema_data": self._build_schema_data(city_page),
         }
-    
+
+    def _assign_city_image_from_pool(self, city_page: CityPageConfig) -> None:
+        """
+        Assign image from branding image pool to city page if:
+        1. City page doesn't already have an image
+        2. Image pool exists and has images
+
+        Images are assigned sequentially based on city page index, with cycling.
+        """
+        # Skip if city already has an image
+        if city_page.city_image and city_page.city_image.image_url:
+            return
+
+        # Check if image pool exists
+        if not hasattr(self.config.branding, "city_page_image_pool"):
+            return
+
+        image_pool = self.config.branding.city_page_image_pool
+        if not image_pool or not isinstance(image_pool, list) or len(image_pool) == 0:
+            return
+
+        # Find index of current city page
+        city_index = -1
+        if hasattr(self.config, "city_pages") and self.config.city_pages:
+            for idx, cp in enumerate(self.config.city_pages):
+                if cp.city_name == city_page.city_name:
+                    city_index = idx
+                    break
+
+        if city_index < 0:
+            return
+
+        # Assign image using modulo for cycling
+        pool_index = city_index % len(image_pool)
+        assigned_image_path = image_pool[pool_index]
+
+        # Update city page image config
+        from ..config.models import CityImageConfig
+
+        if not city_page.city_image:
+            city_page.city_image = CityImageConfig()
+
+        city_page.city_image.image_url = assigned_image_path
+
+        # Set default alt text if not present
+        if not city_page.city_image.alt_text:
+            city_page.city_image.alt_text = f"View of {city_page.city_name}"
+
+        logger.info(
+            f"Assigned image from pool: {assigned_image_path} to city page: {city_page.city_name} "
+            f"(city index: {city_index}, pool index: {pool_index})"
+        )
+
     def _build_schema_data(self, city_page: CityPageConfig) -> Dict[str, Any]:
         """Build structured data for schema markup"""
         return {
-            'business_name': self.config.business.business_name,
-            'business_url': self.config.business.domain,
-            'city_name': city_page.city_name,
-            'service_area': city_page.full_city_name,
-            'contact_phone': self.config.contact.phone,
-            'contact_email': self.config.contact.email,
-            'address': {
-                'street': getattr(self.config.contact.address, 'street', ''),
-                'city': getattr(self.config.contact.address, 'city', ''),
-                'state': getattr(self.config.contact.address, 'state', ''),
-                'zip': getattr(self.config.contact.address, 'zip_code', ''),
-                'country': getattr(self.config.contact.address, 'country', 'US')
-            }
+            "business_name": self.config.business.business_name,
+            "business_url": self.config.business.domain,
+            "city_name": city_page.city_name,
+            "service_area": city_page.full_city_name,
+            "contact_phone": self.config.contact.phone,
+            "contact_email": self.config.contact.email,
+            "address": {
+                "street": getattr(self.config.contact.address, "street", ""),
+                "city": getattr(self.config.contact.address, "city", ""),
+                "state": getattr(self.config.contact.address, "state", ""),
+                "zip": getattr(self.config.contact.address, "zip_code", ""),
+                "country": getattr(self.config.contact.address, "country", "US"),
+            },
         }
-    
+
     def _generate_sample_seo_content(self, city_name: str) -> str:
         """Generate comprehensive 900+ word SEO content for city pages with enhanced sections"""
         business_name = self.config.business.business_name
         industry = self.config.business.industry.lower()
-        
+
         # Get service names for content
         service_list = "professional services"
-        if hasattr(self.config, 'services') and self.config.services:
-            service_list = ", ".join([service.name.lower() for service in self.config.services[:5]])
-        
+        if hasattr(self.config, "services") and self.config.services:
+            service_list = ", ".join(
+                [service.name.lower() for service in self.config.services[:5]]
+            )
+
         content = f"""<p>When {city_name} residents and businesses need professional {industry} services, they turn to {business_name}. Our experienced team provides comprehensive solutions tailored to the unique needs of the {city_name} area, combining industry expertise with local knowledge to deliver exceptional results that exceed expectations.</p>
 
 <p>Our approach begins with understanding your specific requirements and the local context of {city_name}. We take into account critical factors such as local building codes, architectural heritage, climate considerations, seasonal variations, and community standards. This meticulous attention to detail ensures that our {industry} solutions not only meet your functional requirements but also complement the distinctive character and aesthetic appeal of {city_name}.</p>
@@ -401,117 +505,195 @@ class CityPageGenerator:
 <p>Customer service excellence forms the cornerstone of everything we accomplish in {city_name}. We firmly believe that clear, honest communication, reliable scheduling, and meticulous attention to detail are equally as important as technical expertise and craftsmanship. Our primary goal is to make the entire experience positive, educational, and completely stress-free for our clients while delivering results that exceed expectations.</p>
 
 <p>Whether you're planning a small residential improvement, a major renovation, or a large commercial installation anywhere in {city_name}, {business_name} possesses the experience, expertise, resources, and unwavering commitment to excellence you need for guaranteed success. We cordially invite you to contact us today to discuss your specific project requirements and discover how we can help transform your vision into reality with exceptional results that last for years to come.</p>"""
-        
+
         return content
-    
+
     def _get_related_services(self, city_page: CityPageConfig) -> List:
         """Get services related to this city page for strategic interlinking"""
-        if hasattr(self.config, 'services') and self.config.services:
+        if hasattr(self.config, "services") and self.config.services:
             return self.config.services[:7]  # Limit to top 7 services for UI purposes
         return []
-    
-    def _get_industry_specific_sections(self, city_name: str, industry: str) -> Dict[str, str]:
+
+    def _get_industry_specific_sections(
+        self, city_name: str, industry: str
+    ) -> Dict[str, str]:
         """Generate industry-specific content sections for enhanced SEO authority"""
         industry_lower = industry.lower()
-        
+
         # Industry-specific section templates
         industry_templates = {
-            'construction': {
-                'expertise_title': 'Construction Excellence and Building Innovation',
-                'expertise_content': f"""Our construction expertise in {city_name} spans residential, commercial, and industrial projects of all sizes. We understand the unique building challenges that {city_name}'s climate, soil conditions, and architectural heritage present, adapting our construction methodologies to ensure optimal results that stand the test of time. From foundation work to final finishes, our construction professionals bring decades of combined experience to every {city_name} project.""",
-                
-                'specialization_title': 'Specialized Construction Services for {city_name}',
-                'specialization_content': f"""The diverse construction needs of {city_name} require specialized approaches and expertise. Our team excels in working with both traditional construction methods that respect the area's architectural heritage and innovative building techniques that provide enhanced performance and energy efficiency. We coordinate closely with {city_name} building departments to ensure all work meets or exceeds local construction codes and standards."""
+            "construction": {
+                "expertise_title": "Construction Excellence and Building Innovation",
+                "expertise_content": f"""Our construction expertise in {city_name} spans residential, commercial, and industrial projects of all sizes. We understand the unique building challenges that {city_name}'s climate, soil conditions, and architectural heritage present, adapting our construction methodologies to ensure optimal results that stand the test of time. From foundation work to final finishes, our construction professionals bring decades of combined experience to every {city_name} project.""",
+                "specialization_title": "Specialized Construction Services for {city_name}",
+                "specialization_content": f"""The diverse construction needs of {city_name} require specialized approaches and expertise. Our team excels in working with both traditional construction methods that respect the area's architectural heritage and innovative building techniques that provide enhanced performance and energy efficiency. We coordinate closely with {city_name} building departments to ensure all work meets or exceeds local construction codes and standards.""",
             },
-            
-            'roofing': {
-                'expertise_title': 'Roofing Excellence and Weather Protection',
-                'expertise_content': f"""Our roofing expertise in {city_name} addresses the specific challenges posed by local weather patterns, from intense summer heat to winter snow loads and everything in between. We understand how {city_name}'s climate affects different roofing materials and systems, enabling us to recommend and install solutions that provide optimal protection and longevity for your investment.""",
-                
-                'specialization_title': 'Advanced Roofing Solutions for {city_name} Properties',
-                'specialization_content': f"""Every roof in {city_name} faces unique environmental stresses that require specialized attention. Our roofing professionals are experts in selecting and installing roofing systems that complement {city_name}'s architectural styles while providing superior weather protection. We work with premium materials specifically chosen for their performance in local climate conditions."""
+            "roofing": {
+                "expertise_title": "Roofing Excellence and Weather Protection",
+                "expertise_content": f"""Our roofing expertise in {city_name} addresses the specific challenges posed by local weather patterns, from intense summer heat to winter snow loads and everything in between. We understand how {city_name}'s climate affects different roofing materials and systems, enabling us to recommend and install solutions that provide optimal protection and longevity for your investment.""",
+                "specialization_title": "Advanced Roofing Solutions for {city_name} Properties",
+                "specialization_content": f"""Every roof in {city_name} faces unique environmental stresses that require specialized attention. Our roofing professionals are experts in selecting and installing roofing systems that complement {city_name}'s architectural styles while providing superior weather protection. We work with premium materials specifically chosen for their performance in local climate conditions.""",
             },
-            
-            'plumbing': {
-                'expertise_title': 'Comprehensive Plumbing Solutions and Water Systems',
-                'expertise_content': f"""Our plumbing services in {city_name} address everything from routine maintenance to complex system installations and emergency repairs. We understand the unique challenges that {city_name}'s water infrastructure, soil conditions, and building codes present, ensuring our plumbing solutions are both compliant and optimized for local conditions.""",
-                
-                'specialization_title': 'Advanced Plumbing Technologies for {city_name}',
-                'specialization_content': f"""Modern plumbing in {city_name} requires understanding of both traditional systems and innovative technologies. Our certified plumbers stay current with the latest in water efficiency, smart home integration, and sustainable plumbing practices that benefit both {city_name} residents and the environment."""
+            "plumbing": {
+                "expertise_title": "Comprehensive Plumbing Solutions and Water Systems",
+                "expertise_content": f"""Our plumbing services in {city_name} address everything from routine maintenance to complex system installations and emergency repairs. We understand the unique challenges that {city_name}'s water infrastructure, soil conditions, and building codes present, ensuring our plumbing solutions are both compliant and optimized for local conditions.""",
+                "specialization_title": "Advanced Plumbing Technologies for {city_name}",
+                "specialization_content": f"""Modern plumbing in {city_name} requires understanding of both traditional systems and innovative technologies. Our certified plumbers stay current with the latest in water efficiency, smart home integration, and sustainable plumbing practices that benefit both {city_name} residents and the environment.""",
             },
-            
-            'electrical': {
-                'expertise_title': 'Electrical Systems and Power Solutions',
-                'expertise_content': f"""Our electrical services in {city_name} encompass residential, commercial, and industrial electrical needs with a focus on safety, efficiency, and code compliance. We understand {city_name}'s electrical infrastructure requirements and work closely with local utility providers to ensure seamless integration of new electrical systems.""",
-                
-                'specialization_title': 'Smart Electrical Solutions for Modern {city_name} Properties',
-                'specialization_content': f"""Today's electrical needs in {city_name} go far beyond basic wiring. Our licensed electricians specialize in smart home technologies, energy-efficient lighting systems, solar integration, and electric vehicle charging solutions that meet the evolving needs of {city_name} residents and businesses."""
+            "electrical": {
+                "expertise_title": "Electrical Systems and Power Solutions",
+                "expertise_content": f"""Our electrical services in {city_name} encompass residential, commercial, and industrial electrical needs with a focus on safety, efficiency, and code compliance. We understand {city_name}'s electrical infrastructure requirements and work closely with local utility providers to ensure seamless integration of new electrical systems.""",
+                "specialization_title": "Smart Electrical Solutions for Modern {city_name} Properties",
+                "specialization_content": f"""Today's electrical needs in {city_name} go far beyond basic wiring. Our licensed electricians specialize in smart home technologies, energy-efficient lighting systems, solar integration, and electric vehicle charging solutions that meet the evolving needs of {city_name} residents and businesses.""",
             },
-            
-            'landscaping': {
-                'expertise_title': 'Landscape Design and Environmental Harmony',
-                'expertise_content': f"""Our landscaping services in {city_name} focus on creating outdoor spaces that thrive in the local climate while enhancing property value and environmental sustainability. We understand {city_name}'s growing conditions, native plant species, and seasonal considerations to design landscapes that remain beautiful year-round with minimal maintenance requirements.""",
-                
-                'specialization_title': 'Sustainable Landscaping for {city_name} Properties',
-                'specialization_content': f"""Sustainable landscaping in {city_name} requires deep understanding of local ecosystems, water conservation, and native plant communities. Our landscape professionals create designs that support local wildlife, reduce water usage, and complement the natural beauty of the {city_name} area while meeting your aesthetic and functional requirements."""
+            "landscaping": {
+                "expertise_title": "Landscape Design and Environmental Harmony",
+                "expertise_content": f"""Our landscaping services in {city_name} focus on creating outdoor spaces that thrive in the local climate while enhancing property value and environmental sustainability. We understand {city_name}'s growing conditions, native plant species, and seasonal considerations to design landscapes that remain beautiful year-round with minimal maintenance requirements.""",
+                "specialization_title": "Sustainable Landscaping for {city_name} Properties",
+                "specialization_content": f"""Sustainable landscaping in {city_name} requires deep understanding of local ecosystems, water conservation, and native plant communities. Our landscape professionals create designs that support local wildlife, reduce water usage, and complement the natural beauty of the {city_name} area while meeting your aesthetic and functional requirements.""",
             },
-            
             # Default template for unlisted industries
-            'default': {
-                'expertise_title': f'{industry} Expertise and Professional Excellence',
-                'expertise_content': f"""Our {industry_lower} expertise in {city_name} is built on years of experience serving the local community with professional, reliable service. We understand the unique requirements that {city_name} properties and businesses have, adapting our {industry_lower} services to meet local conditions, regulations, and client expectations with precision and care.""",
-                
-                'specialization_title': f'Specialized {industry} Services for {city_name}',
-                'specialization_content': f"""The diverse {industry_lower} needs of {city_name} require specialized knowledge and flexible approaches. Our team combines traditional {industry_lower} expertise with innovative techniques and technologies to deliver solutions that are perfectly suited to the {city_name} market and local requirements."""
-            }
+            "default": {
+                "expertise_title": f"{industry} Expertise and Professional Excellence",
+                "expertise_content": f"""Our {industry_lower} expertise in {city_name} is built on years of experience serving the local community with professional, reliable service. We understand the unique requirements that {city_name} properties and businesses have, adapting our {industry_lower} services to meet local conditions, regulations, and client expectations with precision and care.""",
+                "specialization_title": f"Specialized {industry} Services for {city_name}",
+                "specialization_content": f"""The diverse {industry_lower} needs of {city_name} require specialized knowledge and flexible approaches. Our team combines traditional {industry_lower} expertise with innovative techniques and technologies to deliver solutions that are perfectly suited to the {city_name} market and local requirements.""",
+            },
         }
-        
+
         # Get industry-specific template or default
-        template = industry_templates.get(industry_lower, industry_templates['default'])
-        
+        template = industry_templates.get(industry_lower, industry_templates["default"])
+
         # Format with city name
         return {
-            'expertise_title': template['expertise_title'].format(city_name=city_name),
-            'expertise_content': template['expertise_content'],
-            'specialization_title': template['specialization_title'].format(city_name=city_name),
-            'specialization_content': template['specialization_content']
+            "expertise_title": template["expertise_title"].format(city_name=city_name),
+            "expertise_content": template["expertise_content"],
+            "specialization_title": template["specialization_title"].format(
+                city_name=city_name
+            ),
+            "specialization_content": template["specialization_content"],
         }
-    
-    def _markdown_basic_filter(self, text: str) -> str:
-        """Basic markdown processing for simple formatting"""
+
+    def _striptags_filter(self, text: str) -> str:
+        """Strip HTML tags from text"""
         if not text:
             return text
-        
-        # Convert **Ready to talk details?** to <h2> (special case - do this FIRST)
-        text = re.sub(r'\*\*Ready to talk details\?\*\*', r'<h2>Ready to talk details?</h2>', text)
-        
-        # Convert **bold** to <strong>
-        text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
-        
-        # Convert *italic* to <em>
-        text = re.sub(r'\*(.*?)\*', r'<em>\1</em>', text)
-        
-        # Convert [text](url) to <a href="url">text</a>
-        text = re.sub(r'\[([^\]]*)\]\(([^)]*)\)', r'<a href="\2">\1</a>', text)
-        
+
+        # Remove all HTML tags
+        text = re.sub(r"<[^>]+>", "", text)
+
         return text
-    
+
+    def _fix_maps_url_filter(self, url: str) -> str:
+        """Fix Google Maps URLs by removing invalid parameters like &output=embed"""
+        if not url:
+            return url
+
+        # Remove &output=embed parameter (causes errors when used in anchor tags)
+        url = url.replace("&output=embed", "").replace("?output=embed", "")
+
+        # Convert old-style URLs to search format if needed
+        if "google.com/maps?q=" in url and "google.com/maps/embed" not in url:
+            # Extract the query parameter
+            match = re.search(r"q=([^&]+)", url)
+            if match:
+                query = match.group(1)
+                # Convert to clean search URL
+                url = f"https://www.google.com/maps/search/{query}"
+
+        return url
+
+    def _generate_embed_url_filter(self, place_name: str) -> str:
+        """Generate a proper Google Maps embed URL from a place name using API key if available"""
+        if not place_name:
+            return ""
+
+        # Use the _generate_maps_embed method which handles API key logic
+        return self._generate_maps_embed(place_name)
+
+    def _markdown_basic_filter(self, text: str) -> str:
+        """Basic markdown processing for simple formatting with paragraph support"""
+        if not text:
+            return text
+
+        # If content already has HTML paragraph tags, return as-is (already formatted)
+        if "<p>" in text or "<h" in text.lower():
+            return text
+
+        # Convert **Ready to talk details?** to <h2> (special case - do this FIRST)
+        text = re.sub(
+            r"\*\*Ready to talk details\?\*\*", r"<h2>Ready to talk details?</h2>", text
+        )
+
+        # Convert **bold** to <strong>
+        text = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", text)
+
+        # Convert *italic* to <em>
+        text = re.sub(r"\*(.*?)\*", r"<em>\1</em>", text)
+
+        # Convert [text](url) to <a href="url">text</a>
+        text = re.sub(r"\[([^\]]*)\]\(([^)]*)\)", r'<a href="\2">\1</a>', text)
+
+        # Convert double line breaks to paragraph breaks
+        if "\n\n" in text:
+            # Split by double newlines (paragraph breaks) and wrap each in <p> tags
+            paragraphs = text.split("\n\n")
+            paragraphs = [f"<p>{p.strip()}</p>" for p in paragraphs if p.strip()]
+            text = "\n\n".join(paragraphs)
+        else:
+            # No explicit paragraph breaks - intelligently split long text
+            # Split on patterns that typically indicate new paragraphs
+            # Look for ". " followed by a capital letter (new sentence starting a new thought)
+            # Split approximately every 3-5 sentences into a paragraph
+            sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z])", text)
+            paragraphs = []
+            current_para = []
+
+            for i, sentence in enumerate(sentences):
+                current_para.append(sentence)
+                # Create new paragraph every 4-5 sentences or at natural breaks
+                if len(current_para) >= 4 or (
+                    len(current_para) >= 2
+                    and any(
+                        sentence.strip().startswith(word)
+                        for word in [
+                            "Our",
+                            "We",
+                            "At",
+                            "The",
+                            "In addition",
+                            "What sets",
+                            "If you",
+                        ]
+                    )
+                ):
+                    paragraphs.append(f'<p>{" ".join(current_para)}</p>')
+                    current_para = []
+
+            # Add any remaining sentences
+            if current_para:
+                paragraphs.append(f'<p>{" ".join(current_para)}</p>')
+
+            text = "\n\n".join(paragraphs)
+
+        return text
+
     def _slugify_filter(self, text: str) -> str:
         """Simple slugify function for URL-friendly strings"""
         if not text:
             return text
-        
+
         text = text.lower()
-        text = text.replace(' ', '-')
-        text = text.replace(',', '')
-        text = text.replace(' illinois', '')
-        text = text.replace(' il', '')
-        return text.strip('-')
-        
+        text = text.replace(" ", "-")
+        text = text.replace(",", "")
+        text = text.replace(" illinois", "")
+        text = text.replace(" il", "")
+        return text.strip("-")
+
     def _date_filter(self, date_input, format_str="%Y-%m-%d"):
         """Format date string - supports 'now' keyword for current date"""
         from datetime import datetime
-        
+
         if isinstance(date_input, str) and date_input.lower() == "now":
             return datetime.now().strftime(format_str)
         elif isinstance(date_input, datetime):
@@ -535,11 +717,11 @@ class CityPageGenerator:
         """
         import os
 
-        # Get API key from environment variable if available
-        api_key = os.getenv('GOOGLE_MAPS_API_KEY')
+        # Get API key from instance variable (set via UI) or environment variable
+        api_key = self.google_maps_api_key or os.getenv("GOOGLE_MAPS_API_KEY")
 
         # Clean location string for URL encoding
-        location_encoded = location.replace(' ', '+').replace(',', '%2C')
+        location_encoded = location.replace(" ", "+").replace(",", "%2C")
 
         if api_key:
             # Use Google Maps Embed API with user's API key

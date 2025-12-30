@@ -47,7 +47,9 @@
       "Bash(ls:*)",
       "WebFetch(domain:www.unitedstructuralsystems.com)",
       "Bash(aws sts get-caller-identity:*)",
-      "WebFetch(domain:d130v1khque84k.cloudfront.net)"
+      "WebFetch(domain:d130v1khque84k.cloudfront.net)",
+      "Bash(gh issue close:*)",
+      "Bash(black:*)"
     ],
     "deny": [],
     "ask": []

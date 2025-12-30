@@ -105,6 +105,11 @@ class BrandingTab(BaseTab):
             "menu_text": self.DEFAULT_MENU_TEXT,
         }
         self.has_changes = False
+
+        # City page image pool
+        self.city_image_pool_paths = []
+        self.city_image_list_widget = None
+
         super().__init__(parent)
 
     def setup_ui(self):
@@ -124,6 +129,7 @@ class BrandingTab(BaseTab):
         self._create_color_section(content_layout)
         self._create_font_section(content_layout)
         self._create_logo_section(content_layout)
+        self._create_city_image_pool_section(content_layout)
         self._create_template_section(content_layout)
         self._create_preview_section(content_layout)
 
@@ -413,6 +419,69 @@ class BrandingTab(BaseTab):
         logo_group.setLayout(logo_layout)
         parent_layout.addWidget(logo_group)
 
+    def _create_city_image_pool_section(self, parent_layout: QVBoxLayout):
+        """Create city page image pool section"""
+        from PyQt6.QtWidgets import QListWidget
+
+        # Section header
+        header = QLabel("City Page Image Pool (Optional)")
+        header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
+        parent_layout.addWidget(header)
+
+        # Group box
+        pool_group = QGroupBox()
+        pool_group.setMaximumHeight(250)
+        pool_layout = QVBoxLayout()
+        pool_layout.setSpacing(10)
+
+        # Description label
+        desc_label = QLabel(
+            "Upload multiple images to assign to city pages. "
+            "Images will be assigned sequentially (first image to first city, etc.) "
+            "and will cycle if there are more cities than images."
+        )
+        desc_label.setFont(QFont("Arial", 9))
+        desc_label.setStyleSheet("color: #666; font-style: italic;")
+        desc_label.setWordWrap(True)
+        pool_layout.addWidget(desc_label)
+
+        # Button container
+        button_container = QHBoxLayout()
+
+        # Upload button
+        upload_pool_button = QPushButton("Select Images...")
+        upload_pool_button.setMaximumWidth(150)
+        upload_pool_button.clicked.connect(self._upload_city_image_pool)
+        button_container.addWidget(upload_pool_button)
+
+        # Clear button
+        clear_pool_button = QPushButton("Clear All")
+        clear_pool_button.setMaximumWidth(100)
+        clear_pool_button.clicked.connect(self._clear_city_image_pool)
+        button_container.addWidget(clear_pool_button)
+
+        button_container.addStretch()
+        pool_layout.addLayout(button_container)
+
+        # List widget to show selected files
+        self.city_image_list_widget = QListWidget()
+        self.city_image_list_widget.setMaximumHeight(120)
+        self.city_image_list_widget.setStyleSheet(
+            """
+            QListWidget {
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 5px;
+                background-color: #f9f9f9;
+            }
+            """
+        )
+        pool_layout.addWidget(self.city_image_list_widget)
+
+        pool_group.setLayout(pool_layout)
+        parent_layout.addWidget(pool_group)
+
     def _create_template_section(self, parent_layout: QVBoxLayout):
         """Create enhanced template selection section"""
         # Section header
@@ -674,6 +743,47 @@ class BrandingTab(BaseTab):
                 f"It will be saved to: config/clients/[client-name]/assets/"
             )
 
+    def _upload_city_image_pool(self):
+        """Handle city image pool upload"""
+        file_dialog = QFileDialog()
+        file_paths, _ = file_dialog.getOpenFileNames(
+            self,
+            "Select City Page Images",
+            "",
+            "Image Files (*.jpg *.jpeg *.png *.webp)"
+        )
+
+        if file_paths:
+            self.city_image_pool_paths = file_paths
+            self._update_city_image_list()
+            self._emit_config_changed()
+
+            QMessageBox.information(
+                self,
+                "Images Selected",
+                f"{len(file_paths)} image(s) selected.\n\n"
+                f"These images will be automatically copied to your client's assets directory "
+                f"when you save the configuration and will be assigned sequentially to city pages.\n\n"
+                f"Saved to: config/clients/[client-name]/assets/"
+            )
+
+    def _clear_city_image_pool(self):
+        """Clear city image pool"""
+        self.city_image_pool_paths = []
+        self._update_city_image_list()
+        self._emit_config_changed()
+
+    def _update_city_image_list(self):
+        """Update the list widget showing selected images"""
+        if self.city_image_list_widget is None:
+            return
+
+        self.city_image_list_widget.clear()
+
+        for path in self.city_image_pool_paths:
+            filename = os.path.basename(path)
+            self.city_image_list_widget.addItem(filename)
+
     def get_config_data(self) -> Dict[str, Any]:
         """Get configuration data"""
         return {
@@ -727,6 +837,7 @@ class BrandingTab(BaseTab):
                     if "hero_background_image_url" in self.branding_inputs
                     else ""
                 ),
+                "city_page_image_pool": self.city_image_pool_paths,
             },
             # Note: Template system will be redesigned in future updates
         }
@@ -818,6 +929,12 @@ class BrandingTab(BaseTab):
                 hero_bg_url = data["logo"].get("hero_background_image_url", "")
                 if "hero_background_image_url" in self.branding_inputs:
                     self.branding_inputs["hero_background_image_url"].setText(hero_bg_url)
+
+                # Load city page image pool
+                city_pool = data["logo"].get("city_page_image_pool", [])
+                if isinstance(city_pool, list):
+                    self.city_image_pool_paths = city_pool
+                    self._update_city_image_list()
 
             # Template data handling removed - template system will be redesigned
 
@@ -927,6 +1044,10 @@ class BrandingTab(BaseTab):
             self.branding_inputs["logo_url"].setText("")
         if "hero_background_image_url" in self.branding_inputs:
             self.branding_inputs["hero_background_image_url"].setText("")
+
+        # Clear city image pool
+        self.city_image_pool_paths = []
+        self._update_city_image_list()
 
         # Update preview
         self._update_preview()

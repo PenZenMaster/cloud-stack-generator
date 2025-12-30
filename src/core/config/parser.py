@@ -238,6 +238,11 @@ class ConfigParser:
         if not isinstance(branding_data, dict):
             branding_data = {}
 
+        # Parse city page image pool
+        city_image_pool = branding_data.get("city_page_image_pool", [])
+        if not isinstance(city_image_pool, list):
+            city_image_pool = []
+
         return BrandingConfig(
             primary_color=branding_data.get("primary_color", "#007bff"),
             secondary_color=branding_data.get("secondary_color", "#6c757d"),
@@ -252,6 +257,7 @@ class ConfigParser:
             font_family=branding_data.get("font_family", "Arial, sans-serif"),
             logo_url=branding_data.get("logo_url", ""),
             hero_background_image_url=branding_data.get("hero_background_image_url", ""),
+            city_page_image_pool=city_image_pool,
         )
 
     def _parse_social_media_config(
@@ -628,6 +634,7 @@ class ConfigParser:
                     "font_family": config.branding.font_family,
                     "logo_url": config.branding.logo_url,
                     "hero_background_image_url": config.branding.hero_background_image_url,
+                    "city_page_image_pool": config.branding.city_page_image_pool,
                 },
                 "social_media": config.social_media.get_valid_links(),
                 "google_business_profile": config.google_business_profile,
