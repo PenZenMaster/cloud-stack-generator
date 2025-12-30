@@ -1,28 +1,28 @@
 # AWG Startup Context
 
-**Last Updated:** 2025-12-21 02:30 AM
+**Last Updated:** 2025-12-29
 **Branch:** main
-**Last Commit:** 38b000f
+**Last Commit:** 9851f26
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **Documentation Consolidation Complete** - Created USER_GUIDE.md (12,800+ words), ADMIN_GUIDE.md (12,900+ words), and ARCHITECTURE.md consolidating 28 scattered files into 3 comprehensive guides
+1. **Fixed 3 Critical City Page Bugs** - Resolved GitHub issues #15 (nested H1/H2 tags), #16 (Google Maps embed errors), #17 (missing paragraph breaks)
 
-2. **Critical GSC Bug Fix** - Fixed AttributeError in Google Search Console verification dialog (cloudfront_domain_input reference issue). All 113 tests passing.
+2. **Google Maps API Integration** - Implemented end-to-end API key integration: UI config → page generator → template rendering with proper embed iframes
 
-3. **User Support** - Guided user through Google Search Console OAuth credentials setup (Desktop App vs Web Application credential types)
+3. **Enhanced API Testing** - Built live Google Maps API validator testing Geocoding, Places, and Embed APIs with detailed status reporting
 
 ---
 
 ## Next 3 Priorities
 
-1. **Clean up working tree** - Handle deleted docs/wrap.txt file (git rm or restore)
+1. **Test Font Fix** - User needs to change Branding tab font from "Impact" to readable font (Arial, Inter, Georgia)
 
-2. **Phase 2 Test Implementation** - UI component tests for cloud_tab, enhanced_cities_tab, services_tab, products_tab (Est: 2-3 weeks)
+2. **Verify Fixes** - Regenerate city pages and verify embedded maps, paragraph breaks, and clean H1 tags
 
-3. **Schema Quick Wins** - Implement ImageObject and Review Schema structure (Est: 2-3 days)
+3. **Deploy & Test** - Push to CloudFront and verify all fixes work on live site
 
 ---
 
@@ -30,26 +30,31 @@
 
 **Git Status:**
 - Branch: main (up to date with origin/main)
-- Working tree: 1 deleted file (docs/wrap.txt) needs cleanup
-- Last push: Successful (38b000f)
+- Working tree: Clean
+- Last commit: 9851f26 (pushed successfully)
+- Version: 3.6.1
 
 **Tests:**
 - ✅ All 113 cloud infrastructure tests passing
 - ✅ Pre-commit hooks passing
+- ✅ Black formatting applied
 
 **Blockers:**
-- None - User configuring OAuth credentials (external, not blocking development)
+- None
 
 ---
 
 ## Key Context Notes
 
-1. **Documentation Phase 2 Complete** - All comprehensive guides created and committed. Phase 3 (archiving source files) is optional cleanup.
+1. **Google Maps API Flow** - UI saves key to config/api_keys.json → page_generator loads it → passes to city_page_generator → generates embed URLs with API key → template renders iframes
 
-2. **GSC Feature Status** - Google Search Console verification is fully implemented and working (after bug fix). Feature is user-initiated via "Get Google Verification Tag" button in Cloud Deployment tab.
+2. **Font Issue Identified** - Impact font in Branding settings causing heavy/unreadable text. User needs to change this in UI Branding tab.
 
-3. **TODO List** - 9 completed items, 3 pending: Phase 2 tests, Schema quick wins, API Key Manager test implementation
+3. **Bug Fix Details:**
+   - #15: Added striptags filter to remove HTML from seo_content_title
+   - #16: Created generate_embed_url filter + API key integration
+   - #17: Enhanced markdown_basic filter with intelligent paragraph splitting
 
 ---
 
-**For full checkpoint details:** See `docs/archive/checkpoints/CheckPoint-2025-12-21_0230.md`
+**For full checkpoint details:** See `docs/archive/checkpoints/CheckPoint-2025-12-29_*.md` (if created)
