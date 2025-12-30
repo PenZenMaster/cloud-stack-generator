@@ -35,7 +35,7 @@ def main():
     result = generator.generate_complete_website(config)
 
     if result.success:
-        print(f"\nWebsite generated successfully!")
+        print("\nWebsite generated successfully!")
         print(f"Files created: {len(result.generated_files)}")
         print(f"Output directory: {output_dir}")
         for file_path in result.generated_files[:5]:  # Show first 5
@@ -43,7 +43,7 @@ def main():
         if len(result.generated_files) > 5:
             print(f"  ... and {len(result.generated_files) - 5} more files")
     else:
-        print(f"\nGeneration failed!")
+        print("\nGeneration failed!")
         print(f"Errors: {result.errors}")
         sys.exit(1)
 

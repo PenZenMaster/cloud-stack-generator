@@ -74,7 +74,7 @@ class PageGenerator:
                     result.add_error(error)
                 logger.error(
                     "Configuration validation failed",
-                    extra={"extra_fields": {"errors": validation_errors}}
+                    extra={"extra_fields": {"errors": validation_errors}},
                 )
                 return result
 
@@ -114,9 +114,7 @@ class PageGenerator:
 
             # Generate city pages
             if config.city_pages:
-                self._generate_city_pages(
-                    config, output_dir, result, progress_callback
-                )
+                self._generate_city_pages(config, output_dir, result, progress_callback)
 
             # Generate additional files
             self._generate_additional_files(config, output_dir, result)
@@ -183,15 +181,15 @@ class PageGenerator:
         errors = []
 
         # Validate backlink site configuration
-        if hasattr(config, 'cloud') and config.cloud:
+        if hasattr(config, "cloud") and config.cloud:
             if config.cloud.site_type == "backlink_site":
-                main_site_url = getattr(config.cloud, 'main_site_url', '')
+                main_site_url = getattr(config.cloud, "main_site_url", "")
                 if not main_site_url or not main_site_url.strip():
                     errors.append(
                         "Main Site URL is required when site_type is 'backlink_site'. "
                         "Please specify the URL of your main production site for canonical tags."
                     )
-                elif not main_site_url.startswith(('http://', 'https://')):
+                elif not main_site_url.startswith(("http://", "https://")):
                     errors.append(
                         f"Main Site URL must start with http:// or https://. Got: {main_site_url}"
                     )
@@ -261,7 +259,11 @@ class PageGenerator:
             ("about.html", "about page", self.html_generator.generate_about_page),
             ("contact.html", "contact page", self.html_generator.generate_contact_page),
             ("faq.html", "FAQ page", self.html_generator.generate_faq_page),
-            ("privacy-policy.html", "privacy policy page", self.html_generator.generate_privacy_page),
+            (
+                "privacy-policy.html",
+                "privacy policy page",
+                self.html_generator.generate_privacy_page,
+            ),
         ]
 
         # Add services overview page (always generate to match navigation)
@@ -389,6 +391,7 @@ class PageGenerator:
         # Clean up old city pages to prevent cross-contamination between configs
         if locations_dir.exists():
             import shutil
+
             try:
                 shutil.rmtree(locations_dir)
                 logger.info(f"Cleaned old city pages from {locations_dir}")
@@ -397,13 +400,32 @@ class PageGenerator:
 
         # Import the unified city page generator
         from .city_page_generator import CityPageGenerator
-        city_generator = CityPageGenerator(config)
+
+        # Load Google Maps API key from config file if available
+        google_maps_api_key = None
+        try:
+            import json
+            from pathlib import Path
+
+            api_keys_file = Path("config/api_keys.json")
+            if api_keys_file.exists():
+                with open(api_keys_file, "r") as f:
+                    api_keys = json.load(f)
+                    google_maps_api_key = api_keys.get("google_maps_api_key")
+        except Exception as e:
+            logger.debug(f"Could not load API keys: {e}")
+
+        city_generator = CityPageGenerator(
+            config, google_maps_api_key=google_maps_api_key
+        )
 
         for city_page in config.city_pages:
             try:
                 # Generate city page using the unified generator
-                city_file_path = city_generator.generate_city_page(city_page, str(locations_dir))
-                
+                city_file_path = city_generator.generate_city_page(
+                    city_page, str(locations_dir)
+                )
+
                 result.add_generated_file(city_file_path)
                 result.pages_generated += 1
 
@@ -454,7 +476,9 @@ class PageGenerator:
         except Exception as e:
             result.add_error(f"Error generating additional files: {str(e)}")
 
-    def _copy_static_assets(self, config: ClientConfig, output_dir: Path, result: GenerationResult):
+    def _copy_static_assets(
+        self, config: ClientConfig, output_dir: Path, result: GenerationResult
+    ):
         """Copy static assets if they exist (global assets first, then client-specific assets)"""
         try:
             # 1. Copy global static assets first
@@ -485,7 +509,9 @@ class PageGenerator:
                 client_assets_dir = config_dir / "assets"
 
                 if client_assets_dir.exists():
-                    logger.info(f"Copying client-specific assets from {client_assets_dir}")
+                    logger.info(
+                        f"Copying client-specific assets from {client_assets_dir}"
+                    )
 
                     # Copy client-specific images
                     if (client_assets_dir / "images").exists():
@@ -497,7 +523,14 @@ class PageGenerator:
 
                     # Support for logo directly in assets/ directory
                     for asset_file in client_assets_dir.glob("*"):
-                        if asset_file.is_file() and asset_file.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp']:
+                        if asset_file.is_file() and asset_file.suffix.lower() in [
+                            ".png",
+                            ".jpg",
+                            ".jpeg",
+                            ".gif",
+                            ".svg",
+                            ".webp",
+                        ]:
                             dest_file = output_dir / "images" / asset_file.name
                             shutil.copy2(asset_file, dest_file)
                             logger.info(f"Copied client asset: {asset_file.name}")
@@ -568,7 +601,11 @@ class PageGenerator:
         base_url = self._get_canonical_base_url(config)
 
         # Check allow_indexing from cloud config (preferred) or business config (legacy)
-        allow_indexing = config.cloud.allow_indexing if hasattr(config.cloud, 'allow_indexing') else getattr(config.business, 'allow_indexing', True)
+        allow_indexing = (
+            config.cloud.allow_indexing
+            if hasattr(config.cloud, "allow_indexing")
+            else getattr(config.business, "allow_indexing", True)
+        )
 
         if allow_indexing:
             # Production robots.txt - Allow full indexing
@@ -867,8 +904,7 @@ document.addEventListener('DOMContentLoaded', initContactForm);
                 return True
         except Exception as e:
             logger.error(
-                "Could not open website",
-                extra={"extra_fields": {"error": str(e)}}
+                "Could not open website", extra={"extra_fields": {"error": str(e)}}
             )
 
         return False

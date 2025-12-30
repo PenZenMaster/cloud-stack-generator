@@ -18,7 +18,7 @@ Comments:
 import pytest
 import json
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch, call
+from unittest.mock import Mock, MagicMock, patch
 from botocore.exceptions import ClientError
 
 from src.core.deployment.s3_deployer import (

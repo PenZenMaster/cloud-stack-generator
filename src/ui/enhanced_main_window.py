@@ -748,7 +748,6 @@ class EnhancedMainWindow(QMainWindow):
         Returns:
             Updated configuration data with relative paths
         """
-        import shutil
         import os
 
         # Get client directory (parent of config file)
@@ -760,8 +759,8 @@ class EnhancedMainWindow(QMainWindow):
         assets_dir.mkdir(parents=True, exist_ok=True)
 
         # Handle logo upload
-        if "logo" in config_data and "logo_url" in config_data["logo"]:
-            logo_path = config_data["logo"]["logo_url"]
+        if "branding" in config_data and "logo" in config_data["branding"] and "logo_url" in config_data["branding"]["logo"]:
+            logo_path = config_data["branding"]["logo"]["logo_url"]
 
             # Check if it's a local file path (not a URL)
             if logo_path and os.path.exists(logo_path):
@@ -770,9 +769,15 @@ class EnhancedMainWindow(QMainWindow):
                 dest_path = assets_dir / logo_filename
 
                 try:
-                    shutil.copy2(logo_path, dest_path)
+                    # Read into memory first to avoid OneDrive/cloud sync locks
+                    with open(logo_path, 'rb') as src_file:
+                        file_data = src_file.read()
+
+                    with open(dest_path, 'wb') as dst_file:
+                        dst_file.write(file_data)
+
                     # Update config to use relative path
-                    config_data["logo"]["logo_url"] = f"images/{logo_filename}"
+                    config_data["branding"]["logo"]["logo_url"] = f"images/{logo_filename}"
                     self.status_label.setText(f"Copied logo to client assets: {logo_filename}")
                 except Exception as e:
                     QMessageBox.warning(
@@ -782,8 +787,8 @@ class EnhancedMainWindow(QMainWindow):
                     )
 
         # Handle hero background upload
-        if "logo" in config_data and "hero_background_image_url" in config_data["logo"]:
-            hero_path = config_data["logo"]["hero_background_image_url"]
+        if "branding" in config_data and "logo" in config_data["branding"] and "hero_background_image_url" in config_data["branding"]["logo"]:
+            hero_path = config_data["branding"]["logo"]["hero_background_image_url"]
 
             # Check if it's a local file path (not a URL)
             if hero_path and os.path.exists(hero_path):
@@ -792,15 +797,96 @@ class EnhancedMainWindow(QMainWindow):
                 dest_path = assets_dir / hero_filename
 
                 try:
-                    shutil.copy2(hero_path, dest_path)
+                    # Read into memory first to avoid OneDrive/cloud sync locks
+                    with open(hero_path, 'rb') as src_file:
+                        file_data = src_file.read()
+
+                    with open(dest_path, 'wb') as dst_file:
+                        dst_file.write(file_data)
+
                     # Update config to use relative path
-                    config_data["logo"]["hero_background_image_url"] = f"images/{hero_filename}"
+                    config_data["branding"]["logo"]["hero_background_image_url"] = f"images/{hero_filename}"
                     self.status_label.setText(f"Copied hero background to client assets: {hero_filename}")
                 except Exception as e:
                     QMessageBox.warning(
                         self,
                         "Asset Copy Warning",
                         f"Could not copy hero background file:\n{str(e)}\n\nThe original path will be used."
+                    )
+
+        # Handle city page image pool
+        if "branding" in config_data and "logo" in config_data["branding"] and "city_page_image_pool" in config_data["branding"]["logo"]:
+            city_pool_paths = config_data["branding"]["logo"]["city_page_image_pool"]
+            if isinstance(city_pool_paths, list) and city_pool_paths:
+                updated_pool = []
+                copied_count = 0
+
+                for image_path in city_pool_paths:
+                    if image_path and os.path.exists(image_path):
+                        image_filename = Path(image_path).name
+                        dest_path = assets_dir / image_filename
+
+                        # Try to copy with retry for file locking issues
+                        import time
+                        max_retries = 3
+                        retry_delay = 0.5
+                        copied = False
+
+                        for attempt in range(max_retries):
+                            try:
+                                # Remove destination file if it exists to avoid locking issues
+                                if dest_path.exists():
+                                    try:
+                                        dest_path.unlink()
+                                    except:
+                                        pass  # If we can't delete, copy will fail anyway
+
+                                # Read file into memory first to avoid OneDrive/cloud sync locking issues
+                                with open(image_path, 'rb') as src_file:
+                                    file_data = src_file.read()
+
+                                # Write from memory to destination
+                                with open(dest_path, 'wb') as dst_file:
+                                    dst_file.write(file_data)
+
+                                updated_pool.append(f"images/{image_filename}")
+                                copied_count += 1
+                                copied = True
+                                break
+                            except PermissionError:
+                                if attempt < max_retries - 1:
+                                    time.sleep(retry_delay)
+                                else:
+                                    QMessageBox.warning(
+                                        self,
+                                        "File In Use",
+                                        f"Could not copy '{image_filename}':\n\n"
+                                        f"The file is open in another program.\n"
+                                        f"Please close any image viewers or editors and try again.\n\n"
+                                        f"This image will be skipped for now."
+                                    )
+                            except Exception as e:
+                                QMessageBox.warning(
+                                    self,
+                                    "Asset Copy Warning",
+                                    f"Could not copy city image file '{image_filename}':\n{str(e)}\n\n"
+                                    f"This image will be skipped."
+                                )
+                                break
+
+                        # If file exists in destination (from previous save), keep the relative path
+                        if not copied and dest_path.exists():
+                            updated_pool.append(f"images/{image_filename}")
+                    else:
+                        # Keep relative paths that already exist
+                        if image_path.startswith("images/"):
+                            updated_pool.append(image_path)
+
+                config_data["branding"]["logo"]["city_page_image_pool"] = updated_pool
+
+                if copied_count > 0:
+                    self.status_label.setText(
+                        f"Copied {copied_count} city page image(s) to client assets"
                     )
 
         return config_data
@@ -868,6 +954,9 @@ class EnhancedMainWindow(QMainWindow):
 
             # Create ClientConfig object
             config = self.create_client_config(config_data)
+
+            # Set config file path so asset manager can find the assets directory
+            config.config_file_path = str(Path(file_path).resolve())
 
             # Save to file
             success = self.config_parser.save_yaml_file(config, file_path)
@@ -1049,6 +1138,7 @@ class EnhancedMainWindow(QMainWindow):
             font_family=typography.get("font_family", "Arial, sans-serif"),
             logo_url=logo.get("logo_url", ""),
             hero_background_image_url=logo.get("hero_background_image_url", ""),
+            city_page_image_pool=logo.get("city_page_image_pool", []),
         )
 
         # Create products list
@@ -1719,7 +1809,11 @@ class EnhancedMainWindow(QMainWindow):
             # Get current configuration
             config_data = self.get_all_config_data()
             config = self.create_client_config(config_data)
-            
+
+            # Set config file path if we have a current file loaded
+            if self.current_config_file:
+                config.config_file_path = str(Path(self.current_config_file).resolve())
+
             # Show preview dialog
             from .dialogs.website_preview_dialog import WebsitePreviewDialog
             preview_dialog = WebsitePreviewDialog(config, self)
@@ -1790,6 +1884,10 @@ class EnhancedMainWindow(QMainWindow):
             # This ensures users see exactly what they've configured in the UI
             config_data = self.get_all_config_data()
             config = self.create_client_config(config_data)
+
+            # Set config file path if we have a current file loaded (needed for asset copying)
+            if self.current_config_file:
+                config.config_file_path = str(Path(self.current_config_file).resolve())
 
             # Update current_config for deployment tracking
             self.current_config = config

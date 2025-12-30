@@ -15,9 +15,7 @@ Comments:
 * v1.00 - Initial comprehensive test suite for website_generator.py
 """
 
-import pytest
-from unittest.mock import Mock, MagicMock, patch
-from pathlib import Path
+from unittest.mock import Mock, patch
 
 from src.core.website_generator import (
     WebsiteGenerator,
@@ -223,7 +221,6 @@ class TestGenerationResultImport:
 
     def test_generation_error_exported(self):
         """Test GenerationError is exported"""
-        from src.core.website_generator import GenerationError
         assert GenerationError is not None
 
     def test_website_generator_exported(self):

@@ -1,0 +1,33 @@
+Please open the following GitHub Issues as Medium Priority
+1. On the renered HTML https://d3pg0lfswuhjoa.cloudfront.net/locations/boston-ma.html the H1 title has the wrong tags as shown below  
+  <!-- Article Header -->
+            <header class="article-header">
+                <h1><h2>Reliable Portable Toilet Rental Services for Boston MA Events</h2></h1>
+                <div class="article-meta">
+                    Serving Boston MA | Updated December 2025
+                </div>
+            </header>
+2. On a city page https://d3pg0lfswuhjoa.cloudfront.net/locations/boston-ma.html the Places of interest links return the following error. The Google Maps Embed API must be used in an iframe.
+                            <div class="poi-link-container" style="padding: 1rem; text-align: center; background: var(--bg-light);">
+                                <a href="https://www.google.com/maps?q=Downtown+Boston+MA,+&output=embed" target="_blank" rel="noopener" class="poi-map-link" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">📍 View Downtown Boston MA on Google Maps</a>
+                                <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">Click to open in Google Maps</p>
+                            </div>
+Correct the code to be  proper Google Maps iFame embed
+3. The section Deep Local Knowledge of Boston MA does not have any breaks in the text and is difficult to read. This is the same behaviour on all city pages. The carrage return and line feed were added when this doc was created
+                    <!-- Local Area Expertise Section (150-200 words) -->
+                    <section class="content-section">
+                        <h3>Deep Local Knowledge of Boston MA</h3>
+                        <div>When it comes to portable toilet rentals in Boston, MA, look no further than Royal Porta John. We understand the unique needs of our local community, providing high-quality sanitation solutions for events, construction sites, and outdoor gatherings. With a commitment to cleanliness, reliability, and customer satisfaction, Royal Porta John is your go-to partner for all your portable restroom needs. Whether you're planning a wedding in the picturesque Boston Public Garden, managing a construction project in the bustling Seaport District, or hosting a festival on the historic Boston Common, we’re here to ensure your guests have access to clean and comfortable facilities.
+
+Choosing the right portable toilet rental service can make all the difference in your event or project. At Royal Porta John, we pride ourselves on our extensive experience and deep understanding of the Boston market. Our team is dedicated to providing not just services, but solutions tailored to meet your specific requirements. We offer a wide range of portable restroom options—from standard units to luxury trailers—ensuring you have the right fit for your occasion. Our commitment to cleanliness means that every unit is thoroughly sanitized and maintained, allowing you to focus on what truly matters: enjoying your event or getting your work done without hassle. Plus, our timely delivery and pickup services mean you can count on us to be there when you need us.
+
+Royal Porta John offers a variety of services specifically designed to cater to the unique needs of Boston, MA. Whether you’re organizing a small private gathering or a large public event, we have the right portable toilet solutions for you. Our standard units are perfect for construction sites, ensuring workers have access to clean facilities without interruptions. For events like outdoor weddings, corporate gatherings, or community festivals, our luxury restroom trailers provide an upscale experience that elevates your guests’ comfort. We also understand that accessibility is crucial; therefore, we offer ADA-compliant units to ensure everyone can enjoy your event comfortably. 
+
+In addition to our wide range of options, we offer additional services such as handwashing stations and waste collection, ensuring that your sanitation needs are comprehensively covered. Our team is always ready to assist you in selecting the best options for your specific situation, ensuring an efficient and effective sanitation plan that fits your budget and timeline.
+
+What sets Royal Porta John apart is not only our quality services but also our local expertise and deep connection with the Boston community. We are proud to call Boston home, and we understand the unique challenges that come with outdoor events in our vibrant city. From navigating the busy streets of Back Bay to ensuring compliance with local regulations, our team knows how to make the process seamless for you. We have built lasting relationships with local event planners, construction managers, and community organizers, allowing us to stay informed about the latest trends and needs in the area. Our commitment to the community extends beyond our services; we are actively involved in supporting local events and initiatives that make Boston a great place to live and work.
+
+At Royal Porta John, we recognize that customer satisfaction is paramount. We strive to provide not only the best portable toilet rental services but also superior customer service. Our knowledgeable team is always available to answer your questions and address any concerns you may have. We understand that planning an event or managing a project can be overwhelming, which is why we aim to simplify the process as much as possible. When you choose Royal Porta John, you’re choosing a partner that cares about your success and is willing to go the extra mile to ensure your needs are met.
+
+If you’re in need of reliable, clean, and affordable portable toilet rentals in Boston, MA, look no further than Royal Porta John. We invite you to reach out to our team today to discuss your specific requirements and get a free quote tailored to your needs. Whether it’s for an upcoming event or a long-term construction project, we are here to provide you with the best sanitation solutions in the Boston area. Contact us today, and let’s make your next event or project a success!</div>
+                    </section>

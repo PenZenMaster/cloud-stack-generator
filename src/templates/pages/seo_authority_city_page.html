@@ -846,7 +846,7 @@
             
             <!-- Article Header -->
             <header class="article-header">
-                <h1>{{ city_page.seo_content_title | default("Complete Guide to " + business.industry + " Services in " + city_page.city_name) }}</h1>
+                <h1>{{ city_page.seo_content_title | default("Complete Guide to " + business.industry + " Services in " + city_page.city_name) | striptags }}</h1>
                 <div class="article-meta">
                     Serving {{ city_page.city_name }}{% if city_page.state %}, {{ city_page.state }}{% endif %} | Updated {{ current_date }}
                 </div>
@@ -1012,12 +1012,14 @@
                 <div class="poi-grid">
                     {% for place in city_page.places_of_interest %}
                     <div class="poi-card">
-                        {% if place.embed_url %}
-                            {% if 'google.com/maps/embed' in place.embed_url or place.embed_url.startswith('https://www.google.com/maps/embed') %}
-                            <iframe src="{{ place.embed_url }}" title="{{ place.name }} - {{ city_page.city_name }}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-                            {% elif 'google.com/maps' in place.embed_url %}
+                        {# Generate fresh embed URL from place name using API key if available #}
+                        {% set embed_url = place.name | generate_embed_url %}
+                        {% if embed_url %}
+                            {% if 'google.com/maps/embed' in embed_url %}
+                            <iframe src="{{ embed_url }}" title="{{ place.name }} - {{ city_page.city_name }}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            {% elif 'google.com/maps' in embed_url %}
                             <div class="poi-link-container" style="padding: 1rem; text-align: center; background: var(--bg-light);">
-                                <a href="{{ place.embed_url }}" target="_blank" rel="noopener" class="poi-map-link" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">📍 View {{ place.name }} on Google Maps</a>
+                                <a href="{{ embed_url }}" target="_blank" rel="noopener" class="poi-map-link" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">📍 View {{ place.name }} on Google Maps</a>
                                 <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">Click to open in Google Maps</p>
                             </div>
                             {% endif %}

@@ -299,6 +299,7 @@ class BrandingConfig:
     font_family: str = "Arial, sans-serif"
     logo_url: str = ""
     hero_background_image_url: str = ""
+    city_page_image_pool: List[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Validate color formats"""
@@ -863,8 +864,18 @@ class ClientConfig:
                 "branding": {
                     "primary_color": self.branding.primary_color,
                     "secondary_color": self.branding.secondary_color,
+                    "body_background_color": self.branding.body_background_color,
+                    "body_text_color": self.branding.body_text_color,
+                    "footer_background_color": self.branding.footer_background_color,
+                    "footer_text_color": self.branding.footer_text_color,
+                    "h1_text_color": self.branding.h1_text_color,
+                    "h2_text_color": self.branding.h2_text_color,
+                    "h3_text_color": self.branding.h3_text_color,
+                    "main_menu_text_color": self.branding.main_menu_text_color,
                     "font_family": self.branding.font_family,
                     "logo_url": self.branding.logo_url,
+                    "hero_background_image_url": self.branding.hero_background_image_url,
+                    "city_page_image_pool": self.branding.city_page_image_pool,
                 },
                 "social_media": self.social_media.get_valid_links(),
                 "google_business_profile": {

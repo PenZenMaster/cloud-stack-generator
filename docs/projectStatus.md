@@ -1,15 +1,52 @@
 # SEO Authority Website Generator - Project Status
 
-**Last Updated**: December 21, 2025
-**Current Status**: v3.6.0 RELEASED
+**Last Updated**: December 27, 2025
+**Current Status**: v3.6.1 (City Page Image Pool Bug Fix)
 **Working Directory**: `E:\projects\cloud-stack-generator\`
 **Current Branch**: main
-**Current Version**: 3.6.0 (UI Improvements, GSC Integration, Test Suite)
-**Git Status**: Released
+**Current Version**: 3.6.1 (Bug Fix: YAML Serialization)
+**Git Status**: Awaiting QA Testing
 
 ---
 
-## 🎯 CURRENT: Documentation Consolidation & Bug Fixes - IN PROGRESS
+## 🎯 CURRENT: City Page Image Pool - YAML Serialization Bug Fix - IN PROGRESS
+
+**December 27, 2025**: 🐛 **Critical Bug Fix** - YAML serialization missing city_page_image_pool field
+
+### Bug Discovery & Investigation ✅
+- ✅ User reported city images not displaying on generated websites
+- ✅ Investigated config file: `city_page_image_pool` field completely missing from YAML
+- ✅ City pages retained old Wikipedia image URLs instead of local pool images
+- ✅ Traced data flow: UI → config object → YAML serialization
+- ✅ Root cause identified: Parser missing field in generate_yaml_dict()
+
+### Bug Fix Applied ✅
+- ✅ Fixed `src/core/config/parser.py:637` - Added missing city_page_image_pool serialization
+- ✅ GitHub Issue #14 created with comprehensive documentation
+- ✅ Checkpoint created: CheckPoint-2025-12-27_1903.md
+
+### Files Modified (1)
+- `src/core/config/parser.py` (line 637) - Added city_page_image_pool to YAML serialization
+
+### Testing Required ⏳
+- [ ] User must relaunch application to load fixed code
+- [ ] Select city images in Branding & Style tab
+- [ ] Save configuration
+- [ ] Verify YAML contains `city_page_image_pool:` field
+- [ ] Regenerate website and verify image assignment
+- [ ] Deploy and verify display on live site
+
+### GitHub Issues
+- Issue #14: Bug: city_page_image_pool not being saved to YAML config - CREATED
+
+### Next Steps
+1. Wait for user QA testing confirmation
+2. If fix confirmed, commit changes
+3. If issue persists, investigate YAML library and parser execution
+
+---
+
+## 🎯 PREVIOUS: Documentation Consolidation & Bug Fixes - COMPLETE
 
 **December 21, 2025**: 📚 **Documentation Phase 2 Complete** + Critical GSC Bug Fix
 
