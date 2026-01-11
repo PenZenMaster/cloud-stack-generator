@@ -557,39 +557,105 @@ class PageGenerator:
         return config.business.domain.rstrip("/")
 
     def _generate_sitemap(self, config: ClientConfig) -> str:
-        """Generate sitemap.xml"""
+        """Generate sitemap.xml with industry-standard priority and changefreq values"""
         base_url = self._get_canonical_base_url(config)
         current_date = datetime.now().strftime("%Y-%m-%d")
 
+        # Main pages with differentiated priority per Google/Bing best practices
         urls = [
-            f"{base_url}/",
-            f"{base_url}/about.html",
-            f"{base_url}/contact.html",
-            f"{base_url}/faq.html",
+            {
+                "loc": f"{base_url}/",
+                "priority": "1.0",
+                "changefreq": "weekly",
+            },
+            {
+                "loc": f"{base_url}/about.html",
+                "priority": "0.6",
+                "changefreq": "monthly",
+            },
+            {
+                "loc": f"{base_url}/contact.html",
+                "priority": "0.6",
+                "changefreq": "monthly",
+            },
+            {
+                "loc": f"{base_url}/faq.html",
+                "priority": "0.6",
+                "changefreq": "monthly",
+            },
+            {
+                "loc": f"{base_url}/privacy-policy.html",
+                "priority": "0.4",
+                "changefreq": "yearly",
+            },
         ]
 
+        # Services hub and detail pages
         if config.services:
-            urls.append(f"{base_url}/services.html")
+            urls.append(
+                {
+                    "loc": f"{base_url}/services.html",
+                    "priority": "0.8",
+                    "changefreq": "monthly",
+                }
+            )
             for service in config.services:
                 service_slug = self._sanitize_filename(service.name)
-                urls.append(f"{base_url}/services/{service_slug}.html")
+                urls.append(
+                    {
+                        "loc": f"{base_url}/services/{service_slug}.html",
+                        "priority": "0.7",
+                        "changefreq": "monthly",
+                    }
+                )
 
+        # Products hub and detail pages
         if config.products:
-            urls.append(f"{base_url}/products.html")
+            urls.append(
+                {
+                    "loc": f"{base_url}/products.html",
+                    "priority": "0.8",
+                    "changefreq": "monthly",
+                }
+            )
             for product in config.products:
                 product_slug = self._sanitize_filename(product.name)
-                urls.append(f"{base_url}/products/{product_slug}.html")
+                urls.append(
+                    {
+                        "loc": f"{base_url}/products/{product_slug}.html",
+                        "priority": "0.7",
+                        "changefreq": "monthly",
+                    }
+                )
 
+        # City pages (critical for local SEO)
+        if config.city_pages:
+            for city_page in config.city_pages:
+                # Use existing slug or generate from city_name (consistent with CityPageConfig)
+                city_slug = (
+                    city_page.slug
+                    if city_page.slug
+                    else self._sanitize_filename(city_page.city_name)
+                )
+                urls.append(
+                    {
+                        "loc": f"{base_url}/locations/{city_slug}.html",
+                        "priority": "0.7",
+                        "changefreq": "monthly",
+                    }
+                )
+
+        # Build XML sitemap per sitemaps.org protocol 0.9
         sitemap_content = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 """
 
-        for url in urls:
+        for url_data in urls:
             sitemap_content += f"""    <url>
-        <loc>{url}</loc>
+        <loc>{url_data["loc"]}</loc>
         <lastmod>{current_date}</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.8</priority>
+        <changefreq>{url_data["changefreq"]}</changefreq>
+        <priority>{url_data["priority"]}</priority>
     </url>
 """
 
