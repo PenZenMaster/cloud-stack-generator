@@ -3435,10 +3435,159 @@ class CloudTab(BaseTab):
                 parent_window.load_config_file(str(config_file))
                 self.log_status("Config reloaded in UI")
 
+            # Regenerate sitemap.xml with correct CloudFront URL
+            self.log_status("Regenerating sitemap.xml with CloudFront URL...")
+            if self._regenerate_and_upload_sitemap(config_file, cloudfront_url):
+                self.log_status("Sitemap.xml updated and uploaded successfully")
+            else:
+                self.log_status("Warning: Failed to update sitemap.xml")
+
             return True
 
         except Exception as e:
             self.log_status(f"Error updating config: {str(e)}")
+            return False
+
+    def _update_config_and_sitemap_for_deployment(self, deployment_url: str) -> bool:
+        """Update config with deployment URL and regenerate sitemap (Mode A & B)"""
+        import yaml
+        from pathlib import Path
+
+        try:
+            # Find main window and config file
+            parent_window = self.parent()
+            while parent_window and not hasattr(parent_window, "current_config_file"):
+                parent_window = parent_window.parent()
+
+            if not parent_window or not parent_window.current_config_file:
+                self.log_status("Info: No config file loaded, skipping sitemap update")
+                return False
+
+            config_file = Path(parent_window.current_config_file)
+            if not config_file.exists():
+                self.log_status(f"Info: Config file not found: {config_file}")
+                return False
+
+            # Load and update config
+            with open(config_file, "r", encoding="utf-8") as f:
+                config_data = yaml.safe_load(f)
+
+            if "cloud" not in config_data:
+                config_data["cloud"] = {}
+
+            # Update deployment_url in config
+            config_data["cloud"]["deployment_url"] = deployment_url
+
+            # Save updated config
+            with open(config_file, "w", encoding="utf-8") as f:
+                yaml.dump(
+                    config_data,
+                    f,
+                    default_flow_style=False,
+                    allow_unicode=True,
+                    sort_keys=False,
+                )
+
+            self.log_status(f"Config updated: deployment_url = {deployment_url}")
+
+            # Update in-memory config
+            if (
+                hasattr(self, "current_client_aws_config")
+                and self.current_client_aws_config
+            ):
+                self.current_client_aws_config.deployment_url = deployment_url
+
+            # Regenerate sitemap with correct URL
+            self.log_status("Regenerating sitemap.xml with deployment URL...")
+            if self._regenerate_and_upload_sitemap(config_file, deployment_url):
+                self.log_status("Sitemap.xml updated successfully")
+                return True
+            else:
+                self.log_status("Warning: Failed to update sitemap.xml")
+                return False
+
+        except Exception as e:
+            self.log_status(f"Error updating config/sitemap: {str(e)}")
+            return False
+
+    def _regenerate_and_upload_sitemap(
+        self, config_file: Path, deployment_url: str
+    ) -> bool:
+        """Regenerate sitemap.xml with deployment URL and upload to S3"""
+        try:
+            from pathlib import Path
+            from src.core.config.parser import ConfigParser
+            from src.core.generators.page_generator import PageGenerator
+
+            # Load updated config
+            parser = ConfigParser()
+            config = parser.parse(str(config_file))
+
+            # Verify deployment_url is set
+            if not config.cloud.deployment_url:
+                config.cloud.deployment_url = deployment_url
+
+            # Generate updated sitemap
+            generator = PageGenerator()
+            sitemap_content = generator._generate_sitemap(config)
+
+            # Find output directory
+            output_dir = None
+            if (
+                hasattr(self, "last_generated_website_path")
+                and self.last_generated_website_path
+            ):
+                output_dir = Path(self.last_generated_website_path)
+            else:
+                # Try to infer from config
+                client_name = config.business.business_name.lower().replace(" ", "_")
+                output_dir = Path("output") / "clients" / client_name
+
+            if not output_dir or not output_dir.exists():
+                self.log_status(f"Error: Output directory not found: {output_dir}")
+                return False
+
+            # Write updated sitemap.xml
+            sitemap_path = output_dir / "sitemap.xml"
+            with open(sitemap_path, "w", encoding="utf-8") as f:
+                f.write(sitemap_content)
+
+            self.log_status(f"Sitemap.xml regenerated at {sitemap_path}")
+
+            # Upload to S3
+            bucket_name = self._get_actual_bucket_name()
+            if not bucket_name:
+                self.log_status("Error: No bucket name available")
+                return False
+
+            # Get S3 client
+            s3_client = self._get_s3_client()
+            if not s3_client:
+                self.log_status("Error: Failed to get S3 client")
+                return False
+
+            # Upload sitemap.xml
+            try:
+                s3_client.upload_file(
+                    str(sitemap_path),
+                    bucket_name,
+                    "sitemap.xml",
+                    ExtraArgs={"ContentType": "application/xml"},
+                )
+                self.log_status(
+                    f"Uploaded sitemap.xml to s3://{bucket_name}/sitemap.xml"
+                )
+                return True
+
+            except Exception as e:
+                self.log_status(f"Error uploading sitemap.xml: {str(e)}")
+                return False
+
+        except Exception as e:
+            self.log_status(f"Error regenerating sitemap: {str(e)}")
+            import traceback
+
+            self.log_status(traceback.format_exc())
             return False
 
     def deploy_website(self, website_path: str):
@@ -3895,6 +4044,10 @@ class CloudTab(BaseTab):
             # Emit signal for parent to handle
             self.deployment_created.emit(deployment)
             self.log_status(f"Deployment record created: {deployment_id}")
+
+            # Update config with deployment URL and regenerate sitemap (Mode A & B)
+            if website_url:
+                self._update_config_and_sitemap_for_deployment(website_url)
 
             # Clear friendly name input for next deployment
             if hasattr(self, "friendly_name_input"):
