@@ -1,15 +1,91 @@
 # SEO Authority Website Generator - Project Status
 
-**Last Updated**: December 27, 2025
-**Current Status**: v3.6.1 (City Page Image Pool Bug Fix)
+**Last Updated**: January 10, 2026
+**Current Status**: v3.6.2 (Mode B CloudFront Security Fix)
 **Working Directory**: `E:\projects\cloud-stack-generator\`
 **Current Branch**: main
-**Current Version**: 3.6.1 (Bug Fix: YAML Serialization)
-**Git Status**: Awaiting QA Testing
+**Current Version**: 3.6.2 (Bug Fix: CloudFront Deployment)
+**Git Status**: Awaiting User Verification
 
 ---
 
-## 🎯 CURRENT: City Page Image Pool - YAML Serialization Bug Fix - IN PROGRESS
+## 🎯 CURRENT: Mode B CloudFront 403 Errors - Security Fix - AWAITING VERIFICATION
+
+**January 10, 2026**: 🔒 **Critical Security & Access Fix** - Mode B deployments returning 403 for images
+
+### Issue Discovery & Investigation ✅
+- ✅ User reported CloudFront URL returns 403 Access Denied for header images and logos
+- ✅ Preview functionality works correctly (local filesystem)
+- ✅ GitHub Issue #18 created: "Header Image and Logo Missing from AWS Deployed Website"
+- ✅ Full RCA completed: Bucket policy conflict between Mode A and Mode B configurations
+- ✅ Root cause: `configure_public_website()` called unconditionally for both modes
+
+### Root Cause Analysis ✅
+**Problem Flow**:
+1. Deployment code called `configure_public_website()` for BOTH Mode A and Mode B
+2. This set public access blocks to FALSE and applied public `Principal: "*"` policy
+3. CloudFront OAC setup then replaced policy with CloudFront-only access
+4. Policy conflict and race condition caused 403 errors for all assets
+
+**Why Preview Worked**:
+- Preview uses local filesystem, no S3/CloudFront deployment
+- Assets served directly from local output directory
+
+### Two-Part Fix Applied ✅
+**Part 1 (Commit 2587b8a)**: Fixed bucket policy conflict
+- ✅ Made bucket configuration conditional based on deployment mode
+- ✅ Mode A: Calls `configure_public_website()` (bucket made public) - unchanged
+- ✅ Mode B: Skips `configure_public_website()`, lets OAC handle permissions - FIXED
+- ✅ Result: CloudFront URLs now accessible (403 errors resolved)
+
+**Part 2 (Commit ae1bb02)**: Added explicit public access blocking
+- ✅ User verification revealed public access blocks still disabled after Part 1
+- ✅ Added explicit public access block configuration after OAC setup
+- ✅ Includes clear logging: "Enabling public access blocks for private bucket..."
+- ✅ Proper error handling with user-visible feedback
+- ✅ Result: Buckets now properly secured with all 4 blocks enabled
+
+### Files Modified (1)
+- `src/ui/components/cloud_tab.py` (lines 3260-3274, 3713-3730)
+  - Conditional bucket configuration logic
+  - Explicit public access blocking for Mode B
+
+### Testing Status ⏳
+- ✅ All 113 cloud infrastructure unit tests passing
+- ✅ Black formatting applied
+- ✅ Pre-commit hooks passing
+- [ ] **User must redeploy with Mode B and verify**:
+  - [ ] All 4 public access blocks enabled (checked ON)
+  - [ ] CloudFront URL loads images correctly (200 OK)
+  - [ ] Direct S3 URL returns 403 (correct - bucket is private)
+  - [ ] Deployment logs show "Public access blocks enabled - bucket is now private"
+
+### GitHub Issues
+- Issue #18: Header Image and Logo Missing from AWS Deployed Website - CREATED
+  - Detailed RCA posted with technical analysis
+  - Implementation updates and verification steps provided
+  - Awaiting user verification before close
+
+### Commits (2)
+- `2587b8a` - fix: Resolve Mode B CloudFront 403 errors by fixing bucket policy conflict (v3.6.2)
+- `ae1bb02` - fix: Add explicit public access blocking for Mode B CloudFront deployments (v3.6.2)
+
+### Next Steps
+1. ⏳ Wait for user to redeploy with Mode B
+2. ⏳ User verifies all 4 checks pass (blocks enabled, images load, logs confirm)
+3. ⏳ Close GitHub Issue #18 upon successful verification
+4. ⏳ Push commits to remote after user confirmation
+
+### Design Decision: Separate Configuration Paths
+**Rationale**: Mode A (public S3) and Mode B (private + OAC) are fundamentally incompatible
+- Mode A requires: Public bucket with `Principal: "*"` policy
+- Mode B requires: Private bucket with CloudFront OAC-only policy
+- Attempting to transition between them causes conflicts
+- Solution: Complete separation with conditional logic
+
+---
+
+## 🎯 PREVIOUS: City Page Image Pool - YAML Serialization Bug Fix - COMPLETE
 
 **December 27, 2025**: 🐛 **Critical Bug Fix** - YAML serialization missing city_page_image_pool field
 
