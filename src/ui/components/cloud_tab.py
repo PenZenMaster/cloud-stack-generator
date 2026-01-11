@@ -3710,6 +3710,29 @@ class CloudTab(BaseTab):
             # Update UI with distribution ID
             self.distribution_id_input.setText(distribution_id)
 
+            # CRITICAL: Enable public access blocks for private bucket (Mode B only)
+            # OAC policy is now in place, safe to block public access
+            self.log_status("Enabling public access blocks for private bucket...")
+            try:
+                s3_client = self.s3_manager._get_s3_client()
+                s3_client.put_public_access_block(
+                    Bucket=bucket_name,
+                    PublicAccessBlockConfiguration={
+                        "BlockPublicAcls": True,
+                        "IgnorePublicAcls": True,
+                        "BlockPublicPolicy": True,
+                        "RestrictPublicBuckets": True,
+                    },
+                )
+                self.log_status("Public access blocks enabled - bucket is now private")
+            except Exception as e:
+                self.log_status(
+                    f"Warning: Could not enable public access blocks: {str(e)}"
+                )
+                self.log_status(
+                    "Bucket policy is configured correctly, but public access blocks may need manual configuration"
+                )
+
         # Start deployment worker
         self.deployment_worker = DeploymentWorker(
             self.s3_manager,
