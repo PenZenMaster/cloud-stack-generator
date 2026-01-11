@@ -1,60 +1,72 @@
 # AWG Startup Context
 
-**Last Updated:** 2025-12-29
+**Last Updated:** 2026-01-10
 **Branch:** main
-**Last Commit:** 9851f26
+**Last Commit:** ae1bb02
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **Fixed 3 Critical City Page Bugs** - Resolved GitHub issues #15 (nested H1/H2 tags), #16 (Google Maps embed errors), #17 (missing paragraph breaks)
+1. **Fixed GitHub Issue #18 - Mode B CloudFront 403 Errors** - Resolved bucket policy conflict causing header images and logos to return 403 on CloudFront deployments (v3.6.2)
 
-2. **Google Maps API Integration** - Implemented end-to-end API key integration: UI config → page generator → template rendering with proper embed iframes
+2. **Implemented Two-Part Security Fix** - Made bucket configuration conditional (Mode A vs Mode B) + added explicit public access blocking for Mode B after OAC setup
 
-3. **Enhanced API Testing** - Built live Google Maps API validator testing Geocoding, Places, and Embed APIs with detailed status reporting
+3. **Complete Root Cause Analysis** - Documented full technical RCA in GitHub issue #18 with verification steps and user instructions
 
 ---
 
 ## Next 3 Priorities
 
-1. **Test Font Fix** - User needs to change Branding tab font from "Impact" to readable font (Arial, Inter, Georgia)
+1. **User Verification of Fix** - Awaiting user to redeploy with Mode B and confirm: (a) all 4 public access blocks enabled, (b) CloudFront URL loads images, (c) deployment logs show success message
 
-2. **Verify Fixes** - Regenerate city pages and verify embedded maps, paragraph breaks, and clean H1 tags
+2. **Close GitHub Issue #18** - After user confirms successful verification of all checks
 
-3. **Deploy & Test** - Push to CloudFront and verify all fixes work on live site
+3. **Font Fix Testing** - User needs to change Branding tab font from "Impact" to readable font (Arial, Inter, Georgia) and verify city page regeneration
 
 ---
 
 ## Current State
 
 **Git Status:**
-- Branch: main (up to date with origin/main)
+- Branch: main (local commits not pushed)
 - Working tree: Clean
-- Last commit: 9851f26 (pushed successfully)
-- Version: 3.6.1
+- Last commits: ae1bb02, 2587b8a (both v3.6.2 fixes)
+- Push status: Pending user verification before push
+- Version: 3.6.2
 
 **Tests:**
-- ✅ All 113 cloud infrastructure tests passing
-- ✅ Pre-commit hooks passing
-- ✅ Black formatting applied
+- All 113 cloud infrastructure tests passing
+- Pre-commit hooks passing
+- Black formatting applied
 
 **Blockers:**
-- None
+- None - awaiting user verification
 
 ---
 
 ## Key Context Notes
 
-1. **Google Maps API Flow** - UI saves key to config/api_keys.json → page_generator loads it → passes to city_page_generator → generates embed URLs with API key → template renders iframes
+1. **GitHub Issue #18 Fix Details:**
+   - Problem: Mode B deployments called `configure_public_website()` creating bucket policy conflict
+   - Fix Part 1 (2587b8a): Made bucket config conditional - Mode A gets public config, Mode B skips it
+   - Fix Part 2 (ae1bb02): Added explicit public access blocking after OAC setup with clear logging
+   - User found blocks weren't enabled after Part 1, leading to Part 2 implementation
 
-2. **Font Issue Identified** - Impact font in Branding settings causing heavy/unreadable text. User needs to change this in UI Branding tab.
+2. **Deployment Mode Behavior (CRITICAL):**
+   - Mode A (S3 Static Website): Bucket configured for public access with public policy
+   - Mode B (CloudFront + OAC): Bucket kept private, CloudFront accesses via OAC policy, public blocks enabled
+   - These paths are now completely separated to prevent conflicts
 
-3. **Bug Fix Details:**
-   - #15: Added striptags filter to remove HTML from seo_content_title
-   - #16: Created generate_embed_url filter + API key integration
-   - #17: Enhanced markdown_basic filter with intelligent paragraph splitting
+3. **Expected Mode B Deployment Logs:**
+   ```
+   Mode B: Bucket will be configured for private access with CloudFront OAC
+   Mode B: CloudFront + OAC deployment (auto-creating distribution...)
+   CloudFront domain: d2e90hpz4khlyf.cloudfront.net
+   Enabling public access blocks for private bucket...
+   Public access blocks enabled - bucket is now private
+   ```
 
 ---
 
-**For full checkpoint details:** See `docs/archive/checkpoints/CheckPoint-2025-12-29_*.md` (if created)
+**For full checkpoint details:** See `docs/archive/checkpoints/CheckPoint-2026-01-10_1908.md`
