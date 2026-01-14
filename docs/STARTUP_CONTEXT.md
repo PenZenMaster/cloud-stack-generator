@@ -8,11 +8,11 @@
 
 ## Last 3 Accomplishments
 
-1. **Closed GitHub Issue #14 - city_page_image_pool Bug** - QA verified fix in parser.py:637; city page images now correctly saved to YAML config and assigned to city pages during generation
+1. **Fixed GCS Validation Bug** - Cloud Deploy tab now correctly validates GCS-specific fields (Project ID, Service Account JSON) when Google Cloud Storage is selected; no longer shows incorrect "S3 Bucket Name Required" error
 
-2. **XML Sitemap Enhancement QA Verified** - Confirmed in production: sitemap.xml contains correct CloudFront URLs, all city pages included, industry-standard priority/changefreq values working correctly
+2. **Closed GitHub Issue #14 - city_page_image_pool Bug** - QA verified fix in parser.py:637; city page images now correctly saved to YAML config and assigned to city pages during generation
 
-3. **Enhanced sitemap.xml with Complete Coverage** - Added city pages and privacy policy to sitemap, implemented industry-standard priority levels (1.0-0.4) and changefreq values per sitemaps.org protocol 0.9
+3. **XML Sitemap Enhancement QA Verified** - Confirmed in production: sitemap.xml contains correct CloudFront URLs, all city pages included, industry-standard priority/changefreq values working correctly
 
 ---
 
