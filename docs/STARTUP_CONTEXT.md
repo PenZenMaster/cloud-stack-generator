@@ -20,9 +20,9 @@
 
 1. **User Testing of Sitemap Enhancement** - Next deployment will automatically regenerate sitemap.xml with correct CloudFront URL and include all city pages
 
-2. **Font Fix Testing** - User needs to change Branding tab font from "Impact" to readable font (Arial, Inter, Georgia) and verify city page regeneration
+2. **Monitor Sitemap in Production** - Verify sitemap.xml at deployment URL contains CloudFront domain and all pages (city pages, privacy policy)
 
-3. **Monitor Sitemap in Production** - Verify sitemap.xml at deployment URL contains CloudFront domain and all pages (city pages, privacy policy)
+3. **TBD** - Awaiting next feature request or bug report
 
 ---
 
