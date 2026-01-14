@@ -3130,7 +3130,20 @@ class CloudTab(BaseTab):
         """Handle first-time deployment with test file workflow"""
         from PyQt6.QtWidgets import QMessageBox
 
-        # Only support CloudFront Mode B for first deployment canonical URL workflow
+        # Check provider type first
+        if self.current_provider == "google_gcs":
+            # GCS deployments: ask user to generate website first
+            QMessageBox.information(
+                self,
+                "First Deployment",
+                "This appears to be your first deployment.\n\n"
+                "Please generate a website first using the main application, "
+                "then return to this tab to deploy it to Google Cloud Storage.\n\n"
+                "The deployment URL will be available after the first upload.",
+            )
+            return
+
+        # AWS-specific: Only support CloudFront Mode B for first deployment canonical URL workflow
         is_mode_b = self.cloudfront_mode_radio.isChecked()
         if not is_mode_b:
             QMessageBox.information(
