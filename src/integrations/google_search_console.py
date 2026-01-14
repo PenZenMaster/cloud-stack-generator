@@ -81,7 +81,27 @@ class GoogleSearchConsoleClient:
             # Refresh or run OAuth flow
             if not self.creds or not self.creds.valid:
                 if self.creds and self.creds.expired and self.creds.refresh_token:
-                    self.creds.refresh(Request())
+                    try:
+                        self.creds.refresh(Request())
+                    except Exception as refresh_error:
+                        # Handle invalid_grant error (token expired/revoked)
+                        if "invalid_grant" in str(refresh_error).lower():
+                            # Delete invalid token file
+                            if self.token_file.exists():
+                                self.token_file.unlink()
+                            # Reset credentials to force re-authentication
+                            self.creds = None
+                            # Re-run OAuth flow
+                            if not os.path.exists(self.credentials_file):
+                                return False, f"Credentials file not found: {self.credentials_file}"
+
+                            flow = InstalledAppFlow.from_client_secrets_file(
+                                self.credentials_file, SCOPES
+                            )
+                            self.creds = flow.run_local_server(port=0)
+                        else:
+                            # Re-raise other refresh errors
+                            raise
                 else:
                     if not os.path.exists(self.credentials_file):
                         return False, f"Credentials file not found: {self.credentials_file}"
