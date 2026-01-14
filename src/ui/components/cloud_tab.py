@@ -4599,22 +4599,40 @@ class CloudTab(BaseTab):
             self.main_site_url_input.setText(main_site_url)
 
     def validate_data(self) -> tuple[bool, list[str]]:
-        """Validate cloud configuration"""
+        """Validate cloud configuration based on selected provider"""
         errors = []
 
-        profile_name = self.profile_combo.currentText()
-        if not profile_name or profile_name == "No profiles configured":
-            errors.append("AWS profile is required for cloud deployment")
+        # Provider-specific validation
+        if self.current_provider == "google_gcs":
+            # GCS validation
+            project_id = self.gcs_project_input.text().strip()
+            if not project_id:
+                errors.append("GCS Project ID is required for cloud deployment")
 
-        bucket_name = self._get_actual_bucket_name()
-        if not bucket_name or bucket_name == "No buckets found":
-            errors.append("S3 bucket name is required")
+            credentials_path = self.gcs_credentials_input.text().strip()
+            if not credentials_path:
+                errors.append(
+                    "GCS Service Account JSON is required for cloud deployment"
+                )
+
+            bucket_name = self._get_actual_bucket_name()
+            if not bucket_name or bucket_name == "No buckets found":
+                errors.append("GCS bucket name is required")
         else:
-            is_valid, message = self.s3_manager.validate_bucket_name(bucket_name)
-            if not is_valid:
-                errors.append(f"Invalid bucket name: {message}")
+            # AWS S3 validation (default)
+            profile_name = self.profile_combo.currentText()
+            if not profile_name or profile_name == "No profiles configured":
+                errors.append("AWS profile is required for cloud deployment")
 
-        # Validate backlink site configuration
+            bucket_name = self._get_actual_bucket_name()
+            if not bucket_name or bucket_name == "No buckets found":
+                errors.append("S3 bucket name is required")
+            else:
+                is_valid, message = self.s3_manager.validate_bucket_name(bucket_name)
+                if not is_valid:
+                    errors.append(f"Invalid bucket name: {message}")
+
+        # Validate backlink site configuration (common to all providers)
         if self.site_type_backlink_radio.isChecked():
             main_site_url = self.main_site_url_input.text().strip()
             if not main_site_url:
