@@ -217,7 +217,7 @@ class TestCloudTab:
 
         assert tab.s3_mode_radio.isChecked() is True
         assert tab.cloudfront_mode_radio.isChecked() is False
-        assert tab.cloudfront_mode_radio.isEnabled() is False  # Phase 2 feature
+        assert tab.cloudfront_mode_radio.isEnabled() is True  # CloudFront Mode B is now implemented
 
     def test_mode_a_disables_cloudfront_section(self, qapp):
         """Test Mode A disables CloudFront settings section"""
@@ -748,12 +748,66 @@ class TestCloudTab:
         assert "GCS Service Account JSON is required" in errors[1]
         assert "GCS bucket name is required" in errors[2]
 
+    def test_handle_first_deployment_gcs(self, qapp):
+        """Test first deployment handling for GCS provider"""
+        from unittest.mock import patch
+        from PyQt6.QtWidgets import QMessageBox
+
+        tab = CloudTab()
+        tab.current_provider = "google_gcs"
+
+        with patch.object(QMessageBox, 'information') as mock_info:
+            tab._handle_first_deployment()
+
+        # Should show GCS-specific message
+        mock_info.assert_called_once()
+        args = mock_info.call_args[0]
+        assert "First Deployment" in args[1]
+        assert "Google Cloud Storage" in args[2]
+        assert "generate a website first" in args[2]
+
+    def test_handle_first_deployment_aws_mode_a(self, qapp):
+        """Test first deployment handling for AWS Mode A (S3 only)"""
+        from unittest.mock import patch
+        from PyQt6.QtWidgets import QMessageBox
+
+        tab = CloudTab()
+        tab.current_provider = "aws_s3"  # Default AWS
+        tab.s3_mode_radio.setChecked(True)  # Mode A
+        tab.cloudfront_mode_radio.setChecked(False)
+
+        with patch.object(QMessageBox, 'information') as mock_info:
+            tab._handle_first_deployment()
+
+        # Should show Mode A message
+        mock_info.assert_called_once()
+        args = mock_info.call_args[0]
+        assert "First Deployment" in args[1]
+        assert "generate a website first" in args[2]
+        assert "Mode A" in args[2]
+
+    def test_handle_first_deployment_aws_mode_b(self, qapp):
+        """Test first deployment handling for AWS Mode B (CloudFront)"""
+        from unittest.mock import patch
+        from PyQt6.QtWidgets import QMessageBox
+
+        tab = CloudTab()
+        tab.current_provider = "aws_s3"  # Default AWS
+        tab.s3_mode_radio.setChecked(False)
+        tab.cloudfront_mode_radio.setChecked(True)  # Mode B
+
+        with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.No):
+            tab._handle_first_deployment()
+
+        # Should show Mode B confirmation dialog
+        # (We return No to avoid triggering the full deployment workflow)
+
     def test_log_status(self, qapp):
         """Test status logging"""
         tab = CloudTab()
-        
+
         tab.log_status("Test message")
-        
+
         text_content = tab.status_text.toPlainText()
         assert "Test message" in text_content
         assert "[" in text_content  # Timestamp should be present
@@ -1132,10 +1186,10 @@ class TestDeploymentWorker:
         worker.deployment_completed = Mock()
         
         worker.run()
-        
+
         # Verify S3 manager was called correctly
         s3_manager.set_progress_callback.assert_called_once()
-        s3_manager.upload_directory.assert_called_once_with("/test/path", "test-bucket")
+        s3_manager.upload_directory.assert_called_once_with("/test/path", "test-bucket", s3_prefix="")
         
         # Verify completion signal was emitted
         worker.deployment_completed.emit.assert_called_once()
