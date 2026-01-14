@@ -655,7 +655,99 @@ class TestCloudTab:
         assert is_valid is False
         assert len(errors) == 1
         assert "Invalid bucket name" in errors[0]
-    
+
+    def test_validate_data_gcs_success(self, qapp):
+        """Test successful GCS validation with all required fields"""
+        tab = CloudTab()
+
+        # Set GCS as provider
+        tab.current_provider = "google_gcs"
+
+        # Set valid GCS data
+        tab.gcs_project_input.setText("my-gcp-project")
+        tab.gcs_credentials_input.setText("/path/to/service-account.json")
+        tab.bucket_combo.addItem("my-gcs-bucket", "my-gcs-bucket")
+        tab.bucket_combo.setCurrentText("my-gcs-bucket")
+
+        is_valid, errors = tab.validate_data()
+
+        assert is_valid is True
+        assert len(errors) == 0
+
+    def test_validate_data_gcs_no_project_id(self, qapp):
+        """Test GCS validation with missing Project ID"""
+        tab = CloudTab()
+
+        # Set GCS as provider
+        tab.current_provider = "google_gcs"
+
+        # Set credentials and bucket but no project ID
+        tab.gcs_project_input.setText("")
+        tab.gcs_credentials_input.setText("/path/to/service-account.json")
+        tab.bucket_combo.addItem("my-gcs-bucket", "my-gcs-bucket")
+        tab.bucket_combo.setCurrentText("my-gcs-bucket")
+
+        is_valid, errors = tab.validate_data()
+
+        assert is_valid is False
+        assert len(errors) == 1
+        assert "GCS Project ID is required" in errors[0]
+
+    def test_validate_data_gcs_no_credentials(self, qapp):
+        """Test GCS validation with missing Service Account JSON"""
+        tab = CloudTab()
+
+        # Set GCS as provider
+        tab.current_provider = "google_gcs"
+
+        # Set project ID and bucket but no credentials
+        tab.gcs_project_input.setText("my-gcp-project")
+        tab.gcs_credentials_input.setText("")
+        tab.bucket_combo.addItem("my-gcs-bucket", "my-gcs-bucket")
+        tab.bucket_combo.setCurrentText("my-gcs-bucket")
+
+        is_valid, errors = tab.validate_data()
+
+        assert is_valid is False
+        assert len(errors) == 1
+        assert "GCS Service Account JSON is required" in errors[0]
+
+    def test_validate_data_gcs_no_bucket(self, qapp):
+        """Test GCS validation with missing bucket"""
+        tab = CloudTab()
+
+        # Set GCS as provider
+        tab.current_provider = "google_gcs"
+
+        # Set project ID and credentials but no bucket
+        tab.gcs_project_input.setText("my-gcp-project")
+        tab.gcs_credentials_input.setText("/path/to/service-account.json")
+
+        is_valid, errors = tab.validate_data()
+
+        assert is_valid is False
+        assert len(errors) == 1
+        assert "GCS bucket name is required" in errors[0]
+
+    def test_validate_data_gcs_multiple_errors(self, qapp):
+        """Test GCS validation with multiple missing fields"""
+        tab = CloudTab()
+
+        # Set GCS as provider
+        tab.current_provider = "google_gcs"
+
+        # All fields empty
+        tab.gcs_project_input.setText("")
+        tab.gcs_credentials_input.setText("")
+
+        is_valid, errors = tab.validate_data()
+
+        assert is_valid is False
+        assert len(errors) == 3
+        assert "GCS Project ID is required" in errors[0]
+        assert "GCS Service Account JSON is required" in errors[1]
+        assert "GCS bucket name is required" in errors[2]
+
     def test_log_status(self, qapp):
         """Test status logging"""
         tab = CloudTab()
