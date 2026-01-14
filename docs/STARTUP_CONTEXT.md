@@ -8,11 +8,11 @@
 
 ## Last 3 Accomplishments
 
-1. **XML Sitemap Enhancement QA Verified** - Confirmed in production: sitemap.xml contains correct CloudFront URLs, all city pages included, industry-standard priority/changefreq values working correctly
+1. **Closed GitHub Issue #14 - city_page_image_pool Bug** - QA verified fix in parser.py:637; city page images now correctly saved to YAML config and assigned to city pages during generation
 
-2. **Enhanced sitemap.xml with Complete Coverage** - Added city pages and privacy policy to sitemap, implemented industry-standard priority levels (1.0-0.4) and changefreq values per sitemaps.org protocol 0.9
+2. **XML Sitemap Enhancement QA Verified** - Confirmed in production: sitemap.xml contains correct CloudFront URLs, all city pages included, industry-standard priority/changefreq values working correctly
 
-3. **Fixed Sitemap Deployment URL Bug** - Sitemap URLs now use correct CloudFront/S3 deployment URLs instead of business domain fallback; auto-regenerates and uploads sitemap.xml after both Mode A & B deployments
+3. **Enhanced sitemap.xml with Complete Coverage** - Added city pages and privacy policy to sitemap, implemented industry-standard priority levels (1.0-0.4) and changefreq values per sitemaps.org protocol 0.9
 
 ---
 
