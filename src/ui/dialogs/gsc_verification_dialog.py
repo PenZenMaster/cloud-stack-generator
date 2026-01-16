@@ -244,9 +244,6 @@ class GSCVerificationDialog(QDialog):
 
     def refresh_browser_list(self):
         """Refresh browser and profile detection"""
-        from src.core.utils.browser_detector import BrowserDetector, BrowserInfo
-        from src.core.config.browser_preferences import BrowserPreferences
-
         # Clear existing items
         self.browser_combo.clear()
         self.profile_combo.clear()
@@ -298,9 +295,6 @@ class GSCVerificationDialog(QDialog):
 
     def on_browser_changed(self):
         """Handle browser selection change"""
-        from src.core.utils.browser_detector import BrowserInfo
-        from src.core.config.browser_preferences import BrowserPreferences
-
         browser_data = self.browser_combo.currentData()
 
         # Clear profile combo
@@ -343,7 +337,6 @@ class GSCVerificationDialog(QDialog):
 
     def show_manual_browser_dialog(self):
         """Show file dialog for manual browser executable selection"""
-        from src.core.utils.browser_detector import BrowserInfo
         from PyQt6.QtWidgets import QFileDialog
         import sys
 
@@ -377,9 +370,6 @@ class GSCVerificationDialog(QDialog):
 
     def save_browser_preference(self):
         """Save current browser selection to preferences"""
-        from src.core.utils.browser_detector import BrowserInfo
-        from src.core.config.browser_preferences import BrowserPreferences
-
         browser_data = self.browser_combo.currentData()
 
         if browser_data is None or not isinstance(browser_data, BrowserInfo):
@@ -411,8 +401,6 @@ class GSCVerificationDialog(QDialog):
 
     def authenticate(self):
         """Run OAuth authentication flow"""
-        from src.core.utils.browser_detector import BrowserInfo
-
         # Check for credentials file
         if not os.path.exists(self.gsc_client.credentials_file):
             QMessageBox.warning(
