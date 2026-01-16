@@ -23,12 +23,15 @@ import os
 import subprocess
 import webbrowser
 from pathlib import Path
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Tuple, List, Dict, TYPE_CHECKING
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+if TYPE_CHECKING:
+    from src.core.utils.browser_detector import BrowserInfo
 
 
 # Scope for managing site verification
