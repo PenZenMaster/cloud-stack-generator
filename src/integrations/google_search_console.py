@@ -20,6 +20,8 @@ Comments:
 """
 
 import os
+import subprocess
+import webbrowser
 from pathlib import Path
 from typing import Optional, Tuple, List, Dict
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -31,6 +33,46 @@ from googleapiclient.errors import HttpError
 
 # Scope for managing site verification
 SCOPES = ["https://www.googleapis.com/auth/siteverification"]
+
+
+class CustomBrowserController(webbrowser.BaseBrowser):
+    """Custom browser controller for launching specific browser with profile"""
+
+    def __init__(self, browser_path: str, profile_args: List[str]):
+        """
+        Initialize custom browser controller.
+
+        Args:
+            browser_path: Full path to browser executable
+            profile_args: Command-line arguments for profile selection
+        """
+        self.browser_path = browser_path
+        self.profile_args = profile_args
+        self.name = Path(browser_path).stem
+
+    def open(self, url, new=0, autoraise=True):
+        """
+        Open URL in custom browser with profile.
+
+        Args:
+            url: URL to open
+            new: Window mode (ignored)
+            autoraise: Raise window (ignored)
+
+        Returns:
+            True if launched successfully, False otherwise
+        """
+        try:
+            cmd = [self.browser_path] + self.profile_args + [url]
+            subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            return True
+        except Exception as e:
+            print(f"Failed to launch custom browser: {e}")
+            return False
 
 
 class GoogleSearchConsoleClient:
@@ -64,9 +106,17 @@ class GoogleSearchConsoleClient:
         config_dir.mkdir(parents=True, exist_ok=True)
         return config_dir / "gsc_token.json"
 
-    def authenticate(self) -> Tuple[bool, Optional[str]]:
+    def authenticate(
+        self,
+        browser_info: Optional['BrowserInfo'] = None,
+        profile_directory: str = ""
+    ) -> Tuple[bool, Optional[str]]:
         """
-        Run OAuth flow and return success status
+        Run OAuth flow with optional custom browser.
+
+        Args:
+            browser_info: BrowserInfo object for custom browser (None = system default)
+            profile_directory: Profile directory identifier (e.g., "Profile 1")
 
         Returns:
             (success, error_message)
@@ -98,7 +148,9 @@ class GoogleSearchConsoleClient:
                             flow = InstalledAppFlow.from_client_secrets_file(
                                 self.credentials_file, SCOPES
                             )
-                            self.creds = flow.run_local_server(port=0)
+                            self.creds = self._run_oauth_with_browser(
+                                flow, browser_info, profile_directory
+                            )
                         else:
                             # Re-raise other refresh errors
                             raise
@@ -123,6 +175,85 @@ class GoogleSearchConsoleClient:
             return False, f"File not found: {str(e)}"
         except Exception as e:
             return False, f"Authentication failed: {str(e)}"
+
+    def _run_oauth_with_browser(
+        self,
+        flow: InstalledAppFlow,
+        browser_info: Optional['BrowserInfo'] = None,
+        profile_directory: str = ""
+    ) -> Credentials:
+        """
+        Run OAuth flow with custom browser selection.
+
+        Args:
+            flow: Configured InstalledAppFlow instance
+            browser_info: BrowserInfo object or None for system default
+            profile_directory: Profile directory identifier
+
+        Returns:
+            Credentials object
+        """
+        if browser_info is None:
+            # Use system default browser (existing behavior)
+            return flow.run_local_server(port=0)
+
+        # Register custom browser temporarily
+        browser_args = self._get_browser_launch_args(
+            browser_info.browser_type,
+            profile_directory
+        )
+
+        controller = CustomBrowserController(
+            str(browser_info.executable_path),
+            browser_args
+        )
+
+        # Save original browser order
+        original_tryorder = webbrowser._tryorder.copy() if hasattr(webbrowser, '_tryorder') else None
+
+        try:
+            # Register and set as preferred browser
+            webbrowser.register('custom', None, controller, preferred=True)
+
+            # Run OAuth flow (will use our custom browser)
+            creds = flow.run_local_server(port=0)
+
+            return creds
+
+        finally:
+            # Restore original browser order
+            if original_tryorder is not None:
+                webbrowser._tryorder = original_tryorder
+
+    def _get_browser_launch_args(
+        self,
+        browser_type: str,
+        profile_directory: str
+    ) -> List[str]:
+        """
+        Get command-line arguments for browser profile selection.
+
+        Args:
+            browser_type: Browser type (chrome, firefox, edge, etc.)
+            profile_directory: Profile directory identifier
+
+        Returns:
+            List of command-line arguments
+        """
+        if not profile_directory:
+            return []
+
+        # Chromium-based browsers (Chrome, Edge, Brave, Opera, Vivaldi)
+        if browser_type in ["chrome", "edge", "brave", "opera", "vivaldi", "chromium"]:
+            return [f"--profile-directory={profile_directory}"]
+
+        # Firefox
+        elif browser_type == "firefox":
+            return ["-P", profile_directory]
+
+        # Unknown browser type - no profile args
+        else:
+            return []
 
     def is_authenticated(self) -> bool:
         """

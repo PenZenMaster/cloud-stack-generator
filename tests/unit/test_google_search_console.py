@@ -212,3 +212,76 @@ class TestGoogleSearchConsoleClient:
 
             assert success is False
             assert "Credentials file not found" in error
+
+    def test_authenticate_with_custom_browser(self, tmp_path):
+        """Test authentication with custom browser selection"""
+        from src.integrations.google_search_console import GoogleSearchConsoleClient
+        from src.core.utils.browser_detector import BrowserInfo, ProfileInfo
+        from unittest.mock import MagicMock
+
+        client = GoogleSearchConsoleClient()
+        client.token_file = tmp_path / "test_token.json"
+        client.credentials_file = "credentials.json"
+
+        # Create mock browser info
+        browser_info = BrowserInfo(
+            name="Google Chrome",
+            browser_type="chrome",
+            executable_path=Path("C:/Program Files/Google/Chrome/Application/chrome.exe"),
+            profiles=[]
+        )
+
+        with patch("os.path.exists", return_value=True):
+            with patch('src.integrations.google_search_console.InstalledAppFlow') as mock_flow_class:
+                mock_flow = MagicMock()
+                mock_creds = MagicMock()
+                mock_creds.valid = True
+                mock_creds.to_json.return_value = '{"token": "test"}'
+                mock_flow.run_local_server.return_value = mock_creds
+                mock_flow_class.from_client_secrets_file.return_value = mock_flow
+
+                with patch('src.integrations.google_search_console.build'):
+                    with patch('builtins.open', mock_open()):
+                        success, error = client.authenticate(
+                            browser_info=browser_info,
+                            profile_directory="Profile 1"
+                        )
+
+                        assert success is True
+                        assert error is None
+
+    def test_browser_launch_args_chrome(self):
+        """Test Chrome browser launch arguments"""
+        from src.integrations.google_search_console import GoogleSearchConsoleClient
+
+        client = GoogleSearchConsoleClient()
+        args = client._get_browser_launch_args("chrome", "Profile 1")
+
+        assert args == ["--profile-directory=Profile 1"]
+
+    def test_browser_launch_args_firefox(self):
+        """Test Firefox browser launch arguments"""
+        from src.integrations.google_search_console import GoogleSearchConsoleClient
+
+        client = GoogleSearchConsoleClient()
+        args = client._get_browser_launch_args("firefox", "work")
+
+        assert args == ["-P", "work"]
+
+    def test_browser_launch_args_no_profile(self):
+        """Test browser launch arguments with no profile"""
+        from src.integrations.google_search_console import GoogleSearchConsoleClient
+
+        client = GoogleSearchConsoleClient()
+        args = client._get_browser_launch_args("chrome", "")
+
+        assert args == []
+
+    def test_browser_launch_args_unknown_browser(self):
+        """Test browser launch arguments for unknown browser type"""
+        from src.integrations.google_search_console import GoogleSearchConsoleClient
+
+        client = GoogleSearchConsoleClient()
+        args = client._get_browser_launch_args("unknown_browser", "profile")
+
+        assert args == []

@@ -61,10 +61,11 @@ class GSCVerificationDialog(QDialog):
         self.current_meta_tag = ""
 
         self.setWindowTitle("Google Search Console Verification")
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(500)
+        self.setMinimumWidth(650)
+        self.setMinimumHeight(600)
 
         self.init_ui(initial_url)
+        self.refresh_browser_list()  # Load browsers on init
         self.check_authentication_status()
 
     def init_ui(self, initial_url: str):
@@ -90,6 +91,44 @@ class GSCVerificationDialog(QDialog):
         method_layout.addWidget(self.method_combo)
         method_layout.addStretch()
         layout.addLayout(method_layout)
+
+        # Browser Selection Section
+        browser_group = QGroupBox("Browser Selection (Optional)")
+        browser_layout = QVBoxLayout()
+
+        # Browser selector row
+        browser_row = QHBoxLayout()
+        browser_row.addWidget(QLabel("Browser:"))
+        self.browser_combo = QComboBox()
+        self.browser_combo.setMinimumWidth(250)
+        self.browser_combo.setToolTip("Select browser for Google authentication")
+        self.browser_combo.currentIndexChanged.connect(self.on_browser_changed)
+        browser_row.addWidget(self.browser_combo)
+
+        self.refresh_browsers_button = QPushButton("Refresh")
+        self.refresh_browsers_button.setMaximumWidth(80)
+        self.refresh_browsers_button.clicked.connect(self.refresh_browser_list)
+        browser_row.addWidget(self.refresh_browsers_button)
+        browser_row.addStretch()
+        browser_layout.addLayout(browser_row)
+
+        # Profile selector row
+        profile_row = QHBoxLayout()
+        profile_row.addWidget(QLabel("Profile:"))
+        self.profile_combo = QComboBox()
+        self.profile_combo.setMinimumWidth(250)
+        self.profile_combo.setToolTip("Select browser profile (optional)")
+        profile_row.addWidget(self.profile_combo)
+        profile_row.addStretch()
+        browser_layout.addLayout(profile_row)
+
+        # Info label
+        self.browser_info_label = QLabel("Using system default browser")
+        self.browser_info_label.setStyleSheet("color: #666; font-size: 9pt;")
+        browser_layout.addWidget(self.browser_info_label)
+
+        browser_group.setLayout(browser_layout)
+        layout.addWidget(browser_group)
 
         # Status panel
         status_group = QGroupBox("Status")
@@ -200,8 +239,177 @@ class GSCVerificationDialog(QDialog):
                     self.auth_button.setText("Re-authenticate")
                     self.get_token_button.setEnabled(True)
 
+    def refresh_browser_list(self):
+        """Refresh browser and profile detection"""
+        from src.core.utils.browser_detector import BrowserDetector, BrowserInfo
+        from src.core.config.browser_preferences import BrowserPreferences
+
+        # Clear existing items
+        self.browser_combo.clear()
+        self.profile_combo.clear()
+
+        # Add "System Default" option
+        self.browser_combo.addItem("System Default (Recommended)", None)
+
+        # Detect browsers
+        try:
+            browsers = BrowserDetector.detect_installed_browsers()
+
+            # Add detected browsers
+            for browser in browsers:
+                profile_count = len(browser.profiles)
+                display_text = f"{browser.name} ({profile_count} profile{'s' if profile_count != 1 else ''})"
+                self.browser_combo.addItem(display_text, browser)
+
+        except Exception as e:
+            print(f"Warning: Failed to detect browsers: {e}")
+
+        # Add manual entry option
+        self.browser_combo.addItem("Manual Entry...", "manual")
+
+        # Load saved preference and select it
+        prefs = BrowserPreferences()
+
+        # Validate saved browser still exists
+        if not prefs.validate_browser_exists():
+            if prefs.preference_exists():
+                prefs.clear_browser_preference()
+                QMessageBox.warning(
+                    self,
+                    "Browser Not Found",
+                    "Your previously selected browser is no longer available.\n\n"
+                    "Reverting to system default browser."
+                )
+
+        saved_pref = prefs.get_browser_preference()
+
+        if saved_pref:
+            # Try to find and select saved browser
+            browser_path = Path(saved_pref["browser_path"])
+            for i in range(self.browser_combo.count()):
+                browser_data = self.browser_combo.itemData(i)
+                if isinstance(browser_data, BrowserInfo):
+                    if browser_data.executable_path == browser_path:
+                        self.browser_combo.setCurrentIndex(i)
+                        break
+
+    def on_browser_changed(self):
+        """Handle browser selection change"""
+        from src.core.utils.browser_detector import BrowserInfo
+        from src.core.config.browser_preferences import BrowserPreferences
+
+        browser_data = self.browser_combo.currentData()
+
+        # Clear profile combo
+        self.profile_combo.clear()
+
+        if browser_data is None:
+            # System default selected
+            self.profile_combo.setEnabled(False)
+            self.browser_info_label.setText("Using system default browser")
+            return
+
+        if browser_data == "manual":
+            # Show file dialog for manual browser selection
+            self.show_manual_browser_dialog()
+            return
+
+        if isinstance(browser_data, BrowserInfo):
+            # Populate profiles
+            self.profile_combo.setEnabled(True)
+            self.profile_combo.addItem("Default Profile", "")
+
+            for profile in browser_data.profiles:
+                self.profile_combo.addItem(profile.name, profile.directory)
+
+            # Update info label
+            profile_count = len(browser_data.profiles)
+            self.browser_info_label.setText(
+                f"Using {browser_data.name} - {profile_count} profile{'s' if profile_count != 1 else ''} found"
+            )
+
+            # Load saved profile if exists
+            prefs = BrowserPreferences()
+            saved_pref = prefs.get_browser_preference()
+
+            if saved_pref and saved_pref.get("profile_directory"):
+                # Try to select saved profile
+                index = self.profile_combo.findData(saved_pref["profile_directory"])
+                if index >= 0:
+                    self.profile_combo.setCurrentIndex(index)
+
+    def show_manual_browser_dialog(self):
+        """Show file dialog for manual browser executable selection"""
+        from src.core.utils.browser_detector import BrowserInfo
+        from PyQt6.QtWidgets import QFileDialog
+        import sys
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Browser Executable",
+            "",
+            "Executables (*.exe);;All Files (*.*)" if sys.platform == "win32"
+            else "All Files (*)"
+        )
+
+        if file_path:
+            # Create manual BrowserInfo
+            manual_browser = BrowserInfo(
+                name=Path(file_path).stem,
+                browser_type="custom",
+                executable_path=Path(file_path),
+                profiles=[]
+            )
+            # Insert before "Manual Entry..." option
+            insert_index = self.browser_combo.count() - 1
+            self.browser_combo.insertItem(
+                insert_index,
+                f"Custom: {manual_browser.name}",
+                manual_browser
+            )
+            self.browser_combo.setCurrentIndex(insert_index)
+        else:
+            # User cancelled - revert to system default
+            self.browser_combo.setCurrentIndex(0)
+
+    def save_browser_preference(self):
+        """Save current browser selection to preferences"""
+        from src.core.utils.browser_detector import BrowserInfo
+        from src.core.config.browser_preferences import BrowserPreferences
+
+        browser_data = self.browser_combo.currentData()
+
+        if browser_data is None or not isinstance(browser_data, BrowserInfo):
+            # Clear preference if system default selected
+            prefs = BrowserPreferences()
+            prefs.clear_browser_preference()
+            return
+
+        profile_dir = self.profile_combo.currentData() if self.profile_combo.isEnabled() else ""
+        profile_name = self.profile_combo.currentText() if self.profile_combo.isEnabled() else ""
+
+        prefs = BrowserPreferences()
+        success = prefs.set_browser_preference(
+            browser_type=browser_data.browser_type,
+            browser_path=str(browser_data.executable_path),
+            profile_name=profile_name,
+            profile_directory=profile_dir
+        )
+
+        if not success:
+            QMessageBox.warning(
+                self,
+                "Save Failed",
+                "Failed to save browser preference.\n"
+                "The selected browser may no longer be installed."
+            )
+            # Revert UI to "System Default"
+            self.browser_combo.setCurrentIndex(0)
+
     def authenticate(self):
         """Run OAuth authentication flow"""
+        from src.core.utils.browser_detector import BrowserInfo
+
         # Check for credentials file
         if not os.path.exists(self.gsc_client.credentials_file):
             QMessageBox.warning(
@@ -218,16 +426,34 @@ class GSCVerificationDialog(QDialog):
             )
             return
 
+        # Save browser preference before authentication
+        self.save_browser_preference()
+
+        # Get browser selection
+        browser_data = self.browser_combo.currentData()
+        profile_dir = self.profile_combo.currentData() if self.profile_combo.isEnabled() else ""
+
+        # Build browser info message
+        browser_msg = "using system default browser"
+        if isinstance(browser_data, BrowserInfo):
+            browser_msg = f"using {browser_data.name}"
+            if profile_dir:
+                profile_name = self.profile_combo.currentText()
+                browser_msg += f" ({profile_name})"
+
         # Show progress message
         QMessageBox.information(
             self,
             "Authentication",
-            "Your browser will open for Google authentication.\n\n"
+            f"Your browser will open for Google authentication {browser_msg}.\n\n"
             "Please sign in and grant permissions."
         )
 
-        # Run authentication
-        success, error = self.gsc_client.authenticate()
+        # Run authentication with browser selection
+        success, error = self.gsc_client.authenticate(
+            browser_info=browser_data if isinstance(browser_data, BrowserInfo) else None,
+            profile_directory=profile_dir
+        )
 
         if success:
             self.auth_status.setChecked(True)
