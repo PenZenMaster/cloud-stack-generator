@@ -34,7 +34,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
 from src.integrations.google_search_console import GoogleSearchConsoleClient
-from src.core.utils.browser_detector import BrowserDetector, BrowserInfo, ProfileInfo
+from src.core.utils.browser_detector import BrowserDetector, BrowserInfo
 from src.core.config.browser_preferences import BrowserPreferences
 
 
