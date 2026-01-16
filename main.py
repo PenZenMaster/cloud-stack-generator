@@ -1,10 +1,10 @@
 # main.py
 """
-SEO Authority Website Generator v3.6.0
+SEO Authority Website Generator v3.7.0
 Enhanced Main Application Entry Point
 
-Updated: December 21, 2025
-Version: 3.6.0 - UI Improvements, GSC Integration, Comprehensive Test Suite
+Updated: January 16, 2026
+Version: 3.7.0 - Browser Selection for Google Search Console OAuth
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 

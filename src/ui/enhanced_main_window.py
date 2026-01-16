@@ -2072,11 +2072,12 @@ class EnhancedMainWindow(QMainWindow):
 
     def show_about(self):
         """Show about dialog"""
+        current_version = get_version()
         QMessageBox.about(
             self,
             "About SEO Authority Website Generator",
-            "<h3>SEO Authority Website Generator v3.4.1</h3>"
-            "<p>Sprint 2 Week 2 - Technical Debt Remediation & Code Quality</p>"
+            f"<h3>SEO Authority Website Generator v{current_version}</h3>"
+            "<p>Cloud-Based Static Site Generator with Multi-Provider Support</p>"
             "<p><b>Features:</b></p>"
             "<ul>"
             "<li>Business Information Management</li>"
@@ -2088,8 +2089,8 @@ class EnhancedMainWindow(QMainWindow):
             "<li>Auto-Create CloudFront Distributions with OAC</li>"
             "<li>Multi-Deployment Management</li>"
             "<li>Per-Deployment Meta Tags</li>"
-            "<li><b>NEW:</b> Help Menu with Documentation Viewer</li>"
-            "<li><b>NEW:</b> Markdown Rendering for Documentation</li>"
+            "<li>Google Search Console OAuth Integration</li>"
+            "<li><b>NEW v3.7.0:</b> Browser & Profile Selection for OAuth</li>"
             "</ul>"
             "<p><b>Status:</b> Production-Ready Cloud Deployment</p>",
         )
