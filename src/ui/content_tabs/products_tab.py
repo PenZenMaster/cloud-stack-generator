@@ -37,7 +37,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from ..components.base_tab import BaseTab
 
 # Import error logging
-from ...utils import log_file_operation_error
+from utils import log_file_operation_error
 
 
 class ValidationResult:

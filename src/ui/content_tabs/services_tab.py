@@ -47,8 +47,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt, pyqtSignal
 from ..components.base_tab import BaseTab
-from ...core.config.models import FAQItem
-from ...utils import log_file_operation_error
+from core.config.models import FAQItem
+from utils import log_file_operation_error
 
 
 class ValidationResult:

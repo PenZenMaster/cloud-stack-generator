@@ -13,10 +13,11 @@ Created Date:
 2025-09-18
 
 Last Modified Date:
-2025-09-18
+2026-01-16
 
 Comments:
 * v1.00 - Initial template selection dialog
+* v1.01 - Enhanced import/export with progress callbacks and better error handling
 """
 
 from PyQt6.QtWidgets import (
@@ -557,15 +558,24 @@ class TemplateSelectionDialog(QDialog):
             return
 
         # Show progress dialog
-        progress = QProgressDialog("Importing template...", "Cancel", 0, 0, self)
+        progress = QProgressDialog("Importing template...", "Cancel", 0, 100, self)
         progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.setValue(0)
         progress.show()
         QApplication.processEvents()
+
+        def update_progress(message: str, percent: int):
+            """Update progress dialog"""
+            progress.setLabelText(message)
+            progress.setValue(percent)
+            QApplication.processEvents()
 
         try:
             importer = TemplateImporter(self.template_manager)
             success, message, template_id = importer.import_template_package(
-                Path(file_path)
+                Path(file_path),
+                progress_callback=update_progress,
+                allow_overwrite=False
             )
 
             progress.close()
@@ -573,16 +583,23 @@ class TemplateSelectionDialog(QDialog):
             if success:
                 # Refresh template list
                 self.template_manager.refresh_templates()
+
+                # Clear existing template cards
+                for card in self.template_cards:
+                    card.deleteLater()
+                self.template_cards.clear()
+
+                # Reload templates
                 self.load_templates()
 
                 QMessageBox.information(
                     self,
                     "Import Successful",
-                    f"Template imported successfully!\n\n{message}",
+                    f"{message}\n\nThe template has been added to your library.",
                 )
 
                 # Auto-select imported template if available
-                if template_id and hasattr(self, "template_cards"):
+                if template_id:
                     for card in self.template_cards:
                         if card.template_id == template_id:
                             self.on_template_selected(template_id)
@@ -638,15 +655,22 @@ class TemplateSelectionDialog(QDialog):
             return
 
         # Show progress dialog
-        progress = QProgressDialog("Exporting template...", "Cancel", 0, 0, self)
+        progress = QProgressDialog("Exporting template...", "Cancel", 0, 100, self)
         progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.setValue(0)
         progress.show()
         QApplication.processEvents()
 
+        def update_progress(message: str, percent: int):
+            """Update progress dialog"""
+            progress.setLabelText(message)
+            progress.setValue(percent)
+            QApplication.processEvents()
+
         try:
             exporter = TemplateExporter(self.template_manager)
-            success = exporter.export_template_package(
-                self.selected_template_id, Path(file_path)
+            success, message = exporter.export_template_package(
+                self.selected_template_id, Path(file_path), progress_callback=update_progress
             )
 
             progress.close()
@@ -655,7 +679,7 @@ class TemplateSelectionDialog(QDialog):
                 QMessageBox.information(
                     self,
                     "Export Successful",
-                    f"Template '{template_metadata.name}' exported successfully!\n\n"
+                    f"{message}\n\n"
                     f"Package saved to:\n{file_path}\n\n"
                     f"You can now modify the template externally and re-import it.",
                 )
@@ -663,7 +687,7 @@ class TemplateSelectionDialog(QDialog):
                 QMessageBox.warning(
                     self,
                     "Export Failed",
-                    "Failed to export template. Please check file permissions and try again.",
+                    f"Failed to export template:\n\n{message}",
                 )
 
         except Exception as e:

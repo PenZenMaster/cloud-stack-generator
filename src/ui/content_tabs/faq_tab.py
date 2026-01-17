@@ -45,7 +45,7 @@ from PyQt6.QtGui import QFont
 from PyQt6.QtCore import pyqtSignal
 
 from ..components.base_tab import BaseTab
-from ...core.content.faq_manager import FAQManager, EnhancedFAQItem, FAQCategory
+from core.content.faq_manager import FAQManager, EnhancedFAQItem, FAQCategory
 
 
 class ValidationResult:
