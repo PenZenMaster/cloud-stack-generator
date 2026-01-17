@@ -26,13 +26,12 @@ try:
     from .services_tab import (  # noqa: F401
         ServicesTab,
         Service,
-        FAQ,
         ValidationResult as ServicesValidationResult,
     )
 
-    __all__.extend(["ServicesTab", "Service", "FAQ", "ServicesValidationResult"])
-except ImportError:
-    print("Warning: ServicesTab not available")
+    __all__.extend(["ServicesTab", "Service", "ServicesValidationResult"])
+except ImportError as e:
+    print(f"Warning: ServicesTab not available - {e}")
 
 try:
     from .faq_tab import FAQTab  # noqa: F401

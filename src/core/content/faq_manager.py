@@ -13,10 +13,11 @@ Created Date:
 2025-11-18
 
 Last Modified Date:
-2025-11-18
+2026-01-16
 
 Comments:
 * v1.00 - Initial FAQ manager with bulk operations and search
+* v1.01 - Fixed export format to match import format (removed created_date/modified_date)
 """
 
 import csv
@@ -315,6 +316,12 @@ class FAQManager:
         Export FAQs to CSV file.
         If no FAQs exist, exports a template CSV with headers only.
 
+        CSV format matches import format for seamless round-trip:
+        question,answer,category,tags,priority,active,city_name,state
+
+        Note: created_date and modified_date are NOT exported as they are
+        auto-generated during import and should not be in the CSV file.
+
         Args:
             file_path: Output CSV file path
             active_only: Only export active FAQs
@@ -328,9 +335,10 @@ class FAQManager:
                 faqs_to_export = [faq for faq in self.faqs if faq.active]
 
             with open(file_path, 'w', encoding='utf-8', newline='') as f:
+                # Export only the fields used for import (8 columns)
                 fieldnames = [
                     'question', 'answer', 'category', 'tags', 'priority',
-                    'active', 'city_name', 'state', 'created_date', 'modified_date'
+                    'active', 'city_name', 'state'
                 ]
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
@@ -349,9 +357,7 @@ class FAQManager:
                         'priority': faq.priority,
                         'active': faq.active,
                         'city_name': faq.city_name or '',
-                        'state': faq.state or '',
-                        'created_date': faq.created_date,
-                        'modified_date': faq.modified_date
+                        'state': faq.state or ''
                     })
 
             logger.info(f"Exported {len(faqs_to_export)} FAQs to CSV: {file_path}")
