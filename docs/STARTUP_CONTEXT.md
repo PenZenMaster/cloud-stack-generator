@@ -1,28 +1,28 @@
 # AWG Startup Context
 
-**Last Updated:** 2026-01-11
+**Last Updated:** 2026-01-17
 **Branch:** main
-**Last Commit:** fd5a275
+**Last Commit:** 38a7966
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **Fixed GCS Validation Bug** - Cloud Deploy tab now correctly validates GCS-specific fields (Project ID, Service Account JSON) when Google Cloud Storage is selected; no longer shows incorrect "S3 Bucket Name Required" error
+1. **Issue #21: Persistent Deployment History** - Implemented SQLite database (data/deployments.db) with WAL mode for deployment persistence across sessions; deployments now survive app restarts; migration script created to import existing YAML deployments; all 8/8 functional tests passed
 
-2. **Closed GitHub Issue #14 - city_page_image_pool Bug** - QA verified fix in parser.py:637; city page images now correctly saved to YAML config and assigned to city pages during generation
+2. **Issue #22: Asset Upload Mechanism** - Created new "Asset Upload" tab with AWS S3 and Google GCS support; users can upload files (PDF, Excel, Word, etc.) to cloud storage and get public URLs; includes copy to clipboard and CSV export functionality; asset metadata stored in SQLite
 
-3. **XML Sitemap Enhancement QA Verified** - Confirmed in production: sitemap.xml contains correct CloudFront URLs, all city pages included, industry-standard priority/changefreq values working correctly
+3. **Version 3.8.0 Released** - Successfully committed and pushed both features to GitHub (commits 0fe41ac, 38a7966); all 113 cloud infrastructure unit tests passing; pre-commit hooks validated; comprehensive test results documented in TEST_RESULTS.md
 
 ---
 
 ## Next 3 Priorities
 
-1. **TBD** - Awaiting next feature request or bug report
+1. **QA Testing Required** - User needs to test deployment persistence (create deployment, restart app, verify it persists) and asset upload functionality (upload files to S3, verify URLs)
 
-2. **TBD** - Ready for new tasks
+2. **Monitor for Issues** - Watch for any bugs or edge cases in deployment history loading/saving and asset upload operations during production use
 
-3. **TBD** - Ready for new tasks
+3. **Future Enhancements** - Consider adding Wasabi/Backblaze providers for Issue #22, drag-drop file upload, and enhanced asset management features based on user feedback
 
 ---
 
@@ -31,14 +31,20 @@
 **Git Status:**
 - Branch: main (up to date with origin/main)
 - Working tree: Clean (only .claude/settings.local.json modified - local config)
-- Last commit: fd5a275 (sitemap enhancement)
+- Last commit: 38a7966 (test results documentation)
 - Push status: All commits pushed
-- Version: 3.6.2
+- Version: 3.8.0
 
 **Tests:**
-- All 113 cloud infrastructure tests passing
+- All 113 cloud infrastructure tests passing (12.17s)
+- Deployment persistence: 8/8 functional tests passed
+- Migration script: Successfully processed 16 config files
 - Pre-commit hooks passing
-- Black formatting applied
+
+**Database:**
+- SQLite database created: data/deployments.db (60KB)
+- WAL mode enabled for concurrency
+- Tables: clients, deployments, deployment_meta_tags, uploaded_assets
 
 **Blockers:**
 - None
@@ -47,24 +53,26 @@
 
 ## Key Context Notes
 
-1. **Sitemap Enhancement (fd5a275) - MAJOR SEO IMPROVEMENT:**
-   - **Coverage**: Added missing city pages and privacy-policy.html to sitemap (was ~10 URLs, now 10-50+ depending on city count)
-   - **Priority Levels**: Homepage 1.0, hubs 0.8, details 0.7, info 0.6, legal 0.4 (Google/Bing best practices)
-   - **Change Frequency**: Weekly (homepage), monthly (most pages), yearly (privacy)
-   - **URL Fix**: Sitemap now uses deployment URL (CloudFront/S3) instead of business.domain fallback
-   - **Auto-Regeneration**: After deployment, sitemap.xml regenerates with correct URL and re-uploads to S3
+1. **Deployment Persistence Architecture (Issues #21):**
+   - **Database**: SQLite with WAL mode at `data/deployments.db` (gitignored)
+   - **Tables**: clients (config association), deployments (full deployment data), deployment_meta_tags (normalized), uploaded_assets (Issue #22)
+   - **Integration**: DeploymentHistoryStore initialized in enhanced_main_window.py; saves on deployment creation; deployment_history_tab loads from SQLite
+   - **Migration**: Run `python -m src.core.data.migration` to import existing YAML deployments
+   - **CRUD Operations**: Save, load, update friendly name, delete all working correctly
 
-2. **Sitemap Deployment Flow (Mode A & B):**
-   - Initial site generation creates sitemap with business.domain (temporary)
-   - After S3/CloudFront deployment completes, `_update_config_and_sitemap_for_deployment()` runs
-   - Config updated with deployment_url, sitemap regenerated with correct URLs, uploaded to S3
-   - Result: `https://d3s4htkdtt2ze0.cloudfront.net/sitemap.xml` contains CloudFront URLs, not librami.com
+2. **Asset Upload Implementation (Issue #22 - Simplified):**
+   - **New Tab**: "Asset Upload" tab in main window
+   - **Providers**: AWS S3 (fully implemented), Google GCS (requires service account config)
+   - **Features**: Multi-file upload, public URL generation, copy to clipboard, CSV export
+   - **Storage**: Asset metadata saved to uploaded_assets table in SQLite
+   - **Limitations**: Wasabi/Backblaze deferred, drag-drop not implemented, browse button only
 
-3. **Deployment Mode Behavior (CRITICAL):**
-   - Mode A (S3 Static Website): Bucket configured for public access with public policy
-   - Mode B (CloudFront + OAC): Bucket kept private, CloudFront accesses via OAC policy, public blocks enabled
-   - Both modes now properly update sitemap with deployment URL post-deployment
+3. **File Changes Summary:**
+   - **Created**: deployment_store.py (380 lines), migration.py (165 lines), asset_uploader.py (310 lines), asset_upload_tab.py (490 lines)
+   - **Modified**: models.py (added to_dict/from_dict), enhanced_main_window.py (init store, add tab), deployment_history_tab.py (load from SQLite)
+   - **Version**: main.py updated to 3.8.0
+   - **Documentation**: TEST_RESULTS.md with comprehensive testing verification
 
 ---
 
-**For full checkpoint details:** See `docs/archive/checkpoints/CheckPoint-2026-01-10_1908.md`
+**For full checkpoint details:** See `docs/archive/checkpoints/` (use AWG checkpoint for detailed session archive)
