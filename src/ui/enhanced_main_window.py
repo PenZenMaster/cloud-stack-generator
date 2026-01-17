@@ -58,6 +58,7 @@ from .components.branding_tab import BrandingTab
 from .components.api_keys_tab import APIKeysTab
 from .components.cloud_tab import CloudTab
 from .components.deployment_history_tab import DeploymentHistoryTab
+from .components.asset_upload_tab import AssetUploadTab
 from .content_tabs.products_tab import ProductsTab
 from .content_tabs.services_tab import ServicesTab
 from .content_tabs.faq_tab import FAQTab
@@ -66,6 +67,7 @@ from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
 # Import core functionality
 from ..core.config.models import ClientConfig, DeploymentConfig
 from ..core.config.parser import ConfigParser
+from ..core.data.deployment_store import DeploymentHistoryStore
 from ..version import get_version
 
 # Import error logging
@@ -138,6 +140,9 @@ class EnhancedMainWindow(QMainWindow):
 
         # Initialize error logger
         self.error_logger = ErrorLogger()
+
+        # Initialize deployment history store (SQLite persistence)
+        self.deployment_store = DeploymentHistoryStore()
 
         # Load application-wide API keys
         self.app_api_keys = self.load_app_api_keys()
@@ -382,6 +387,7 @@ class EnhancedMainWindow(QMainWindow):
         self.faq_tab = FAQTab()
         self.cloud_tab = CloudTab()
         self.deployment_history_tab = DeploymentHistoryTab()
+        self.asset_upload_tab = AssetUploadTab()
 
         # Add tabs to main widget
         self.main_tabs.addTab(self.business_tab, "Business Info")
@@ -394,6 +400,10 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.api_keys_tab, "API Keys")
         self.main_tabs.addTab(self.cloud_tab, "Cloud Deploy")
         self.main_tabs.addTab(self.deployment_history_tab, "Deployment History")
+        self.main_tabs.addTab(self.asset_upload_tab, "Asset Upload")
+
+        # Pass deployment store to asset upload tab
+        self.asset_upload_tab.set_deployment_store(self.deployment_store)
 
         layout.addWidget(self.main_tabs)
 
@@ -564,14 +574,27 @@ class EnhancedMainWindow(QMainWindow):
             print("Warning: No config loaded, cannot save deployment")
             return
 
-        # Find existing deployment with same ID
+        # NEW: Save to SQLite database immediately for persistent storage
+        if self.current_config_file:
+            try:
+                success = self.deployment_store.save_deployment(
+                    config_file_path=str(Path(self.current_config_file).resolve()),
+                    business_name=self.current_config.business.business_name,
+                    deployment=deployment
+                )
+                if success:
+                    print(f"Deployment saved to database: {deployment.deployment_id}")
+            except Exception as e:
+                print(f"Error saving deployment to database: {e}")
+
+        # Find existing deployment with same ID in in-memory config
         existing_index = -1
         for i, dep in enumerate(self.current_config.deployments):
             if dep.deployment_id == deployment.deployment_id:
                 existing_index = i
                 break
 
-        # Update or append deployment
+        # Update or append deployment (keep in-memory for YAML export compatibility)
         if existing_index >= 0:
             self.current_config.deployments[existing_index] = deployment
             print(f"Updated existing deployment: {deployment.deployment_id}")
@@ -579,8 +602,11 @@ class EnhancedMainWindow(QMainWindow):
             self.current_config.deployments.append(deployment)
             print(f"Added new deployment: {deployment.deployment_id}")
 
-        # Refresh deployment history tab
-        self.deployment_history_tab.set_config(self.current_config)
+        # Refresh deployment history tab (NEW: load from SQLite)
+        if self.current_config_file:
+            self.deployment_history_tab.set_config_path(
+                str(Path(self.current_config_file).resolve())
+            )
 
         # Mark config as modified and trigger auto-save
         self.unsaved_changes = True

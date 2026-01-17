@@ -567,6 +567,54 @@ class DeploymentConfig:
         """Check if deployment is properly configured"""
         return bool(self.bucket and self.region)
 
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert DeploymentConfig to dictionary for SQLite storage.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation
+        """
+        return {
+            'deployment_id': self.deployment_id,
+            'bucket': self.bucket,
+            'directory': self.directory,
+            'region': self.region,
+            'mode': self.mode,
+            'cloudfront_distribution_id': self.cloudfront_distribution_id,
+            'cloudfront_domain': self.cloudfront_domain,
+            'last_deployed': self.last_deployed,
+            'deployment_url': self.deployment_url,
+            'friendly_name': self.friendly_name,
+            'industry': self.industry,
+            'meta_tags': self.meta_tags or {}
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'DeploymentConfig':
+        """
+        Create DeploymentConfig from dictionary (SQLite deserialization).
+
+        Args:
+            data: Dictionary with deployment data
+
+        Returns:
+            DeploymentConfig: Reconstructed deployment object
+        """
+        return cls(
+            deployment_id=data['deployment_id'],
+            bucket=data['bucket'],
+            directory=data.get('directory', ''),
+            region=data.get('region', 'us-east-1'),
+            mode=data.get('mode', 's3'),
+            cloudfront_distribution_id=data.get('cloudfront_distribution_id'),
+            cloudfront_domain=data.get('cloudfront_domain'),
+            last_deployed=data.get('last_deployed'),
+            deployment_url=data.get('deployment_url'),
+            friendly_name=data.get('friendly_name'),
+            industry=data.get('industry'),
+            meta_tags=data.get('meta_tags', {})
+        )
+
 
 @dataclass
 class CloudConfig:

@@ -33,9 +33,15 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QFont
 from typing import List, Optional
 from datetime import datetime
+from pathlib import Path
 import csv
 
 from src.core.config.models import DeploymentConfig, ClientConfig
+from src.core.data.deployment_store import DeploymentHistoryStore
+from src.core.config.parser import load_config_from_file
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class DeploymentCard(QFrame):
@@ -179,7 +185,8 @@ class DeploymentHistoryTab(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.current_config: Optional[ClientConfig] = None
+        self.current_config_path: Optional[str] = None  # Changed from current_config
+        self.deployment_store = DeploymentHistoryStore()
         self.deployment_cards: List[DeploymentCard] = []
         self.setup_ui()
 
@@ -341,44 +348,65 @@ class DeploymentHistoryTab(QWidget):
         if index == 1:
             self.populate_grid()
 
-    def set_config(self, config: ClientConfig):
-        """Load deployments from config"""
-        self.current_config = config
+    def set_config_path(self, config_file_path: str):
+        """Load deployments from SQLite for given config file"""
+        self.current_config_path = config_file_path
         self.refresh_deployments()
 
     def refresh_deployments(self):
-        """Refresh deployment cards from current config"""
+        """Refresh deployment cards from SQLite database"""
         # Clear existing cards
         for card in self.deployment_cards:
             card.setParent(None)
             card.deleteLater()
         self.deployment_cards.clear()
 
-        if not self.current_config or not self.current_config.deployments:
-            # Show empty state
+        if not self.current_config_path:
+            # Show empty state - no config loaded
             empty_label = QLabel(
-                "<i>No deployments configured yet. Click '+ New Deployment' to create one.</i>"
+                "<i>No configuration file loaded.</i>"
             )
             empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             empty_label.setStyleSheet("color: #666; padding: 40px;")
             self.deployments_layout.addWidget(empty_label)
             return
 
-        # Create cards for each deployment
-        for deployment in self.current_config.deployments:
-            card = DeploymentCard(deployment)
+        # Load deployments from SQLite
+        try:
+            deployments = self.deployment_store.load_deployments(self.current_config_path)
 
-            # Connect signals
-            card.redeploy_requested.connect(self.on_redeploy)
-            card.edit_requested.connect(self.on_edit_deployment)
-            card.delete_requested.connect(self.on_delete_deployment)
-            card.friendly_name_changed.connect(self.on_friendly_name_changed)
+            if not deployments:
+                # Show empty state - no deployments yet
+                empty_label = QLabel(
+                    "<i>No deployments found. Create a deployment from the Cloud Deploy tab.</i>"
+                )
+                empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                empty_label.setStyleSheet("color: #666; padding: 40px;")
+                self.deployments_layout.addWidget(empty_label)
+                return
 
-            self.deployment_cards.append(card)
-            self.deployments_layout.addWidget(card)
+            # Create cards for each deployment
+            for deployment in deployments:
+                card = DeploymentCard(deployment)
 
-        # Add stretch at bottom
-        self.deployments_layout.addStretch()
+                # Connect signals
+                card.redeploy_requested.connect(self.on_redeploy)
+                card.edit_requested.connect(self.on_edit_deployment)
+                card.delete_requested.connect(self.on_delete_deployment)
+                card.friendly_name_changed.connect(self.on_friendly_name_changed)
+
+                self.deployment_cards.append(card)
+                self.deployments_layout.addWidget(card)
+
+            # Add stretch at bottom
+            self.deployments_layout.addStretch()
+
+        except Exception as e:
+            logger.error(f"Error loading deployments: {e}")
+            error_label = QLabel(f"<i>Error loading deployments: {str(e)}</i>")
+            error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            error_label.setStyleSheet("color: #cc0000; padding: 40px;")
+            self.deployments_layout.addWidget(error_label)
 
     def on_add_deployment(self):
         """Handle add deployment button click"""
@@ -413,43 +441,73 @@ class DeploymentHistoryTab(QWidget):
         reply = QMessageBox.question(
             self,
             "Delete Deployment",
-            f"Are you sure you want to delete this deployment configuration?\n\n"
+            f"Are you sure you want to delete this deployment?\n\n"
             f"Deployment: {deployment_id}\n\n"
-            f"Note: This will NOT delete files from S3 or CloudFront distribution. "
-            f"It only removes the deployment from this configuration.",
+            f"Note: This will NOT delete files from S3 or CloudFront.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
 
         if reply == QMessageBox.StandardButton.Yes:
-            # Find and remove deployment
-            if self.current_config:
-                self.current_config.deployments = [
-                    d for d in self.current_config.deployments
-                    if d.deployment_id != deployment_id
-                ]
-                self.refresh_deployments()
+            if not self.current_config_path:
+                return
 
-                QMessageBox.information(
+            try:
+                # Delete from SQLite
+                success = self.deployment_store.delete_deployment(
+                    self.current_config_path,
+                    deployment_id
+                )
+
+                if success:
+                    self.refresh_deployments()
+                    QMessageBox.information(
+                        self,
+                        "Deployment Deleted",
+                        f"Deployment removed: {deployment_id}"
+                    )
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "Delete Failed",
+                        f"Could not delete deployment: {deployment_id}"
+                    )
+
+            except Exception as e:
+                logger.error(f"Error deleting deployment: {e}")
+                QMessageBox.critical(
                     self,
-                    "Deployment Deleted",
-                    f"Deployment configuration removed: {deployment_id}\n\n"
-                    f"Remember to save your configuration."
+                    "Delete Error",
+                    f"Error: {str(e)}"
                 )
 
     def on_friendly_name_changed(self, deployment_id: str, new_name: str):
         """Handle friendly name change"""
-        if self.current_config:
-            for deployment in self.current_config.deployments:
-                if deployment.deployment_id == deployment_id:
-                    deployment.friendly_name = new_name
-                    break
+        if not self.current_config_path:
+            return
 
-            # Notify user to save
-            QMessageBox.information(
+        try:
+            # Update in SQLite
+            success = self.deployment_store.update_friendly_name(
+                self.current_config_path,
+                deployment_id,
+                new_name
+            )
+
+            if success:
+                logger.info(f"Friendly name updated: {deployment_id} -> {new_name}")
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Update Failed",
+                    f"Could not update friendly name for: {deployment_id}"
+                )
+
+        except Exception as e:
+            logger.error(f"Error updating friendly name: {e}")
+            QMessageBox.critical(
                 self,
-                "Name Updated",
-                f"Friendly name updated to: {new_name}\n\n"
-                f"Remember to save your configuration."
+                "Update Error",
+                f"Error: {str(e)}"
             )
 
     def populate_grid(self):
