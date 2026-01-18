@@ -32,12 +32,12 @@ from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
 import csv
+import logging
 
 from ...core.deployment.asset_uploader import AssetUploader, UploadResult
 from ...core.data.deployment_store import DeploymentHistoryStore
-from ...utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class UploadWorker(QThread):

@@ -35,13 +35,13 @@ from typing import List, Optional
 from datetime import datetime
 from pathlib import Path
 import csv
+import logging
 
 from src.core.config.models import DeploymentConfig, ClientConfig
 from src.core.data.deployment_store import DeploymentHistoryStore
 from src.core.config.parser import load_config_from_file
-from src.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class DeploymentCard(QFrame):

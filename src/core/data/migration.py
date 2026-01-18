@@ -28,12 +28,12 @@ Comments:
 from pathlib import Path
 from typing import List, Tuple
 import sys
+import logging
 
 from .deployment_store import DeploymentHistoryStore
 from ..config.parser import load_config_from_file
-from ..utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def find_config_files(base_dir: Path) -> List[Path]:
