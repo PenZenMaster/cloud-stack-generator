@@ -26,12 +26,12 @@ from pathlib import Path
 from typing import Optional, Callable, List
 from datetime import datetime
 import mimetypes
+import logging
 
 from ..aws.s3_manager import S3Manager
 from ..deployment.providers.gcs_provider import GCSProvider
-from ..utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass

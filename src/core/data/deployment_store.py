@@ -25,15 +25,15 @@ Comments:
 import sqlite3
 import json
 import time
+import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime
 from contextlib import contextmanager
 
 from ..config.models import DeploymentConfig
-from ..utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class DeploymentHistoryStore:
