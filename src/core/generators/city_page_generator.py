@@ -383,16 +383,13 @@ class CityPageGenerator:
     def _assign_city_image_from_pool(self, city_page: CityPageConfig) -> None:
         """
         Assign image from branding image pool to city page if:
-        1. City page doesn't already have an image
-        2. Image pool exists and has images
+        1. Image pool exists and has images (pool images take priority)
+        2. Images are assigned sequentially based on city page index, with cycling
 
-        Images are assigned sequentially based on city page index, with cycling.
+        When pool images are configured, they override any existing city page images
+        (e.g., Wikipedia placeholder images) to prioritize client-uploaded images.
         """
-        # Skip if city already has an image
-        if city_page.city_image and city_page.city_image.image_url:
-            return
-
-        # Check if image pool exists
+        # Check if image pool exists first (priority over existing images)
         if not hasattr(self.config.branding, "city_page_image_pool"):
             return
 

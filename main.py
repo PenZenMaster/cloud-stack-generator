@@ -1,10 +1,10 @@
 # main.py
 """
-SEO Authority Website Generator v3.8.0
+SEO Authority Website Generator v3.9.0
 Enhanced Main Application Entry Point
 
-Updated: January 17, 2026
-Version: 3.8.0 - Persistent Deployment History & Asset Upload
+Updated: January 19, 2026
+Version: 3.9.0 - Fix city page pool images & hero image path regression
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 

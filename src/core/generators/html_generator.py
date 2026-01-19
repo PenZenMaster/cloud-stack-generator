@@ -346,14 +346,59 @@ class HTMLGenerator:
         # Fallback to business domain
         return config.business.domain.rstrip("/")
 
+    def _normalize_image_path(self, image_path: str) -> str:
+        """
+        Normalize image paths to relative web paths.
+
+        Converts absolute local file paths (e.g., D:/OneDrive/.../image.png)
+        to relative web paths (e.g., images/image.png) suitable for deployment.
+
+        Args:
+            image_path: Image path to normalize (can be absolute or relative)
+
+        Returns:
+            Normalized relative path suitable for web deployment
+        """
+        if not image_path:
+            return image_path
+
+        # Convert to Path object for easier manipulation
+        path_obj = Path(image_path)
+
+        # Check if path is absolute (Windows or Unix)
+        # On Windows, is_absolute() works for Windows paths but not Unix paths
+        # So we also check for Unix-style absolute paths starting with /
+        is_absolute = path_obj.is_absolute() or image_path.startswith('/')
+
+        if is_absolute:
+            # Extract just the filename
+            filename = path_obj.name
+
+            # Return as relative path in images directory
+            return f"images/{filename}"
+
+        # If already relative, ensure it uses forward slashes for web
+        return image_path.replace("\\", "/")
+
     def _prepare_template_data(self, config: ClientConfig) -> Dict[str, Any]:
         """Prepare common template data for all pages"""
         canonical_base = self._get_canonical_base_url(config)
 
+        # Normalize hero background image path if present
+        # Create a copy to avoid mutating the original config
+        branding = config.branding
+        if hasattr(branding, 'hero_background_image_url') and branding.hero_background_image_url:
+            # Create a shallow copy of branding config
+            from copy import copy
+            branding = copy(branding)
+            branding.hero_background_image_url = self._normalize_image_path(
+                branding.hero_background_image_url
+            )
+
         template_data = {
             "business": config.business,
             "contact": config.contact,
-            "branding": config.branding,
+            "branding": branding,
             "cloud": config.cloud,
             "services": config.services,
             "products": config.products,
