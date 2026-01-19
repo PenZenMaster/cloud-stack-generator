@@ -535,6 +535,36 @@ class PageGenerator:
                             shutil.copy2(asset_file, dest_file)
                             logger.info(f"Copied client asset: {asset_file.name}")
 
+            # 3. Copy city page pool images from their absolute local paths
+            if hasattr(config, 'branding') and hasattr(config.branding, 'city_page_image_pool'):
+                pool_images = config.branding.city_page_image_pool
+                if pool_images and isinstance(pool_images, list):
+                    for image_path in pool_images:
+                        if image_path:
+                            source_path = Path(image_path)
+                            # Only copy if it's an absolute path (local file)
+                            if source_path.is_absolute() and source_path.exists():
+                                dest_file = output_dir / "images" / source_path.name
+                                try:
+                                    shutil.copy2(source_path, dest_file)
+                                    logger.info(f"Copied pool image: {source_path.name} from {source_path}")
+                                except Exception as e:
+                                    logger.warning(f"Could not copy pool image {source_path.name}: {str(e)}")
+
+            # 4. Copy hero background image if it's an absolute local path
+            if hasattr(config, 'branding') and hasattr(config.branding, 'hero_background_image_url'):
+                hero_image_path = config.branding.hero_background_image_url
+                if hero_image_path:
+                    source_path = Path(hero_image_path)
+                    # Only copy if it's an absolute path (local file)
+                    if source_path.is_absolute() and source_path.exists():
+                        dest_file = output_dir / "images" / source_path.name
+                        try:
+                            shutil.copy2(source_path, dest_file)
+                            logger.info(f"Copied hero background image: {source_path.name} from {source_path}")
+                        except Exception as e:
+                            logger.warning(f"Could not copy hero background image {source_path.name}: {str(e)}")
+
         except Exception as e:
             result.add_warning(f"Could not copy static assets: {str(e)}")
 
