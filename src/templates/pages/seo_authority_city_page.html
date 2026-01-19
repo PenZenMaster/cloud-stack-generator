@@ -418,6 +418,22 @@
             font-style: italic;
         }
 
+        .header-image {
+            margin-top: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         /* Content Grid */
         .content-grid {
             display: grid;
@@ -850,6 +866,13 @@
                 <div class="article-meta">
                     Serving {{ city_page.city_name }}{% if city_page.state %}, {{ city_page.state }}{% endif %} | Updated {{ current_date }}
                 </div>
+
+                <!-- Header Image from City Page Pool -->
+                {% if city_page.header_image and city_page.header_image.image_url %}
+                <div class="header-image">
+                    <img src="{{ city_page.header_image.image_url }}" alt="{{ city_page.header_image.alt_text | default(business.industry + ' services in ' + city_page.city_name) }}" loading="lazy">
+                </div>
+                {% endif %}
             </header>
 
             <!-- Wikipedia City Showcase -->

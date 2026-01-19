@@ -379,8 +379,9 @@ class CityPageConfig:
     
     # City information section
     about_city: str = ""  # Wikipedia-style description
-    city_image: CityImageConfig = field(default_factory=CityImageConfig)
-    
+    city_image: CityImageConfig = field(default_factory=CityImageConfig)  # Wikipedia showcase image
+    header_image: CityImageConfig = field(default_factory=CityImageConfig)  # Header/hero image from pool
+
     # Main SEO content (800+ words)
     seo_content_title: str = ""
     seo_content_body: str = ""  # Main content block
