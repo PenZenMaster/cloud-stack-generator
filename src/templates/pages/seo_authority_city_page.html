@@ -870,7 +870,7 @@
                 <!-- Header Image from City Page Pool -->
                 {% if city_page.header_image and city_page.header_image.image_url %}
                 <div class="header-image">
-                    <img src="{{ city_page.header_image.image_url }}" alt="{{ city_page.header_image.alt_text | default(business.industry + ' services in ' + city_page.city_name) }}" loading="lazy">
+                    <img src="{{ base_path }}{{ city_page.header_image.image_url }}" alt="{{ city_page.header_image.alt_text | default(business.industry + ' services in ' + city_page.city_name) }}" loading="lazy">
                 </div>
                 {% endif %}
             </header>
