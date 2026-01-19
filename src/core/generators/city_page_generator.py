@@ -380,16 +380,52 @@ class CityPageGenerator:
             "schema_data": self._build_schema_data(city_page),
         }
 
+    def _normalize_image_path(self, image_path: str) -> str:
+        """
+        Normalize image paths to relative web paths.
+
+        Converts absolute local file paths (e.g., D:/OneDrive/.../image.png)
+        to relative web paths (e.g., images/image.png) suitable for deployment.
+
+        Args:
+            image_path: Image path to normalize (can be absolute or relative)
+
+        Returns:
+            Normalized relative path suitable for web deployment
+        """
+        if not image_path:
+            return image_path
+
+        # Convert to Path object for easier manipulation
+        path_obj = Path(image_path)
+
+        # Check if path is absolute (Windows or Unix)
+        # On Windows, is_absolute() works for Windows paths but not Unix paths
+        # So we also check for Unix-style absolute paths starting with /
+        is_absolute = path_obj.is_absolute() or image_path.startswith('/')
+
+        if is_absolute:
+            # Extract just the filename
+            filename = path_obj.name
+
+            # Return as relative path in images directory
+            return f"images/{filename}"
+
+        # If already relative, ensure it uses forward slashes for web
+        return image_path.replace("\\", "/")
+
     def _assign_city_image_from_pool(self, city_page: CityPageConfig) -> None:
         """
-        Assign image from branding image pool to city page if:
-        1. Image pool exists and has images (pool images take priority)
-        2. Images are assigned sequentially based on city page index, with cycling
+        Assign image from branding image pool to city page header.
 
-        When pool images are configured, they override any existing city page images
-        (e.g., Wikipedia placeholder images) to prioritize client-uploaded images.
+        Pool images are placed in the article header section and augment
+        (not replace) the Wikipedia showcase image. Images are assigned
+        sequentially with cycling based on city page index.
+
+        Note: Paths are normalized from absolute local paths to relative
+        web paths (e.g., D:/OneDrive/.../image.png -> images/image.png)
         """
-        # Check if image pool exists first (priority over existing images)
+        # Check if image pool exists
         if not hasattr(self.config.branding, "city_page_image_pool"):
             return
 
@@ -412,21 +448,24 @@ class CityPageGenerator:
         pool_index = city_index % len(image_pool)
         assigned_image_path = image_pool[pool_index]
 
-        # Update city page image config
+        # Normalize path from absolute local path to relative web path
+        normalized_path = self._normalize_image_path(assigned_image_path)
+
+        # Update city page header image (not city_image which is for Wikipedia showcase)
         from ..config.models import CityImageConfig
 
-        if not city_page.city_image:
-            city_page.city_image = CityImageConfig()
+        if not city_page.header_image:
+            city_page.header_image = CityImageConfig()
 
-        city_page.city_image.image_url = assigned_image_path
+        city_page.header_image.image_url = normalized_path
 
         # Set default alt text if not present
-        if not city_page.city_image.alt_text:
-            city_page.city_image.alt_text = f"View of {city_page.city_name}"
+        if not city_page.header_image.alt_text:
+            city_page.header_image.alt_text = f"{self.config.business.industry} services in {city_page.city_name}"
 
         logger.info(
-            f"Assigned image from pool: {assigned_image_path} to city page: {city_page.city_name} "
-            f"(city index: {city_index}, pool index: {pool_index})"
+            f"Assigned header image from pool: {normalized_path} (original: {assigned_image_path}) "
+            f"to city page: {city_page.city_name} (city index: {city_index}, pool index: {pool_index})"
         )
 
     def _build_schema_data(self, city_page: CityPageConfig) -> Dict[str, Any]:
