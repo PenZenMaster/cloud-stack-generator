@@ -854,6 +854,84 @@ class TestErrorHandlingAndEdgeCases:
         assert len(result) > 0
 
 
+class TestImagePathNormalization:
+    """Test _normalize_image_path method for Issue #2 regression fix"""
+
+    @pytest.fixture
+    def generator(self):
+        """Create HTMLGenerator instance"""
+        return HTMLGenerator()
+
+    def test_normalize_absolute_windows_path(self, generator):
+        """Test normalization of absolute Windows path"""
+        absolute_path = "D:/OneDrive/RankRocket/Clients/Adventure Marketing/Salvo Metal/GBP/images/unprocessed/ai_generated_1768850143_1.png"
+        result = generator._normalize_image_path(absolute_path)
+
+        assert result == "images/ai_generated_1768850143_1.png"
+        assert not Path(result).is_absolute()
+        assert "/" in result  # Uses forward slashes for web
+
+    def test_normalize_absolute_unix_path(self, generator):
+        """Test normalization of absolute Unix path"""
+        absolute_path = "/home/user/projects/images/hero.jpg"
+        result = generator._normalize_image_path(absolute_path)
+
+        assert result == "images/hero.jpg"
+        assert not Path(result).is_absolute()
+
+    def test_normalize_relative_path_with_backslashes(self, generator):
+        """Test normalization of relative path with backslashes"""
+        relative_path = "images\\product\\copper-box.jpg"
+        result = generator._normalize_image_path(relative_path)
+
+        assert result == "images/product/copper-box.jpg"
+        assert "\\" not in result  # Converts backslashes to forward slashes
+
+    def test_normalize_relative_path_already_normalized(self, generator):
+        """Test normalization of already normalized path"""
+        relative_path = "images/hero-background.jpg"
+        result = generator._normalize_image_path(relative_path)
+
+        assert result == "images/hero-background.jpg"
+
+    def test_normalize_empty_path(self, generator):
+        """Test normalization of empty path"""
+        result = generator._normalize_image_path("")
+
+        assert result == ""
+
+    def test_normalize_none_path(self, generator):
+        """Test normalization of None path"""
+        result = generator._normalize_image_path(None)
+
+        assert result is None
+
+    def test_normalize_path_integration_in_template_data(self, generator):
+        """Test that hero background image path is normalized in template data"""
+        from unittest.mock import MagicMock
+
+        # Create mock branding with absolute path
+        mock_branding = MagicMock()
+        mock_branding.hero_background_image_url = "D:/OneDrive/Client/images/hero.png"
+        mock_branding.logo_url = None
+
+        # Create mock cloud config
+        mock_cloud = MagicMock()
+        mock_cloud.deployment_url = "https://example.com"
+        mock_cloud.site_type = None
+
+        # Create mock config
+        mock_config = MockClientConfig(branding=mock_branding)
+        mock_config.cloud = mock_cloud
+        mock_config.target_cities = []  # Add missing attribute
+
+        # Prepare template data
+        result = generator._prepare_template_data(mock_config)
+
+        # Verify hero background image URL is normalized
+        assert result['branding'].hero_background_image_url == "images/hero.png"
+
+
 class TestBusinessLogicHelpers:
     """Test business logic helper methods"""
 

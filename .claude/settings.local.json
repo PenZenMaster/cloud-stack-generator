@@ -49,7 +49,8 @@
       "Bash(aws sts get-caller-identity:*)",
       "WebFetch(domain:d130v1khque84k.cloudfront.net)",
       "Bash(gh issue close:*)",
-      "Bash(black:*)"
+      "Bash(black:*)",
+      "WebFetch(domain:d2axnmnq4kfkpm.cloudfront.net)"
     ],
     "deny": [],
     "ask": []
