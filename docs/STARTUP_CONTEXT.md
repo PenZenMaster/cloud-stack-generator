@@ -1,28 +1,28 @@
 # AWG Startup Context
 
-**Last Updated:** 2026-01-17
+**Last Updated:** 2026-01-19
 **Branch:** main
-**Last Commit:** 712dbe5
+**Last Commit:** 4691545
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **CRITICAL FIX: Logger Import Error** - Fixed "No module named 'src.utils.logger'" error that prevented application from starting; replaced custom get_logger imports with standard logging.getLogger pattern used throughout codebase; fixed .gitignore to use /data/ instead of data/ to prevent src/core/data/ from being ignored; application now starts successfully
+1. **Issue #23 & #24: Asset Upload AWS Integration Fixed** - Fixed critical authentication bugs preventing asset uploads; bucket selection dropdown now uses Cloud Deploy credentials manager; S3Manager initialization corrected to accept boto3.Session; uploads now use same infrastructure as website deployment; removed ACL setting (AccessControlListNotSupported); added image extensions (.jpg, .jpeg, .png, .gif, .webp, .svg)
 
-2. **Issue #21: Persistent Deployment History** - Implemented SQLite database (data/deployments.db) with WAL mode for deployment persistence across sessions; deployments now survive app restarts; migration script created to import existing YAML deployments; all 8/8 functional tests passed
+2. **Comprehensive Regression Tests Added** - Created 18 unit tests (14 core + 4 regression) for AssetUploader with 100% pass rate; tests prevent session authentication bugs from reoccurring; verify S3Manager integration and proper metadata handling; ensure uploads use authenticated session not default credentials
 
-3. **Issue #22: Asset Upload Mechanism** - Created new "Asset Upload" tab with AWS S3 and Google GCS support; users can upload files (PDF, Excel, Word, etc.) to cloud storage and get public URLs; includes copy to clipboard and CSV export functionality; asset metadata stored in SQLite
+3. **GitHub Issues Updated & Backlog Created** - Issue #24 closed (S3Manager init fixed); Issue #23 marked complete (bucket dropdown implemented); Issue #22 updated (feature complete with workaround); Created Issue #25 for automatic public access configuration (LOW priority backlog awaiting requirements refinement)
 
 ---
 
 ## Next 3 Priorities
 
-1. **QA Testing Required** - User needs to test deployment persistence (create deployment, restart app, verify it persists) and asset upload functionality (upload files to S3, verify URLs); application is now functional after logger import fix
+1. **Future Enhancement (Backlog #25)** - Automatic bucket policy configuration for public asset access OR presigned URL generation OR better deployment bucket integration; awaiting user requirements refinement; current workaround: manual bucket policy or use existing deployment buckets
 
-2. **Code Cleanup (Optional)** - Ruff flagged some unused imports and f-string warnings in new code (non-blocking, pre-commit allowed commit to proceed); can clean up if desired
+2. **Code Quality** - Review and fix ruff linting warnings (unused imports, f-string warnings in deployment_store.py, migration.py, template_export.py); non-blocking but good to clean up
 
-3. **Monitor for Issues** - Watch for any bugs or edge cases in deployment history loading/saving and asset upload operations during production use
+3. **Monitor Production Use** - Watch for any edge cases in asset upload with different bucket configurations or AWS profiles; gather user feedback on public access workaround effectiveness
 
 ---
 
@@ -30,48 +30,52 @@
 
 **Git Status:**
 - Branch: main (up to date with origin/main)
-- Working tree: Clean (only .claude/settings.local.json modified - local config)
-- Last commit: 712dbe5 (logger import fix)
-- Push status: All commits pushed
+- Working tree: Clean
+- Last commit: 4691545 (Asset Upload fixes - Issues #23, #24)
+- Push status: All commits pushed ✅
 - Version: 3.8.0
 
 **Tests:**
-- All 113 cloud infrastructure tests passing (12.17s)
+- All 113 cloud infrastructure tests passing (20.02s)
+- All 18 asset uploader tests passing (16.05s)
 - Deployment persistence: 8/8 functional tests passed
-- Migration script: Successfully processed 16 config files
 - Pre-commit hooks passing
 
 **Database:**
-- SQLite database created: data/deployments.db (60KB)
+- SQLite database: data/deployments.db (60KB)
 - WAL mode enabled for concurrency
 - Tables: clients, deployments, deployment_meta_tags, uploaded_assets
 
 **Blockers:**
-- None (logger import error resolved)
+- None (all critical bugs resolved)
+
+**Known Issues (Non-blocking):**
+- Uploaded assets require bucket-level public access configuration (workaround in place)
+- Minor ruff linting warnings (unused imports)
 
 ---
 
 ## Key Context Notes
 
-1. **Deployment Persistence Architecture (Issues #21):**
+1. **Asset Upload Implementation (Issues #22, #23, #24 - COMPLETE):**
+   - **Integration**: Uses Cloud Deploy credentials manager for AWS authentication
+   - **Upload Method**: S3Manager._get_s3_client() + _get_file_metadata() (same as website deployment)
+   - **Bucket Selection**: Dropdown with refresh button loads buckets from selected AWS profile
+   - **No ACL**: Removed ACL setting to fix AccessControlListNotSupported error on modern S3 buckets
+   - **Workaround**: Users upload to existing deployment buckets OR manually configure bucket policy for public read
+   - **Future**: Issue #25 tracks automatic public access configuration (LOW priority)
+
+2. **Deployment Persistence (Issue #21 - STABLE):**
    - **Database**: SQLite with WAL mode at `data/deployments.db` (gitignored)
-   - **Tables**: clients (config association), deployments (full deployment data), deployment_meta_tags (normalized), uploaded_assets (Issue #22)
-   - **Integration**: DeploymentHistoryStore initialized in enhanced_main_window.py; saves on deployment creation; deployment_history_tab loads from SQLite
+   - **Integration**: DeploymentHistoryStore initialized in enhanced_main_window.py
+   - **Fixed**: DeploymentHistoryTab now uses set_config_path() instead of set_config()
    - **Migration**: Run `python -m src.core.data.migration` to import existing YAML deployments
-   - **CRUD Operations**: Save, load, update friendly name, delete all working correctly
 
-2. **Asset Upload Implementation (Issue #22 - Simplified):**
-   - **New Tab**: "Asset Upload" tab in main window
-   - **Providers**: AWS S3 (fully implemented), Google GCS (requires service account config)
-   - **Features**: Multi-file upload, public URL generation, copy to clipboard, CSV export
-   - **Storage**: Asset metadata saved to uploaded_assets table in SQLite
-   - **Limitations**: Wasabi/Backblaze deferred, drag-drop not implemented, browse button only
-
-3. **File Changes Summary:**
-   - **Created**: deployment_store.py (380 lines), migration.py (165 lines), asset_uploader.py (310 lines), asset_upload_tab.py (490 lines)
-   - **Modified**: models.py (added to_dict/from_dict), enhanced_main_window.py (init store, add tab), deployment_history_tab.py (load from SQLite)
-   - **Version**: main.py updated to 3.8.0
-   - **Documentation**: TEST_RESULTS.md with comprehensive testing verification
+3. **Recent File Changes:**
+   - **Modified**: asset_uploader.py (session integration), asset_upload_tab.py (bucket dropdown + AWS integration), enhanced_main_window.py (fixed DeploymentHistoryTab error)
+   - **Created**: tests/unit/test_asset_uploader.py (18 comprehensive tests)
+   - **Commit**: 4 files changed, 601 additions, 21 deletions
+   - **GitHub Issues**: #24 closed, #23 complete, #25 created (backlog)
 
 ---
 
