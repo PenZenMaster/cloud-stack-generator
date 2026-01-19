@@ -67,7 +67,8 @@ class AssetUploader:
         '.html', '.htm',  # HTML
         '.xml',  # XML
         '.txt', '.csv', '.json',  # Text files
-        '.zip', '.tar', '.gz'  # Archives
+        '.zip', '.tar', '.gz',  # Archives
+        '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'  # Images
     }
 
     # Default max file size: 100 MB
@@ -91,8 +92,20 @@ class AssetUploader:
             return self._client
 
         if self.provider_type == 'aws_s3':
-            # S3Manager expects profile_name or session
-            self._client = S3Manager(profile_name=self.credentials.get('profile_name'))
+            # S3Manager expects a boto3 session, not profile_name directly
+            # Check if session is already provided in credentials
+            session = self.credentials.get('session')
+
+            if not session:
+                # Create session with profile if specified, otherwise use default
+                import boto3
+                profile_name = self.credentials.get('profile_name')
+                if profile_name:
+                    session = boto3.Session(profile_name=profile_name)
+                else:
+                    session = boto3.Session()
+
+            self._client = S3Manager(session=session)
         elif self.provider_type == 'google_gcs':
             # GCSProvider expects project_id and service_account_json
             self._client = GCSProvider(
@@ -176,21 +189,23 @@ class AssetUploader:
             client = self._get_client()
 
             if self.provider_type == 'aws_s3':
-                # Upload to S3 with public-read ACL
-                import boto3
-                s3_client = boto3.client('s3', region_name=region)
+                # Use S3Manager's existing upload infrastructure (same as website deployment)
+                # This handles ContentType, caching headers, and uses authenticated session
+                s3_client = client._get_s3_client()
 
+                # Get file extension for metadata
+                file_ext = local_file.suffix.lstrip('.').lower()
+                metadata = client._get_file_metadata(file_ext)
+
+                # Upload file using same method as website deployment
                 s3_client.upload_file(
                     str(local_file),
                     bucket,
                     remote_path,
-                    ExtraArgs={
-                        'ContentType': file_type,
-                        'ACL': 'public-read'
-                    }
+                    ExtraArgs=metadata
                 )
 
-                # Generate public URL
+                # Generate public URL (works if bucket has website hosting enabled)
                 public_url = f"https://{bucket}.s3.{region}.amazonaws.com/{remote_path}"
 
             elif self.provider_type == 'google_gcs':
