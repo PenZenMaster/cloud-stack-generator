@@ -402,8 +402,9 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.deployment_history_tab, "Deployment History")
         self.main_tabs.addTab(self.asset_upload_tab, "Asset Upload")
 
-        # Pass deployment store to asset upload tab
+        # Pass deployment store and cloud_tab reference to asset upload tab
         self.asset_upload_tab.set_deployment_store(self.deployment_store)
+        self.asset_upload_tab.set_cloud_tab(self.cloud_tab)
 
         layout.addWidget(self.main_tabs)
 
@@ -1547,8 +1548,9 @@ class EnhancedMainWindow(QMainWindow):
         self.cloud_tab.set_config_data(cloud_data)
         self.cloud_tab.set_config(config)  # Store full config for deployment tracking (v3.5.0)
 
-        # Load deployment history (v3.2.0 - Phase 2)
-        self.deployment_history_tab.set_config(config)
+        # Load deployment history (v3.2.0 - Phase 2) - use set_config_path with current config file
+        if self.current_config_file:
+            self.deployment_history_tab.set_config_path(str(Path(self.current_config_file).resolve()))
 
     def validate_all_tabs_simple(self):
         """Validate all tabs and show results with proper ValidationResult handling"""

@@ -79,6 +79,7 @@ class AssetUploadTab(QWidget):
         super().__init__(parent)
         self.deployment_store: Optional[DeploymentHistoryStore] = None
         self.current_config_path: Optional[str] = None
+        self.cloud_tab = None  # Reference to Cloud Deploy tab for AWS credentials
         self.selected_files: List[Path] = []
         self.uploaded_assets: List[UploadResult] = []
         self.setup_ui()
@@ -114,14 +115,24 @@ class AssetUploadTab(QWidget):
         provider_layout.addStretch()
         config_layout.addLayout(provider_layout)
 
-        # Bucket name
+        # Bucket name (dropdown like Cloud Deploy tab)
         bucket_layout = QHBoxLayout()
         bucket_label = QLabel("Bucket:")
         bucket_label.setMinimumWidth(100)
-        self.bucket_input = QLineEdit()
-        self.bucket_input.setPlaceholderText("Enter bucket name")
+        self.bucket_combo = QComboBox()
+        self.bucket_combo.setEditable(True)
+        self.bucket_combo.setPlaceholderText("Select existing or enter new bucket name")
+        self.bucket_combo.lineEdit().setPlaceholderText("Enter bucket name")
         bucket_layout.addWidget(bucket_label)
-        bucket_layout.addWidget(self.bucket_input)
+        bucket_layout.addWidget(self.bucket_combo)
+
+        # Refresh buckets button
+        self.refresh_buckets_button = QPushButton("Refresh")
+        self.refresh_buckets_button.setMaximumWidth(80)
+        self.refresh_buckets_button.setToolTip("Load available S3 buckets")
+        self.refresh_buckets_button.clicked.connect(self.refresh_bucket_list)
+        bucket_layout.addWidget(self.refresh_buckets_button)
+
         config_layout.addLayout(bucket_layout)
 
         # Prefix/path
@@ -240,6 +251,10 @@ class AssetUploadTab(QWidget):
         """Set deployment store reference"""
         self.deployment_store = store
 
+    def set_cloud_tab(self, cloud_tab):
+        """Set reference to Cloud Deploy tab for AWS credentials access"""
+        self.cloud_tab = cloud_tab
+
     def set_config_path(self, config_path: str):
         """Set current config path"""
         self.current_config_path = config_path
@@ -274,6 +289,103 @@ class AssetUploadTab(QWidget):
             size_mb = file_path.stat().st_size / (1024 * 1024)
             self.files_list.addItem(f"{file_path.name} ({size_mb:.2f} MB)")
 
+    def refresh_bucket_list(self):
+        """Refresh list of available S3 buckets using Cloud Deploy AWS credentials"""
+        provider = self.provider_combo.currentText()
+
+        if provider != "AWS S3":
+            QMessageBox.information(
+                self,
+                "Not Supported",
+                "Bucket refresh is only supported for AWS S3.\n"
+                "For Google GCS, please enter the bucket name manually."
+            )
+            return
+
+        # Check if cloud_tab reference is available
+        if not self.cloud_tab:
+            QMessageBox.warning(
+                self,
+                "Configuration Required",
+                "Please configure AWS credentials in the Cloud Deploy tab first."
+            )
+            return
+
+        # Get selected AWS profile from Cloud Deploy tab
+        profile_name = self.cloud_tab.profile_combo.currentText()
+        if not profile_name or profile_name == "No profiles configured":
+            QMessageBox.warning(
+                self,
+                "No AWS Profile",
+                "Please select an AWS profile in the Cloud Deploy tab first."
+            )
+            return
+
+        try:
+            # Use Cloud Deploy tab's credentials manager to get AWS session
+            credentials_manager = self.cloud_tab.credentials_manager
+
+            if profile_name not in credentials_manager.profiles:
+                QMessageBox.warning(
+                    self,
+                    "Profile Not Found",
+                    f"AWS profile '{profile_name}' not found.\n"
+                    f"Please configure it in the Cloud Deploy tab."
+                )
+                return
+
+            # Get AWS session for the selected profile
+            session = credentials_manager._get_session(profile_name)
+            if not session:
+                QMessageBox.warning(
+                    self,
+                    "Session Error",
+                    f"Could not create AWS session for profile '{profile_name}'.\n"
+                    f"Please verify the profile configuration in Cloud Deploy tab."
+                )
+                return
+
+            # List buckets using the authenticated session
+            s3_client = session.client('s3')
+            response = s3_client.list_buckets()
+            buckets = [b['Name'] for b in response.get('Buckets', [])]
+
+            # Store current selection
+            current_bucket = self.bucket_combo.currentText()
+
+            # Clear and populate combo
+            self.bucket_combo.clear()
+
+            if buckets:
+                for bucket_name in buckets:
+                    self.bucket_combo.addItem(bucket_name)
+
+                # Restore selection if it exists
+                if current_bucket in buckets:
+                    self.bucket_combo.setCurrentText(current_bucket)
+
+                QMessageBox.information(
+                    self,
+                    "Buckets Loaded",
+                    f"Found {len(buckets)} S3 bucket(s) using profile '{profile_name}'."
+                )
+            else:
+                self.bucket_combo.addItem("No buckets found")
+                QMessageBox.information(
+                    self,
+                    "No Buckets",
+                    f"No S3 buckets found for profile '{profile_name}'."
+                )
+
+        except Exception as e:
+            logger.error(f"Failed to refresh bucket list: {e}")
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to load S3 buckets:\n{str(e)}\n\n"
+                f"Please verify your AWS credentials in the Cloud Deploy tab."
+            )
+
     def upload_files(self):
         """Upload selected files to cloud storage"""
         # Validate inputs
@@ -281,7 +393,7 @@ class AssetUploadTab(QWidget):
             QMessageBox.warning(self, "No Files", "Please select files to upload.")
             return
 
-        bucket = self.bucket_input.text().strip()
+        bucket = self.bucket_combo.currentText().strip()
         if not bucket:
             QMessageBox.warning(self, "No Bucket", "Please enter a bucket name.")
             return
@@ -290,10 +402,55 @@ class AssetUploadTab(QWidget):
         prefix = self.prefix_input.text().strip()
         region = self.region_input.text().strip() or 'us-east-1'
 
-        # Get credentials (simplified - would need proper credential management)
+        # Get credentials using Cloud Deploy tab's AWS credentials manager
         if provider == "AWS S3":
-            credentials = {'profile_name': 'default'}  # Use default AWS profile
+            # Check if cloud_tab reference is available
+            if not self.cloud_tab:
+                QMessageBox.warning(
+                    self,
+                    "Configuration Required",
+                    "Please configure AWS credentials in the Cloud Deploy tab first."
+                )
+                return
+
+            # Get selected AWS profile from Cloud Deploy tab
+            profile_name = self.cloud_tab.profile_combo.currentText()
+            if not profile_name or profile_name == "No profiles configured":
+                QMessageBox.warning(
+                    self,
+                    "No AWS Profile",
+                    "Please select an AWS profile in the Cloud Deploy tab first."
+                )
+                return
+
+            # Use Cloud Deploy tab's credentials manager to get AWS session
+            credentials_manager = self.cloud_tab.credentials_manager
+
+            if profile_name not in credentials_manager.profiles:
+                QMessageBox.warning(
+                    self,
+                    "Profile Not Found",
+                    f"AWS profile '{profile_name}' not found.\n"
+                    f"Please configure it in the Cloud Deploy tab."
+                )
+                return
+
+            # Get AWS session for the selected profile
+            session = credentials_manager._get_session(profile_name)
+            if not session:
+                QMessageBox.warning(
+                    self,
+                    "Session Error",
+                    f"Could not create AWS session for profile '{profile_name}'.\n"
+                    f"Please verify the profile configuration in Cloud Deploy tab."
+                )
+                return
+
+            # Pass session directly to AssetUploader (will create boto3.Session internally)
+            # For now, pass profile_name and let AssetUploader handle session creation
+            credentials = {'profile_name': profile_name, 'session': session}
             provider_type = 'aws_s3'
+
         elif provider == "Google GCS":
             # Would need GCS credentials from config
             QMessageBox.warning(
