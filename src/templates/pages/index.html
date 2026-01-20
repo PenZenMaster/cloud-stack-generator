@@ -12,7 +12,7 @@
     <!-- SEO Meta Tags -->
     {% if cloud and cloud.meta_tags %}
     {% for name, content in cloud.meta_tags.items() %}
-    <meta name="{{ name }}" content="{{ content }}">
+    <meta name="{{ name }}" content="{{ content }}" />
     {% endfor %}
     {% endif %}
 

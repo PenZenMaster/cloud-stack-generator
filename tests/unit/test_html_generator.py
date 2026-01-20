@@ -104,6 +104,15 @@ class MockCityPage:
         return self.city_name
 
 
+class MockCloudConfig:
+    """Mock cloud configuration"""
+    def __init__(self, **kwargs):
+        self.meta_tags = kwargs.get('meta_tags', {})
+        self.site_type = kwargs.get('site_type', None)
+        self.main_site_url = kwargs.get('main_site_url', '')
+        self.deployment_url = kwargs.get('deployment_url', None)
+
+
 class MockClientConfig:
     """Mock client configuration"""
     def __init__(self, **kwargs):
@@ -120,6 +129,8 @@ class MockClientConfig:
         self.business_hours = kwargs.get('business_hours', None)
         self.city_pages = kwargs.get('city_pages', [])
         self.faq = kwargs.get('faq', [])
+        self.cloud = kwargs.get('cloud', None)
+        self.target_cities = kwargs.get('target_cities', [])
 
 
 class TestHTMLGeneratorInit:
@@ -985,6 +996,51 @@ class TestBusinessLogicHelpers:
         assert isinstance(result, list)
         # Should return default business hours
         assert len(result) > 0
+
+
+class TestMetaTagFormatting:
+    """Tests for GSC and other meta tag formatting (v3.13.0)"""
+
+    @pytest.fixture
+    def generator(self):
+        """Create HTMLGenerator instance"""
+        return HTMLGenerator()
+
+    @pytest.fixture
+    def mock_config(self):
+        """Create mock config with cloud meta tags"""
+        config = MockClientConfig()
+        config.cloud = MockCloudConfig()
+        config.cloud.meta_tags = {
+            'google-site-verification': '5prGkkDwdgnD7-QWd3YNFqARdjtMCc4c5z5GWaHDR90'
+        }
+        return config
+
+    def test_meta_tags_are_self_closing(self, generator, mock_config):
+        """Test that meta tags are properly self-closing with /"""
+        html = generator.generate_homepage(mock_config, use_ai=False)
+
+        # Check that meta tag is self-closing with />
+        assert '<meta name="google-site-verification" content="5prGkkDwdgnD7-QWd3YNFqARdjtMCc4c5z5GWaHDR90" />' in html
+
+        # Verify it's NOT the incorrect format (without />)
+        assert '<meta name="google-site-verification" content="5prGkkDwdgnD7-QWd3YNFqARdjtMCc4c5z5GWaHDR90">' not in html or \
+               '<meta name="google-site-verification" content="5prGkkDwdgnD7-QWd3YNFqARdjtMCc4c5z5GWaHDR90" />' in html
+
+    def test_multiple_meta_tags_all_self_closing(self, generator, mock_config):
+        """Test that all custom meta tags are self-closing"""
+        mock_config.cloud.meta_tags = {
+            'google-site-verification': 'test-verification-code',
+            'msvalidate.01': 'test-bing-code',
+            'p:domain_verify': 'test-pinterest-code'
+        }
+
+        html = generator.generate_homepage(mock_config, use_ai=False)
+
+        # All meta tags should be self-closing
+        assert '<meta name="google-site-verification" content="test-verification-code" />' in html
+        assert '<meta name="msvalidate.01" content="test-bing-code" />' in html
+        assert '<meta name="p:domain_verify" content="test-pinterest-code" />' in html
 
 
 if __name__ == '__main__':
