@@ -1,10 +1,10 @@
 # main.py
 """
-SEO Authority Website Generator v3.12.0
+SEO Authority Website Generator v3.13.0
 Enhanced Main Application Entry Point
 
 Updated: January 19, 2026
-Version: 3.12.0 - Fix relative path resolution for city page pool images
+Version: 3.13.0 - Fix GSC meta tag self-closing format
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 

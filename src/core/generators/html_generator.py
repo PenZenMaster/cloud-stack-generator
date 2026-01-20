@@ -340,7 +340,7 @@ class HTMLGenerator:
         Backlinks are provided through content links (in templates), not canonical tags.
         """
         # Use deployment_url for both main and backlink sites
-        if config.cloud.deployment_url:
+        if hasattr(config, 'cloud') and config.cloud and hasattr(config.cloud, 'deployment_url') and config.cloud.deployment_url:
             return config.cloud.deployment_url.rstrip("/")
 
         # Fallback to business domain
