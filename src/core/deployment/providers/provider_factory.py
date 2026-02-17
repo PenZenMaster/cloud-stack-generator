@@ -62,13 +62,29 @@ class ProviderFactory:
         except ImportError as e:
             logger.warning(f"GCS provider not available: {str(e)}")
 
-        # Register AWS S3 provider (will be added after refactoring)
-        # try:
-        #     from .aws_s3_provider import AWSS3Provider
-        #     self.register_provider(ProviderType.AWS_S3, AWSS3Provider)
-        #     logger.debug("Registered AWS S3 provider")
-        # except ImportError as e:
-        #     logger.warning(f"AWS S3 provider not available: {str(e)}")
+        # Register AWS S3 provider
+        try:
+            from .aws_s3_provider import AWSS3Provider
+            self.register_provider(ProviderType.AWS_S3, AWSS3Provider)
+            logger.debug("Registered AWS S3 provider")
+        except ImportError as e:
+            logger.warning(f"AWS S3 provider not available: {str(e)}")
+
+        # Register Wasabi provider
+        try:
+            from .wasabi_provider import WasabiProvider
+            self.register_provider(ProviderType.WASABI, WasabiProvider)
+            logger.debug("Registered Wasabi provider")
+        except ImportError as e:
+            logger.warning(f"Wasabi provider not available: {str(e)}")
+
+        # Register Backblaze B2 provider
+        try:
+            from .backblaze_b2_provider import BackblazeB2Provider
+            self.register_provider(ProviderType.BACKBLAZE_B2, BackblazeB2Provider)
+            logger.debug("Registered Backblaze B2 provider")
+        except ImportError as e:
+            logger.warning(f"Backblaze B2 provider not available: {str(e)}")
 
     def register_provider(
         self,

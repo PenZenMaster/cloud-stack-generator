@@ -141,7 +141,7 @@ class DeploymentHistoryStore:
                     original_filename TEXT NOT NULL,
                     file_size_bytes INTEGER NOT NULL,
                     file_type TEXT,
-                    provider TEXT CHECK(provider IN ('aws_s3', 'google_gcs', 'wasabi', 'backblaze')) NOT NULL,
+                    provider TEXT CHECK(provider IN ('aws_s3', 'google_gcs', 'azure_blob', 'backblaze_b2', 'wasabi', 'digitalocean_spaces')) NOT NULL,
                     bucket TEXT NOT NULL,
                     remote_path TEXT NOT NULL,
                     region TEXT,
@@ -567,7 +567,7 @@ class DeploymentHistoryStore:
             filename: Original filename
             file_size: File size in bytes
             file_type: MIME type
-            provider: Cloud provider (aws_s3, google_gcs, wasabi, backblaze)
+            provider: Cloud provider (aws_s3, google_gcs, azure_blob, backblaze_b2, wasabi, digitalocean_spaces)
             bucket: Bucket name
             remote_path: Remote path/key
             region: Cloud region
