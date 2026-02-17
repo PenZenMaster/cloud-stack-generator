@@ -19,6 +19,9 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, Optional
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class BrowserPreferences:
@@ -59,7 +62,7 @@ class BrowserPreferences:
             return data
 
         except (json.JSONDecodeError, KeyError, FileNotFoundError) as e:
-            print(f"Warning: Could not load browser preferences: {e}")
+            logger.warning(f"Could not load browser preferences: {e}")
             return None
 
     def set_browser_preference(
@@ -84,18 +87,18 @@ class BrowserPreferences:
         # Validate browser executable exists
         browser_path_obj = Path(browser_path)
         if not browser_path_obj.exists():
-            print(f"Warning: Browser executable not found: {browser_path}")
+            logger.warning(f"Browser executable not found: {browser_path}")
             return False
 
         # Validate it's actually a file
         if not browser_path_obj.is_file():
-            print(f"Warning: Browser path is not a file: {browser_path}")
+            logger.warning(f"Browser path is not a file: {browser_path}")
             return False
 
         # Platform-specific executable validation
         if os.name == 'nt':  # Windows
             if not browser_path.lower().endswith('.exe'):
-                print(f"Warning: Not a Windows executable: {browser_path}")
+                logger.warning(f"Not a Windows executable: {browser_path}")
                 return False
 
         # Create preference dictionary
@@ -121,7 +124,7 @@ class BrowserPreferences:
             return True
 
         except Exception as e:
-            print(f"Error: Could not save browser preference: {e}")
+            logger.error(f"Could not save browser preference: {e}")
             return False
 
     def clear_browser_preference(self) -> bool:
@@ -136,7 +139,7 @@ class BrowserPreferences:
                 self.prefs_file.unlink()
             return True
         except Exception as e:
-            print(f"Warning: Could not clear browser preference: {e}")
+            logger.warning(f"Could not clear browser preference: {e}")
             return False
 
     def validate_browser_exists(self) -> bool:

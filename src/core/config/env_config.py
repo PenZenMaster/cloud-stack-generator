@@ -23,6 +23,9 @@ import os
 from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Load environment variables from .env file
 # This should be called once at application startup
@@ -212,19 +215,17 @@ def initialize_environment() -> None:
     warnings = EnvironmentConfig.validate()
 
     if warnings:
-        print("\n=== Environment Configuration Warnings ===")
+        logger.warning("Environment Configuration Warnings:")
         for warning in warnings:
-            print(f"  WARNING: {warning}")
-        print()
+            logger.warning(f"  {warning}")
 
-    # Optional: Print configuration status
+    # Optional: Log configuration status
     settings = EnvironmentConfig.get_all_settings()
-    print("\n=== Environment Configuration ===")
-    print(f"  OpenAI: {'Configured' if settings['openai']['configured'] else 'Not configured'}")
+    logger.info("Environment Configuration:")
+    logger.info(f"  OpenAI: {'Configured' if settings['openai']['configured'] else 'Not configured'}")
     if settings['openai']['configured']:
-        print(f"    Model: {settings['openai']['model']}")
-        print(f"    Enabled: {settings['openai']['enabled']}")
-    print(f"  Cache: {'Enabled' if settings['cache']['enabled'] else 'Disabled'}")
+        logger.info(f"    Model: {settings['openai']['model']}")
+        logger.info(f"    Enabled: {settings['openai']['enabled']}")
+    logger.info(f"  Cache: {'Enabled' if settings['cache']['enabled'] else 'Disabled'}")
     if settings['cache']['enabled']:
-        print(f"    TTL: {settings['cache']['ttl_hours']} hours")
-    print()
+        logger.info(f"    TTL: {settings['cache']['ttl_hours']} hours")

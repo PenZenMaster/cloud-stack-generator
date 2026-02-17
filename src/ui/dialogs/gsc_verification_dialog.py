@@ -29,6 +29,9 @@ from PyQt6.QtGui import QFont
 import sys
 import os
 from pathlib import Path
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
@@ -262,7 +265,7 @@ class GSCVerificationDialog(QDialog):
                 self.browser_combo.addItem(display_text, browser)
 
         except Exception as e:
-            print(f"Warning: Failed to detect browsers: {e}")
+            logger.warning(f"Failed to detect browsers: {e}")
 
         # Add manual entry option
         self.browser_combo.addItem("Manual Entry...", "manual")

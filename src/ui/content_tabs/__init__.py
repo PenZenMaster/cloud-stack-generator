@@ -9,6 +9,10 @@ Date: 2025-08-11
 Author: Cloud Stack Generator Team
 """
 
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 # Import content management tabs
 try:
     from .products_tab import (
@@ -19,7 +23,7 @@ try:
 
     __all__ = ["ProductsTab", "Product", "ProductsValidationResult"]
 except ImportError:
-    print("Warning: ProductsTab not available")
+    logger.warning("ProductsTab not available")
     __all__ = []
 
 try:
@@ -31,13 +35,13 @@ try:
 
     __all__.extend(["ServicesTab", "Service", "ServicesValidationResult"])
 except ImportError as e:
-    print(f"Warning: ServicesTab not available - {e}")
+    logger.warning(f"ServicesTab not available - {e}")
 
 try:
     from .faq_tab import FAQTab  # noqa: F401
 
     __all__.append("FAQTab")
 except ImportError:
-    print("Warning: FAQTab not available")
+    logger.warning("FAQTab not available")
 
-print(f"Content Tabs loaded: {', '.join(__all__)}")
+logger.debug(f"Content Tabs loaded: {', '.join(__all__)}")

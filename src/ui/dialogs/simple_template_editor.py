@@ -41,7 +41,7 @@ try:
     from core.templates.backup_manager import TemplateBackupManager
     CORE_AVAILABLE = True
 except ImportError:
-    print("Core template modules not available")
+    pass  # Core template modules not available
     CORE_AVAILABLE = False
 
 # Import enhanced error handling
@@ -49,7 +49,7 @@ try:
     from ...utils import log_ui_error
     ERROR_HANDLING_AVAILABLE = True
 except ImportError:
-    print("Enhanced error handling not available")
+    pass  # Enhanced error handling not available
     ERROR_HANDLING_AVAILABLE = False
 
 
@@ -420,7 +420,7 @@ class SimpleTemplateEditor(QDialog):
                             key = f"components/{component_file.name}"
                             component_templates[key] = f.read()
                     except Exception as e:
-                        print(f"Error loading component {component_file}: {e}")
+                        pass  # Skip component that fails to load
 
             # Also add common component names without the 'components/' prefix for compatibility
             for key, content in list(component_templates.items()):
@@ -429,7 +429,7 @@ class SimpleTemplateEditor(QDialog):
                     component_templates[simple_key] = content
 
         except Exception as e:
-            print(f"Error loading component templates: {e}")
+            pass  # Failed to load component templates
 
         return component_templates
 
@@ -742,7 +742,7 @@ class SimpleTemplateEditor(QDialog):
                 description="Automatic backup before save"
             )
         except Exception as e:
-            print(f"Warning: Could not create automatic backup: {e}")
+            pass  # Could not create automatic backup
 
     def closeEvent(self, event):
         """Handle close event"""

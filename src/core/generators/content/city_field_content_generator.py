@@ -20,6 +20,9 @@ Comments:
 """
 
 from typing import Optional, TYPE_CHECKING
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 if TYPE_CHECKING:
     from ...services.ai_content_service import AIContentService
@@ -84,7 +87,7 @@ class CityFieldContentGenerator:
             response = self.ai_service._call_openai(prompt)
             return response.strip() if response else None
         except Exception as e:
-            print(f"Error generating neighborhoods description: {e}")
+            logger.error(f"Error generating neighborhoods description: {e}")
             return None
 
     def generate_pain_points(
@@ -125,7 +128,7 @@ class CityFieldContentGenerator:
             response = self.ai_service._call_openai(prompt)
             return response.strip() if response else None
         except Exception as e:
-            print(f"Error generating pain points: {e}")
+            logger.error(f"Error generating pain points: {e}")
             return None
 
     def generate_case_studies(
@@ -166,7 +169,7 @@ class CityFieldContentGenerator:
             response = self.ai_service._call_openai(prompt)
             return response.strip() if response else None
         except Exception as e:
-            print(f"Error generating case studies: {e}")
+            logger.error(f"Error generating case studies: {e}")
             return None
 
     def generate_local_faq(
@@ -213,7 +216,7 @@ class CityFieldContentGenerator:
             response = self.ai_service._call_openai(prompt)
             return response.strip() if response else None
         except Exception as e:
-            print(f"Error generating local FAQ: {e}")
+            logger.error(f"Error generating local FAQ: {e}")
             return None
 
     def _build_neighborhoods_prompt(self, context: dict) -> str:

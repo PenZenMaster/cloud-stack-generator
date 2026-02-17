@@ -13,6 +13,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -77,7 +80,7 @@ class BacklogManager:
                     
                 return data
         except Exception as e:
-            print(f"Error loading backlog: {e}")
+            logger.error(f"Error loading backlog: {e}")
             return default_data
     
     def _save_backlog(self) -> bool:
@@ -94,7 +97,7 @@ class BacklogManager:
             
             return True
         except Exception as e:
-            print(f"Error saving backlog: {e}")
+            logger.error(f"Error saving backlog: {e}")
             return False
     
     def _generate_id(self) -> str:
@@ -166,12 +169,12 @@ class BacklogManager:
         }
         
         self.backlog_data["items"].append(item_dict)
-        
+
         if self._save_backlog():
-            print(f"[SUCCESS] Backlog item {item_id} created: {title}")
+            logger.info(f"Backlog item {item_id} created: {title}")
             return item_id
         else:
-            print(f"[ERROR] Failed to save backlog item {item_id}")
+            logger.error(f"Failed to save backlog item {item_id}")
             return ""
     
     def get_item(self, item_id: str) -> Optional[Dict[str, Any]]:
@@ -209,29 +212,29 @@ class BacklogManager:
         """Print backlog summary"""
         items = self.backlog_data["items"]
         total = len(items)
-        
+
         if total == 0:
-            print("[INFO] Backlog is empty")
+            logger.info("Backlog is empty")
             return
-        
+
         # Count by status
         status_counts = {}
         priority_counts = {}
         type_counts = {}
-        
+
         for item in items:
             status = item["status"]
-            priority = item["priority"] 
+            priority = item["priority"]
             item_type = item["type"]
-            
+
             status_counts[status] = status_counts.get(status, 0) + 1
             priority_counts[priority] = priority_counts.get(priority, 0) + 1
             type_counts[item_type] = type_counts.get(item_type, 0) + 1
-        
-        print(f"[SUMMARY] Backlog Summary ({total} items)")
-        print(f"   Status: {dict(status_counts)}")
-        print(f"   Priority: {dict(priority_counts)}")
-        print(f"   Type: {dict(type_counts)}")
+
+        logger.info(f"Backlog Summary ({total} items)")
+        logger.info(f"   Status: {dict(status_counts)}")
+        logger.info(f"   Priority: {dict(priority_counts)}")
+        logger.info(f"   Type: {dict(type_counts)}")
 
 
 # Convenience function for adding items consistently

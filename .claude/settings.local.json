@@ -51,7 +51,9 @@
       "Bash(gh issue close:*)",
       "Bash(black:*)",
       "WebFetch(domain:d2axnmnq4kfkpm.cloudfront.net)",
-      "WebFetch(domain:storage.googleapis.com)"
+      "WebFetch(domain:storage.googleapis.com)",
+      "WebFetch(domain:github.com)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

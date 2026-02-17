@@ -28,12 +28,12 @@ Comments:
 from pathlib import Path
 from typing import List, Tuple
 import sys
-import logging
 
 from .deployment_store import DeploymentHistoryStore
 from ..config.parser import load_config_from_file
+from ..utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def find_config_files(base_dir: Path) -> List[Path]:
@@ -71,17 +71,17 @@ def migrate_single_config(store: DeploymentHistoryStore, yaml_file: Path) -> Tup
         Tuple[int, int]: (deployments_found, deployments_migrated)
     """
     try:
-        print(f"\nProcessing: {yaml_file}")
+        logger.info(f"Processing: {yaml_file}")
 
         # Load config
         config = load_config_from_file(str(yaml_file))
 
         if not config:
-            print("  SKIP: Could not load config file")
+            logger.warning("  SKIP: Could not load config file")
             return (0, 0)
 
         if not hasattr(config, 'deployments') or not config.deployments:
-            print("  SKIP: No deployments found in config")
+            logger.info("  SKIP: No deployments found in config")
             return (0, 0)
 
         deployments_count = len(config.deployments)
@@ -94,13 +94,13 @@ def migrate_single_config(store: DeploymentHistoryStore, yaml_file: Path) -> Tup
             yaml_deployments=config.deployments
         )
 
-        print(f"  SUCCESS: Migrated {migrated_count}/{deployments_count} deployment(s)")
-        print(f"  Business: {business_name}")
+        logger.info(f"  SUCCESS: Migrated {migrated_count}/{deployments_count} deployment(s)")
+        logger.info(f"  Business: {business_name}")
 
         return (deployments_count, migrated_count)
 
     except Exception as e:
-        print(f"  ERROR: {str(e)}")
+        logger.error(f"  ERROR: {str(e)}")
         logger.error(f"Migration failed for {yaml_file}: {e}")
         return (0, 0)
 
@@ -112,37 +112,37 @@ def migrate_all_client_configs(config_dir: str = "config/clients") -> None:
     Args:
         config_dir: Directory containing client config files
     """
-    print("=" * 70)
-    print("YAML to SQLite Migration Utility")
-    print("=" * 70)
-    print()
-    print("This script will migrate deployment history from YAML configs")
-    print("to the new SQLite database (data/deployments.db)")
-    print()
-    print("NOTE: Your YAML files will NOT be modified.")
-    print()
+    logger.info("=" * 70)
+    logger.info("YAML to SQLite Migration Utility")
+    logger.info("=" * 70)
+    logger.info("")
+    logger.info("This script will migrate deployment history from YAML configs")
+    logger.info("to the new SQLite database (data/deployments.db)")
+    logger.info("")
+    logger.info("NOTE: Your YAML files will NOT be modified.")
+    logger.info("")
 
     # Confirm before proceeding
     response = input("Continue with migration? (yes/no): ").strip().lower()
 
     if response != 'yes':
-        print("\nMigration cancelled by user")
+        logger.info("Migration cancelled by user")
         return
 
-    print()
+    logger.info("")
 
     # Find config files
     base_dir = Path(config_dir)
     yaml_files = find_config_files(base_dir)
 
     if not yaml_files:
-        print(f"ERROR: No YAML config files found in {base_dir}")
-        print(f"\nPlease ensure you're running this script from the project root directory,")
-        print(f"and that config files exist in: {base_dir}")
+        logger.error(f"ERROR: No YAML config files found in {base_dir}")
+        logger.error(f"Please ensure you're running this script from the project root directory,")
+        logger.error(f"and that config files exist in: {base_dir}")
         return
 
-    print(f"Found {len(yaml_files)} config file(s) in {base_dir}")
-    print("-" * 70)
+    logger.info(f"Found {len(yaml_files)} config file(s) in {base_dir}")
+    logger.info("-" * 70)
 
     # Initialize store
     store = DeploymentHistoryStore()
@@ -159,34 +159,34 @@ def migrate_all_client_configs(config_dir: str = "config/clients") -> None:
         total_deployments_migrated += migrated
 
     # Summary
-    print()
-    print("=" * 70)
-    print("Migration Complete:")
-    print("-" * 70)
-    print(f"  - Config files processed: {total_files}")
-    print(f"  - Deployments found: {total_deployments_found}")
-    print(f"  - Deployments migrated: {total_deployments_migrated}")
-    print(f"  - Database: data/deployments.db")
-    print("=" * 70)
-    print()
+    logger.info("")
+    logger.info("=" * 70)
+    logger.info("Migration Complete:")
+    logger.info("-" * 70)
+    logger.info(f"  - Config files processed: {total_files}")
+    logger.info(f"  - Deployments found: {total_deployments_found}")
+    logger.info(f"  - Deployments migrated: {total_deployments_migrated}")
+    logger.info(f"  - Database: data/deployments.db")
+    logger.info("=" * 70)
+    logger.info("")
 
     if total_deployments_migrated > 0:
-        print("SUCCESS: Deployment history has been migrated to SQLite!")
-        print()
-        print("Next steps:")
-        print("  1. Open the application")
-        print("  2. Load a client config")
-        print("  3. Check Deployment History tab - your deployments should appear")
-        print()
+        logger.info("SUCCESS: Deployment history has been migrated to SQLite!")
+        logger.info("")
+        logger.info("Next steps:")
+        logger.info("  1. Open the application")
+        logger.info("  2. Load a client config")
+        logger.info("  3. Check Deployment History tab - your deployments should appear")
+        logger.info("")
     else:
-        print("No deployments were migrated.")
-        print()
+        logger.info("No deployments were migrated.")
+        logger.info("")
         if total_deployments_found == 0:
-            print("This is normal if you haven't created any deployments yet.")
+            logger.info("This is normal if you haven't created any deployments yet.")
         else:
-            print("WARNING: Deployments were found but not migrated.")
-            print("Check the error messages above for details.")
-        print()
+            logger.warning("WARNING: Deployments were found but not migrated.")
+            logger.warning("Check the error messages above for details.")
+        logger.info("")
 
 
 def main():

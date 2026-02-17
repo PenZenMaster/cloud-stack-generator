@@ -11,6 +11,10 @@ Author: Cloud Stack Generator Team
 import yaml
 from typing import Dict, Any, List, Optional
 from pathlib import Path
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 from .models import (
     ClientConfig,
     BusinessConfig,
@@ -348,7 +352,7 @@ class ConfigParser:
                     products.append(product)
                 except ValueError as e:
                     # Skip invalid products but continue processing
-                    print(f"Warning: Skipping invalid product '{name}': {e}")
+                    logger.warning(f"Skipping invalid product '{name}': {e}")
             else:
                 try:
                     service = ServiceConfig(
@@ -359,7 +363,7 @@ class ConfigParser:
                     services.append(service)
                 except ValueError as e:
                     # Skip invalid services but continue processing
-                    print(f"Warning: Skipping invalid service '{name}': {e}")
+                    logger.warning(f"Skipping invalid service '{name}': {e}")
 
         return products, services
 
@@ -456,7 +460,7 @@ class ConfigParser:
 
             except Exception as e:
                 # Skip invalid city page entries
-                print(f"Warning: Skipping invalid city page entry: {e}")
+                logger.warning(f"Skipping invalid city page entry: {e}")
                 continue
 
         return city_pages
@@ -528,7 +532,7 @@ class ConfigParser:
                 )
                 deployments.append(deployment)
             except Exception as e:
-                print(f"Warning: Skipping invalid deployment entry: {e}")
+                logger.warning(f"Skipping invalid deployment entry: {e}")
                 continue
 
         return deployments
@@ -781,7 +785,7 @@ class ConfigParser:
             return True
 
         except Exception as e:
-            print(f"Error saving YAML file: {e}")
+            logger.error(f"Error saving YAML file: {e}")
             return False
 
     def validate_config(self, config: ClientConfig) -> tuple[bool, List[str]]:

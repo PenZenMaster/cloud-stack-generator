@@ -25,6 +25,9 @@ import json
 from dataclasses import dataclass, asdict
 from enum import Enum
 import jinja2
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class TemplateType(Enum):
@@ -120,13 +123,13 @@ class TemplateManager:
                 lstrip_blocks=True,
             )
         except Exception as e:
-            print(f"Error initializing Jinja environment: {e}")
+            logger.error(f"Error initializing Jinja environment: {e}")
             self.jinja_env = None
 
     def _discover_templates(self):
         """Discover all available templates and load their metadata"""
         if not self.templates_dir.exists():
-            print(f"Templates directory not found: {self.templates_dir}")
+            logger.warning(f"Templates directory not found: {self.templates_dir}")
             return
 
         # Look for template metadata files
@@ -136,7 +139,7 @@ class TemplateManager:
                 if metadata:
                     self.templates_registry[metadata.id] = metadata
             except Exception as e:
-                print(f"Error loading template metadata from {metadata_file}: {e}")
+                logger.error(f"Error loading template metadata from {metadata_file}: {e}")
 
         # If no metadata found, create default metadata for existing templates
         if not self.templates_registry:
@@ -151,7 +154,7 @@ class TemplateManager:
                 data = json.load(f)
             return TemplateMetadata.from_dict(data)
         except Exception as e:
-            print(f"Error loading metadata from {metadata_file}: {e}")
+            logger.error(f"Error loading metadata from {metadata_file}: {e}")
             return None
 
     def _create_default_metadata(self):
@@ -238,7 +241,7 @@ class TemplateManager:
         try:
             return self.jinja_env.get_template(metadata.template_file)
         except Exception as e:
-            print(f"Error loading template {template_id}: {e}")
+            logger.error(f"Error loading template {template_id}: {e}")
             return None
 
     def validate_template_data(
@@ -317,7 +320,7 @@ class TemplateManager:
 
             return True
         except Exception as e:
-            print(f"Error importing template: {e}")
+            logger.error(f"Error importing template: {e}")
             return False
 
     def _generate_metadata_from_template(self, template_path: Path) -> TemplateMetadata:
@@ -371,7 +374,7 @@ class TemplateManager:
 
             return True
         except Exception as e:
-            print(f"Error exporting template: {e}")
+            logger.error(f"Error exporting template: {e}")
             return False
 
     def get_template_preview_data(self, template_id: str) -> Dict[str, Any]:

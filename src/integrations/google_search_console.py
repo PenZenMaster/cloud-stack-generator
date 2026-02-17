@@ -29,6 +29,9 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 if TYPE_CHECKING:
     from src.core.utils.browser_detector import BrowserInfo
@@ -74,7 +77,7 @@ class CustomBrowserController(webbrowser.BaseBrowser):
             )
             return True
         except Exception as e:
-            print(f"Failed to launch custom browser: {e}")
+            logger.warning(f"Failed to launch custom browser: {e}")
             return False
 
 

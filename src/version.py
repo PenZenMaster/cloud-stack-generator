@@ -10,6 +10,9 @@ Author: Cloud Stack Generator Team
 from pathlib import Path
 from datetime import datetime
 import re
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class VersionManager:
@@ -42,7 +45,7 @@ class VersionManager:
             return "2.0.1"  # Default fallback
             
         except Exception as e:
-            print(f"Warning: Could not parse version from main.py: {e}")
+            logger.warning(f"Could not parse version from main.py: {e}")
             return "2.0.1"
     
     def increment_patch_version(self) -> str:
@@ -52,7 +55,7 @@ class VersionManager:
             new_version = f"{major}.{minor}.{patch + 1}"
             return new_version
         except Exception as e:
-            print(f"Error incrementing version: {e}")
+            logger.error(f"Error incrementing version: {e}")
             return self.current_version
     
     def increment_minor_version(self) -> str:
@@ -62,7 +65,7 @@ class VersionManager:
             new_version = f"{major}.{minor + 1}.0"
             return new_version
         except Exception as e:
-            print(f"Error incrementing version: {e}")
+            logger.error(f"Error incrementing version: {e}")
             return self.current_version
     
     def increment_major_version(self) -> str:
@@ -72,7 +75,7 @@ class VersionManager:
             new_version = f"{major + 1}.0.0"
             return new_version
         except Exception as e:
-            print(f"Error incrementing version: {e}")
+            logger.error(f"Error incrementing version: {e}")
             return self.current_version
     
     def update_version_in_file(self, new_version: str, change_description: str = "") -> bool:
@@ -117,11 +120,11 @@ class VersionManager:
                 f.write(content)
             
             self.current_version = new_version
-            print(f"Version updated to {new_version}")
+            logger.info(f"Version updated to {new_version}")
             return True
             
         except Exception as e:
-            print(f"Error updating version in file: {e}")
+            logger.error(f"Error updating version in file: {e}")
             return False
     
     def auto_increment_patch(self, change_description: str = "Bug fixes and improvements") -> str:

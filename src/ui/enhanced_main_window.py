@@ -52,6 +52,7 @@ import json
 
 # Import all modular components
 from ..utils.error_logger import ErrorLogger
+from ..core.utils.logger import get_logger
 from .components.business_tab import BusinessTab
 from .components.contact_tab import ContactTab
 from .components.branding_tab import BrandingTab
@@ -75,6 +76,9 @@ from ..utils import log_error_dialog, log_file_operation_error
 
 # Import dialogs
 from .dialogs.documentation_viewer import show_documentation
+
+# Initialize logger
+logger = get_logger(__name__)
 
 
 class GenerationWorker(QThread):
@@ -566,13 +570,13 @@ class EnhancedMainWindow(QMainWindow):
                 )
         except Exception as e:
             # Don't fail the config change event if cloud tab update fails
-            print(f"Warning: Failed to update cloud tab client context: {e}")
+            logger.warning(f"Failed to update cloud tab client context: {e}")
 
     def on_deployment_created(self, deployment: "DeploymentConfig"):
         """Handle deployment creation/update (v3.2.0 - Phase 5)"""
 
         if not hasattr(self, 'current_config') or not self.current_config:
-            print("Warning: No config loaded, cannot save deployment")
+            logger.warning("No config loaded, cannot save deployment")
             return
 
         # NEW: Save to SQLite database immediately for persistent storage
@@ -584,9 +588,9 @@ class EnhancedMainWindow(QMainWindow):
                     deployment=deployment
                 )
                 if success:
-                    print(f"Deployment saved to database: {deployment.deployment_id}")
+                    logger.info(f"Deployment saved to database: {deployment.deployment_id}")
             except Exception as e:
-                print(f"Error saving deployment to database: {e}")
+                logger.error(f"Error saving deployment to database: {e}")
 
         # Find existing deployment with same ID in in-memory config
         existing_index = -1
@@ -598,10 +602,10 @@ class EnhancedMainWindow(QMainWindow):
         # Update or append deployment (keep in-memory for YAML export compatibility)
         if existing_index >= 0:
             self.current_config.deployments[existing_index] = deployment
-            print(f"Updated existing deployment: {deployment.deployment_id}")
+            logger.info(f"Updated existing deployment: {deployment.deployment_id}")
         else:
             self.current_config.deployments.append(deployment)
-            print(f"Added new deployment: {deployment.deployment_id}")
+            logger.info(f"Added new deployment: {deployment.deployment_id}")
 
         # Refresh deployment history tab (NEW: load from SQLite)
         if self.current_config_file:
@@ -619,7 +623,7 @@ class EnhancedMainWindow(QMainWindow):
                 self.save_configuration()
                 self.status_label.setText(f"Deployment saved: {deployment.deployment_id}")
             except Exception as e:
-                print(f"Warning: Failed to auto-save after deployment: {e}")
+                logger.warning(f"Failed to auto-save after deployment: {e}")
                 self.status_label.setText(f"Deployment created but not saved: {deployment.deployment_id}")
 
     def on_tab_changed(self, index):
@@ -643,7 +647,7 @@ class EnhancedMainWindow(QMainWindow):
                     return json.load(f)
             return {}
         except Exception as e:
-            print(f"Error loading app API keys: {e}")
+            logger.error(f"Error loading app API keys: {e}")
             return {}
     
     def save_app_api_keys(self, api_keys: Dict[str, str]):
@@ -655,7 +659,7 @@ class EnhancedMainWindow(QMainWindow):
                 json.dump(api_keys, f, indent=2)
             self.app_api_keys = api_keys
         except Exception as e:
-            print(f"Error saving app API keys: {e}")
+            logger.error(f"Error saving app API keys: {e}")
     
     def set_api_keys_in_tab(self):
         """Set the loaded API keys in the API Keys tab"""
@@ -1647,8 +1651,8 @@ class EnhancedMainWindow(QMainWindow):
                             "errors",
                             ["Unable to determine validation result"],
                         )
-                        print(
-                            f"DEBUG {tab_name}: ValidationResult object - is_valid: {is_valid}, errors: {errors}"
+                        logger.debug(
+                            f"{tab_name}: ValidationResult object - is_valid: {is_valid}, errors: {errors}"
                         )
 
                     validation_results[tab_name] = {"valid": is_valid, "errors": errors}

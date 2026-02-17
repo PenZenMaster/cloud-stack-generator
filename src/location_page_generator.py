@@ -29,6 +29,10 @@ from jinja2 import Template  # Optional external dependency
 
 # from dotenv import load_dotenv  # Optional external dependency
 
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 # Simple slugify replacement
 def slugify(text):
@@ -153,7 +157,7 @@ def generate_location_page(row):
     output_path = os.path.join("output", f"{slug}.html")
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_output)
-    print(f"✅ Generated: {output_path}")
+    logger.info(f"Generated: {output_path}")
 
 
 def run():

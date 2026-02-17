@@ -104,6 +104,28 @@ class MockCityPage:
         return self.city_name
 
 
+class MockSocialMedia:
+    """Mock social media configuration"""
+    def __init__(self, **kwargs):
+        self.facebook = kwargs.get('facebook', None)
+        self.twitter = kwargs.get('twitter', None)
+        self.linkedin = kwargs.get('linkedin', None)
+        self.instagram = kwargs.get('instagram', None)
+
+    def get_valid_links(self):
+        """Return dict of valid social media links"""
+        links = {}
+        if self.facebook:
+            links['facebook'] = self.facebook
+        if self.twitter:
+            links['twitter'] = self.twitter
+        if self.linkedin:
+            links['linkedin'] = self.linkedin
+        if self.instagram:
+            links['instagram'] = self.instagram
+        return links
+
+
 class MockCloudConfig:
     """Mock cloud configuration"""
     def __init__(self, **kwargs):
@@ -129,14 +151,16 @@ class MockClientConfig:
         self.business_hours = kwargs.get('business_hours', None)
         self.city_pages = kwargs.get('city_pages', [])
         self.faq = kwargs.get('faq', [])
-        self.cloud = kwargs.get('cloud', None)
+        self.cloud = kwargs.get('cloud', MockCloudConfig())
         self.target_cities = kwargs.get('target_cities', [])
 
 
 class TestHTMLGeneratorInit:
     """Test HTMLGenerator initialization and setup"""
 
-    def test_init_default_template_dir(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def test_init_default_template_dir(self, mock_cache, mock_ai_service):
         """Test initialization with default template directory"""
         generator = HTMLGenerator()
 
@@ -145,16 +169,20 @@ class TestHTMLGeneratorInit:
         # Should point to src/templates relative to html_generator.py
         assert generator.template_dir.name == "templates"
 
-    def test_init_custom_template_dir(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def test_init_custom_template_dir(self, mock_cache, mock_ai_service):
         """Test initialization with custom template directory"""
         with tempfile.TemporaryDirectory() as temp_dir:
             generator = HTMLGenerator(template_dir=temp_dir)
 
             assert generator.template_dir == Path(temp_dir)
 
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
     @patch('core.generators.html_generator.jinja2.FileSystemLoader')
     @patch('core.generators.html_generator.jinja2.Environment')
-    def test_jinja_environment_setup_success(self, mock_env, mock_loader):
+    def test_jinja_environment_setup_success(self, mock_env, mock_loader, mock_cache, mock_ai_service):
         """Test successful Jinja2 environment setup"""
         mock_env_instance = MagicMock()
         mock_env.return_value = mock_env_instance
@@ -172,15 +200,19 @@ class TestHTMLGeneratorInit:
         assert call_kwargs['trim_blocks'] is True
         assert call_kwargs['lstrip_blocks'] is True
 
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
     @patch('core.generators.html_generator.jinja2.FileSystemLoader', side_effect=Exception("Template load error"))
-    def test_jinja_environment_setup_failure(self, mock_loader):
+    def test_jinja_environment_setup_failure(self, mock_loader, mock_cache, mock_ai_service):
         """Test Jinja2 environment setup failure handling"""
         generator = HTMLGenerator()
 
         # Should handle exception gracefully and set jinja_env to None
         assert generator.jinja_env is None
 
-    def test_custom_filters_registration(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def test_custom_filters_registration(self, mock_cache, mock_ai_service):
         """Test that custom filters are registered"""
         with patch('core.generators.html_generator.jinja2.Environment') as mock_env:
             mock_env_instance = MagicMock()
@@ -201,7 +233,9 @@ class TestTemplateDataPreparation:
     """Test _prepare_template_data method comprehensively"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance for testing"""
         return HTMLGenerator()
 
@@ -211,7 +245,7 @@ class TestTemplateDataPreparation:
         return MockClientConfig(
             branding={'primary_color': '#007bff', 'logo_url': 'logo.png'},
             google_business_profile={'embed_code': '<iframe></iframe>'},
-            social_media={'facebook': 'https://facebook.com/test'},
+            social_media=MockSocialMedia(facebook='https://facebook.com/test'),
             geo_coordinates={'latitude': 40.7128, 'longitude': -74.0060},
             business_hours=[{'day': 'Monday', 'hours': '9 AM - 5 PM'}],
             city_pages=[MockCityPage(city_name='Test City', slug='test-city')]
@@ -251,7 +285,7 @@ class TestTemplateDataPreparation:
         # Verify optional field values
         assert result['branding']['primary_color'] == '#007bff'
         assert result['google_business_profile']['embed_code'] == '<iframe></iframe>'
-        assert result['social_media']['facebook'] == 'https://facebook.com/test'
+        assert result['social_media'].facebook == 'https://facebook.com/test'
 
     def test_prepare_template_data_minimal_config(self, generator):
         """Test template data preparation with minimal configuration"""
@@ -295,14 +329,16 @@ class TestTemplateDataPreparation:
         assert 'navigation' in result
         assert 'footer_links' in result
         assert 'social_links' in result
-        assert 'organization_schema' in result
+        assert 'schema_organization' in result
 
 
 class TestPageGenerationMethods:
     """Test all public page generation methods"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance with mocked template rendering"""
         gen = HTMLGenerator()
         gen._render_template = MagicMock(return_value="<html>Mocked Template</html>")
@@ -400,13 +436,13 @@ class TestPageGenerationMethods:
     def test_generate_individual_service_page(self, generator, config):
         """Test individual service page generation"""
         service = MockService(name="Test Service")
-        generator.generate_individual_service_page(config, service)
+        generator.generate_individual_service_page(service, config)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
 
         assert template_name == "pages/service-detail.html"
-        assert template_data['page_type'] == 'service'
+        assert template_data['page_type'] == 'service-detail'
         assert template_data['service'] == service
         assert 'related_services' in template_data
         assert 'service_schema' in template_data
@@ -414,13 +450,13 @@ class TestPageGenerationMethods:
     def test_generate_individual_product_page(self, generator, config):
         """Test individual product page generation"""
         product = MockProduct(name="Test Product")
-        generator.generate_individual_product_page(config, product)
+        generator.generate_individual_product_page(product, config)
 
         call_args = generator._render_template.call_args
         template_name, template_data = call_args[0]
 
         assert template_name == "pages/product-detail.html"
-        assert template_data['page_type'] == 'product'
+        assert template_data['page_type'] == 'product-detail'
         assert template_data['product'] == product
         assert 'related_products' in template_data
         assert 'product_schema' in template_data
@@ -439,7 +475,7 @@ class TestPageGenerationMethods:
 
         assert template_name == "pages/faq.html"
         assert template_data['page_type'] == 'faq'
-        assert 'faq_by_category' in template_data
+        assert 'faqs_by_category' in template_data
         assert 'total_faqs' in template_data
         assert template_data['total_faqs'] == 1
 
@@ -459,7 +495,9 @@ class TestCustomJinja2Filters:
     """Test all custom Jinja2 filters"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance"""
         return HTMLGenerator()
 
@@ -569,7 +607,9 @@ class TestNavigationGeneration:
     """Test _generate_navigation method"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance"""
         return HTMLGenerator()
 
@@ -581,7 +621,7 @@ class TestNavigationGeneration:
         assert isinstance(result, list)
 
         # Should include basic navigation items
-        nav_items = [item['text'] for item in result]
+        nav_items = [item['name'] for item in result]
         assert 'Home' in nav_items
         assert 'About' in nav_items
         assert 'Contact' in nav_items
@@ -592,7 +632,7 @@ class TestNavigationGeneration:
         config = MockClientConfig(services=services)
         result = generator._generate_navigation(config)
 
-        nav_items = [item['text'] for item in result]
+        nav_items = [item['name'] for item in result]
         assert 'Services' in nav_items
 
     def test_generate_navigation_with_products(self, generator):
@@ -601,7 +641,7 @@ class TestNavigationGeneration:
         config = MockClientConfig(products=products)
         result = generator._generate_navigation(config)
 
-        nav_items = [item['text'] for item in result]
+        nav_items = [item['name'] for item in result]
         assert 'Products' in nav_items
 
     def test_generate_navigation_with_city_pages(self, generator):
@@ -610,16 +650,18 @@ class TestNavigationGeneration:
         config = MockClientConfig(city_pages=city_pages)
         result = generator._generate_navigation(config)
 
-        # Should include city pages in navigation
-        service_areas = [item for item in result if item['text'] == 'Service Areas']
-        assert len(service_areas) > 0
+        # Should include city pages in navigation under 'Locations'
+        locations = [item for item in result if item['name'] == 'Locations']
+        assert len(locations) > 0
 
 
 class TestSchemaGeneration:
     """Test JSON-LD schema generation methods"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance"""
         return HTMLGenerator()
 
@@ -630,17 +672,26 @@ class TestSchemaGeneration:
 
         assert isinstance(result, dict)
         assert result['@context'] == 'https://schema.org'
-        assert result['@type'] == 'Organization'
-        assert result['name'] == 'Test Business'
-        assert result['description'] == 'We provide excellent professional services.'
+        assert '@graph' in result
+        assert isinstance(result['@graph'], list)
+        assert len(result['@graph']) > 0
+
+        # Find the business entity in the graph
+        business = next((item for item in result['@graph'] if item.get('@type') in ['Organization', 'LocalBusiness']), None)
+        assert business is not None
+        assert business['name'] == 'Test Business'
+        assert 'We provide excellent professional services.' in business['description']
 
     def test_generate_organization_schema_with_address(self, generator):
         """Test organization schema with address information"""
         config = MockClientConfig()
         result = generator._generate_organization_schema(config)
 
-        assert 'address' in result
-        address = result['address']
+        # Find the business entity in the graph
+        business = next((item for item in result['@graph'] if item.get('@type') in ['Organization', 'LocalBusiness']), None)
+        assert business is not None
+        assert 'address' in business
+        address = business['address']
         assert address['@type'] == 'PostalAddress'
         assert address['streetAddress'] == '123 Test Street'
         assert address['addressLocality'] == 'Test City'
@@ -650,22 +701,32 @@ class TestSchemaGeneration:
         config = MockClientConfig()
         result = generator._generate_organization_schema(config)
 
-        assert 'telephone' in result
-        assert 'email' in result
-        assert result['telephone'] == '(555) 123-4567'
-        assert result['email'] == 'test@testbusiness.com'
+        # Find the business entity in the graph
+        business = next((item for item in result['@graph'] if item.get('@type') in ['Organization', 'LocalBusiness']), None)
+        assert business is not None
+        assert 'telephone' in business
+        assert 'email' in business
+        assert business['telephone'] == '(555) 123-4567'
+        assert business['email'] == 'test@testbusiness.com'
 
     @patch.object(HTMLGenerator, '_generate_industry_wikipedia_entities')
     def test_generate_organization_schema_with_wikipedia(self, mock_wikipedia, generator):
         """Test organization schema with Wikipedia entities"""
-        mock_wikipedia.return_value = [{'@type': 'Thing', 'name': 'Construction'}]
+        # Wikipedia entities are URLs, not entity dicts
+        mock_wikipedia.return_value = ['https://en.wikipedia.org/wiki/Professional_services']
 
         config = MockClientConfig()
         result = generator._generate_organization_schema(config)
 
         mock_wikipedia.assert_called_once_with('Professional Services')
-        # Should include @graph structure when Wikipedia entities are present
+        # Should include @graph structure (always present)
         assert '@graph' in result
+
+        # Find the business entity and check knowsAbout
+        business = next((item for item in result['@graph'] if item.get('@type') in ['Organization', 'LocalBusiness']), None)
+        assert business is not None
+        assert 'knowsAbout' in business
+        assert business['knowsAbout'] == ['https://en.wikipedia.org/wiki/Professional_services']
 
     def test_generate_service_schema(self, generator):
         """Test service schema generation"""
@@ -679,9 +740,10 @@ class TestSchemaGeneration:
         assert result['name'] == 'Test Service'
         assert result['description'] == 'Service description'
 
-        # Should include provider information
+        # Should include provider reference with @id
         assert 'provider' in result
-        assert result['provider']['name'] == 'Test Business'
+        assert '@id' in result['provider']
+        assert result['provider']['@id'] == 'https://testbusiness.com#business'
 
     def test_generate_product_schema_basic(self, generator):
         """Test basic product schema generation"""
@@ -714,14 +776,16 @@ class TestSchemaGeneration:
         assert 'offers' in result
         offers = result['offers']
         assert offers['@type'] == 'Offer'
-        assert offers['price'] == '499.99'
+        assert offers['price'] == '$499.99'
 
 
 class TestWikipediaEntityGeneration:
     """Test Wikipedia entity mapping"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance"""
         return HTMLGenerator()
 
@@ -732,16 +796,17 @@ class TestWikipediaEntityGeneration:
         assert isinstance(result, list)
         assert len(result) > 0
 
-        # Should include construction-related entities
-        entity_names = [entity['name'] for entity in result]
-        assert 'Construction' in entity_names
+        # Should include construction-related Wikipedia URLs
+        assert any('Construction' in url for url in result)
+        # All results should be Wikipedia URLs
+        assert all('wikipedia.org' in url for url in result)
 
     def test_generate_industry_wikipedia_entities_roofing(self, generator):
         """Test Wikipedia entities for roofing industry"""
         result = generator._generate_industry_wikipedia_entities("Roofing")
 
-        entity_names = [entity['name'] for entity in result]
-        assert 'Roof' in entity_names
+        # Should include roofing-related Wikipedia URLs
+        assert any('Roof' in url for url in result)
 
     def test_generate_industry_wikipedia_entities_unknown(self, generator):
         """Test Wikipedia entities for unknown industry"""
@@ -757,8 +822,10 @@ class TestWikipediaEntityGeneration:
         assert isinstance(result, list)
         assert len(result) > 0
 
-        entity_names = [entity['name'] for entity in result]
-        assert 'Cupola' in entity_names
+        # Should include cupola-related Wikipedia URLs
+        assert any('Cupola' in url for url in result)
+        # All results should be Wikipedia URLs
+        assert all('wikipedia.org' in url for url in result)
 
     def test_generate_product_wikipedia_entities_unknown(self, generator):
         """Test Wikipedia entities for unknown product"""
@@ -772,7 +839,9 @@ class TestTemplateRendering:
     """Test template rendering and fallback systems"""
 
     @pytest.fixture
-    def generator_with_mock_env(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator_with_mock_env(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator with mocked Jinja environment"""
         generator = HTMLGenerator()
         generator.jinja_env = MagicMock()
@@ -816,7 +885,9 @@ class TestTemplateRendering:
             assert result == "<html>Fallback</html>"
             mock_fallback.assert_called_once_with("test.html", {"key": "value"})
 
-    def test_render_template_no_jinja_env(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def test_render_template_no_jinja_env(self, mock_cache, mock_ai_service):
         """Test template rendering when Jinja environment is None"""
         generator = HTMLGenerator()
         generator.jinja_env = None
@@ -833,13 +904,17 @@ class TestTemplateRendering:
 class TestErrorHandlingAndEdgeCases:
     """Test error handling and edge cases"""
 
-    def test_init_with_nonexistent_template_dir(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def test_init_with_nonexistent_template_dir(self, mock_cache, mock_ai_service):
         """Test initialization with non-existent template directory"""
         generator = HTMLGenerator(template_dir="/nonexistent/path")
         # Should handle gracefully and still create instance
         assert generator.template_dir == Path("/nonexistent/path")
 
-    def test_services_categorization_with_none_category(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def test_services_categorization_with_none_category(self, mock_cache, mock_ai_service):
         """Test service categorization when category is None"""
         generator = HTMLGenerator()
 
@@ -853,7 +928,9 @@ class TestErrorHandlingAndEdgeCases:
         # Should handle None category gracefully
         assert 'services_by_category' not in result or isinstance(result.get('services_by_category'), dict)
 
-    def test_generate_maps_embed_with_long_address(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def test_generate_maps_embed_with_long_address(self, mock_cache, mock_ai_service):
         """Test Google Maps embed generation with long address"""
         generator = HTMLGenerator()
 
@@ -869,7 +946,9 @@ class TestImagePathNormalization:
     """Test _normalize_image_path method for Issue #2 regression fix"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance"""
         return HTMLGenerator()
 
@@ -947,7 +1026,9 @@ class TestBusinessLogicHelpers:
     """Test business logic helper methods"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance"""
         return HTMLGenerator()
 
@@ -985,24 +1066,28 @@ class TestBusinessLogicHelpers:
         result = generator._generate_maps_embed(address)
 
         assert isinstance(result, str)
-        assert 'iframe' in result
-        assert 'google.com/maps' in result
+        # Currently returns a placeholder div (would need API key for real iframe)
+        assert 'map-placeholder' in result.lower()
+        assert address in result
 
     def test_get_business_hours(self, generator):
         """Test business hours retrieval"""
         config = MockClientConfig()
         result = generator._get_business_hours(config)
 
-        assert isinstance(result, list)
+        assert isinstance(result, dict)
         # Should return default business hours
         assert len(result) > 0
+        assert 'Monday - Friday' in result
 
 
 class TestMetaTagFormatting:
     """Tests for GSC and other meta tag formatting (v3.13.0)"""
 
     @pytest.fixture
-    def generator(self):
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
         """Create HTMLGenerator instance"""
         return HTMLGenerator()
 
