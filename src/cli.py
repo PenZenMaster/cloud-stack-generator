@@ -36,7 +36,7 @@ logger = get_logger(__name__)
 
 
 @click.group()
-@click.version_option(version="3.13.0", prog_name="awg")
+@click.version_option(version="3.15.0", prog_name="awg")
 def cli():
     """
     AWG - Automated Website Generator
@@ -234,6 +234,173 @@ def list_providers():
 
     except Exception as e:
         logger.error(f"Failed to list providers: {e}", exc_info=True)
+        click.echo(click.style(f"ERROR: {str(e)}", fg='red'))
+        sys.exit(1)
+
+
+@cli.group()
+def analyze():
+    """SEO analysis tools for generated websites."""
+    pass
+
+
+@analyze.command(name='content')
+@click.argument(
+    'html_file',
+    type=click.Path(exists=True, dir_okay=False, path_type=Path)
+)
+@click.option(
+    '--keywords',
+    '-k',
+    multiple=True,
+    help='Target keywords for analysis (can specify multiple)'
+)
+@click.option(
+    '--api-key',
+    envvar='CLAUDE_API_KEY',
+    help='Claude API key (or set CLAUDE_API_KEY env var)'
+)
+@click.option(
+    '--model',
+    type=click.Choice(['fast', 'balanced', 'thorough'], case_sensitive=False),
+    default='balanced',
+    help='Analysis model preset (cost vs quality)'
+)
+def analyze_content(html_file: Path, keywords: tuple, api_key: Optional[str], model: str):
+    """
+    Analyze HTML content for SEO quality.
+
+    Example:
+        awg analyze content output/clients/my-site/index.html -k "plumbing services" -k "emergency plumber"
+    """
+    try:
+        if not api_key:
+            click.echo(click.style("ERROR: Claude API key required. Set CLAUDE_API_KEY env var or use --api-key", fg='red'))
+            sys.exit(1)
+
+        from .core.seo.analyzer import SEOAnalyzer
+        from .core.seo.llm.provider import ModelPreset
+
+        # Map model preset
+        preset_map = {
+            'fast': ModelPreset.FAST,
+            'balanced': ModelPreset.BALANCED,
+            'thorough': ModelPreset.THOROUGH
+        }
+
+        click.echo(f"Analyzing: {html_file}")
+        click.echo(f"Model: {model}\n")
+
+        # Create analyzer
+        analyzer = SEOAnalyzer(claude_api_key=api_key, model_preset=preset_map[model])
+
+        # Run analysis
+        result = analyzer.analyze_file(html_file, list(keywords) if keywords else None)
+
+        # Display results
+        score = result.overall_score
+        click.echo(click.style(f"SEO Score: {score.overall}/100 (Grade: {score.get_grade()})", fg='green', bold=True))
+        click.echo()
+
+        # Category scores
+        click.echo("Category Scores:")
+        click.echo(f"  Content Quality:    {score.content_quality}/100")
+        click.echo(f"  Heading Structure:  {score.heading_structure}/100")
+        click.echo(f"  Meta Tags:          {score.meta_tags}/100")
+        click.echo(f"  Internal Linking:   {score.internal_linking}/100")
+        click.echo()
+
+        # Recommendations
+        if score.recommendations:
+            high_priority = [r for r in score.recommendations if r.priority.value == 'high']
+            if high_priority:
+                click.echo(click.style(f"High Priority Recommendations ({len(high_priority)}):", fg='red', bold=True))
+                for i, rec in enumerate(high_priority[:5], 1):
+                    click.echo(f"  {i}. {rec.issue}")
+                    click.echo(f"     Recommendation: {rec.recommendation}")
+                    click.echo()
+
+        # Stats
+        content = result.content_analysis
+        click.echo("Content Stats:")
+        click.echo(f"  Word Count: {content.word_count}")
+        click.echo(f"  Internal Links: {content.link_count.get('internal', 0)}")
+        click.echo(f"  External Links: {content.link_count.get('external', 0)}")
+        click.echo()
+
+        click.echo(f"Model used: {result.model_used}")
+        click.echo(f"Estimated cost: ${result.cost_estimate:.4f}")
+
+    except Exception as e:
+        logger.error(f"Analysis failed: {e}", exc_info=True)
+        click.echo(click.style(f"ERROR: {str(e)}", fg='red'))
+        sys.exit(1)
+
+
+@analyze.command(name='meta')
+@click.argument(
+    'html_file',
+    type=click.Path(exists=True, dir_okay=False, path_type=Path)
+)
+@click.option(
+    '--keywords',
+    '-k',
+    multiple=True,
+    help='Target keywords for optimization'
+)
+@click.option(
+    '--api-key',
+    envvar='CLAUDE_API_KEY',
+    help='Claude API key (or set CLAUDE_API_KEY env var)'
+)
+def analyze_meta(html_file: Path, keywords: tuple, api_key: Optional[str]):
+    """
+    Analyze meta tags for SEO optimization.
+
+    Example:
+        awg analyze meta output/clients/my-site/index.html -k "plumbing services"
+    """
+    try:
+        if not api_key:
+            click.echo(click.style("ERROR: Claude API key required", fg='red'))
+            sys.exit(1)
+
+        from .core.seo.analyzer import SEOAnalyzer
+        from .core.seo.llm.provider import ModelPreset
+
+        click.echo(f"Analyzing meta tags: {html_file}\n")
+
+        # Create analyzer
+        analyzer = SEOAnalyzer(claude_api_key=api_key, model_preset=ModelPreset.BALANCED)
+
+        # Run analysis
+        result = analyzer.analyze_file(html_file, list(keywords) if keywords else None)
+        meta = result.meta_analysis
+
+        # Display results
+        click.echo(click.style(f"Meta Tags Score: {meta.overall_score}/100", fg='green', bold=True))
+        click.echo()
+
+        click.echo(f"Title: {meta.title}")
+        click.echo(f"  Length: {meta.title_length} chars (optimal: 50-60)")
+        click.echo(f"  Score: {meta.title_score}/100")
+        click.echo()
+
+        click.echo(f"Description: {meta.description[:80]}...")
+        click.echo(f"  Length: {meta.description_length} chars (optimal: 150-160)")
+        click.echo(f"  Score: {meta.description_score}/100")
+        click.echo()
+
+        # Recommendations
+        if meta.recommendations:
+            click.echo(click.style("Recommendations:", fg='yellow', bold=True))
+            for i, rec in enumerate(meta.recommendations, 1):
+                click.echo(f"  {i}. [{rec.priority.value.upper()}] {rec.issue}")
+                click.echo(f"     {rec.recommendation}")
+                click.echo()
+
+    except Exception as e:
+        logger.error(f"Meta analysis failed: {e}", exc_info=True)
         click.echo(click.style(f"ERROR: {str(e)}", fg='red'))
         sys.exit(1)
 
