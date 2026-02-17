@@ -10,13 +10,17 @@ Author: Cloud Stack Generator Team
 Add Branding Component
 """
 
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 # Import base components
 try:
     from .base_tab import BaseTab
 
     __all__ = ["BaseTab"]
 except ImportError:
-    print("Warning: BaseTab not available")
+    logger.warning("BaseTab not available")
     __all__ = []
 
 # Import specialized tab components
@@ -25,14 +29,14 @@ try:
 
     __all__.append("BusinessTab")
 except ImportError:
-    print("Warning: BusinessTab not available")
+    logger.warning("BusinessTab not available")
 
 try:
     from .contact_tab import ContactTab, ValidationResult  # noqa: F401
 
     __all__.extend(["ContactTab", "ValidationResult"])
 except ImportError:
-    print("Warning: ContactTab not available")
+    logger.warning("ContactTab not available")
 
 # Future tab components will be added here
 # try:
@@ -41,4 +45,4 @@ except ImportError:
 # except ImportError:
 #     print("Warning: BrandingTab not available")
 
-print(f"UI Components loaded: {', '.join(__all__)}")
+logger.debug(f"UI Components loaded: {', '.join(__all__)}")

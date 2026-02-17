@@ -48,6 +48,11 @@ import os
 import shutil
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from core.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 verbose = False
 recurse = False
 dryrun = False
@@ -59,7 +64,7 @@ spec_newline = None
 def usage(msg=None):
     if msg is None:
         msg = __doc__
-    print(msg, file=sys.stderr)
+    logger.info(msg)
 
 
 def errprint(*args):
@@ -104,7 +109,7 @@ def main():
 def check(file):
     if os.path.isdir(file) and not os.path.islink(file):
         if verbose:
-            print("listing directory", file)
+            logger.info(f"listing directory {file}")
         names = os.listdir(file)
         for name in names:
             fullname = os.path.join(file, name)
@@ -116,7 +121,7 @@ def check(file):
         return
 
     if verbose:
-        print("checking", file, "...", end=' ')
+        logger.info(f"checking {file} ...")
     with open(file, 'rb') as f:
         try:
             encoding, _ = tokenize.detect_encoding(f.readline)
@@ -137,23 +142,23 @@ def check(file):
 
     if r.run():
         if verbose:
-            print("changed.")
+            logger.info("changed.")
             if dryrun:
-                print("But this is a dry run, so leaving it alone.")
+                logger.info("But this is a dry run, so leaving it alone.")
         if not dryrun:
             bak = file + ".bak"
             if makebackup:
                 shutil.copyfile(file, bak)
                 if verbose:
-                    print("backed up", file, "to", bak)
+                    logger.info(f"backed up {file} to {bak}")
             with open(file, "w", encoding=encoding, newline=newline) as f:
                 r.write(f)
             if verbose:
-                print("wrote new", file)
+                logger.info(f"wrote new {file}")
         return True
     else:
         if verbose:
-            print("unchanged.")
+            logger.info("unchanged.")
         return False
 
 

@@ -52,6 +52,9 @@ import logging
 import subprocess
 import platform
 from datetime import datetime
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 from .base_tab import BaseTab
 from .progress_widget import ProgressWidget
@@ -4121,7 +4124,7 @@ class CloudTab(BaseTab):
             self.status_text.append(formatted_message)
         else:
             # Fallback to print if UI not ready
-            print(f"CloudTab: {formatted_message}")
+            logger.debug(f"CloudTab: {formatted_message}")
 
     # Meta Tags CRUD Methods
 

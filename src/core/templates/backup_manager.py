@@ -27,6 +27,9 @@ import json
 import shutil
 import zipfile
 import hashlib
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -78,7 +81,7 @@ class TemplateBackupManager:
 
             return index
         except Exception as e:
-            print(f"Error loading backup index: {e}")
+            logger.error(f"Error loading backup index: {e}")
             return {}
 
     def _save_backup_index(self):
@@ -92,7 +95,7 @@ class TemplateBackupManager:
             with open(self.backup_index_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            print(f"Error saving backup index: {e}")
+            logger.error(f"Error saving backup index: {e}")
 
     def create_backup(
         self,
@@ -174,7 +177,7 @@ class TemplateBackupManager:
             return backup_id
 
         except Exception as e:
-            print(f"Error creating backup: {e}")
+            logger.error(f"Error creating backup: {e}")
             raise
 
     def restore_backup(self, backup_id: str) -> Tuple[str, Dict[str, Any]]:
@@ -225,12 +228,12 @@ class TemplateBackupManager:
             # Verify file integrity
             current_hash = self._calculate_file_hash(template_file)
             if current_hash != backup_metadata.file_hash:
-                print(f"Warning: Backup file hash mismatch for {backup_id}")
+                logger.warning(f"Backup file hash mismatch for {backup_id}")
 
             return template_content, template_metadata
 
         except Exception as e:
-            print(f"Error restoring backup: {e}")
+            logger.error(f"Error restoring backup: {e}")
             raise
 
     def get_backups(self, template_id: str) -> List[BackupMetadata]:
@@ -277,7 +280,7 @@ class TemplateBackupManager:
             return True
 
         except Exception as e:
-            print(f"Error deleting backup: {e}")
+            logger.error(f"Error deleting backup: {e}")
             return False
 
     def create_archive(self, template_id: str, archive_path: Path) -> bool:
@@ -314,7 +317,7 @@ class TemplateBackupManager:
             return True
 
         except Exception as e:
-            print(f"Error creating archive: {e}")
+            logger.error(f"Error creating archive: {e}")
             return False
 
     def import_archive(self, archive_path: Path) -> bool:
@@ -378,7 +381,7 @@ class TemplateBackupManager:
             return True
 
         except Exception as e:
-            print(f"Error importing archive: {e}")
+            logger.error(f"Error importing archive: {e}")
             return False
 
     def _calculate_file_hash(self, file_path: Path) -> str:
@@ -419,7 +422,7 @@ class TemplateBackupManager:
                 self._save_backup_index()
 
         except Exception as e:
-            print(f"Error cleaning up old backups: {e}")
+            logger.error(f"Error cleaning up old backups: {e}")
 
     def get_backup_statistics(self) -> Dict[str, Any]:
         """Get backup system statistics"""

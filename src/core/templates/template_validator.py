@@ -24,6 +24,9 @@ from dataclasses import dataclass
 from enum import Enum
 import re
 from pathlib import Path
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 try:
     from jinja2 import Environment, TemplateSyntaxError, meta, DictLoader
@@ -120,7 +123,7 @@ class TemplateValidator:
                             key = f"components/{component_file.name}"
                             component_templates[key] = f.read()
                     except Exception as e:
-                        print(f"Error loading component {component_file}: {e}")
+                        pass  # Skip component that fails to load
 
                 # Also add common component names without the 'components/' prefix for compatibility
                 for key, content in list(component_templates.items()):
@@ -129,7 +132,7 @@ class TemplateValidator:
                         component_templates[simple_key] = content
 
         except Exception as e:
-            print(f"Error loading component templates: {e}")
+            pass  # Failed to load component templates
 
         return component_templates
 

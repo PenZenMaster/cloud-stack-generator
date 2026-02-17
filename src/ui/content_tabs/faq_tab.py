@@ -21,6 +21,10 @@ Comments:
 
 from typing import Dict, Any, List
 from pathlib import Path
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
@@ -880,7 +884,7 @@ class FAQTab(BaseTab):
                         )
                     self.faq_manager.add_faq(faq)
             except Exception as e:
-                print(f"Warning: Skipping invalid FAQ: {e}")
+                logger.warning(f"Skipping invalid FAQ: {e}")
                 continue
 
         # Refresh display

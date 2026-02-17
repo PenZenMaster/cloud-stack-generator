@@ -50,6 +50,9 @@ from PyQt6.QtGui import QFont, QColor
 from PyQt6.QtCore import Qt, pyqtSignal
 from .base_tab import BaseTab, ValidationResult
 from typing import Dict, Any, List
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Import error logging
 
@@ -1072,7 +1075,7 @@ class BrandingTab(BaseTab):
             self.selected_template_id = "seo_authority_city"  # Default template
             self._update_template_display()
         except Exception as e:
-            print(f"Error initializing template system: {e}")
+            logger.warning(f"Error initializing template system: {e}")
             self.current_template_info.setText("Error loading template system")
 
     def _update_template_display(self):
@@ -1335,7 +1338,7 @@ class BrandingTab(BaseTab):
                 editor_class = TemplateEditorDialog
                 editor_type = "Advanced"
             except Exception as e:
-                print(f"Advanced editor not available: {e}")
+                logger.debug(f"Advanced editor not available: {e}")
                 from ui.dialogs.simple_template_editor import SimpleTemplateEditor
 
                 editor_class = SimpleTemplateEditor
@@ -1382,7 +1385,7 @@ class BrandingTab(BaseTab):
                     f.write(error_msg)
                     f.write("\n" + "=" * 50 + "\n")
             except Exception as log_error:
-                print(f"Failed to log error: {log_error}")
+                pass  # Failed to log error
 
             # Show error to user
             QMessageBox.critical(

@@ -14,6 +14,9 @@ import json
 from pathlib import Path
 from typing import Dict, Optional
 import base64
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class APIKeyManager:
@@ -53,7 +56,7 @@ class APIKeyManager:
             json_data = self._decode_data(encoded_data)
             return json.loads(json_data) if json_data else {}
         except Exception as e:
-            print(f"Warning: Could not load API keys: {e}")
+            logger.warning(f"Could not load API keys: {e}")
             return {}
     
     def _save_keys(self, keys: Dict[str, str]) -> bool:
@@ -74,7 +77,7 @@ class APIKeyManager:
             
             return True
         except Exception as e:
-            print(f"Error: Could not save API keys: {e}")
+            logger.error(f"Could not save API keys: {e}")
             return False
     
     def set_api_key(self, service: str, api_key: str) -> bool:

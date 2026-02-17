@@ -36,7 +36,7 @@ try:
     from PyQt6.QtWebEngineWidgets import QWebEngineView
     WEBENGINE_AVAILABLE = True
 except ImportError:
-    print("QtWebEngineWidgets not available, using QTextEdit for preview")
+    pass  # QtWebEngineWidgets not available, will use QTextEdit for preview
     QWebEngineView = None
     WEBENGINE_AVAILABLE = False
 
@@ -62,7 +62,7 @@ try:
     from ...utils.error_classification import classify_and_handle_error
     ERROR_HANDLING_AVAILABLE = True
 except ImportError:
-    print("Enhanced error handling not available")
+    pass  # Enhanced error handling not available
     ERROR_HANDLING_AVAILABLE = False
 
 # Try to import backup selection dialog
@@ -70,7 +70,7 @@ try:
     from .backup_selection_dialog import BackupSelectionDialog
     BACKUP_DIALOG_AVAILABLE = True
 except ImportError:
-    print("BackupSelectionDialog not available")
+    pass  # BackupSelectionDialog not available
     BackupSelectionDialog = None
     BACKUP_DIALOG_AVAILABLE = False
 
@@ -747,7 +747,7 @@ class TemplateEditorDialog(QDialog):
                             key = f"components/{component_file.name}"
                             component_templates[key] = f.read()
                     except Exception as e:
-                        print(f"Error loading component {component_file}: {e}")
+                        pass  # Skip component that fails to load
 
             # Also add common component names without the 'components/' prefix for compatibility
             for key, content in list(component_templates.items()):
@@ -756,7 +756,7 @@ class TemplateEditorDialog(QDialog):
                     component_templates[simple_key] = content
 
         except Exception as e:
-            print(f"Error loading component templates: {e}")
+            pass  # Failed to load component templates
 
         return component_templates
 
@@ -1259,7 +1259,7 @@ class TemplateEditorDialog(QDialog):
             )
 
         except Exception as e:
-            print(f"Warning: Could not create automatic backup: {e}")
+            pass  # Could not create automatic backup
             # Don't fail the save operation if backup fails
 
     def _restore_backup(self):
@@ -1354,7 +1354,7 @@ class TemplateEditorDialog(QDialog):
 
                 self.status_label.setText("Auto-saved")
             except Exception as e:
-                print(f"Auto-save error: {e}")
+                pass  # Auto-save failed silently
 
     # Additional UI event handlers
     def _toggle_line_numbers(self, checked: bool):

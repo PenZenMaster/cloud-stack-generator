@@ -20,6 +20,9 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import pyqtSignal, QTimer, Qt
 from PyQt6.QtGui import QFont
 from typing import Dict, Any, List, Optional, Protocol
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Import the new layout system
 from ..layouts import (
@@ -284,7 +287,7 @@ class BaseTab(QWidget):
         
         # Debug logging to identify the source of tuple returns
         if isinstance(result, tuple):
-            print(f"WARNING: {self.__class__.__name__}.validate_data() returned tuple instead of ValidationResult: {result}")
+            logger.warning(f"{self.__class__.__name__}.validate_data() returned tuple instead of ValidationResult: {result}")
         
         self._update_validation_ui(result)
 
@@ -305,9 +308,9 @@ class BaseTab(QWidget):
             # For tuples, we can't map errors to specific fields
             # Just log the error for debugging
             if not is_valid and errors:
-                print(f"Validation errors (legacy format): {errors}")
+                logger.debug(f"Validation errors (legacy format): {errors}")
         else:
-            print(f"Unexpected validation result format: {type(result)}")
+            logger.warning(f"Unexpected validation result format: {type(result)}")
 
     def _update_ui_state(self):
         """Update UI state based on current tab state"""

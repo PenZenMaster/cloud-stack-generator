@@ -16,6 +16,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any
 import json
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class ErrorLogger:
@@ -338,7 +341,7 @@ Exception: {type(exception).__name__}: {str(exception)}
             self._log_session_start()
         
         except Exception as e:
-            print(f"Error clearing logs: {e}")
+            logger.error(f"Error clearing logs: {e}")
 
 
 # Global error logger instance

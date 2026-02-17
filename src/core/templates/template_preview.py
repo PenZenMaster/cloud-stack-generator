@@ -23,6 +23,9 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 import base64
 from .template_manager import TemplateManager
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class TemplatePreviewGenerator:
@@ -66,7 +69,7 @@ class TemplatePreviewGenerator:
             return preview_html
 
         except Exception as e:
-            print(f"Error generating preview for template {template_id}: {e}")
+            logger.error(f"Error generating preview for template {template_id}: {e}")
             return None
 
     def _get_preview_enhancements(self) -> Dict[str, Any]:
@@ -189,7 +192,7 @@ class TemplatePreviewGenerator:
             return self._create_placeholder_thumbnail(template_id, width, height)
 
         except Exception as e:
-            print(f"Error generating thumbnail for template {template_id}: {e}")
+            logger.error(f"Error generating thumbnail for template {template_id}: {e}")
             return None
 
     def _create_thumbnail_html(self, template_id: str, width: int, height: int) -> str:
@@ -296,7 +299,7 @@ class TemplatePreviewGenerator:
             return True
 
         except Exception as e:
-            print(f"Error saving preview to {output_path}: {e}")
+            logger.error(f"Error saving preview to {output_path}: {e}")
             return False
 
     def get_template_comparison_html(self, template_ids: list) -> Optional[str]:
@@ -395,7 +398,7 @@ class TemplatePreviewGenerator:
             return comparison_html
 
         except Exception as e:
-            print(f"Error generating template comparison: {e}")
+            logger.error(f"Error generating template comparison: {e}")
             return None
 
     def generate_preview(self, template_content: str, sample_data: dict) -> 'TemplatePreviewResult':

@@ -24,6 +24,9 @@ from configparser import ConfigParser
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Windows-specific imports
 if sys.platform == "win32":
@@ -149,7 +152,7 @@ class BrowserDetector:
                     browsers.append(browser_info)
             except Exception as e:
                 # Log warning but continue with other browsers
-                print(f"Warning: Failed to detect {display_name}: {e}")
+                logger.debug(f"Failed to detect {display_name}: {e}")
                 continue
 
         return browsers
@@ -230,7 +233,7 @@ class BrowserDetector:
                         )
                         browsers.append(browser_info)
             except Exception as e:
-                print(f"Warning: Failed to detect {display_name}: {e}")
+                logger.debug(f"Failed to detect {display_name}: {e}")
                 continue
 
         return browsers
@@ -274,7 +277,7 @@ class BrowserDetector:
                         )
                         browsers.append(browser_info)
             except Exception as e:
-                print(f"Warning: Failed to detect {display_name}: {e}")
+                logger.debug(f"Failed to detect {display_name}: {e}")
                 continue
 
         return browsers
@@ -339,7 +342,7 @@ class BrowserDetector:
 
         except (json.JSONDecodeError, KeyError, FileNotFoundError) as e:
             # Log warning but don't crash
-            print(f"Warning: Failed to parse Chromium profiles: {e}")
+            logger.debug(f"Failed to parse Chromium profiles: {e}")
 
         return profiles
 
@@ -381,7 +384,7 @@ class BrowserDetector:
 
         except Exception as e:
             # Log warning but don't crash
-            print(f"Warning: Failed to parse Firefox profiles: {e}")
+            logger.debug(f"Failed to parse Firefox profiles: {e}")
 
         return profiles
 

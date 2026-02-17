@@ -15,6 +15,9 @@ from pathlib import Path
 from dataclasses import dataclass, asdict
 from typing import Optional, Dict, Any, List
 from datetime import datetime
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -148,7 +151,7 @@ class ClientAWSConfigManager:
             return True
             
         except Exception as e:
-            print(f"Error saving client AWS config: {e}")
+            logger.error(f"Error saving client AWS config: {e}")
             return False
     
     def load_client_aws_config(self, business_name: str, domain: str) -> Optional[ClientAWSConfig]:
@@ -167,7 +170,7 @@ class ClientAWSConfigManager:
             return self.load_client_aws_config_by_id(client_id)
             
         except Exception as e:
-            print(f"Error loading client AWS config: {e}")
+            logger.error(f"Error loading client AWS config: {e}")
             return None
     
     def load_client_aws_config_by_id(self, client_id: str) -> Optional[ClientAWSConfig]:
@@ -192,7 +195,7 @@ class ClientAWSConfigManager:
             return ClientAWSConfig.from_dict(data)
             
         except Exception as e:
-            print(f"Error loading client AWS config by ID: {e}")
+            logger.error(f"Error loading client AWS config by ID: {e}")
             return None
     
     def list_client_configs(self) -> List[Dict[str, Any]]:
@@ -231,7 +234,7 @@ class ClientAWSConfigManager:
             return True
             
         except Exception as e:
-            print(f"Error deleting client AWS config: {e}")
+            logger.error(f"Error deleting client AWS config: {e}")
             return False
     
     def create_default_config(self, business_name: str, domain: str) -> ClientAWSConfig:

@@ -24,7 +24,7 @@ import webbrowser
 from pathlib import Path
 from typing import Dict, List, Optional
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget, 
+    QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget,
     QListWidgetItem, QTextEdit, QLabel, QSplitter, QMessageBox,
     QProgressBar, QComboBox, QWidget
 )
@@ -32,6 +32,9 @@ from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QFont
 from ...core.config.models import ClientConfig
 from ...core.generators.page_generator import PageGenerator
+from src.core.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class PreviewGenerationThread(QThread):
@@ -92,7 +95,7 @@ class PreviewGenerationThread(QThread):
                         file_list.append(page_name)
                         
                     except Exception as e:
-                        print(f"Error reading {file_path}: {e}")
+                        logger.error(f"Error reading {file_path}: {e}")
             
             self.progress_updated.emit(90, "Finalizing preview...")
             
@@ -402,7 +405,7 @@ class WebsitePreviewDialog(QDialog):
                 import shutil
                 shutil.rmtree(self.temp_dir)
             except Exception as e:
-                print(f"Error cleaning up temp directory: {e}")
+                logger.warning(f"Error cleaning up temp directory: {e}")
                 
     def closeEvent(self, event):
         """Handle dialog close event"""
