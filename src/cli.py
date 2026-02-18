@@ -36,7 +36,7 @@ logger = get_logger(__name__)
 
 
 @click.group()
-@click.version_option(version="3.15.0", prog_name="awg")
+@click.version_option(version="3.15.1", prog_name="awg")
 def cli():
     """
     AWG - Automated Website Generator
