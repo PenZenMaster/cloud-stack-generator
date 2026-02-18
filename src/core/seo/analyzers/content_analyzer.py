@@ -124,9 +124,9 @@ class ContentAnalyzer:
 
         # Parse LLM response (JSON)
         try:
-            analysis_data = json.loads(llm_response.content)
-        except json.JSONDecodeError:
-            logger.warning("Failed to parse LLM JSON response, using text")
+            analysis_data = self._extract_json(llm_response.content)
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning(f"Failed to parse LLM JSON response: {e}, using basic analysis")
             return self._create_basic_result(basic_metrics)
 
         # Convert to ContentAnalysisResult
@@ -153,6 +153,60 @@ class ContentAnalyzer:
             heading_count=basic_metrics["heading_count"],
             link_count=basic_metrics["link_count"],
         )
+
+    def _extract_json(self, content: str) -> Dict[str, Any]:
+        """
+        Extract JSON from LLM response, handling various formats.
+
+        Tries multiple strategies:
+        1. Direct JSON parse
+        2. Extract from markdown code fences
+        3. Find first { to last }
+
+        Args:
+            content: LLM response content
+
+        Returns:
+            Parsed JSON dict
+
+        Raises:
+            ValueError: If JSON cannot be extracted
+        """
+        # Strategy 1: Direct parse
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            pass
+
+        # Strategy 2: Extract from code fences
+        if "```json" in content:
+            start = content.find("```json") + 7
+            end = content.find("```", start)
+            if end > start:
+                try:
+                    return json.loads(content[start:end].strip())
+                except json.JSONDecodeError:
+                    pass
+
+        if "```" in content:
+            start = content.find("```") + 3
+            end = content.find("```", start)
+            if end > start:
+                try:
+                    return json.loads(content[start:end].strip())
+                except json.JSONDecodeError:
+                    pass
+
+        # Strategy 3: Find first { to last }
+        first_brace = content.find("{")
+        last_brace = content.rfind("}")
+        if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+            try:
+                return json.loads(content[first_brace:last_brace + 1])
+            except json.JSONDecodeError:
+                pass
+
+        raise ValueError("Could not extract valid JSON from LLM response")
 
     def _extract_basic_metrics(self, soup: BeautifulSoup) -> Dict[str, Any]:
         """Extract basic SEO metrics from HTML"""

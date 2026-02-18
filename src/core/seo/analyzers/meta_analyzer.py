@@ -132,14 +132,14 @@ class MetaAnalyzer:
 
         if llm_response.success:
             try:
-                analysis_data = json.loads(llm_response.content)
+                analysis_data = self._extract_json(llm_response.content)
                 recommendations = self._parse_recommendations(analysis_data)
                 # Use LLM scores if available
                 title_score = analysis_data.get("title_analysis", {}).get("score", title_score)
                 desc_score = analysis_data.get("description_analysis", {}).get("score", desc_score)
                 overall_score = analysis_data.get("overall_score", overall_score)
-            except json.JSONDecodeError:
-                logger.warning("Failed to parse LLM meta analysis JSON")
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.warning(f"Failed to parse LLM meta analysis JSON: {e}")
 
         # Add basic recommendations if LLM didn't provide any
         if not recommendations:
@@ -158,6 +158,60 @@ class MetaAnalyzer:
             description_length=len(description),
             keywords=keywords,
         )
+
+    def _extract_json(self, content: str) -> Dict[str, Any]:
+        """
+        Extract JSON from LLM response, handling various formats.
+
+        Tries multiple strategies:
+        1. Direct JSON parse
+        2. Extract from markdown code fences
+        3. Find first { to last }
+
+        Args:
+            content: LLM response content
+
+        Returns:
+            Parsed JSON dict
+
+        Raises:
+            ValueError: If JSON cannot be extracted
+        """
+        # Strategy 1: Direct parse
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            pass
+
+        # Strategy 2: Extract from code fences
+        if "```json" in content:
+            start = content.find("```json") + 7
+            end = content.find("```", start)
+            if end > start:
+                try:
+                    return json.loads(content[start:end].strip())
+                except json.JSONDecodeError:
+                    pass
+
+        if "```" in content:
+            start = content.find("```") + 3
+            end = content.find("```", start)
+            if end > start:
+                try:
+                    return json.loads(content[start:end].strip())
+                except json.JSONDecodeError:
+                    pass
+
+        # Strategy 3: Find first { to last }
+        first_brace = content.find("{")
+        last_brace = content.rfind("}")
+        if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+            try:
+                return json.loads(content[first_brace:last_brace + 1])
+            except json.JSONDecodeError:
+                pass
+
+        raise ValueError("Could not extract valid JSON from LLM response")
 
     def _score_title(self, title: str, target_keywords: List[str]) -> int:
         """Score title tag (0-100)"""

@@ -21,12 +21,13 @@ Comments:
 
 from .provider import LLMProvider, LLMResponse, ModelPreset
 from .claude_provider import ClaudeProvider
-from .openai_provider import OpenAIProvider
+# OpenAI provider deferred to Phase 2.1
+# from .openai_provider import OpenAIProvider
 
 __all__ = [
     "LLMProvider",
     "LLMResponse",
     "ModelPreset",
     "ClaudeProvider",
-    "OpenAIProvider",
+    # "OpenAIProvider",  # Phase 2.1
 ]
