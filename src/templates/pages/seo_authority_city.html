@@ -6,11 +6,12 @@
   <title>
    {{ city_page.title }} | {{ business.business_name }}
   </title>
-  <meta content="{{ city_page.meta_description }}" name="description"/>
+  {% set _meta_desc = city_page.meta_description if city_page.meta_description else (business.business_name + ' provides portable restroom rental in ' + city_page.city_name + '. Call ' + contact.phone + ' for a free quote.') %}
+  <meta content="{{ _meta_desc }}" name="description"/>
   <meta content="{{ city_page.primary_keyword }}{% if city_page.secondary_keywords %}, {{ city_page.secondary_keywords|join(', ') }}{% endif %}" name="keywords"/>
   <!-- Open Graph Meta Tags -->
   <meta content="{{ city_page.title }}" property="og:title"/>
-  <meta content="{{ city_page.meta_description }}" property="og:description"/>
+  <meta content="{{ _meta_desc }}" property="og:description"/>
   <meta content="website" property="og:type"/>
   <meta content="{{ page_url }}" property="og:url"/>
   <meta content="{{ city_page.city_image.image_url }}" property="og:image"/>

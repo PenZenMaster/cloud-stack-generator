@@ -1,10 +1,12 @@
     <header class="site-header">
         <div class="header-content">
             <div class="logo-container">
-                {% if branding.logo_url %}
-                <img src="{{ branding.logo_url }}" alt="{{ business.business_name }} Logo" class="logo-image">
-                {% endif %}
-                <span class="company-name">{{ business.business_name }}</span>
+                <a href="{{ base_path | default('') }}index.html" aria-label="{{ business.business_name }} - Home">
+                    {% if branding.logo_url %}
+                    <img src="{{ branding.logo_url }}" alt="{{ business.business_name }} Logo" class="logo-image">
+                    {% endif %}
+                    <span class="company-name">{{ business.business_name }}</span>
+                </a>
             </div>
             <nav class="main-nav" role="navigation">
                 <ul class="menu">
