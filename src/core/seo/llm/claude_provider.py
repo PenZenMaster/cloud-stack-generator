@@ -4,7 +4,7 @@ Path: src/core/seo/llm/claude_provider.py
 
 Description:
 Anthropic Claude provider for SEO analysis.
-Supports Claude 3.5 Sonnet, Claude 3 Opus, and Claude 3 Haiku.
+Supports Claude Sonnet 4.5, Claude Opus 4.6, and Claude Haiku 4.5.
 
 Author(s):
 Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
@@ -40,23 +40,23 @@ class ClaudeProvider(LLMProvider):
     Anthropic Claude provider for SEO analysis.
 
     Supports multiple Claude models with varying cost/quality tradeoffs:
-    - Claude 3.5 Sonnet: Best balance of speed and quality
-    - Claude 3 Opus: Highest quality, slower, more expensive
-    - Claude 3 Haiku: Fastest, cheapest, good for simple tasks
+    - Claude Sonnet 4.5: Best balance of speed and quality
+    - Claude Opus 4.6: Highest quality, slower, more expensive
+    - Claude Haiku 4.5: Fastest, cheapest, good for simple tasks
     """
 
-    # Model identifiers
+    # Model identifiers (updated Feb 2026)
     MODELS = {
-        ModelPreset.FAST: "claude-3-haiku-20240307",
-        ModelPreset.BALANCED: "claude-3-5-sonnet-20241022",
-        ModelPreset.THOROUGH: "claude-3-opus-20240229",
+        ModelPreset.FAST: "claude-haiku-4-5-20251001",
+        ModelPreset.BALANCED: "claude-sonnet-4-5-20250929",
+        ModelPreset.THOROUGH: "claude-opus-4-6",
     }
 
     # Pricing per 1k tokens (input, output) in USD as of Feb 2026
     PRICING = {
-        "claude-3-haiku-20240307": (0.00025, 0.00125),
-        "claude-3-5-sonnet-20241022": (0.003, 0.015),
-        "claude-3-opus-20240229": (0.015, 0.075),
+        "claude-haiku-4-5-20251001": (0.00025, 0.00125),
+        "claude-sonnet-4-5-20250929": (0.003, 0.015),
+        "claude-opus-4-6": (0.015, 0.075),
     }
 
     def __init__(
@@ -338,7 +338,9 @@ Please analyze:
    - Category scores
    - Key strengths and weaknesses
 
-Provide response in JSON format:
+IMPORTANT: Respond with ONLY valid JSON. Do not include any explanatory text before or after the JSON.
+
+Required JSON format:
 {{
   "overall_score": 0-100,
   "category_scores": {{
@@ -399,7 +401,9 @@ Please evaluate:
    - Natural language
    - Relevance
 
-Provide response in JSON format:
+IMPORTANT: Respond with ONLY valid JSON. Do not include any explanatory text before or after the JSON.
+
+Required JSON format:
 {{
   "title_analysis": {{
     "score": 0-100,
