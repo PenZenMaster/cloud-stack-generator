@@ -2,28 +2,43 @@
 
 **Last Updated:** 2026-02-17
 **Branch:** main
-**Version:** 3.15.1 (pending commit)
-**Last Commit:** a35a29d (Phase 0 Technical Debt Cleanup)
+**Version:** 3.15.1
+**Last Commit:** a6e7833 (fix(templates): logo hyperlink, meta desc fallback, backlog update)
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **Phase 2 Testing & Bug Fixes - COMPLETE** - Validated Phase 2 SEO analysis end-to-end with real Claude API. Fixed 3 critical bugs: OpenAI import error, outdated Claude model IDs (updated to 4.5/4.6), and JSON parsing failures. Analysis now fully functional with 68/100 score on test page.
+1. **Florida Site SEO Fixes - DEPLOYED** - Ran full SEO analysis on clean_restroom_rental_fl
+   (3 pages tested, scores 40-66/100). Fixed all template-level P1 issues: Virginia image
+   domain replaced with Florida domain across all 48 pages, canonical URL conflict resolved
+   (deployment_url set), all 26 city page titles fixed (Salvo Metal Works content bleed
+   removed), meta_description fallback added to seo_authority_city.html template.
 
-2. **Robust JSON Extraction** - Added multi-strategy JSON parsing (direct parse, code fence extraction, brace matching) to handle Claude 4.5/4.6 responses. Both content_analyzer and meta_analyzer now gracefully handle wrapped JSON.
+2. **Logo Hyperlink Fixed** - header.html logo/company name had no wrapping anchor tag.
+   Wrapped in <a href="index.html"> so logo is clickable on all generated sites. Discovered
+   after user reviewed live site at https://d3n2rcl37rqmzj.cloudfront.net/. Committed and
+   pushed as a6e7833.
 
-3. **SEO Analysis Validation** - Tested on real generated site (`clean_restroom_rental_fl/index.html`). LLM identified 5 critical issues including missing keywords, wrong H1, URL inconsistencies, and images hosted on wrong domain (Virginia instead of Florida).
+3. **BACK-007 Added to Backlog** - CLI deploy command is a stub. Added backlog item to
+   implement real S3 sync + CloudFront invalidation via boto3. User currently runs
+   aws s3 sync and cloudfront create-invalidation manually after each generate run.
 
 ---
 
 ## Next 3 Priorities
 
-1. **Commit Phase 2 Bug Fixes** - Commit OpenAI import fix, Claude 4.5/4.6 model updates, and JSON extraction improvements. Version bump to 3.15.1. Push to remote after user QA confirmation.
+1. **Implement BACK-007: CLI deploy command** - Wire up boto3 S3 sync with correct
+   content-type headers, --delete flag, and auto CloudFront invalidation when
+   auto_invalidate_cache: true. aws_s3 provider is priority; others can remain stubs.
 
-2. **Phase 2.1: OpenAI Provider** - Add OpenAI GPT support (GPT-4o, GPT-4o-mini, GPT-3.5-turbo) to give users choice between Claude and OpenAI. Implement provider selection via CLI `--provider` flag.
+2. **Phase 2.1: OpenAI Provider** - Add GPT-4o / GPT-4o-mini / GPT-3.5-turbo support
+   to SEO analyzer via --provider openai CLI flag.
 
-3. **Fix Site Generator SEO Issues** - Address SEO problems found in generated HTML: meta descriptions too long (308 chars), missing target keywords in H1 tags, image URL domain inconsistencies, low keyword density.
+3. **Fix Site Generator SEO Issues (content)** - Analysis showed generated pages score
+   D/F grades. Primary issues: keywords missing from H1 tags, thin product page content
+   (87 words on luxury-flushing-unit), meta descriptions still too long on some pages.
+   Template or AI prompt improvements needed.
 
 ---
 
@@ -31,54 +46,59 @@
 
 **Git:**
 - Branch: main
-- Working tree: Modified (5 files)
-- Last commit: a35a29d (Phase 0 Technical Debt Cleanup)
-- Version: 3.15.1 (pending)
-- Pending commit: Phase 2 bug fixes
+- Working tree: clean (only .claude/settings.local.json locally modified)
+- Last commit: a6e7833 - pushed to origin/main
+- Version: 3.15.1
 
-**Phase 2 Status:**
-- ✅ Core SEO infrastructure (600+ lines)
-- ✅ Claude LLM provider (updated to 4.5/4.6 models)
-- ✅ Content analyzer (with robust JSON parsing)
-- ✅ Meta analyzer (with robust JSON parsing)
-- ✅ Scoring engine
-- ✅ CLI commands (`awg analyze content`, `awg analyze meta`)
-- ✅ End-to-end testing validated
-- 🔧 Bug fixes ready to commit (5 files changed)
-- ⏭️ OpenAI provider (Phase 2.1)
-- ⏭️ HTML/JSON reports (Phase 2.2)
+**Florida Site (clean_restroom_rental_fl):**
+- Deployed at: https://d3n2rcl37rqmzj.cloudfront.net/
+- All 48 pages: Virginia image domain fixed, canonical URL correct
+- All 26 city pages: correct titles, meta descriptions present
+- Logo hyperlink: fixed and live
+- SEO scores (pre-fix baseline): index 66/D, Tampa 40/F, product pages ~59/F
+- Re-analysis not yet run post-fix (good next step)
 
 **Tests:**
-- Cloud infrastructure: 155/155 passing
-- SEO analysis: Manual end-to-end test PASSED
+- 155/155 passing
 - Coverage: 72.38% (above 69% threshold)
 
 **Blockers:**
-- None - Phase 2 fully functional
+- None
 
 **Known Issues:**
-- Cost display formatting (shows $0.0000, should show $0.0245) - LOW priority
-- Site generator produces SEO-problematic HTML (meta too long, missing keywords) - MEDIUM priority
+- CLI deploy command is a stub (BACK-007)
+- SEO content quality still low (keyword density, thin product pages)
+- Cost display shows $0.0000 instead of actual cost - LOW priority
 
 ---
 
 ## Key Context Notes
 
-1. **Phase 2 Validated:** SEO analysis is production-ready. Successfully analyzed real site with Claude Sonnet 4.5, generated detailed recommendations, identified critical SEO issues. All components working: LLM provider, content analyzer, meta analyzer, scoring engine, CLI interface.
+1. **Config directory is gitignored** - All client YAML configs (config/clients/**) are
+   not tracked in git. Config changes are local only. Florida config was updated this
+   session: image URLs, deployment_url, city titles - but these changes only exist locally.
 
-2. **Critical Bugs Fixed:** Three blocking issues resolved: (1) OpenAI import error commented out for Phase 2.1, (2) Claude model IDs updated from 3.x to 4.5/4.6, (3) JSON parsing now handles wrapped responses with 3 fallback strategies.
+2. **City pages generate to root, not locations/** - The generator writes city pages to
+   output_dir/slug.html (e.g., tampa.html), NOT output_dir/locations/tampa.html. Standard
+   pages (about, contact, etc.) are NOT regenerated by the CLI generate command - they
+   must be patched manually or a full rebuild triggered.
 
-3. **Real SEO Issues Discovered:** Analysis revealed problems in generated sites - meta descriptions exceed optimal length (308 vs 160 chars), H1 tags lack keywords, images hosted on wrong domains (template recycling from Virginia to Florida site). These affect all generated sites and should be addressed in templates.
-
-4. **Awaiting QA Confirmation:** Checkpoint complete, documentation updated, ready to commit Phase 2 bug fixes pending user approval.
+3. **Deploy is manual** - After generating, user runs:
+   `aws s3 sync output/clients/<client>/ s3://<bucket>/ --profile "AWS V2" --delete`
+   `aws cloudfront create-invalidation --distribution-id <id> --paths "/*" --profile "AWS V2"`
 
 ---
 
 ## Quick Reference
 
-**Test SEO Analysis:**
+**Generate Florida site:**
 ```cmd
-python -m src.cli analyze content "output/clients/clean_restroom_rental_fl/index.html" -k "keyword" --model balanced --api-key "sk-ant-..."
+python -m src.cli generate -c "config/clients/Clean Restroom Rentals/clean_restroom_rental_florida_config.yaml" -o "output/clients/clean_restroom_rental_fl" --no-ai
+```
+
+**Run SEO analysis:**
+```cmd
+python -m src.cli analyze content "output/clients/clean_restroom_rental_fl/index.html" -k "portable restroom rental florida" --model balanced
 ```
 
 **Model Presets:**
@@ -86,14 +106,8 @@ python -m src.cli analyze content "output/clients/clean_restroom_rental_fl/index
 - balanced: Claude Sonnet 4.5 (~$0.025/page) - DEFAULT
 - thorough: Claude Opus 4.6 (~$0.15/page)
 
-**Files Modified (Pending Commit):**
-- src/core/seo/llm/__init__.py (OpenAI import commented out)
-- src/core/seo/llm/claude_provider.py (Model IDs updated, prompts enhanced)
-- src/core/seo/analyzers/content_analyzer.py (JSON extraction added)
-- src/core/seo/analyzers/meta_analyzer.py (JSON extraction added)
-
 ---
 
 **For Phase 1 details:** See `docs/phase1-multi-cloud-implementation.md`
 **For Phase 2 demo:** See `docs/phase2-seo-analysis-demo.md`
-**For full checkpoint:** See `docs/archive/checkpoints/CheckPoint-2026-02-17_1530.md`
+**For full backlog:** See `docs/project-backlog.yaml`
