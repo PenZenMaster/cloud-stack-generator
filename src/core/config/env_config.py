@@ -110,6 +110,36 @@ class OpenAIConfig:
         return bool(api_key and api_key != 'your_openai_api_key_here')
 
 
+class GoogleMapsConfig:
+    """Google Maps / Places API configuration."""
+
+    @staticmethod
+    def get_api_key() -> str:
+        """Get Google Maps API key."""
+        return os.getenv('GOOGLE_MAPS_API_KEY', '')
+
+    @staticmethod
+    def is_configured() -> bool:
+        """Check if the Google Maps API key is set."""
+        key = GoogleMapsConfig.get_api_key()
+        return bool(key and len(key) > 10)
+
+
+class ClaudeConfig:
+    """Anthropic / Claude API configuration."""
+
+    @staticmethod
+    def get_api_key() -> str:
+        """Get Claude (Anthropic) API key."""
+        return os.getenv('CLAUDE_API_KEY', '')
+
+    @staticmethod
+    def is_configured() -> bool:
+        """Check if the Claude API key is set."""
+        key = ClaudeConfig.get_api_key()
+        return bool(key and len(key) > 10)
+
+
 class CacheConfig:
     """Content cache configuration"""
 
@@ -143,6 +173,8 @@ class EnvironmentConfig:
     # Sub-configurations
     github = GitHubConfig
     openai = OpenAIConfig
+    google_maps = GoogleMapsConfig
+    claude = ClaudeConfig
     cache = CacheConfig
 
     @staticmethod
