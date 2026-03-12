@@ -639,35 +639,54 @@ class EnhancedMainWindow(QMainWindow):
             self.status_label.setText(f"Editing: {tab_names[index]}")
 
     def load_app_api_keys(self) -> Dict[str, str]:
-        """Load application-wide API keys from config/api_keys.json"""
+        """Load application-wide API keys from .env (single source of truth)."""
         try:
-            api_keys_file = Path("config/api_keys.json")
-            if api_keys_file.exists():
-                with open(api_keys_file, 'r') as f:
-                    return json.load(f)
+            from dotenv import dotenv_values
+            env_path = Path(__file__).parent.parent.parent / '.env'
+            if env_path.exists():
+                env_vals = dotenv_values(env_path)
+                return {
+                    'google_maps_api_key': env_vals.get('GOOGLE_MAPS_API_KEY', ''),
+                    'claude_api_key': env_vals.get('CLAUDE_API_KEY', ''),
+                    'openai_api_key': env_vals.get('OPENAI_API_KEY', ''),
+                }
             return {}
         except Exception as e:
-            logger.error(f"Error loading app API keys: {e}")
+            logger.error(f"Error loading API keys from .env: {e}")
             return {}
-    
+
     def save_app_api_keys(self, api_keys: Dict[str, str]):
-        """Save application-wide API keys to config/api_keys.json"""
+        """Save application-wide API keys to .env (single source of truth).
+
+        Only writes non-empty values so existing keys are never blanked out
+        by leaving a field empty in the UI.
+        """
         try:
-            api_keys_file = Path("config/api_keys.json")
-            api_keys_file.parent.mkdir(exist_ok=True)
-            with open(api_keys_file, 'w') as f:
-                json.dump(api_keys, f, indent=2)
+            from dotenv import set_key, load_dotenv
+            env_path = Path(__file__).parent.parent.parent / '.env'
+            if not env_path.exists():
+                env_path.touch()
+
+            key_map = {
+                'google_maps_api_key': 'GOOGLE_MAPS_API_KEY',
+                'claude_api_key': 'CLAUDE_API_KEY',
+                'openai_api_key': 'OPENAI_API_KEY',
+            }
+            for field_name, env_var in key_map.items():
+                value = api_keys.get(field_name, '').strip()
+                if value:
+                    set_key(str(env_path), env_var, value, quote_mode='never')
+
             self.app_api_keys = api_keys
+            # Reload env vars so the running process picks them up immediately
+            load_dotenv(env_path, override=True)
         except Exception as e:
-            logger.error(f"Error saving app API keys: {e}")
-    
+            logger.error(f"Error saving API keys to .env: {e}")
+
     def set_api_keys_in_tab(self):
-        """Set the loaded API keys in the API Keys tab"""
+        """Populate the API Keys tab fields from the loaded keys."""
         if hasattr(self, 'api_keys_tab') and self.app_api_keys:
-            google_maps_key = self.app_api_keys.get('google_maps_api_key', '')
-            if google_maps_key:
-                # Set the key directly in the field
-                self.api_keys_tab.maps_api_key.setText(google_maps_key)
+            self.api_keys_tab.set_config_data(self.app_api_keys)
 
     def update_window_title(self):
         """Update window title with current state"""

@@ -1,44 +1,50 @@
 # AWG Startup Context
 
-**Last Updated:** 2026-02-17
+**Last Updated:** 2026-03-11
 **Branch:** main
-**Version:** 3.15.1
-**Last Commit:** a6e7833 (fix(templates): logo hyperlink, meta desc fallback, backlog update)
+**Version:** 4.0.0
+**Last Commit:** (see git log - auto-onboarding feature)
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **Florida Site SEO Fixes - DEPLOYED** - Ran full SEO analysis on clean_restroom_rental_fl
-   (3 pages tested, scores 40-66/100). Fixed all template-level P1 issues: Virginia image
-   domain replaced with Florida domain across all 48 pages, canonical URL conflict resolved
-   (deployment_url set), all 26 city page titles fixed (Salvo Metal Works content bleed
-   removed), meta_description fallback added to seo_authority_city.html template.
+1. **Auto Onboarding Feature - COMPLETE (v4.0.0)** - New `awg onboard` CLI command.
+   Given a website URL + optional GBP share link + industry, it scrapes the site
+   (BeautifulSoup4, up to 10 pages), runs Claude LLM extraction (services, products,
+   branding colors), fetches GBP data via Places API (New), and writes a pre-populated
+   client YAML config. Graceful partial failure: website/GBP failures are non-fatal.
+   New module: `src/core/onboarding/` (6 files, 85 unit tests passing).
 
-2. **Logo Hyperlink Fixed** - header.html logo/company name had no wrapping anchor tag.
-   Wrapped in <a href="index.html"> so logo is clickable on all generated sites. Discovered
-   after user reviewed live site at https://d3n2rcl37rqmzj.cloudfront.net/. Committed and
-   pushed as a6e7833.
+2. **SAB (Service Area Business) Support** - GBP client handles SABs that hide their
+   physical address. `search_place()` retries without location bias when biased search
+   returns 0 results. `search_place_with_fallback()` recovers city/state from the text
+   search `formattedAddress`. `fetch()` enriches sparse place details with SAB city data.
+   Places API (New) fully adopted (`places.googleapis.com/v1/`).
 
-3. **BACK-007 Added to Backlog** - CLI deploy command is a stub. Added backlog item to
-   implement real S3 sync + CloudFront invalidation via boto3. User currently runs
-   aws s3 sync and cloudfront create-invalidation manually after each generate run.
+3. **API Keys UI Consolidated to .env** - API Keys tab now shows Google Maps, Claude,
+   and OpenAI fields. Load reads from `.env` via `dotenv_values()`. Save writes to `.env`
+   via `set_key()` and reloads env into the running process. Test Connections button
+   tests Places API (New), Anthropic `/v1/models`, and OpenAI `/v1/models`. Dead
+   `config/api_keys.json` storage removed. `env_config.py` gains `GoogleMapsConfig`
+   and `ClaudeConfig` classes.
 
 ---
 
 ## Next 3 Priorities
 
-1. **Implement BACK-007: CLI deploy command** - Wire up boto3 S3 sync with correct
+1. **Implement BACK-007: CLI deploy command** - Wire boto3 S3 sync with correct
    content-type headers, --delete flag, and auto CloudFront invalidation when
-   auto_invalidate_cache: true. aws_s3 provider is priority; others can remain stubs.
+   `auto_invalidate_cache: true`. `aws_s3` provider is priority; others remain stubs.
 
-2. **Phase 2.1: OpenAI Provider** - Add GPT-4o / GPT-4o-mini / GPT-3.5-turbo support
-   to SEO analyzer via --provider openai CLI flag.
+2. **GBP: Enable Places API (New) in Google Cloud Console** - The Google Maps API key
+   currently fails "Places API: FAIL" (key not authorized). Must enable "Places API (New)"
+   (not legacy) at APIs & Services > Library in Google Cloud Console for the onboarding
+   GBP lookup to work end-to-end.
 
-3. **Fix Site Generator SEO Issues (content)** - Analysis showed generated pages score
-   D/F grades. Primary issues: keywords missing from H1 tags, thin product page content
-   (87 words on luxury-flushing-unit), meta descriptions still too long on some pages.
-   Template or AI prompt improvements needed.
+3. **Fix Site Generator SEO Issues (content)** - Generated pages score D/F. Primary
+   issues: keywords missing from H1 tags, thin product page content, meta descriptions
+   too long. Template or AI prompt improvements needed.
 
 ---
 
@@ -46,50 +52,52 @@
 
 **Git:**
 - Branch: main
-- Working tree: clean (only .claude/settings.local.json locally modified)
-- Last commit: a6e7833 - pushed to origin/main
-- Version: 3.15.1
-
-**Florida Site (clean_restroom_rental_fl):**
-- Deployed at: https://d3n2rcl37rqmzj.cloudfront.net/
-- All 48 pages: Virginia image domain fixed, canonical URL correct
-- All 26 city pages: correct titles, meta descriptions present
-- Logo hyperlink: fixed and live
-- SEO scores (pre-fix baseline): index 66/D, Tampa 40/F, product pages ~59/F
-- Re-analysis not yet run post-fix (good next step)
+- Version: 4.0.0
+- Working tree: clean after this session's commit
+- All changes committed and pushed
 
 **Tests:**
-- 155/155 passing
-- Coverage: 72.38% (above 69% threshold)
+- 85 onboarding unit tests: PASSING
+- Full suite (prior baseline): 852 passed, 77 failed (pre-existing failures in
+  test_template_preview.py and test_template_validator.py - not related to this work)
+
+**Onboard command usage:**
+```cmd
+python -m src.cli onboard -u https://example.com/ -i "plumbing" -g "https://maps.app.goo.gl/..."
+```
 
 **Blockers:**
-- None
+- Google Maps API key needs "Places API (New)" enabled in Google Cloud Console
+  (Geocoding and legacy Places API are also failing - same key, same restriction issue)
 
 **Known Issues:**
 - CLI deploy command is a stub (BACK-007)
 - SEO content quality still low (keyword density, thin product pages)
+- SABs completely unlisted in Places text search return no GBP data (graceful warning)
 - Cost display shows $0.0000 instead of actual cost - LOW priority
 
 ---
 
 ## Key Context Notes
 
-1. **Config directory is gitignored** - All client YAML configs (config/clients/**) are
-   not tracked in git. Config changes are local only. Florida config was updated this
-   session: image URLs, deployment_url, city titles - but these changes only exist locally.
+1. **Config directory is gitignored** - All client YAML configs (`config/clients/**`)
+   are not tracked. Onboard command writes configs there. Florida config is local only.
 
-2. **City pages generate to root, not locations/** - The generator writes city pages to
-   output_dir/slug.html (e.g., tampa.html), NOT output_dir/locations/tampa.html. Standard
-   pages (about, contact, etc.) are NOT regenerated by the CLI generate command - they
-   must be patched manually or a full rebuild triggered.
+2. **Auto-onboarding output** - Written to `config/clients/<slug>/<slug>_config.yaml`.
+   Always overwrites if re-run (no prompt). Validate with `awg validate --config <file>`.
 
-3. **Deploy is manual** - After generating, user runs:
-   `aws s3 sync output/clients/<client>/ s3://<bucket>/ --profile "AWS V2" --delete`
-   `aws cloudfront create-invalidation --distribution-id <id> --paths "/*" --profile "AWS V2"`
+3. **Places API (New) vs legacy** - The onboarding GBP client uses the NEW API
+   (`places.googleapis.com/v1/`, `X-Goog-Api-Key` header, POST searchText). The old
+   legacy API (`maps.googleapis.com/maps/api/place/`) is NOT used anywhere in this project.
 
 ---
 
 ## Quick Reference
+
+**Auto-onboard a client:**
+```cmd
+python -m src.cli onboard -u https://camphousecountrylandscaping.com/ -i landscaping -g "https://maps.app.goo.gl/..."
+```
 
 **Generate Florida site:**
 ```cmd
