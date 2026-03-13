@@ -14,9 +14,24 @@ Created Date:
 2026-03-11
 
 Last Modified Date:
-2026-03-11 (v1.02)
+2026-03-12 (v1.07)
 
 Comments:
+* v1.07 - Accept direct Place ID input (ChI...) for CLI -g values and bypass
+          URL redirect/search fallbacks when a valid naked Place ID is provided
+* v1.06 - Add HTML fallback for stubborn SAB links: after redirect resolution,
+          parse the final Google Maps page body for embedded ChI... Place ID
+          when nearby/text searches return no results
+* v1.05 - Fix false-positive nearby matches: require stricter expected-name
+          confidence (token overlap + similarity threshold) before accepting
+          a nearby candidate; prevents single-word matches like "Country"
+* v1.04 - Reliability hardening: do not treat ftid as a Place ID; improve
+          text-search candidate selection via name scoring; add nearby search
+          type filtering and fallback retry to reduce API request failures
+* v1.03 - CID-based lookup replaced with searchNearby: extract exact place
+          coordinates (!3d/!4d) from Maps URL and use places:searchNearby with
+          a 50m radius to find the place by location rather than name or CID;
+          raw response body now logged at WARNING when all searches return empty
 * v1.02 - SAB (Service Area Business) support: fetch() now enriches sparse
           place details (no city) with city/state from text search formattedAddress;
           search_place() retries without location bias for SABs;
@@ -33,6 +48,7 @@ import os
 import re
 import urllib.parse
 from dataclasses import dataclass, field
+from difflib import SequenceMatcher
 from typing import Dict, Optional
 
 import requests
@@ -150,7 +166,9 @@ class GBPClient:
         if result and not result.city and result.business_name:
             # SAB: place details omit physical address. Recover city/state from
             # the text search formattedAddress (often shows service area city).
-            logger.info(f"SAB detected for '{result.business_name}' - enriching from text search")
+            logger.info(
+                f"SAB detected for '{result.business_name}' - enriching from text search"
+            )
             search_data = self.search_place_with_fallback(result.business_name)
             if search_data:
                 result.city = result.city or search_data.city
@@ -164,9 +182,10 @@ class GBPClient:
 
     def resolve_share_link(self, share_url: str) -> Optional[str]:
         """
-        Follow redirects on a GBP share link and extract the Place ID.
+                Resolve a Place ID from either a direct Place ID value or a share link.
 
         Handles:
+                    - ChI...                      (direct Place ID input)
           - https://maps.app.goo.gl/... (short redirect)
           - https://g.co/kgs/...       (short redirect)
           - https://www.google.com/maps/place/... (full URL)
@@ -180,6 +199,12 @@ class GBPClient:
         Returns:
             Place ID string or None.
         """
+        # Support direct Place ID passed on CLI (e.g. -g "ChIJ...")
+        direct_place_id = self._extract_naked_place_id(share_url)
+        if direct_place_id:
+            logger.info("Using direct Place ID input")
+            return direct_place_id
+
         # Try to extract directly from the provided URL
         place_id = self._extract_place_id_from_url(share_url)
         if place_id:
@@ -200,8 +225,32 @@ class GBPClient:
             if place_id:
                 return place_id
 
-            # Extract business name and coordinates for location-biased text search
+            # Some SAB share links resolve to a maps URL containing CID/g IDs but
+            # no direct Place ID in the URL. Attempt to extract Place ID from the
+            # resolved HTML payload before search-based fallbacks.
+            place_id = self._extract_place_id_from_maps_html(final_url)
+            if place_id:
+                logger.info("Resolved Place ID from maps HTML payload")
+                return place_id
+
+            # Try nearby search using exact place coordinates before name text search.
+            # !3d/!4d in the Maps URL data block are the precise place pin coordinates
+            # (more accurate than the viewport @lat,lng used for text search bias).
+            # The expected business name is used to validate results so we don't
+            # accept an unrelated nearby business (e.g. a grocery store) when the
+            # target is a SAB whose pin falls in a commercial area.
+            # Progressive radius: 50m for precise pins, up to 1000m for SAB area pins.
             business_name = self._extract_name_from_maps_url(final_url)
+            exact_coords = self._extract_place_coords_from_url(final_url)
+            if exact_coords:
+                for radius in (50.0, 200.0, 1000.0):
+                    place_id = self.search_place_nearby(
+                        exact_coords, radius_m=radius, expected_name=business_name
+                    )
+                    if place_id:
+                        return place_id
+
+            # Extract viewport coordinates for text search fallback
             coords = self._extract_coords_from_maps_url(final_url)
 
             if business_name:
@@ -211,7 +260,9 @@ class GBPClient:
                 )
                 return self.search_place(business_name, location=coords)
 
-            logger.warning(f"Could not extract Place ID or name from final URL: {final_url}")
+            logger.warning(
+                f"Could not extract Place ID or name from final URL: {final_url}"
+            )
 
         except Exception as exc:
             logger.warning(f"Redirect resolution failed for {share_url}: {exc}")
@@ -282,7 +333,9 @@ class GBPClient:
             resp = requests.post(url, headers=headers, json=body, timeout=10)
             logger.info(f"Text search HTTP {resp.status_code} for: {query}")
             if not resp.ok:
-                logger.error(f"Places text search error {resp.status_code}: {resp.text[:500]}")
+                logger.error(
+                    f"Places text search error {resp.status_code}: {resp.text[:500]}"
+                )
                 return None
             data = resp.json()
             # Places API (New) may return an error body even on 200
@@ -292,17 +345,141 @@ class GBPClient:
             places = data.get("places", [])
             logger.info(f"Text search returned {len(places)} result(s)")
             if places:
-                return places[0].get("id")
+                best = self._pick_best_place_match(places, query)
+                if best:
+                    best_name = best.get("displayName", {}).get("text", "")
+                    logger.info(f"Text search selected best match: {best_name}")
+                    return best.get("id")
 
+            logger.warning(
+                f"Places text search returned 0 results. Raw response: {data}"
+            )
             # SABs may not appear in location-biased searches - retry without bias
             if location:
-                logger.info("No results with location bias - retrying without (SAB possible)")
+                logger.info(
+                    "No results with location bias - retrying without (SAB possible)"
+                )
                 return self.search_place(query, location=None)
 
             logger.warning(f"Text search returned no places for: {query}")
         except Exception as exc:
             logger.error(f"Place text search request failed: {exc}")
 
+        return None
+
+    def search_place_nearby(
+        self,
+        coords: tuple,
+        radius_m: float = 50.0,
+        expected_name: Optional[str] = None,
+    ) -> Optional[str]:
+        """
+        Find a Place ID using places:searchNearby with a tight radius.
+
+        Used when exact place coordinates are available from the Maps URL data block
+        (!3d/!4d parameters). Results are validated against expected_name when
+        provided so that unrelated nearby businesses are not returned (e.g. a
+        grocery store when the target is a SAB whose pin falls in a commercial area).
+
+        Name matching uses significant words (length > 3) for fuzzy comparison so
+        that partial name variations still match.
+
+        Args:
+            coords: (latitude, longitude) of the place pin.
+            radius_m: Search radius in metres (default 50m).
+            expected_name: Business name from the Maps URL used to validate results.
+
+        Returns:
+            Place ID of the matching result, or None.
+        """
+        url = f"{PLACES_BASE_URL}/places:searchNearby"
+        headers = {
+            "X-Goog-Api-Key": self.api_key,
+            "X-Goog-FieldMask": "places.id,places.displayName",
+            "Content-Type": "application/json",
+            "User-Agent": self.USER_AGENT,
+        }
+        lat, lng = coords
+        body: dict = {
+            "locationRestriction": {
+                "circle": {
+                    "center": {"latitude": lat, "longitude": lng},
+                    "radius": radius_m,
+                }
+            },
+            "maxResultCount": 10,
+            # nearby search commonly expects at least one included type
+            "includedTypes": ["establishment"],
+        }
+        try:
+            resp = requests.post(url, headers=headers, json=body, timeout=10)
+            logger.info(
+                f"Nearby search HTTP {resp.status_code} at ({lat}, {lng}) r={radius_m}m"
+            )
+            if not resp.ok:
+                # Some accounts/regions reject generic establishment type. Retry
+                # without the type filter before giving up.
+                retry_body = dict(body)
+                retry_body.pop("includedTypes", None)
+                retry_resp = requests.post(
+                    url, headers=headers, json=retry_body, timeout=10
+                )
+                logger.info(
+                    "Nearby search retry without includedTypes "
+                    f"HTTP {retry_resp.status_code} at ({lat}, {lng}) r={radius_m}m"
+                )
+                if retry_resp.ok:
+                    resp = retry_resp
+                else:
+                    logger.error(
+                        f"Nearby search error {resp.status_code} (retry {retry_resp.status_code}): "
+                        f"{resp.text[:300]}"
+                    )
+                    return None
+
+            if not resp.ok:
+                logger.error(
+                    f"Nearby search error {resp.status_code}: {resp.text[:500]}"
+                )
+                return None
+            data = resp.json()
+            if "error" in data:
+                logger.error(f"Nearby search API error: {data['error']}")
+                return None
+            places = data.get("places", [])
+            logger.info(f"Nearby search returned {len(places)} result(s)")
+            if not places:
+                logger.warning(
+                    f"Nearby search returned 0 results. Raw response: {data}"
+                )
+                return None
+
+            # Validate result against expected name when available
+            if expected_name:
+                best_place, best_score, overlap_count = self._best_match_with_score(
+                    places, expected_name
+                )
+                if best_place and self._is_confident_name_match(
+                    expected_name, best_score, overlap_count
+                ):
+                    result_name = best_place.get("displayName", {}).get("text", "")
+                    logger.info(
+                        "Nearby search matched by confidence "
+                        f"(score={best_score:.3f}, overlap={overlap_count}): {result_name}"
+                    )
+                    return best_place.get("id")
+                logger.info(
+                    "Nearby search: no confident name match among "
+                    f"{len(places)} result(s) for '{expected_name}'"
+                )
+                return None
+
+            # No expected name - return closest result
+            name = places[0].get("displayName", {}).get("text", "")
+            logger.info(f"Nearby search matched: {name}")
+            return places[0].get("id")
+        except Exception as exc:
+            logger.error(f"Nearby search request failed: {exc}")
         return None
 
     def search_place_with_fallback(
@@ -351,7 +528,9 @@ class GBPClient:
                 if resp.ok:
                     places = resp.json().get("places", [])
             if places:
-                hit = places[0]
+                hit = self._pick_best_place_match(places, query)
+                if not hit:
+                    return None
                 data = GBPData()
                 data.place_id = hit.get("id", "")
                 data.business_name = hit.get("displayName", {}).get("text", "")
@@ -402,11 +581,138 @@ class GBPClient:
             if candidate.startswith("ChI"):
                 return candidate
 
-        # ftid parameter
-        match = re.search(r"ftid=([A-Za-z0-9_:.-]+)", url)
+        # ftid parameter is not guaranteed to be a Place ID in Places API (New),
+        # so do not return it as a direct place details identifier.
+
+        return None
+
+    def _extract_naked_place_id(self, value: str) -> Optional[str]:
+        """Extract Place ID from direct CLI input like 'ChI...' or 'place_id=ChI...'."""
+        text = (value or "").strip().strip('"').strip("'")
+        if not text:
+            return None
+
+        match = re.match(r"^(?:place_id[:=])?(ChI[A-Za-z0-9_-]{10,})$", text)
         if match:
             return match.group(1)
 
+        return None
+
+    def _extract_place_id_from_maps_html(self, maps_url: str) -> Optional[str]:
+        """Fetch resolved Maps HTML and extract an embedded ChI... Place ID."""
+        try:
+            resp = requests.get(
+                maps_url,
+                timeout=10,
+                headers={"User-Agent": self.USER_AGENT},
+            )
+            if not resp.ok:
+                logger.info(
+                    "Maps HTML place-id extraction skipped "
+                    f"(HTTP {resp.status_code})"
+                )
+                return None
+
+            html = resp.text
+            # Common JS payload patterns seen in Google Maps responses.
+            patterns = [
+                r'"place_id"\s*:\s*"(ChI[A-Za-z0-9_-]+)"',
+                r'"/g/[^\"]*",\s*"(ChI[A-Za-z0-9_-]+)"',
+                r"\[\"(ChI[A-Za-z0-9_-]{20,})\"\]",
+            ]
+            for pattern in patterns:
+                match = re.search(pattern, html)
+                if match:
+                    return match.group(1)
+        except Exception as exc:
+            logger.info(f"Maps HTML place-id extraction failed: {exc}")
+
+        return None
+
+    def _pick_best_place_match(self, places: list, query: str) -> Optional[dict]:
+        """Return the best place match for query using simple name similarity."""
+        best_place, _best_score, _overlap_count = self._best_match_with_score(
+            places, query
+        )
+        return best_place
+
+    def _best_match_with_score(self, places: list, query: str) -> tuple:
+        """Return (best_place, blended_score, overlap_count) for query."""
+        if not places:
+            return (None, 0.0, 0)
+
+        query_clean = self._normalize_name(query)
+        scored = []
+        for place in places:
+            name = place.get("displayName", {}).get("text", "")
+            name_clean = self._normalize_name(name)
+            # Blend token overlap with sequence similarity to handle minor
+            # punctuation/ordering differences in GBP names.
+            overlap = self._token_overlap_score(query_clean, name_clean)
+            seq = SequenceMatcher(None, query_clean, name_clean).ratio()
+            score = (overlap * 0.6) + (seq * 0.4)
+            overlap_count = self._token_overlap_count(query_clean, name_clean)
+            scored.append((score, overlap_count, place))
+
+        scored.sort(key=lambda item: (item[0], item[1]), reverse=True)
+        best_score, overlap_count, best_place = scored[0]
+        return (best_place, best_score, overlap_count)
+
+    def _is_confident_name_match(
+        self, expected_name: str, blended_score: float, overlap_count: int
+    ) -> bool:
+        """Apply stricter acceptance rules for expected-name nearby matches."""
+        tokens = [
+            tok for tok in self._normalize_name(expected_name).split() if len(tok) > 3
+        ]
+        token_count = len(tokens)
+
+        if token_count >= 3:
+            return overlap_count >= 2 and blended_score >= 0.55
+        if token_count == 2:
+            return overlap_count >= 1 and blended_score >= 0.65
+        if token_count == 1:
+            return overlap_count >= 1 and blended_score >= 0.75
+
+        return blended_score >= 0.75
+
+    def _normalize_name(self, value: str) -> str:
+        """Normalize business names for matching."""
+        cleaned = re.sub(r"[^a-z0-9\s]", " ", value.lower())
+        return re.sub(r"\s+", " ", cleaned).strip()
+
+    def _token_overlap_score(self, left: str, right: str) -> float:
+        """Compute overlap score between normalized token sets."""
+        left_tokens = {tok for tok in left.split() if len(tok) > 1}
+        right_tokens = {tok for tok in right.split() if len(tok) > 1}
+        if not left_tokens or not right_tokens:
+            return 0.0
+        common = left_tokens.intersection(right_tokens)
+        return len(common) / float(len(left_tokens))
+
+    def _token_overlap_count(self, left: str, right: str) -> int:
+        """Return count of overlapping normalized tokens."""
+        left_tokens = {tok for tok in left.split() if len(tok) > 1}
+        right_tokens = {tok for tok in right.split() if len(tok) > 1}
+        return len(left_tokens.intersection(right_tokens))
+
+    def _extract_place_coords_from_url(self, url: str) -> Optional[tuple]:
+        """
+        Extract precise place pin coordinates from the Maps URL data block.
+
+        Google Maps URLs embed the exact place coordinates in the data block as
+        !3d<lat>!4d<lng> (e.g. !8m2!3d46.4990291!4d-122.5661186). These are more
+        accurate than the viewport @lat,lng used for text search location bias.
+
+        Args:
+            url: Google Maps URL.
+
+        Returns:
+            (latitude, longitude) tuple or None.
+        """
+        match = re.search(r"!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)", url)
+        if match:
+            return (float(match.group(1)), float(match.group(2)))
         return None
 
     def _extract_coords_from_maps_url(self, url: str) -> Optional[tuple]:
