@@ -1,12 +1,16 @@
     <footer class="footer">
         <div class="footer-content">
-            <!-- Column 1: Company Info -->
+            <!-- Column 1: Site Info -->
             <div class="footer-column footer-info">
-                <h3 class="footer-brand">{{ business.business_name }}</h3>
+                <h3 class="footer-brand">{{ site_display_name }}</h3>
+                {% if is_resource_site and resource_site and resource_site.site_mission %}
+                <p class="footer-description">{{ resource_site.site_mission[:150] }}{% if resource_site.site_mission|length > 150 %}...{% endif %}</p>
+                {% else %}
                 <p class="footer-description">{% if business.description %}{{ business.description[:150] }}{% if business.description|length > 150 %}...{% endif %}{% else %}Professional {{ business.industry }} services you can trust.{% endif %}</p>
+                {% endif %}
 
-                <!-- Social Media Links -->
-                {% if social_media %}
+                <!-- Social Media Links (storefront only) -->
+                {% if not is_resource_site and social_media %}
                 <div class="footer-social">
                     {% if social_media.facebook %}
                     <a href="{{ social_media.facebook }}" target="_blank" rel="noopener" aria-label="Facebook">Facebook</a>
@@ -24,7 +28,25 @@
                 {% endif %}
             </div>
 
-            <!-- Column 2: Contact Information -->
+            <!-- Column 2: Contact Information (storefront only) or Resource Info -->
+            {% if is_resource_site %}
+            <div class="footer-column footer-contact">
+                <h4>About This Resource</h4>
+                {% if resource_site and resource_site.editorial_perspective %}
+                <p>{{ resource_site.editorial_perspective }}</p>
+                {% else %}
+                <p>An independent educational resource for industry professionals and facility managers.</p>
+                {% endif %}
+                {% if resource_site and resource_site.authoritative_sources %}
+                <p><strong>Sources &amp; Standards:</strong></p>
+                <ul>
+                    {% for source in resource_site.authoritative_sources %}
+                    <li><a href="{{ source }}" target="_blank" rel="noopener">{{ source }}</a></li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% else %}
             <div class="footer-column footer-contact">
                 <h4>Contact Information</h4>
                 {% if contact.phone %}
@@ -37,9 +59,10 @@
                 <p><strong>Address:</strong> {{ contact.address.street }}, {{ contact.address.city }}, {{ contact.address.state }} {{ contact.address.zip_code }}</p>
                 {% endif %}
             </div>
+            {% endif %}
 
             <!-- Column 3: Google Business Profile Map or Quick Links -->
-            {% if google_business_profile.embed_code %}
+            {% if not is_resource_site and google_business_profile.embed_code %}
             <div class="footer-column footer-map">
                 <h4>Visit Our Location</h4>
                 <div class="map-container">
@@ -52,20 +75,22 @@
                 <ul>
                     <li><a href="{{ base_path | default('') }}about.html">About</a></li>
                     {% if services %}
-                    <li><a href="{{ base_path | default('') }}services.html">Services</a></li>
+                    <li><a href="{{ base_path | default('') }}services.html">{% if is_resource_site %}Guides{% else %}Services{% endif %}</a></li>
                     {% endif %}
                     {% if products %}
-                    <li><a href="{{ base_path | default('') }}products.html">Products</a></li>
+                    <li><a href="{{ base_path | default('') }}products.html">{% if is_resource_site %}Resources{% else %}Products{% endif %}</a></li>
                     {% endif %}
+                    {% if not is_resource_site %}
                     <li><a href="{{ base_path | default('') }}contact.html">Contact</a></li>
+                    {% endif %}
                     <li><a href="{{ base_path | default('') }}privacy-policy.html">Privacy Policy</a></li>
                 </ul>
             </div>
             {% endif %}
         </div>
-        
+
         <!-- Copyright -->
         <div class="footer-bottom">
-            <p>&copy; {{ "now"|date("%Y") }} {{ business.business_name }}. All rights reserved. | <a href="{{ base_path | default('') }}privacy-policy.html">Privacy Policy</a>{% if is_backlink_site and main_site_url %} | <a href="{{ main_site_url }}" rel="noopener">Visit Main Website</a>{% endif %}</p>
+            <p>&copy; {{ "now"|date("%Y") }} {{ site_display_name }}. All rights reserved. | <a href="{{ base_path | default('') }}privacy-policy.html">Privacy Policy</a>{% if is_backlink_site and main_site_url %} | <a href="{{ main_site_url }}" rel="noopener">Visit Main Website</a>{% endif %}</p>
         </div>
     </footer>

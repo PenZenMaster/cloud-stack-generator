@@ -1,11 +1,11 @@
     <header class="site-header">
         <div class="header-content">
             <div class="logo-container">
-                <a href="{{ base_path | default('') }}index.html" aria-label="{{ business.business_name }} - Home">
-                    {% if branding.logo_url %}
-                    <img src="{{ branding.logo_url }}" alt="{{ business.business_name }} Logo" class="logo-image">
+                <a href="{{ base_path | default('') }}index.html" aria-label="{{ site_display_name }} - Home">
+                    {% if not is_resource_site and branding.logo_url %}
+                    <img src="{{ branding.logo_url }}" alt="{{ site_display_name }} Logo" class="logo-image">
                     {% endif %}
-                    <span class="company-name">{{ business.business_name }}</span>
+                    <span class="company-name">{{ site_display_name }}</span>
                 </a>
             </div>
             <nav class="main-nav" role="navigation">
@@ -13,7 +13,7 @@
                     <li><a href="{{ base_path | default('') }}index.html">Home</a></li>
                     {% if services %}
                     <li class="has-dropdown">
-                        <a href="{{ base_path | default('') }}services.html" aria-haspopup="true" aria-expanded="false">Services ▾</a>
+                        <a href="{{ base_path | default('') }}services.html" aria-haspopup="true" aria-expanded="false">{% if is_resource_site %}Guides{% else %}Services{% endif %} &#9662;</a>
                         <ul class="dropdown">
                             {% for service in services[:7] %}
                             <li><a href="{{ base_path | default('') }}services/{{ service.name|slugify }}.html">{{ service.name if service.name else service }}</a></li>
@@ -23,7 +23,7 @@
                     {% endif %}
                     {% if products %}
                     <li class="has-dropdown">
-                        <a href="{{ base_path | default('') }}products.html" aria-haspopup="true" aria-expanded="false">Products ▾</a>
+                        <a href="{{ base_path | default('') }}products.html" aria-haspopup="true" aria-expanded="false">{% if is_resource_site %}Resources{% else %}Products{% endif %} &#9662;</a>
                         <ul class="dropdown grid-layout">
                             {% for product in products[:7] %}
                             <li><a href="{{ base_path | default('') }}products/{{ product.name|slugify }}.html">{{ product.name if product.name else product }}</a></li>
@@ -33,7 +33,7 @@
                     {% endif %}
                     {% if city_pages %}
                     <li class="has-dropdown">
-                        <a href="#locations" aria-haspopup="true" aria-expanded="false">Service Area ▾</a>
+                        <a href="#locations" aria-haspopup="true" aria-expanded="false">{% if is_resource_site %}Coverage Area{% else %}Service Area{% endif %} &#9662;</a>
                         <ul class="dropdown grid-layout">
                             {% for city_page in city_pages %}
                             <li><a href="{{ base_path | default('') }}locations/{{ city_page.slug }}.html">{{ city_page.city_name }}</a></li>
@@ -42,9 +42,11 @@
                     </li>
                     {% endif %}
                     <li><a href="{{ base_path | default('') }}faq.html">FAQ</a></li>
+                    {% if not is_resource_site %}
                     <li><a href="{{ base_path | default('') }}contact.html">Contact</a></li>
+                    {% endif %}
                     <li class="has-dropdown">
-                        <a href="{{ base_path | default('') }}about.html" aria-haspopup="true" aria-expanded="false">About ▾</a>
+                        <a href="{{ base_path | default('') }}about.html" aria-haspopup="true" aria-expanded="false">About &#9662;</a>
                         <ul class="dropdown">
                             <li><a href="{{ base_path | default('') }}privacy-policy.html">Privacy Policy</a></li>
                         </ul>

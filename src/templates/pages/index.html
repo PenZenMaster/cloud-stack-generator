@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% else %} - {{ business.industry }}{% endif %}</title>
-    <meta name="description" content="{{ business.description or (business.business_name + ' specializes in ' + business.industry.lower() + ' services. Contact us today for professional solutions.') }}">
-    <meta name="keywords" content="{{ business.industry.lower() }}, {{ business.business_name.lower() }}, {{ contact.address.city.lower() if contact.address.city else '' }}, professional services">
-    <meta name="author" content="{{ business.business_name }}">
+    <title>{{ site_display_name }}{% if is_resource_site %} - {{ business.industry }} Guides &amp; Resources{% elif business.tagline %} - {{ business.tagline }}{% else %} - {{ business.industry }}{% endif %}</title>
+    <meta name="description" content="{% if is_resource_site and resource_site and resource_site.site_mission %}{{ resource_site.site_mission }}{% else %}{{ business.description or (business.business_name + ' specializes in ' + business.industry.lower() + ' services. Contact us today for professional solutions.') }}{% endif %}">
+    <meta name="keywords" content="{{ business.industry.lower() }}, {{ site_display_name.lower() }}, {{ contact.address.city.lower() if contact.address.city else '' }}, {% if is_resource_site %}guide, resource, buyer guide{% else %}professional services{% endif %}">
+    <meta name="author" content="{{ site_display_name }}">
     <meta name="robots" content="index, follow">
 
     <!-- SEO Meta Tags -->
@@ -17,16 +17,16 @@
     {% endif %}
 
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
-    <meta property="og:description" content="{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}">
+    <meta property="og:title" content="{{ site_display_name }}{% if is_resource_site %} - {{ business.industry }} Guides &amp; Resources{% elif business.tagline %} - {{ business.tagline }}{% endif %}">
+    <meta property="og:description" content="{% if is_resource_site and resource_site and resource_site.site_mission %}{{ resource_site.site_mission }}{% else %}{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}{% endif %}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ canonical_base_url | default(business.domain) }}">
-    {% if branding.logo_url %}<meta property="og:image" content="{{ branding.logo_url }}">{% endif %}
+    {% if not is_resource_site and branding.logo_url %}<meta property="og:image" content="{{ branding.logo_url }}">{% endif %}
 
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ business.business_name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
-    <meta name="twitter:description" content="{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}">
+    <meta name="twitter:title" content="{{ site_display_name }}{% if is_resource_site %} - {{ business.industry }} Guides &amp; Resources{% elif business.tagline %} - {{ business.tagline }}{% endif %}">
+    <meta name="twitter:description" content="{% if is_resource_site and resource_site and resource_site.site_mission %}{{ resource_site.site_mission }}{% else %}{{ business.description or (business.business_name + ' provides professional ' + business.industry.lower() + ' services.') }}{% endif %}">
 
     <link rel="canonical" href="{{ canonical_base_url | default(business.domain) }}">
     <link rel="stylesheet" href="css/style.css">
@@ -48,17 +48,34 @@
 
     <main>
         <!-- Hero Section -->
-        <section class="hero" {% if branding.hero_background_image_url %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ branding.hero_background_image_url }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
+        <section class="hero" {% if not is_resource_site and branding.hero_background_image_url %}style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ branding.hero_background_image_url }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
             <div class="hero-content">
+                {% if is_resource_site %}
+                <h1>{{ site_display_name }}</h1>
+                <p class="hero-subtitle">{% if resource_site and resource_site.site_mission %}{{ resource_site.site_mission }}{% else %}Independent guides and resources for {{ business.industry.lower() }} professionals.{% endif %}</p>
+                <a href="about.html" class="cta-button">Read the Full Guide</a>
+                {% else %}
                 <h1>{{ business.tagline or ("Professional " + business.industry + " Services") }}</h1>
                 <p class="hero-subtitle">{{ business.description or ("Quality " + business.industry.lower() + " services you can trust - serving " + (contact.address.city or "your area") + " and beyond!") }}</p>
                 <a href="contact.html" class="cta-button">Get Your Custom Quote Today</a>
+                {% endif %}
             </div>
         </section>
 
         <!-- Welcome Section -->
         <section class="content-section">
             <div class="container">
+                {% if is_resource_site %}
+                <h2>About {{ site_display_name }}</h2>
+                {% if resource_site and resource_site.site_mission %}
+                <p>{{ resource_site.site_mission }}</p>
+                {% endif %}
+                {% if resource_site and resource_site.editorial_perspective %}
+                <p>{{ resource_site.editorial_perspective }}</p>
+                {% else %}
+                <p>This site provides independent, educational content to help facility managers, building owners, and contractors make informed decisions about {{ business.industry.lower() }}.</p>
+                {% endif %}
+                {% else %}
                 <h2>Welcome to {{ business.business_name }}</h2>
                 {% if business.company_overview %}
                 <p>{{ business.company_overview }}</p>
@@ -69,14 +86,15 @@
                 {% endif %}
 
                 <p>What sets {{ business.business_name }} apart is our commitment to quality and attention to detail. We work closely with our clients to bring their vision to life, ensuring that every project not only meets but exceeds expectations.</p>
+                {% endif %}
             </div>
         </section>
 
-        <!-- Services Section -->
+        <!-- Services / Guides Section -->
         {% if services %}
         <section class="content-section">
             <div class="container">
-                <h2>Our Services</h2>
+                <h2>{% if is_resource_site %}Our Guides{% else %}Our Services{% endif %}</h2>
                 <div class="services-grid">
                     {% for service in services %}
                     <div class="service-item">
@@ -96,11 +114,11 @@
         </section>
         {% endif %}
 
-        <!-- Products Section -->
+        <!-- Products / Resources Section -->
         {% if products %}
         <section class="content-section">
             <div class="container">
-                <h2>Our Products</h2>
+                <h2>{% if is_resource_site %}Our Resources{% else %}Our Products{% endif %}</h2>
                 <div class="products-grid">
                     {% for product in products %}
                     <div class="product-item">
@@ -119,11 +137,31 @@
         </section>
         {% endif %}
 
-        <!-- Why Choose Us Section -->
+        <!-- Why Choose Us / Why Use This Resource Section -->
         <section class="content-section">
             <div class="container">
+                {% if is_resource_site %}
+                <h2>Why Use {{ site_display_name }}?</h2>
+                <div class="why-choose-grid">
+                    <div class="why-choose-item">
+                        <h3>Independent Perspective</h3>
+                        <p>Our content is written from a third-party educational perspective, covering multiple brands and solutions in the {{ business.industry.lower() }} space.</p>
+                    </div>
+                    <div class="why-choose-item">
+                        <h3>Standards-Based Content</h3>
+                        <p>All guides reference industry standards (NFPA, ANSI, UL) with actual section numbers and citations so you can verify the information yourself.</p>
+                    </div>
+                    <div class="why-choose-item">
+                        <h3>Comparison Frameworks</h3>
+                        <p>Decision guides and comparison tables help you evaluate options objectively, not just choose one vendor's product line.</p>
+                    </div>
+                    <div class="why-choose-item">
+                        <h3>Practitioner Focus</h3>
+                        <p>Content is written for facility managers, building owners, and contractors who need actionable information, not marketing copy.</p>
+                    </div>
+                </div>
+                {% else %}
                 <h2>Why Choose {{ business.business_name }}?</h2>
-
                 <div class="why-choose-grid">
                     <div class="why-choose-item">
                         <h3>Unmatched Expertise</h3>
@@ -142,15 +180,20 @@
                         <p>From initial consultation through completion, we provide comprehensive service that makes the process smooth and stress-free.</p>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </section>
 
-        <!-- Service Area Section -->
+        <!-- Service Area / Coverage Section -->
         {% if city_pages %}
         <section class="content-section">
             <div class="container">
-                <h2>Our Service Area</h2>
+                <h2>{% if is_resource_site %}Coverage Area{% else %}Our Service Area{% endif %}</h2>
+                {% if is_resource_site %}
+                <p>Resources and guides covering {{ contact.address.city if contact.address.city else "local" }} markets and surrounding areas for {{ business.industry.lower() }} professionals.</p>
+                {% else %}
                 <p>Proudly serving {{ contact.address.city if contact.address.city else "your area" }} and surrounding communities with professional {{ business.industry.lower() }} services.</p>
+                {% endif %}
 
                 <div class="service-area-grid">
                     {% for city_page in city_pages %}
