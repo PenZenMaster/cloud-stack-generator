@@ -1,112 +1,104 @@
 # AWG Startup Context
 
-**Last Updated:** 2026-03-11
-**Branch:** main
+**Last Updated:** 2026-03-21
+**Branch:** feature/onboarding-gbp-fix
 **Version:** 4.0.0
-**Last Commit:** (see git log - auto-onboarding feature)
+**Last Commit:** (see git log) - feat(deploy): BACK-007 - awg deploy command + 14 unit tests
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **Auto Onboarding Feature - COMPLETE (v4.0.0)** - New `awg onboard` CLI command.
-   Given a website URL + optional GBP share link + industry, it scrapes the site
-   (BeautifulSoup4, up to 10 pages), runs Claude LLM extraction (services, products,
-   branding colors), fetches GBP data via Places API (New), and writes a pre-populated
-   client YAML config. Graceful partial failure: website/GBP failures are non-fatal.
-   New module: `src/core/onboarding/` (6 files, 85 unit tests passing).
+1. **BACK-007: awg deploy command** - `sync_to_s3()` in `s3_deployer.py` (v1.01)
+   fully implemented: uploads all local files, deletes S3 orphans (batch 1000),
+   correct ContentType + CacheControl headers (HTML vs assets), CloudFront `/*`
+   invalidation when `auto_invalidate_cache: true`, `--dry-run` plan output.
+   CLI `deploy` command wired in `cli.py`. 14/14 unit tests PASSING.
 
-2. **SAB (Service Area Business) Support** - GBP client handles SABs that hide their
-   physical address. `search_place()` retries without location bias when biased search
-   returns 0 results. `search_place_with_fallback()` recovers city/state from the text
-   search `formattedAddress`. `fetch()` enriches sparse place details with SAB city data.
-   Places API (New) fully adopted (`places.googleapis.com/v1/`).
+2. **GBP Place ID Resolution Fixed (v1.07)** - `gbp_client.py` resolves GBP
+   share links via `places:searchNearby` with exact `!3d`/`!4d` coords.
+   Progressive radius (50m->200m->1000m), name validation, HTML fallback,
+   direct ChI input (-g flag). Rank Rocket QA confirmed PASS.
 
-3. **API Keys UI Consolidated to .env** - API Keys tab now shows Google Maps, Claude,
-   and OpenAI fields. Load reads from `.env` via `dotenv_values()`. Save writes to `.env`
-   via `set_key()` and reloads env into the running process. Test Connections button
-   tests Places API (New), Anthropic `/v1/models`, and OpenAI `/v1/models`. Dead
-   `config/api_keys.json` storage removed. `env_config.py` gains `GoogleMapsConfig`
-   and `ClaudeConfig` classes.
+3. **Unit Tests Expanded: 30 -> 71 -> 85** - GBP client 71 tests + 14 new
+   deploy sync tests. All 85 pass.
 
 ---
 
 ## Next 3 Priorities
 
-1. **Implement BACK-007: CLI deploy command** - Wire boto3 S3 sync with correct
-   content-type headers, --delete flag, and auto CloudFront invalidation when
-   `auto_invalidate_cache: true`. `aws_s3` provider is priority; others remain stubs.
+1. **Merge feature/onboarding-gbp-fix -> main** - BACK-007 done, GBP v1.07 done.
+   Update CHANGELOG, bump version (4.0.0 -> 4.1.0 or keep 4.0.0), open PR.
 
-2. **GBP: Enable Places API (New) in Google Cloud Console** - The Google Maps API key
-   currently fails "Places API: FAIL" (key not authorized). Must enable "Places API (New)"
-   (not legacy) at APIs & Services > Library in Google Cloud Console for the onboarding
-   GBP lookup to work end-to-end.
+2. **QA: Test Camphouse Country Landscaping GBP lookup** - SAB still unresolved
+   via Places API. Try direct Place ID via `-g ChIJ...` from the Google Maps URL
+   to confirm full pipeline works for a SAB client.
 
-3. **Fix Site Generator SEO Issues (content)** - Generated pages score D/F. Primary
-   issues: keywords missing from H1 tags, thin product page content, meta descriptions
-   too long. Template or AI prompt improvements needed.
+3. **SEO content quality** - Keyword density low, product pages thin. Next sprint
+   focus after branch merge.
 
 ---
 
 ## Current State
 
 **Git:**
-- Branch: main
+- Branch: feature/onboarding-gbp-fix
 - Version: 4.0.0
-- Working tree: clean after this session's commit
-- All changes committed and pushed
+- Last commit: e73b03c (pushed)
+- Clean after BACK-007 commit
+- Untracked (non-code): docs/qa*.txt, docs/qa1.png (QA artifacts, not committed)
 
 **Tests:**
-- 85 onboarding unit tests: PASSING
-- Full suite (prior baseline): 852 passed, 77 failed (pre-existing failures in
-  test_template_preview.py and test_template_validator.py - not related to this work)
-
-**Onboard command usage:**
-```cmd
-python -m src.cli onboard -u https://example.com/ -i "plumbing" -g "https://maps.app.goo.gl/..."
-```
+- Deploy sync: 14/14 PASSING
+- GBP client: 71/71 PASSING
+- Total: 85 tests PASSING
+- Known pre-existing failures: test_ai_content_service.py (circular import)
+  -> use --ignore=tests/unit/test_ai_content_service.py
 
 **Blockers:**
-- Google Maps API key needs "Places API (New)" enabled in Google Cloud Console
-  (Geocoding and legacy Places API are also failing - same key, same restriction issue)
+- Camphouse Country Landscaping (SAB) unresolved via GBP API. Try direct Place ID.
 
 **Known Issues:**
 - CLI deploy command is a stub (BACK-007)
 - SEO content quality still low (keyword density, thin product pages)
-- SABs completely unlisted in Places text search return no GBP data (graceful warning)
 - Cost display shows $0.0000 instead of actual cost - LOW priority
 
 ---
 
 ## Key Context Notes
 
-1. **Config directory is gitignored** - All client YAML configs (`config/clients/**`)
-   are not tracked. Onboard command writes configs there. Florida config is local only.
+1. **Places API (New) behavior** - HTTP 200 + `{}` response = no results (NOT
+   an auth error). Auth errors return 403. The API key (AWG key in Google Cloud
+   Console) has Places API (New) enabled and confirmed working for businesses
+   with physical pins (Rank Rocket QA PASS).
 
-2. **Auto-onboarding output** - Written to `config/clients/<slug>/<slug>_config.yaml`.
-   Always overwrites if re-run (no prompt). Validate with `awg validate --config <file>`.
+2. **GBP lookup strategy (v1.07 flow)**:
+   1. Direct ChI... input (-g flag) -> skip all lookups
+   2. ChIJ Place ID in URL data block (!1sChIJ...)
+   3. HTML payload extraction (fetch Maps page, parse for ChI...)
+   4. searchNearby at exact !3d/!4d coords (50m -> 200m -> 1000m) with name validation
+   5. searchText by business name (biased -> unbiased SAB retry)
 
-3. **Places API (New) vs legacy** - The onboarding GBP client uses the NEW API
-   (`places.googleapis.com/v1/`, `X-Goog-Api-Key` header, POST searchText). The old
-   legacy API (`maps.googleapis.com/maps/api/place/`) is NOT used anywhere in this project.
+3. **Config directory is gitignored** - All client YAML configs (`config/clients/**`)
+   are not tracked. Onboard command writes configs there.
 
 ---
 
 ## Quick Reference
 
-**Auto-onboard a client:**
+**Auto-onboard (standard):**
 ```cmd
-python -m src.cli onboard -u https://camphousecountrylandscaping.com/ -i landscaping -g "https://maps.app.goo.gl/..."
+python -m src.cli onboard -u https://rankrocket.co/ -i "SEO Agency" -g "https://maps.app.goo.gl/rXeonmqPNnkCjHYh8"
 ```
 
-**Generate Florida site:**
+**Auto-onboard with direct Place ID:**
 ```cmd
-python -m src.cli generate -c "config/clients/Clean Restroom Rentals/clean_restroom_rental_florida_config.yaml" -o "output/clients/clean_restroom_rental_fl" --no-ai
+python -m src.cli onboard -u https://example.com/ -i "Industry" -g "ChIJabc123..."
 ```
 
-**Run SEO analysis:**
+**Run GBP tests:**
 ```cmd
-python -m src.cli analyze content "output/clients/clean_restroom_rental_fl/index.html" -k "portable restroom rental florida" --model balanced
+python -m pytest tests/unit/test_onboarding_gbp_client.py -q
 ```
 
 **Model Presets:**

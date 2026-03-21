@@ -5,6 +5,7 @@ Path: src/core/deployment/s3_deployer.py
 Description:
 Programmatically creates S3 buckets, configures them for static website hosting,
 and deploys generated website files with proper public access settings.
+Also provides sync_to_s3() for incremental sync-with-delete deployments.
 
 Author(s):
 Rank Rocket Co (C) Copyright 2025 - All Rights Reserved
@@ -13,19 +14,22 @@ Created Date:
 2025-11-12
 
 Last Modified Date:
-2025-11-12
+2026-02-18
 
 Comments:
+* v1.01 - Added sync_to_s3() module-level function for CLI deploy command
 * v1.00 - Initial implementation with full bucket creation and configuration
 """
 
+import datetime
 import json
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Callable, Dict, Optional, Any, Set
 
 import boto3
 from botocore.exceptions import ClientError
 
+from ..config.models import CloudConfig
 from ..utils.logger import get_logger
 
 # Initialize module logger
@@ -404,6 +408,157 @@ def deploy_client_website(
         logger.error("Deployment failed!")
         logger.error(f"Errors: {', '.join(result['errors'])}")
 
+    return result
+
+
+def sync_to_s3(
+    source_dir: Path,
+    bucket_name: str,
+    session: boto3.Session,
+    cloud_config: CloudConfig,
+    dry_run: bool = False,
+    progress_callback: Optional[Callable[[str], None]] = None,
+) -> Dict[str, Any]:
+    """
+    Sync a local directory to an S3 bucket with delete support.
+
+    Uploads all local files and removes S3 objects not present locally,
+    matching the behavior of ``aws s3 sync --delete``.
+
+    Args:
+        source_dir: Local directory to sync from.
+        bucket_name: Target S3 bucket name.
+        session: Authenticated boto3 Session.
+        cloud_config: Cloud deployment configuration (cache headers, invalidation).
+        dry_run: If True, return the upload/delete plan without executing any API calls.
+        progress_callback: Optional callable(message) invoked after each upload/delete.
+
+    Returns:
+        Dictionary with keys:
+            success (bool), files_uploaded (int), files_deleted (int),
+            errors (list[str]), invalidation_id (str or None),
+            plan (dict, only present in dry_run mode).
+    """
+    result: Dict[str, Any] = {
+        "success": False,
+        "files_uploaded": 0,
+        "files_deleted": 0,
+        "errors": [],
+        "invalidation_id": None,
+    }
+
+    s3_client = session.client("s3")
+
+    # --- 1. Collect local files (s3_key -> local Path) ---
+    local_files: Dict[str, Path] = {}
+    for file_path in source_dir.rglob("*"):
+        if file_path.is_file():
+            relative = file_path.relative_to(source_dir)
+            s3_key = str(relative).replace("\\", "/")
+            local_files[s3_key] = file_path
+
+    # --- 2. List existing S3 objects (paginated) ---
+    existing_keys: Set[str] = set()
+    try:
+        paginator = s3_client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket_name):
+            for obj in page.get("Contents", []):
+                existing_keys.add(obj["Key"])
+    except ClientError as e:
+        error_msg = f"Failed to list objects in s3://{bucket_name}: {e}"
+        logger.error(error_msg)
+        result["errors"].append(error_msg)
+        return result
+
+    # --- 3. Compute upload and delete sets ---
+    to_upload: Dict[str, Path] = dict(local_files)  # full sync: upload all local files
+    to_delete: Set[str] = existing_keys - set(local_files.keys())
+
+    # --- 4. Dry-run: return plan without executing ---
+    if dry_run:
+        result["success"] = True
+        result["plan"] = {
+            "files_to_upload": sorted(to_upload.keys()),
+            "files_to_delete": sorted(to_delete),
+            "total_upload": len(to_upload),
+            "total_delete": len(to_delete),
+        }
+        return result
+
+    # Asset file extensions that use asset_cache_control; everything else uses html_cache_control
+    _ASSET_SUFFIXES = {
+        ".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".svg",
+        ".ico", ".woff", ".woff2", ".ttf", ".pdf",
+    }
+
+    # --- 5. Upload all local files ---
+    for s3_key, file_path in to_upload.items():
+        try:
+            content_type = S3WebsiteDeployer._get_content_type(file_path)
+            cache_control = (
+                cloud_config.asset_cache_control
+                if file_path.suffix.lower() in _ASSET_SUFFIXES
+                else cloud_config.html_cache_control
+            )
+            s3_client.put_object(
+                Bucket=bucket_name,
+                Key=s3_key,
+                Body=file_path.read_bytes(),
+                ContentType=content_type,
+                CacheControl=cache_control,
+            )
+            result["files_uploaded"] += 1
+            if progress_callback:
+                progress_callback(f"Uploaded: {s3_key}")
+            logger.debug(f"Uploaded {file_path} -> s3://{bucket_name}/{s3_key}")
+        except ClientError as e:
+            error_msg = f"Failed to upload {s3_key}: {e}"
+            logger.error(error_msg)
+            result["errors"].append(error_msg)
+
+    # --- 6. Delete orphaned S3 objects in batches of 1000 ---
+    delete_list = sorted(to_delete)
+    for i in range(0, len(delete_list), 1000):
+        batch = delete_list[i : i + 1000]
+        try:
+            s3_client.delete_objects(
+                Bucket=bucket_name,
+                Delete={
+                    "Objects": [{"Key": k} for k in batch],
+                    "Quiet": True,
+                },
+            )
+            result["files_deleted"] += len(batch)
+            if progress_callback:
+                progress_callback(f"Deleted {len(batch)} orphaned object(s) from S3")
+            logger.debug(f"Deleted {len(batch)} object(s) from s3://{bucket_name}")
+        except ClientError as e:
+            error_msg = f"Failed to delete batch from s3://{bucket_name}: {e}"
+            logger.error(error_msg)
+            result["errors"].append(error_msg)
+
+    # --- 7. CloudFront cache invalidation ---
+    if cloud_config.auto_invalidate_cache and cloud_config.distribution_id:
+        try:
+            cf_client = session.client("cloudfront")
+            caller_ref = str(datetime.datetime.utcnow().timestamp())
+            cf_response = cf_client.create_invalidation(
+                DistributionId=cloud_config.distribution_id,
+                InvalidationBatch={
+                    "Paths": {"Quantity": 1, "Items": ["/*"]},
+                    "CallerReference": caller_ref,
+                },
+            )
+            result["invalidation_id"] = cf_response["Invalidation"]["Id"]
+            logger.info(f"CloudFront invalidation created: {result['invalidation_id']}")
+            if progress_callback:
+                progress_callback(f"CloudFront invalidation: {result['invalidation_id']}")
+        except ClientError as e:
+            error_msg = f"CloudFront invalidation failed: {e}"
+            logger.error(error_msg)
+            result["errors"].append(error_msg)
+
+    result["success"] = len(result["errors"]) == 0
     return result
 
 
