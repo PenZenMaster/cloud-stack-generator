@@ -13,11 +13,12 @@ Created Date:
 2026-02-16
 
 Last Modified Date:
-2026-03-11
+2026-03-21
 
-Version: 1.02
+Version: 1.03
 
 Comments:
+* v1.03 - Bumped app version to 4.1.0 (BACK-007 + GBP v1.07 milestone)
 * v1.02 - Added awg onboard command; bumped app version to 4.0.0
 * v1.01 - Implemented aws_s3 deploy command with sync_to_s3() and --source option
 * v1.00 - Initial CLI implementation with click framework for Phase 0
@@ -39,7 +40,7 @@ logger = get_logger(__name__)
 
 
 @click.group()
-@click.version_option(version="4.0.0", prog_name="awg")
+@click.version_option(version="4.1.0", prog_name="awg")
 def cli():
     """
     AWG - Automated Website Generator

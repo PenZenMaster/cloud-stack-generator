@@ -1,10 +1,10 @@
 # main.py
 """
-SEO Authority Website Generator v3.13.0
+SEO Authority Website Generator v4.1.0
 Enhanced Main Application Entry Point
 
-Updated: January 19, 2026
-Version: 3.13.0 - Fix GSC meta tag self-closing format
+Updated: March 21, 2026
+Version: 4.1.0 - BACK-007 deploy command, GBP v1.07, Auto Onboarding v4.0
 Working Directory: E:\\projects\\cloud-stack-generator\
 """
 
