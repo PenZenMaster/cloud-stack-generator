@@ -382,6 +382,17 @@ class EnhancedCityPageGenerator:
             "page_url": f"{self._get_canonical_base_url()}/locations/{city_page.slug}.html",
             "canonical_base_url": self._get_canonical_base_url(),
             "is_backlink_site": hasattr(self.config.cloud, 'site_type') and self.config.cloud.site_type == "backlink_site",
+            "is_resource_site": hasattr(self.config.cloud, 'site_type') and self.config.cloud.site_type == "resource",
+            "resource_site": getattr(self.config, 'resource_site', None),
+            "site_display_name": (
+                self.config.resource_site.site_name
+                if (
+                    self.config.cloud.site_type == "resource"
+                    and hasattr(self.config, 'resource_site')
+                    and self.config.resource_site.site_name
+                )
+                else self.config.business.business_name
+            ),
             "main_site_url": getattr(self.config.cloud, 'main_site_url', '') if hasattr(self.config, 'cloud') else '',
             "current_year": datetime.now().year,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

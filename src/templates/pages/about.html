@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About {{ business.business_name }}</title>
-    <meta name="description" content="Learn about {{ business.business_name }} and our commitment to excellence">
+    <title>About {{ site_display_name }}</title>
+    <meta name="description" content="{% if is_resource_site and resource_site and resource_site.site_mission %}{{ resource_site.site_mission }}{% else %}Learn about {{ business.business_name }} and our commitment to excellence{% endif %}">
     <meta name="robots" content="index, follow">
     
     <link rel="canonical" href="{{ canonical_base_url }}/about.html">
@@ -23,23 +23,58 @@
     <main>
         <section class="content-section">
             <div class="container">
-                <h1>About {{ business.business_name }}</h1>
-                
+                <h1>About {{ site_display_name }}</h1>
+
+                {% if is_resource_site %}
+                <!-- Resource site: editorial mission content -->
+                {% if resource_site and resource_site.site_mission %}
+                <p>{{ resource_site.site_mission }}</p>
+                {% else %}
+                <p>This site was created to help facility managers, building owners, and contractors make informed decisions about {{ business.industry.lower() }}.</p>
+                {% endif %}
+
+                {% if resource_site and resource_site.editorial_perspective %}
+                <h2>Our Editorial Perspective</h2>
+                <p>{{ resource_site.editorial_perspective }}</p>
+                {% else %}
+                <h2>Our Editorial Perspective</h2>
+                <p>Our editorial team includes industry professionals with extensive experience in {{ business.industry.lower() }}. All content is reviewed for accuracy against published standards (NFPA, ANSI, UL) and updated as codes and products change.</p>
+                {% endif %}
+
+                <h2>What We Cover</h2>
+                <p>{{ site_display_name }} provides independent comparison guides, buyer checklists, and standards references covering the full spectrum of {{ business.industry.lower() }} products and services. We reference multiple manufacturers and vendors to give you an unbiased view of your options.</p>
+
+                {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
+                <h2>Local Resources</h2>
+                <p>For professional installation and service in the {{ contact.address.city if contact.address.city else "local" }} area, established providers include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> and other licensed contractors in the region.</p>
+                {% endif %}
+
+                {% if resource_site and resource_site.authoritative_sources %}
+                <h2>Standards and References</h2>
+                <ul>
+                    {% for source in resource_site.authoritative_sources %}
+                    <li><a href="{{ source }}" target="_blank" rel="noopener">{{ source }}</a></li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% else %}
+                <!-- Storefront: standard business about content -->
                 {% if business.company_overview %}
                 <p>{{ business.company_overview }}</p>
                 {% endif %}
-                
+
                 {% if business.description %}
                 <p>{{ business.description }}</p>
                 {% endif %}
-                
+
                 <p>We are a professional {{ business.industry.lower() }} company committed to delivering exceptional results. Our expertise and dedication ensure that every project meets the highest standards of quality and craftsmanship.</p>
-                
+
                 {% if business.years_in_business %}
                 <h2>Our Experience</h2>
                 <p>With {{ business.years_in_business }} of experience in the industry, we have built a reputation for excellence and reliability.</p>
                 {% endif %}
-                
+
                 {% if business.why_choose_us %}
                 <h2>Why Choose {{ business.business_name }}?</h2>
                 {% for reason in business.why_choose_us %}
@@ -48,6 +83,7 @@
                     <p>{{ reason.description if reason.description is defined else 'Our commitment to excellence ensures outstanding results for every project.' }}</p>
                 </div>
                 {% endfor %}
+                {% endif %}
                 {% endif %}
             </div>
         </section>
