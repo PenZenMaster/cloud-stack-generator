@@ -14,11 +14,12 @@ Created Date:
 2024-09-15
 
 Last Modified Date:
-2025-12-20
+2026-03-21
 
-Version: 3.05
+Version: 3.06
 
 Comments:
+* v3.06 - Fix generation-complete popup overflow: replaced QMessageBox with scrollable QDialog
 * v3.05 - CRITICAL FIX: Include embed_code when loading city_image data (line 1332) to prevent
   data loss during auto-save after deployment
 * v3.04 - Styled Validate All and Save Configuration buttons with proper design patterns
@@ -43,6 +44,9 @@ from PyQt6.QtWidgets import (
     QStatusBar,
     QProgressBar,
     QDialog,
+    QDialogButtonBox,
+    QListWidget,
+    QSizePolicy,
 )
 from PyQt6.QtCore import pyqtSignal, QTimer, QThread, QSettings
 from PyQt6.QtGui import QFont, QAction
@@ -2040,21 +2044,42 @@ class EnhancedMainWindow(QMainWindow):
             # Save the output directory for next time
             self.settings.setValue("last_output_directory", output_dir)
 
-            display_message = "Website generated successfully!\n\nFiles created:\n"
-            for file_path in generated_files:
-                display_message += f"+ {Path(file_path).name}\n"
-            display_message += f"\nLocation: {output_dir}"
+            # Build a scrollable dialog so large file lists never overflow the screen
+            dlg = QDialog(self)
+            dlg.setWindowTitle("Website Generation Complete")
+            dlg.setMinimumWidth(520)
+            screen_h = self.screen().availableGeometry().height()
+            dlg.setMaximumHeight(int(screen_h * 0.75))
 
-            # Show generation success and offer cloud deployment
-            reply = QMessageBox.question(
-                self,
-                "Website Generation Complete",
-                display_message + "\n\nWould you like to deploy this website to the cloud?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.Yes
+            v_layout = QVBoxLayout(dlg)
+            v_layout.setSpacing(10)
+            v_layout.setContentsMargins(16, 16, 16, 16)
+
+            summary_label = QLabel(
+                f"Website generated successfully!  {len(generated_files)} file(s) created.\n"
+                f"Location: {output_dir}\n\n"
+                "Would you like to deploy this website to the cloud?"
             )
+            summary_label.setWordWrap(True)
+            v_layout.addWidget(summary_label)
 
-            if reply == QMessageBox.StandardButton.Yes:
+            file_list = QListWidget()
+            for file_path in generated_files:
+                file_list.addItem(Path(file_path).name)
+            file_list.setMaximumHeight(300)
+            file_list.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+            )
+            v_layout.addWidget(file_list)
+
+            btn_box = QDialogButtonBox(
+                QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.No
+            )
+            btn_box.accepted.connect(dlg.accept)
+            btn_box.rejected.connect(dlg.reject)
+            v_layout.addWidget(btn_box)
+
+            if dlg.exec() == QDialog.DialogCode.Accepted:
                 cloud_tab_index = self.main_tabs.indexOf(self.cloud_tab)
                 self.main_tabs.setCurrentIndex(cloud_tab_index)
 
