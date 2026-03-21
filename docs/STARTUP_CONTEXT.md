@@ -1,9 +1,9 @@
 # AWG Startup Context
 
 **Last Updated:** 2026-03-21
-**Branch:** feature/onboarding-gbp-fix
+**Branch:** main
 **Version:** 4.0.0
-**Last Commit:** (see git log) - feat(deploy): BACK-007 - awg deploy command + 14 unit tests
+**Last Commit:** 9ffa06f - Merge PR #28 (feature/onboarding-gbp-fix -> main)
 
 ---
 
@@ -27,15 +27,15 @@
 
 ## Next 3 Priorities
 
-1. **Merge feature/onboarding-gbp-fix -> main** - BACK-007 done, GBP v1.07 done.
-   Update CHANGELOG, bump version (4.0.0 -> 4.1.0 or keep 4.0.0), open PR.
+1. **Version bump to 4.1.0** - BACK-007 + GBP v1.07 milestone warrants minor bump.
+   Update CHANGELOG with migration notes.
 
 2. **QA: Test Camphouse Country Landscaping GBP lookup** - SAB still unresolved
    via Places API. Try direct Place ID via `-g ChIJ...` from the Google Maps URL
    to confirm full pipeline works for a SAB client.
 
-3. **SEO content quality** - Keyword density low, product pages thin. Next sprint
-   focus after branch merge.
+3. **SEO content quality sprint** - Keyword density low, product pages thin.
+   Next meaningful feature work after version bump.
 
 ---
 
@@ -45,7 +45,7 @@
 - Branch: feature/onboarding-gbp-fix
 - Version: 4.0.0
 - Last commit: e73b03c (pushed)
-- Clean after BACK-007 commit
+- Clean (feature branch merged, deleted from remote)
 - Untracked (non-code): docs/qa*.txt, docs/qa1.png (QA artifacts, not committed)
 
 **Tests:**

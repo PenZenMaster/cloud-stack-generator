@@ -1,11 +1,21 @@
 # SEO Authority Website Generator - Project Status
 
-**Last Updated**: February 17, 2026
-**Current Status**: v3.15.1 (Phase 2 Bug Fixes - Pending Commit)
+**Last Updated**: 2026-03-21
+**Current Status**: v4.0.0 - BACK-007 deploy command complete, merged to main
 **Working Directory**: `E:\projects\cloud-stack-generator\`
 **Current Branch**: main
-**Current Version**: 3.15.1 (pending)
-**Git Status**: Modified (5 files) - Awaiting User QA Confirmation
+**Last Commit**: 9ffa06f - Merge PR #28 (feature/onboarding-gbp-fix)
+**Git Status**: Clean (pushed)
+
+---
+
+## 2026-03-21 Session - BACK-007 Deploy Command - COMPLETE
+
+- **BACK-007:** `awg deploy` fully implemented - `sync_to_s3()` with S3 sync-with-delete,
+  ContentType + CacheControl headers, CloudFront invalidation, `--dry-run` support.
+- **14 new unit tests:** `test_deploy_sync.py` - all 14 PASS. Total suite: 85 tests.
+- **PR #28 merged:** `feature/onboarding-gbp-fix` -> main (fast-forward). Branch deleted.
+- **Next:** Version bump to 4.1.0, Camphouse SAB QA, SEO content quality sprint.
 
 ---
 
