@@ -13,11 +13,12 @@ Created Date:
 2025-09-05
 
 Last Modified Date:
-2025-12-20
+2026-03-21
 
-Version: v1.03
+Version: v1.04
 
 Comments:
+* v1.04 - Comprehensive Test Connection: real S3 PUT/GET/DELETE, bucket state, CloudFront OAC check
 * v1.03 - Added auto-populate GCS Project ID from service account JSON key file
 * v1.02 - Fixed friendly name format (removed '+' separator, use spaces),
   Fixed deployment history persistence (unique timestamp-based deployment IDs)
@@ -43,9 +44,12 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
     QApplication,
     QCheckBox,
+    QTableWidget,
     QTableWidgetItem,
+    QHeaderView,
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtGui import QColor, QFont
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 import logging
@@ -437,91 +441,508 @@ class BucketRefreshWorker(QThread):
             self.error_occurred.emit(error_message, self.profile_name, e)
 
 
+class ConnectionResultsDialog(QDialog):
+    """Scrollable, color-coded AWS connection test results dialog."""
+
+    _STATUS_COLORS = {
+        "PASS": ("#1a7a1a", "#e8f5e9"),
+        "FAIL": ("#b71c1c", "#ffebee"),
+        "WARN": ("#e65100", "#fff3e0"),
+        "SKIP": ("#555555", "#f5f5f5"),
+        "INFO": ("#01579b", "#e3f2fd"),
+    }
+
+    def __init__(self, identity: dict, checks: list, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("AWS Connection Test Results")
+        self.setMinimumWidth(780)
+        screen_h = (
+            parent.screen().availableGeometry().height() if parent else 800
+        )
+        self.setMaximumHeight(int(screen_h * 0.85))
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(16, 16, 16, 16)
+
+        # Identity header
+        account = identity.get("account", "Unknown")
+        region = identity.get("region", "Unknown")
+        profile = identity.get("profile", "Unknown")
+        arn = identity.get("arn", "")
+
+        header = QLabel(
+            f"Account: {account}   |   Region: {region}   |   Profile: {profile}"
+        )
+        header_font = QFont()
+        header_font.setBold(True)
+        header.setFont(header_font)
+        header.setStyleSheet("padding: 4px;")
+        layout.addWidget(header)
+
+        if arn:
+            arn_label = QLabel(f"ARN: {arn}")
+            arn_label.setStyleSheet("font-size: 10px; color: #555; padding: 2px;")
+            layout.addWidget(arn_label)
+
+        # Summary counts
+        passed = sum(1 for c in checks if c["status"] == "PASS")
+        failed = sum(1 for c in checks if c["status"] == "FAIL")
+        warned = sum(1 for c in checks if c["status"] == "WARN")
+        total = len(checks)
+
+        parts = [f"{passed}/{total} checks passed"]
+        if failed:
+            parts.append(f"{failed} failed")
+        if warned:
+            parts.append(f"{warned} warning(s)")
+        summary_color = "#b71c1c" if failed else "#e65100" if warned else "#1a7a1a"
+        summary_label = QLabel("   ".join(parts))
+        summary_font = QFont()
+        summary_font.setBold(True)
+        summary_label.setFont(summary_font)
+        summary_label.setStyleSheet(f"color: {summary_color}; padding: 4px;")
+        layout.addWidget(summary_label)
+
+        # Results table
+        table = QTableWidget(len(checks), 4)
+        table.setHorizontalHeaderLabels(["Category", "Check", "Status", "Detail"])
+        table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.ResizeToContents
+        )
+        table.horizontalHeader().setSectionResizeMode(
+            1, QHeaderView.ResizeMode.ResizeToContents
+        )
+        table.horizontalHeader().setSectionResizeMode(
+            2, QHeaderView.ResizeMode.ResizeToContents
+        )
+        table.horizontalHeader().setSectionResizeMode(
+            3, QHeaderView.ResizeMode.Stretch
+        )
+        table.verticalHeader().setVisible(False)
+        table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
+        table.setWordWrap(True)
+
+        for row, check in enumerate(checks):
+            status = check.get("status", "INFO")
+            fg, bg = self._STATUS_COLORS.get(status, ("#000000", "#ffffff"))
+            for col, key in enumerate(["category", "check", "status", "detail"]):
+                item = QTableWidgetItem(check.get(key, ""))
+                item.setForeground(QColor(fg))
+                item.setBackground(QColor(bg))
+                if key == "status":
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    f = QFont()
+                    f.setBold(True)
+                    item.setFont(f)
+                table.setItem(row, col, item)
+
+        table.resizeRowsToContents()
+        layout.addWidget(table)
+
+        btn = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        btn.accepted.connect(self.accept)
+        layout.addWidget(btn)
+
+
 class ConnectionTestWorker(QThread):
-    """Background worker for AWS connection testing"""
+    """Background worker for comprehensive AWS connection testing."""
+
+    _TEST_KEY = "awg-connection-test.tmp"
 
     progress_updated = pyqtSignal(str)
-    test_completed = pyqtSignal(bool, str, dict)  # success, message, identity
-    error_occurred = pyqtSignal(str, Exception)  # error_message, exception
+    test_completed = pyqtSignal(bool, str, dict, list)  # success, msg, identity, checks
+    error_occurred = pyqtSignal(str, Exception)
 
-    def __init__(self, credentials_manager, profile_name: str):
+    def __init__(
+        self,
+        credentials_manager,
+        profile_name: str,
+        bucket_name: str = "",
+        distribution_id: str = "",
+    ):
         super().__init__()
         self.credentials_manager = credentials_manager
         self.profile_name = profile_name
+        self.bucket_name = bucket_name
+        self.distribution_id = distribution_id
 
     def run(self):
-        """Execute connection test in background"""
+        """Execute comprehensive connection test in background."""
+        checks: list = []
+        identity: dict = {}
         try:
             self.progress_updated.emit("Validating AWS profile credentials...")
-
-            # Step 1: Validate profile
             is_valid, message, identity = self.credentials_manager.validate_profile(
                 self.profile_name
             )
+            identity["profile"] = self.profile_name
 
-            if is_valid:
-                account = identity.get("account", "Unknown")
-                region = identity.get("region", "Unknown")
+            if not is_valid:
+                checks.append({
+                    "category": "Identity",
+                    "check": "STS GetCallerIdentity",
+                    "status": "FAIL",
+                    "detail": message,
+                })
+                self.test_completed.emit(False, message, identity, checks)
+                return
 
-                self.progress_updated.emit(f"Connected to AWS Account: {account}")
-                self.progress_updated.emit(f"Profile region: {region}")
+            checks.append({
+                "category": "Identity",
+                "check": "STS GetCallerIdentity",
+                "status": "PASS",
+                "detail": (
+                    f"Account {identity.get('account', '?')} | "
+                    f"ARN: {identity.get('arn', 'unknown')}"
+                ),
+            })
 
-                # Step 2: Test S3 permissions
-                self.progress_updated.emit("Testing S3 permissions...")
-                s3_permissions = self._test_s3_permissions()
-
-                self.progress_updated.emit("Connection test completed successfully!")
-
-                # Build detailed success message with permissions
-                success_message = (
-                    f"Successfully connected to AWS\n\n"
-                    f"Account: {account}\n"
-                    f"Region: {region}\n"
-                    f"Profile: {self.profile_name}\n\n"
-                    f"S3 Permissions:\n"
-                    f"{s3_permissions}"
-                )
-
-                self.test_completed.emit(True, success_message, identity)
-            else:
-                self.progress_updated.emit(f"Connection failed: {message}")
-                self.test_completed.emit(False, message, {})
-
-        except Exception as e:
-            error_message = f"Connection test failed: {str(e)}"
-            self.error_occurred.emit(error_message, e)
-
-    def _test_s3_permissions(self) -> str:
-        """Test S3 permissions for the given profile and return a summary"""
-        try:
-            # Get AWS session for the profile
             session = self.credentials_manager._get_session(self.profile_name)
-            if not session:
-                return "ERROR: Could not create AWS session"
 
-            s3 = session.client("s3")
+            # S3 permissions
+            self.progress_updated.emit("Testing S3 permissions...")
+            checks.extend(self._test_s3_permissions(session))
 
-            permissions = []
+            # Bucket state
+            if self.bucket_name:
+                self.progress_updated.emit(
+                    f"Checking bucket state: {self.bucket_name}..."
+                )
+                checks.extend(
+                    self._test_bucket_state(session, self.bucket_name, self.distribution_id)
+                )
+            else:
+                checks.append({
+                    "category": "Bucket State",
+                    "check": "Bucket configured",
+                    "status": "SKIP",
+                    "detail": "No bucket selected in UI - configure bucket to enable these checks",
+                })
 
-            # Test list buckets
-            try:
-                s3.list_buckets()
-                permissions.append("✓ List Buckets: PASS")
-            except Exception as e:
-                permissions.append(f"✗ List Buckets: FAIL ({str(e)[:50]}...)")
+            # CloudFront
+            if self.distribution_id:
+                self.progress_updated.emit(
+                    f"Checking CloudFront distribution {self.distribution_id}..."
+                )
+                checks.extend(
+                    self._test_cloudfront(session, self.distribution_id, self.bucket_name)
+                )
+            else:
+                checks.append({
+                    "category": "CloudFront",
+                    "check": "Distribution configured",
+                    "status": "SKIP",
+                    "detail": "No distribution ID configured - skipping CloudFront checks",
+                })
 
-            # Test create bucket (dry run)
-            try:
-                # We can't actually test bucket creation without creating one
-                # Just check if we have the permission structure
-                permissions.append("✓ Create Bucket: AVAILABLE (untested)")
-            except Exception:
-                permissions.append("✗ Create Bucket: UNKNOWN")
-
-            return "\n".join(permissions)
+            self.progress_updated.emit("Connection test complete.")
+            has_failures = any(c["status"] == "FAIL" for c in checks)
+            self.test_completed.emit(not has_failures, message, identity, checks)
 
         except Exception as e:
-            return f"ERROR: S3 permission test failed: {str(e)}"
+            self.error_occurred.emit(f"Connection test failed: {str(e)}", e)
+
+    # ------------------------------------------------------------------
+    # S3 permission checks
+    # ------------------------------------------------------------------
+
+    def _test_s3_permissions(self, session) -> list:
+        checks = []
+        try:
+            s3 = session.client("s3")
+        except Exception as e:
+            checks.append({
+                "category": "S3 Permissions", "check": "Create S3 client",
+                "status": "FAIL", "detail": str(e),
+            })
+            return checks
+
+        # List Buckets
+        try:
+            resp = s3.list_buckets()
+            count = len(resp.get("Buckets", []))
+            checks.append({
+                "category": "S3 Permissions", "check": "List Buckets",
+                "status": "PASS", "detail": f"Found {count} bucket(s)",
+            })
+        except Exception as e:
+            checks.append({
+                "category": "S3 Permissions", "check": "List Buckets",
+                "status": "FAIL", "detail": str(e)[:120],
+            })
+
+        if not self.bucket_name:
+            return checks
+
+        # List Objects
+        try:
+            resp = s3.list_objects_v2(Bucket=self.bucket_name, MaxKeys=1)
+            checks.append({
+                "category": "S3 Permissions", "check": "List Objects",
+                "status": "PASS",
+                "detail": f"Accessible - sampled {resp.get('KeyCount', 0)} object(s)",
+            })
+        except Exception as e:
+            checks.append({
+                "category": "S3 Permissions", "check": "List Objects",
+                "status": "FAIL", "detail": str(e)[:120],
+            })
+            for name in ("Put Object", "Get Object", "Delete Object"):
+                checks.append({
+                    "category": "S3 Permissions", "check": name,
+                    "status": "SKIP", "detail": "Skipped - List Objects failed",
+                })
+            return checks
+
+        # Put Object
+        put_ok = False
+        try:
+            s3.put_object(
+                Bucket=self.bucket_name, Key=self._TEST_KEY,
+                Body=b"awg-connection-test", ContentType="text/plain",
+            )
+            checks.append({
+                "category": "S3 Permissions", "check": "Put Object",
+                "status": "PASS", "detail": f"Wrote {self._TEST_KEY}",
+            })
+            put_ok = True
+        except Exception as e:
+            checks.append({
+                "category": "S3 Permissions", "check": "Put Object",
+                "status": "FAIL", "detail": str(e)[:120],
+            })
+            for name in ("Get Object", "Delete Object"):
+                checks.append({
+                    "category": "S3 Permissions", "check": name,
+                    "status": "SKIP", "detail": "Skipped - Put Object failed",
+                })
+            return checks
+
+        # Get Object
+        try:
+            s3.get_object(Bucket=self.bucket_name, Key=self._TEST_KEY)
+            checks.append({
+                "category": "S3 Permissions", "check": "Get Object",
+                "status": "PASS", "detail": f"Read {self._TEST_KEY}",
+            })
+        except Exception as e:
+            checks.append({
+                "category": "S3 Permissions", "check": "Get Object",
+                "status": "FAIL", "detail": str(e)[:120],
+            })
+
+        # Delete Object (always attempt cleanup)
+        try:
+            s3.delete_object(Bucket=self.bucket_name, Key=self._TEST_KEY)
+            checks.append({
+                "category": "S3 Permissions", "check": "Delete Object",
+                "status": "PASS", "detail": f"Deleted {self._TEST_KEY}",
+            })
+        except Exception as e:
+            checks.append({
+                "category": "S3 Permissions", "check": "Delete Object",
+                "status": "FAIL", "detail": str(e)[:120],
+            })
+
+        return checks
+
+    # ------------------------------------------------------------------
+    # Bucket state checks
+    # ------------------------------------------------------------------
+
+    def _test_bucket_state(self, session, bucket_name: str, distribution_id: str) -> list:
+        import json as _json
+        checks = []
+        try:
+            s3 = session.client("s3")
+        except Exception as e:
+            checks.append({
+                "category": "Bucket State", "check": "S3 client",
+                "status": "FAIL", "detail": str(e),
+            })
+            return checks
+
+        # Bucket exists
+        try:
+            s3.head_bucket(Bucket=bucket_name)
+            checks.append({
+                "category": "Bucket State", "check": "Bucket exists",
+                "status": "PASS", "detail": f"{bucket_name} is accessible",
+            })
+        except Exception as e:
+            checks.append({
+                "category": "Bucket State", "check": "Bucket exists",
+                "status": "FAIL", "detail": str(e)[:120],
+            })
+            return checks
+
+        # Public access blocks
+        try:
+            resp = s3.get_public_access_block(Bucket=bucket_name)
+            cfg = resp["PublicAccessBlockConfiguration"]
+            flags = [
+                cfg.get("BlockPublicAcls", False),
+                cfg.get("IgnorePublicAcls", False),
+                cfg.get("BlockPublicPolicy", False),
+                cfg.get("RestrictPublicBuckets", False),
+            ]
+            if all(flags):
+                detail = "All blocks ON - private bucket (Mode B / CloudFront OAC)"
+                status = "INFO"
+            elif not any(flags):
+                detail = "All blocks OFF - public bucket (Mode A / S3 website)"
+                status = "INFO"
+            else:
+                on_keys = [k for k, v in cfg.items() if v]
+                off_keys = [k for k, v in cfg.items() if not v]
+                detail = f"Mixed config - ON: {on_keys} | OFF: {off_keys}"
+                status = "WARN"
+            checks.append({
+                "category": "Bucket State", "check": "Public access blocks",
+                "status": status, "detail": detail,
+            })
+        except Exception as e:
+            checks.append({
+                "category": "Bucket State", "check": "Public access blocks",
+                "status": "WARN", "detail": f"Could not read: {str(e)[:100]}",
+            })
+
+        # Bucket policy - OAC SourceArn validation
+        try:
+            resp = s3.get_bucket_policy(Bucket=bucket_name)
+            policy = _json.loads(resp["Policy"])
+            source_arns = []
+            for stmt in policy.get("Statement", []):
+                arn = stmt.get("Condition", {}).get("StringEquals", {}).get(
+                    "AWS:SourceArn", ""
+                )
+                if arn:
+                    source_arns.append(arn)
+
+            if not source_arns:
+                checks.append({
+                    "category": "Bucket State", "check": "Bucket policy",
+                    "status": "WARN",
+                    "detail": "Policy exists but no CloudFront OAC SourceArn condition found",
+                })
+            elif distribution_id:
+                matched = any(distribution_id in arn for arn in source_arns)
+                if matched:
+                    checks.append({
+                        "category": "Bucket State", "check": "Bucket policy",
+                        "status": "PASS",
+                        "detail": f"OAC SourceArn matches distribution {distribution_id}",
+                    })
+                else:
+                    policy_dist = source_arns[0].split("/")[-1]
+                    checks.append({
+                        "category": "Bucket State", "check": "Bucket policy",
+                        "status": "FAIL",
+                        "detail": (
+                            f"OAC MISMATCH - policy allows {policy_dist} "
+                            f"but config uses {distribution_id}. "
+                            "This causes AccessDenied on the CloudFront URL."
+                        ),
+                    })
+            else:
+                checks.append({
+                    "category": "Bucket State", "check": "Bucket policy",
+                    "status": "PASS",
+                    "detail": f"OAC SourceArn present: {source_arns[0][:80]}",
+                })
+        except Exception as e:
+            if "NoSuchBucketPolicy" in str(e):
+                checks.append({
+                    "category": "Bucket State", "check": "Bucket policy",
+                    "status": "WARN",
+                    "detail": "No bucket policy - required for CloudFront OAC (Mode B)",
+                })
+            else:
+                checks.append({
+                    "category": "Bucket State", "check": "Bucket policy",
+                    "status": "WARN", "detail": f"Could not read: {str(e)[:100]}",
+                })
+
+        return checks
+
+    # ------------------------------------------------------------------
+    # CloudFront checks
+    # ------------------------------------------------------------------
+
+    def _test_cloudfront(self, session, distribution_id: str, bucket_name: str) -> list:
+        checks = []
+        try:
+            cf = session.client("cloudfront")
+        except Exception as e:
+            checks.append({
+                "category": "CloudFront", "check": "CloudFront client",
+                "status": "FAIL", "detail": str(e),
+            })
+            return checks
+
+        try:
+            resp = cf.get_distribution(Id=distribution_id)
+            dist = resp["Distribution"]
+            domain = dist["DomainName"]
+            status_str = dist["Status"]
+            origins = dist["DistributionConfig"]["Origins"]["Items"]
+
+            checks.append({
+                "category": "CloudFront", "check": "Get Distribution",
+                "status": "PASS",
+                "detail": f"{domain} | Status: {status_str}",
+            })
+
+            # Origin matches bucket
+            if bucket_name:
+                origin_domains = [o["DomainName"] for o in origins]
+                match = any(bucket_name.lower() in d.lower() for d in origin_domains)
+                checks.append({
+                    "category": "CloudFront", "check": "Origin bucket",
+                    "status": "PASS" if match else "WARN",
+                    "detail": (
+                        f"Origin points to {bucket_name}"
+                        if match else
+                        f"Origin {origin_domains} does not match bucket {bucket_name}"
+                    ),
+                })
+
+            # OAC attached
+            oac_ids = [o.get("OriginAccessControlId", "") for o in origins]
+            oac_ids = [oid for oid in oac_ids if oid]
+            checks.append({
+                "category": "CloudFront", "check": "OAC attached",
+                "status": "PASS" if oac_ids else "WARN",
+                "detail": (
+                    f"OAC ID: {oac_ids[0]}"
+                    if oac_ids else
+                    "No OAC attached - required for private bucket access (Mode B)"
+                ),
+            })
+
+        except Exception as e:
+            err = str(e)
+            if "AccessDenied" in err:
+                checks.append({
+                    "category": "CloudFront", "check": "Get Distribution",
+                    "status": "WARN",
+                    "detail": "IAM role lacks cloudfront:GetDistribution - cannot verify distribution",
+                })
+            elif "NoSuchDistribution" in err:
+                checks.append({
+                    "category": "CloudFront", "check": "Get Distribution",
+                    "status": "FAIL",
+                    "detail": f"Distribution {distribution_id} not found",
+                })
+            else:
+                checks.append({
+                    "category": "CloudFront", "check": "Get Distribution",
+                    "status": "WARN", "detail": err[:120],
+                })
+
+        return checks
 
 
 class DeploymentWorker(QThread):
@@ -2090,9 +2511,17 @@ class CloudTab(BaseTab):
         )
         self.test_connection_button.setEnabled(False)
 
+        # Gather context for comprehensive checks
+        bucket_name = self._get_actual_bucket_name()
+        distribution_id = (
+            self.distribution_id_input.text().strip()
+            if self.distribution_id_input
+            else ""
+        )
+
         # Create and start worker thread
         self._connection_test_worker = ConnectionTestWorker(
-            self.credentials_manager, profile_name
+            self.credentials_manager, profile_name, bucket_name, distribution_id
         )
         self._connection_test_worker.progress_updated.connect(
             self.connection_progress.update_status
@@ -2106,27 +2535,20 @@ class CloudTab(BaseTab):
         self._connection_test_worker.start()
 
     def _on_connection_test_completed(
-        self, success: bool, message: str, identity: dict
+        self, success: bool, message: str, identity: dict, checks: list
     ):
-        """Handle connection test completion"""
+        """Handle connection test completion - show structured results dialog."""
         try:
-            # Hide progress before showing dialog
             self.connection_progress.hide_progress()
 
-            if success:
-                QMessageBox.information(self, "Connection Successful", message)
+            dlg = ConnectionResultsDialog(identity, checks, parent=self)
+            dlg.exec()
 
-                # Update S3 manager with validated session
+            if success:
                 session = self.credentials_manager.get_active_session()
                 if session:
                     self.s3_manager.set_session(session)
-            else:
-                QMessageBox.warning(
-                    self, "Connection Failed", f"AWS connection failed:\n\n{message}"
-                )
-
         finally:
-            # Re-enable button
             self.test_connection_button.setEnabled(True)
 
     def _on_connection_test_error(self, error_message: str, exception: Exception):
