@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ service.name }} - {{ business.business_name }}</title>
-    <meta name="description" content="{% if service.description %}{{ service.description[:150] }}{% if service.description|length > 150 %}...{% endif %}{% else %}{{ service.name }} from {{ business.business_name }}. Professional services tailored to your needs.{% endif %}">
-    <meta name="keywords" content="{{ service.name|lower }}, {{ business.business_name|lower }}, {{ business.industry|lower }}">
-    <meta name="author" content="{{ business.business_name }}">
+    <title>{{ service.name }} - {{ site_display_name }}</title>
+    <meta name="description" content="{% if service.description %}{{ service.description[:150] }}{% if service.description|length > 150 %}...{% endif %}{% elif is_resource_site %}An independent guide to {{ service.name.lower() }}: standards references, option comparisons, and decision frameworks.{% else %}{{ service.name }} from {{ site_display_name }}. Professional services tailored to your needs.{% endif %}">
+    <meta name="keywords" content="{{ service.name|lower }}, {{ site_display_name|lower }}, {{ business.industry|lower }}{% if is_resource_site %}, guide, how-to{% endif %}">
+    <meta name="author" content="{{ site_display_name }}">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="{{ service.name }} - {{ business.business_name }}">
-    <meta property="og:description" content="{% if service.description %}{{ service.description[:150] }}{% if service.description|length > 150 %}...{% endif %}{% else %}{{ service.name }} from {{ business.business_name }}{% endif %}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ business.domain }}/services/{{ service.name|slugify }}.html">
-    {% if service.image_url %}<meta property="og:image" content="{{ service.image_url }}">{% endif %}
+    <meta property="og:title" content="{{ service.name }} - {{ site_display_name }}">
+    <meta property="og:description" content="{% if service.description %}{{ service.description[:150] }}{% if service.description|length > 150 %}...{% endif %}{% else %}{{ service.name }} - {{ site_display_name }}{% endif %}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ canonical_base_url }}/services/{{ service.name|slugify }}.html">
+    {% if not is_resource_site and service.image_url %}<meta property="og:image" content="{{ service.image_url }}">{% endif %}
 
     <link rel="canonical" href="{{ canonical_base_url }}/services/{{ service.name|slugify }}.html">
     <link rel="stylesheet" href="../css/style.css">
@@ -23,6 +23,22 @@
     {% if breadcrumb_schema %}
     <script type="application/ld+json">
     {{ breadcrumb_schema | tojson }}
+    </script>
+    {% endif %}
+
+    <!-- Article Schema (resource sites only) -->
+    {% if is_resource_site %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "{{ service.name }}",
+      "description": "{% if service.description %}{{ service.description[:160] | replace('"', '\\"') }}{% else %}An independent guide to {{ service.name.lower() }} for facility managers and building owners.{% endif %}",
+      "author": {"@type": "Organization", "name": "{{ site_display_name }}"},
+      "publisher": {"@type": "Organization", "name": "{{ site_display_name }}"},
+      "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ canonical_base_url }}/services/{{ service.name|slugify }}.html"},
+      "inLanguage": "en"
+    }
     </script>
     {% endif %}
 </head>
@@ -35,8 +51,8 @@
         <div class="container">
             <div class="hero-content">
                 <div class="breadcrumb" style="color: rgba(255,255,255,0.9); margin-bottom: 1rem;">
-                    <a href="{{ base_path | default('../') }}index.html" style="color: white;">Home</a> >
-                    <a href="{{ base_path | default('../') }}services.html" style="color: white;">Services</a> >
+                    <a href="{{ base_path | default('../') }}index.html" style="color: white;">Home</a> &gt;
+                    <a href="{{ base_path | default('../') }}services.html" style="color: white;">{% if is_resource_site %}Guides{% else %}Services{% endif %}</a> &gt;
                     <span style="color: white;">{{ service.name }}</span>
                 </div>
 
@@ -44,13 +60,19 @@
 
                 {% if service.description %}
                 <p class="hero-description" style="color: white; font-size: 1.2rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); max-width: 700px;">{{ service.description[:200] }}{% if service.description|length > 200 %}...{% endif %}</p>
+                {% elif is_resource_site %}
+                <p class="hero-description" style="color: white; font-size: 1.2rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); max-width: 700px;">An independent guide to {{ service.name.lower() }} — covering standards requirements, product options, and what to ask a contractor.</p>
                 {% else %}
-                <p class="hero-description" style="color: white; font-size: 1.2rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); max-width: 700px;">Professional {{ service.name.lower() }} from {{ business.business_name }}. Expert service tailored to your needs.</p>
+                <p class="hero-description" style="color: white; font-size: 1.2rem; margin-bottom: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); max-width: 700px;">Professional {{ service.name.lower() }} from {{ site_display_name }}. Expert service tailored to your needs.</p>
                 {% endif %}
 
                 <div class="service-actions" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    {% if is_resource_site %}
+                    <a href="{{ base_path | default('../') }}services.html" class="btn btn-primary" style="padding: 1rem 2rem; background: var(--accent-color, #e74c3c); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s ease;">Back to Guides</a>
+                    {% else %}
                     <a href="{{ base_path | default('../') }}contact.html" class="btn btn-primary" style="padding: 1rem 2rem; background: var(--accent-color, #e74c3c); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s ease;">Get Quote</a>
                     <a href="tel:{{ contact.phone if contact and contact.phone else '' }}" class="btn btn-secondary" style="padding: 1rem 2rem; background: white; color: var(--primary-color, #3498db); text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s ease;">Call Now</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -84,7 +106,7 @@
 
             {% if service.description %}
             <div class="service-full-description" style="margin: 3rem 0; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <h2 style="color: var(--primary-color, #3498db); margin-bottom: 1.5rem;">About This Service</h2>
+                <h2 style="color: var(--primary-color, #3498db); margin-bottom: 1.5rem;">{% if is_resource_site %}Guide Overview{% else %}About This Service{% endif %}</h2>
                 <div style="line-height: 1.8; color: #333;">{{ service.description }}</div>
             </div>
             {% endif %}
@@ -103,6 +125,31 @@
             {% endif %}
 
             <div class="service-process">
+                {% if is_resource_site %}
+                <h2>What This Guide Covers</h2>
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <h3>Topic Overview</h3>
+                        <p>Plain-language explanation of what {{ service.name.lower() }} involves and when it applies to your facility.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <h3>Standards &amp; Codes</h3>
+                        <p>Applicable NFPA, ANSI, UL, and local building code requirements with section references.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <h3>Option Comparison</h3>
+                        <p>Comparison of available approaches, products, or contractors across objective criteria.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <h3>Decision Checklist</h3>
+                        <p>Questions to ask before hiring a contractor or purchasing equipment for this type of work.</p>
+                    </div>
+                </div>
+                {% else %}
                 <h2>How It Works</h2>
                 <div class="process-steps">
                     <div class="process-step">
@@ -126,6 +173,7 @@
                         <p>We ensure your complete satisfaction and provide ongoing support.</p>
                     </div>
                 </div>
+                {% endif %}
             </div>
 
             {% if related_services %}
@@ -147,9 +195,19 @@
             {% endif %}
 
             <div class="contact-cta">
+                {% if is_resource_site %}
+                <h2>Ready to Hire a Professional?</h2>
+                {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
+                <p>Use the information in this guide to evaluate your options. Established providers in the {{ contact.address.city if contact.address.city else "local" }} area include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> and other licensed {{ business.industry.lower() }} contractors.</p>
+                {% else %}
+                <p>Use the information in this guide when evaluating {{ business.industry.lower() }} contractors in your area. Ask for references, verify licensing, and request written estimates from at least two providers.</p>
+                {% endif %}
+                <a href="{{ base_path | default('../') }}services.html" class="btn btn-primary">Browse All Guides</a>
+                {% else %}
                 <h2>Interested in {{ service.name }}?</h2>
-                <p>Contact {{ business.business_name }} today for a detailed quote and consultation.</p>
+                <p>Contact {{ site_display_name }} today for a detailed quote and consultation.</p>
                 <a href="{{ base_path | default('../') }}contact.html" class="btn btn-primary">Contact Us Now</a>
+                {% endif %}
             </div>
         </div>
     </div>

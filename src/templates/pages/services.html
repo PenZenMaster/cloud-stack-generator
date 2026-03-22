@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ business.industry }} Services - {{ business.business_name }}</title>
-    <meta name="description" content="Explore our comprehensive {{ business.industry.lower() }} services at {{ business.business_name }}. Professional solutions tailored to your needs.">
-    <meta name="keywords" content="{{ business.industry.lower() }} services, {{ business.business_name.lower() }}, professional services, {{ contact.address.city.lower() if contact.address.city else '' }}">
-    <meta name="author" content="{{ business.business_name }}">
+    <title>{% if is_resource_site %}{{ business.industry }} Guides - {{ site_display_name }}{% else %}{{ business.industry }} Services - {{ site_display_name }}{% endif %}</title>
+    <meta name="description" content="{% if is_resource_site %}Independent guides and how-to resources covering {{ business.industry.lower() }}. Standards references, comparison frameworks, and buyer checklists.{% else %}Explore our comprehensive {{ business.industry.lower() }} services at {{ site_display_name }}. Professional solutions tailored to your needs.{% endif %}">
+    <meta name="keywords" content="{{ business.industry.lower() }} {% if is_resource_site %}guide, how-to, checklist{% else %}services{% endif %}, {{ site_display_name.lower() }}, {{ contact.address.city.lower() if contact.address.city else '' }}">
+    <meta name="author" content="{{ site_display_name }}">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="{{ business.industry }} Services - {{ business.business_name }}">
-    <meta property="og:description" content="Professional {{ business.industry.lower() }} services from {{ business.business_name }}. Quality solutions for your needs.">
+    <meta property="og:title" content="{% if is_resource_site %}{{ business.industry }} Guides - {{ site_display_name }}{% else %}{{ business.industry }} Services - {{ site_display_name }}{% endif %}">
+    <meta property="og:description" content="{% if is_resource_site %}Independent guides covering {{ business.industry.lower() }} topics for facility managers and building owners.{% else %}Professional {{ business.industry.lower() }} services from {{ site_display_name }}. Quality solutions for your needs.{% endif %}">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ business.domain }}/services.html">
-    {% if branding.logo_url %}<meta property="og:image" content="{{ branding.logo_url }}">{% endif %}
+    <meta property="og:url" content="{{ canonical_base_url }}/services.html">
+    {% if not is_resource_site and branding.logo_url %}<meta property="og:image" content="{{ branding.logo_url }}">{% endif %}
 
     <link rel="canonical" href="{{ canonical_base_url }}/services.html">
     <link rel="stylesheet" href="css/style.css">
@@ -30,18 +30,29 @@
     {% include 'components/header.html' %}
 
     <main>
-        <!-- Services Hero Section -->
+        <!-- Services / Guides Hero Section -->
         <section class="hero">
             <div class="hero-content">
+                {% if is_resource_site %}
+                <h1>{{ business.industry }} Guides &amp; How-To Resources</h1>
+                <p class="hero-subtitle">Independent, standards-based guides covering {{ business.industry.lower() }} topics for facility managers, building owners, and contractors. Covering multiple brands and options — not just one vendor.</p>
+                <a href="{{ base_path | default('') }}about.html" class="cta-button">About This Resource</a>
+                {% else %}
                 <h1>Our {{ business.industry }} Services</h1>
                 <p class="hero-subtitle">{% if business.service_overview %}{{ business.service_overview }}{% else %}Discover our comprehensive range of {{ business.industry.lower() }} services designed to meet your unique needs. From consultation to completion, we deliver excellence in every project.{% endif %}</p>
                 <a href="{{ base_path | default('') }}contact.html" class="cta-button">Get a Custom Quote</a>
+                {% endif %}
             </div>
         </section>
 
-        <!-- Services Introduction -->
+        <!-- Services / Guides Introduction -->
         <section class="content-section">
             <div class="container">
+                {% if is_resource_site %}
+                <h2>{{ business.industry }} Topic Guides</h2>
+                <p>The guides below cover installation, repair, maintenance, compliance, and purchasing decisions across the full range of {{ business.industry.lower() }} topics. Each guide is written from a third-party perspective, referencing published standards (NFPA, ANSI, UL) and covering multiple manufacturers and product categories.</p>
+                <p>Use the guides to understand your options before contacting contractors, compare specifications across brands, or verify compliance requirements for your facility.</p>
+                {% else %}
                 <h2>Professional {{ business.industry }} Solutions</h2>
                 <p>At {{ business.business_name }}, we offer a complete range of {{ business.industry.lower() }} services {% if contact.address.city %}in {{ contact.address.city }}, {{ contact.address.state }} and surrounding areas{% endif %}. Our experienced team combines traditional expertise with modern techniques to deliver exceptional results that exceed expectations.</p>
 
@@ -50,20 +61,21 @@
                 {% else %}
                 <p>Every project begins with understanding your vision and requirements. We work closely with you throughout the process, ensuring transparent communication, quality craftsmanship, and timely completion. Our commitment to excellence has made us a trusted partner for both residential and commercial clients.</p>
                 {% endif %}
+                {% endif %}
             </div>
         </section>
 
-        <!-- Services Grid -->
+        <!-- Services / Guides Grid -->
         {% if services %}
         <section class="content-section">
             <div class="container">
-                <h2>Our Service Offerings</h2>
+                <h2>{% if is_resource_site %}Available Guides{% else %}Our Service Offerings{% endif %}</h2>
                 <div class="services-grid">
                     {% for service in services %}
                     <div class="service-card">
-                        {% if service.image_url %}
+                        {% if not is_resource_site and service.image_url %}
                         <img src="{{ service.image_url }}" alt="{{ service.name if service.name else service }}" class="service-image">
-                        {% else %}
+                        {% elif not is_resource_site %}
                         <div class="service-image-placeholder">
                             <span>{{ service.name if service.name else service }}</span>
                         </div>
@@ -73,6 +85,8 @@
                             <p class="service-description">
                                 {% if service.description %}
                                 {{ service.description }}
+                                {% elif is_resource_site %}
+                                An independent guide covering {{ (service.name if service.name else service).lower() }}, including standards references, comparison of available options, and decision frameworks for facility managers.
                                 {% else %}
                                 Professional {{ (service.name if service.name else service).lower() }} services delivered with precision and attention to detail. Our skilled team ensures quality results that meet your specific requirements.
                                 {% endif %}
@@ -80,7 +94,7 @@
 
                             {% if service.features %}
                             <div class="service-features">
-                                <h4>Key Features:</h4>
+                                <h4>{% if is_resource_site %}Topics Covered:{% else %}Key Features:{% endif %}</h4>
                                 <ul>
                                     {% for feature in service.features[:4] %}
                                     <li>{{ feature }}</li>
@@ -90,8 +104,10 @@
                             {% endif %}
 
                             <div class="service-actions">
-                                <a href="{{ base_path | default('') }}services/{{ (service.name if service.name else service)|slugify }}.html" class="btn btn-primary">Learn More</a>
+                                <a href="{{ base_path | default('') }}services/{{ (service.name if service.name else service)|slugify }}.html" class="btn btn-primary">{% if is_resource_site %}Read the Guide{% else %}Learn More{% endif %}</a>
+                                {% if not is_resource_site %}
                                 <a href="{{ base_path | default('') }}contact.html" class="btn btn-secondary">Get Quote</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -101,9 +117,34 @@
         </section>
         {% endif %}
 
-        <!-- Service Process -->
+        <!-- Process / How Guides Are Structured -->
         <section class="content-section">
             <div class="container">
+                {% if is_resource_site %}
+                <h2>How These Guides Are Structured</h2>
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <h3>Topic Overview</h3>
+                        <p>Each guide begins with a plain-language summary of the topic — what it is, why it matters, and who needs to care about it.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <h3>Standards &amp; Codes</h3>
+                        <p>Relevant NFPA, ANSI, UL, and building code requirements are cited with actual section numbers so you can verify requirements for your jurisdiction.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <h3>Option Comparison</h3>
+                        <p>Where multiple products, approaches, or vendors exist, the guide compares them across objective criteria — not just one brand's spec sheet.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <h3>Decision Framework</h3>
+                        <p>Each guide closes with a decision framework — specific criteria to help you choose the right option for your facility type, usage, and budget.</p>
+                    </div>
+                </div>
+                {% else %}
                 <h2>Our Service Process</h2>
                 <div class="process-steps">
                     <div class="process-step">
@@ -113,7 +154,7 @@
                     </div>
                     <div class="process-step">
                         <div class="step-number">2</div>
-                        <h3>Planning & Design</h3>
+                        <h3>Planning &amp; Design</h3>
                         <p>Our team develops a detailed plan and design that aligns with your vision. We ensure all specifications meet industry standards and your requirements.</p>
                     </div>
                     <div class="process-step">
@@ -123,16 +164,38 @@
                     </div>
                     <div class="process-step">
                         <div class="step-number">4</div>
-                        <h3>Completion & Follow-up</h3>
+                        <h3>Completion &amp; Follow-up</h3>
                         <p>We ensure your complete satisfaction with the finished project and provide ongoing support as needed. Quality assurance is our priority.</p>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </section>
 
-        <!-- Why Choose Our Services -->
+        <!-- Why Choose / Why Use These Guides -->
         <section class="content-section">
             <div class="container">
+                {% if is_resource_site %}
+                <h2>Why Use {{ site_display_name }}?</h2>
+                <div class="service-benefits">
+                    <div class="benefit-item">
+                        <h3>Independent Perspective</h3>
+                        <p>Content is written from a third-party standpoint. We reference multiple brands and contractors, not just one company's offerings.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Standards-Referenced</h3>
+                        <p>Every compliance or safety claim cites the relevant standard (NFPA-80, ANSI MH30.1, UL 10C) so you can verify requirements yourself.</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Decision-Focused</h3>
+                        <p>Guides are built around decisions, not sales pitches. Each one answers the question: "What should I choose and why?"</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>Practitioner-Tested</h3>
+                        <p>Content is reviewed by professionals with hands-on {{ business.industry.lower() }} experience — not just SEO writers.</p>
+                    </div>
+                </div>
+                {% else %}
                 <h2>Why Choose {{ business.business_name }}?</h2>
                 <div class="service-benefits">
                     <div class="benefit-item">
@@ -152,13 +215,18 @@
                         <p>We offer transparent, competitive pricing with detailed estimates so you know exactly what to expect from start to finish.</p>
                     </div>
                 </div>
+                {% endif %}
             </div>
         </section>
 
-        <!-- Service Areas -->
+        <!-- Coverage Area / Service Areas -->
         {% if contact.address.city %}
         <section class="content-section">
             <div class="container">
+                {% if is_resource_site %}
+                <h2>Coverage Area</h2>
+                <p>These guides focus on {{ business.industry.lower() }} topics relevant to facilities in {{ contact.address.city }}, {{ contact.address.state }} and surrounding areas, including local permitting offices, applicable state building codes, and regional contractor resources.</p>
+                {% else %}
                 <h2>Service Areas</h2>
                 <p>{{ business.business_name }} proudly serves {{ contact.address.city }}, {{ contact.address.state }} and the surrounding communities. Our central location allows us to efficiently serve clients throughout the region while maintaining the personal touch that comes with being a local business.</p>
 
@@ -166,6 +234,7 @@
                 <p>{{ business.service_area_description }}</p>
                 {% else %}
                 <p>Whether you're a homeowner, business owner, or contractor, we have the expertise and capacity to handle projects of all sizes. Contact us today to discuss how we can help with your {{ business.industry.lower() }} needs.</p>
+                {% endif %}
                 {% endif %}
             </div>
         </section>
@@ -175,12 +244,24 @@
         <section class="content-section">
             <div class="container">
                 <div class="services-cta">
+                    {% if is_resource_site %}
+                    <h2>Looking for a Local Professional?</h2>
+                    {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
+                    <p>These guides help you make informed decisions. When you're ready to hire, established providers in the {{ contact.address.city if contact.address.city else "local" }} area include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> and other licensed contractors.</p>
+                    {% else %}
+                    <p>These guides help you evaluate your options before contacting a local {{ business.industry.lower() }} professional.</p>
+                    {% endif %}
+                    <div class="cta-actions">
+                        <a href="{{ base_path | default('') }}about.html" class="btn btn-primary">About This Resource</a>
+                    </div>
+                    {% else %}
                     <h2>Ready to Get Started?</h2>
                     <p>Contact {{ business.business_name }} today for a consultation and detailed quote for your {{ business.industry.lower() }} project. Our team is ready to bring your vision to life with professional service and exceptional results.</p>
                     <div class="cta-actions">
                         <a href="{{ base_path | default('') }}contact.html" class="btn btn-primary">Request Quote</a>
                         {% if contact.phone %}<a href="tel:{{ contact.phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" class="btn btn-secondary">Call Now</a>{% endif %}
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </section>
