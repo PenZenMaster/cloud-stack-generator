@@ -262,6 +262,13 @@ class EnhancedMainWindow(QMainWindow):
         generate_action.triggered.connect(self.generate_website)
         tools_menu.addAction(generate_action)
 
+        # Batch Generate (multi-client)
+        batch_action = QAction("&Batch Generate (Multi-Client)...", self)
+        batch_action.setShortcut("F7")
+        batch_action.setToolTip("Generate websites for multiple client YAML configs in one run")
+        batch_action.triggered.connect(self.open_batch_generate)
+        tools_menu.addAction(batch_action)
+
         # View Menu (NEW)
         view_menu = menubar.addMenu("&View")
         if view_menu is None:
@@ -1982,6 +1989,12 @@ class EnhancedMainWindow(QMainWindow):
                 error_message
             )
             self.status_label.setText("Website preview error")
+
+    def open_batch_generate(self):
+        """Open the batch (multi-client) generation dialog."""
+        from .dialogs.batch_generate_dialog import BatchGenerateDialog
+        dlg = BatchGenerateDialog(parent=self)
+        dlg.exec()
 
     def generate_website(self):
         """Generate website from current configuration"""
