@@ -31,7 +31,28 @@
                 <p>Discover our comprehensive range of {{ business.industry.lower() }} products designed to meet your specific needs.</p>
                 {% endif %}
 
-                {% if products %}
+                {% if product_categories %}
+                <!-- Category comparison guide cards (resource site with configured categories) -->
+                <div class="products-grid">
+                    {% for category in product_categories %}
+                    <div class="product-card">
+                        <div class="product-card-content">
+                            <h3><a href="{{ base_path | default('') }}products/{{ category.get_slug() }}.html" style="color: inherit; text-decoration: none;">{{ category.get_guide_title() }}</a></h3>
+                            {% if category.description %}
+                            <p>{{ category.description[:200] }}{% if category.description|length > 200 %}...{% endif %}</p>
+                            {% else %}
+                            <p>An independent comparison guide covering {{ category.category_name.lower() }} options across multiple manufacturers, with selection criteria and decision frameworks.</p>
+                            {% endif %}
+                            {% if category.competing_brands %}
+                            <p style="font-size: 0.85rem; color: #666;"><strong>Brands covered:</strong> {{ category.competing_brands[:3] | join(", ") }}{% if category.competing_brands|length > 3 %} + {{ category.competing_brands|length - 3 }} more{% endif %}</p>
+                            {% endif %}
+                            <a href="{{ base_path | default('') }}products/{{ category.get_slug() }}.html" class="product-link">View Comparison Guide &#8594;</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% elif products %}
+                <!-- Individual product cards (storefront or uncategorized resource site) -->
                 <div class="products-grid">
                     {% for product in products %}
                     <div class="product-card">

@@ -279,6 +279,42 @@ class HTMLGenerator:
 
         return self._render_template("pages/product-detail.html", template_data)
 
+    def generate_product_comparison_page(self, category, config: ClientConfig) -> str:
+        """Generate a comparison guide page for a ProductCategoryConfig.
+
+        Produces products/{slug}.html using the product-comparison.html template.
+        The category groups related products and adds competing brands, criteria,
+        and decision frameworks — replacing individual spec-sheet pages.
+        """
+        template_data = self._prepare_template_data(config)
+
+        # Resolve the ProductConfig objects that belong to this category
+        category_product_names = {p.lower() for p in category.products}
+        matched_products = [
+            p for p in config.products
+            if p.name.lower() in category_product_names
+            or getattr(p, 'sku', '').lower() in category_product_names
+        ]
+
+        slug = category.get_slug()
+        page_url = f"{template_data['canonical_base_url']}/products/{slug}.html"
+
+        template_data.update({
+            "page_title": category.get_guide_title(),
+            "page_description": category.description,
+            "page_type": "product-comparison",
+            "category": category,
+            "category_products": matched_products,
+            "base_path": "../",
+            "breadcrumb_schema": self._generate_breadcrumb_schema(
+                "product-comparison",
+                template_data["canonical_base_url"],
+                extra={"name": category.get_guide_title(), "url": page_url},
+            ),
+        })
+
+        return self._render_template("pages/product-comparison.html", template_data)
+
     def generate_faq_page(self, config: ClientConfig) -> str:
         """Generate FAQ page"""
         template_data = self._prepare_template_data(config)
@@ -411,6 +447,7 @@ class HTMLGenerator:
             "is_backlink_site": hasattr(config.cloud, 'site_type') and config.cloud.site_type == "backlink_site",
             "is_resource_site": hasattr(config.cloud, 'site_type') and config.cloud.site_type == "resource",
             "resource_site": getattr(config, 'resource_site', None),
+            "product_categories": getattr(config, 'product_categories', []),
             "site_display_name": (
                 config.resource_site.site_name
                 if (
