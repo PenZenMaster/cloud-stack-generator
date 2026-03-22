@@ -3,49 +3,46 @@
 **Last Updated:** 2026-03-22
 **Branch:** main
 **Version:** 4.1.0
-**Last Commit:** 12137c4 - Sprint 5-4 - Batch Generate dialog for multi-client workflow
+**Last Commit:** 506a6a1 - feat(providers): Listed Providers system for resource sites
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **Sprint 5-1 - Product Categories UI Tab (10987ef)** -
-   `ProductCategoriesTab` added to `src/ui/components/`. Split-panel
-   list-manager: left = category list + Add/Remove, right = form for all
-   `ProductCategoryConfig` fields (identity, competing brands, criteria,
-   suitability, standards, product links). Full round-trip wired in
-   `enhanced_main_window.py` (get/set/clear/create_client_config).
+1. **Sprint 5 (1-4) - Product Categories, Theme Presets, Site Type Help, Batch Generate** -
+   `ProductCategoriesTab`, 7 theme color presets in `theme_presets.py`, contextual help
+   text on Cloud Deploy tab, `BatchGenerateDialog` (Tools > F7) for multi-client sequential
+   generation with live log, progress bar, and cancel.
 
-2. **Sprint 5-2 - Theme Preset Selector (9fbbbcf)** -
-   `src/core/config/theme_presets.py` defines 7 named color palette presets
-   (Default, Midnight Pro, Forest Service, Crimson Trades, Slate Corporate,
-   Amber Warmth, Ocean Coastal). Branding tab gains a "Theme Preset" dropdown
-   that applies the full palette + font to all color inputs in one click.
+2. **Listed Providers - Data + Generation Layer (506a6a1)** -
+   `ProviderConfig` dataclass in `models.py`; `_parse_providers()` + YAML serialization
+   in `parser.py`; `html_generator.py` adds `_pick_provider()`, `generate_providers_index_page()`,
+   `generate_provider_profile_page()`, Providers nav item, `featured_provider` injection;
+   `page_generator.py` adds `providers/` dir, `_generate_provider_pages()`, sitemap entries.
 
-3. **Sprint 5-3 + 5-4 - Site Type Help Panel + Batch Generate (0c1c23b, 12137c4)** -
-   Cloud Deploy tab: contextual help panel below site-type radios updates
-   dynamically (Main/Backlink/Resource descriptions). New
-   `BatchGenerateDialog` in Tools menu (F7): scan a config folder, select
-   YAMLs, set base output dir, run sequential generation with live log,
-   progress bar, cancel, and results summary.
+3. **Listed Providers - UI + Templates (506a6a1)** -
+   `ProvidersTab` (QSplitter list-manager) fully wired into `enhanced_main_window.py`
+   (import, instantiate, tab registration, get/set/clear/create_client_config, load round-trip).
+   New templates: `providers-index.html`, `provider-profile.html`, `provider-cta.html`.
+   `service-detail.html` and `product-comparison.html` updated to use `provider-cta.html`.
 
 ---
 
 ## Next 3 Priorities
 
-1. **QA Sprint 5** - Launch the app and test all 4 Sprint 5 features:
-   Product Categories tab (add/remove/save/load roundtrip), theme preset
-   dropdown (apply + customize), site type help text (all 3 states),
-   batch generate (select configs + generate).
+1. **QA Sprint 5 + Providers** - Launch app, test:
+   - Providers tab: add/remove/save/load round-trip, slug auto-generation
+   - provider-cta renders on service-detail and product-comparison pages
+   - providers/index.html and providers/{slug}.html generate correctly
+   - Batch generate, theme presets, product categories (existing Sprint 5 items)
 
 2. **Sprint 5 - Advanced City Page Content** - Enhance city page generation
    with richer localized content: nearby cities/regions, seasonal context,
    local landmarks, more FAQ depth. Improve `city_content_generator.py`.
 
 3. **Sprint 5 - Analytics Integration Prep** - Add optional Google Analytics 4
-   snippet injection field to the Cloud Deploy or Branding tab. The YAML
-   key `cloud.analytics_id` → injected into all page `<head>` blocks via
-   the Jinja2 base template.
+   snippet injection field to the Cloud Deploy or Branding tab. YAML key
+   `cloud.analytics_id` injected into all page `<head>` blocks via Jinja2 base template.
 
 ---
 
@@ -54,12 +51,12 @@
 **Git:**
 - Branch: main
 - Version: 4.1.0
-- Last commit: 12137c4 (pushed, Sprint 5 items 1-4)
+- Last commit: 506a6a1 (pushed, Providers system complete)
 - Working tree: minor non-code files (.claude/claude.md, settings.local.json, docs/qa1.png)
 
 **Tests:**
 - Total: 926 PASSING, 83 pre-existing failures (unchanged), 6 skipped
-- Sprint 5 introduced 0 new failures
+- Providers feature introduced 0 new failures
 - Pre-existing failures: test_template_preview, test_template_validator,
   test_backup_manager, test_branding_tab (2), test_cloud_tab (2),
   test_cities_yaml_bug, test_meta_tags_feature - not our fault
@@ -76,20 +73,17 @@
 
 ## Key Context Notes
 
-1. **Sprint 5 features shipped** - Product Categories UI, Theme Presets, Site
-   Type help panel, Batch Generate dialog. All await user QA before marking
-   Sprint 5 complete.
+1. **Listed Providers workflow** - Resource sites can now list multiple provider clients.
+   Each provider gets a profile page at `providers/{slug}.html`. The `providers/index.html`
+   is a vetted-directory listing page. `_pick_provider()` scores token overlap between
+   provider specialties and service/category topics to inject a `featured_provider` CTA.
 
-2. **Product categories workflow** - Three site_type values: "main_site"
-   (default), "backlink_site", "resource". Product categories are now
-   UI-configurable via the new "Product Categories" tab (between Resource
-   Site and Cloud Deploy). YAML round-trip confirmed at logic level.
+2. **provider-cta.html component** - Renders featured provider box if `featured_provider`
+   is set AND `is_resource_site` is true. Falls back to legacy `money_site_name` attribution
+   if no providers configured. Used in service-detail and product-comparison templates.
 
 3. **Batch generate** - Tools > Batch Generate (F7) opens dialog. Reads YAML
-   configs from a selected folder, generates each to
-   `<output_base>/<config_stem>/`. Uses `PageGenerator` directly (same
-   pipeline as single-client generate). Each run is sequential; cancel button
-   stops after current client completes.
+   configs from a selected folder, generates each to `<output_base>/<config_stem>/`.
 
 ---
 
