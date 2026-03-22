@@ -51,6 +51,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from .base_tab import BaseTab, ValidationResult
 from typing import Dict, Any, List
 from src.core.utils.logger import get_logger
+from src.core.config.theme_presets import PRESET_NAMES, get_preset
 
 logger = get_logger(__name__)
 
@@ -182,6 +183,31 @@ class BrandingTab(BaseTab):
         header.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         header.setStyleSheet("color: #2c3e50; padding: 10px 0 5px 0;")
         parent_layout.addWidget(header)
+
+        # Theme preset row
+        preset_row = QHBoxLayout()
+        preset_label = QLabel("Theme Preset:")
+        preset_label.setFont(QFont("Arial", 10))
+        preset_label.setMinimumWidth(120)
+        preset_row.addWidget(preset_label)
+
+        self.theme_preset_combo = QComboBox()
+        self.theme_preset_combo.addItem("-- Select a Preset --")
+        self.theme_preset_combo.addItems(PRESET_NAMES)
+        self.theme_preset_combo.setToolTip(
+            "Apply a named color palette preset. "
+            "Colors are applied to the fields below and can be further customized."
+        )
+        self.theme_preset_combo.setMaximumWidth(220)
+        self.theme_preset_combo.currentIndexChanged.connect(self._on_preset_selected)
+        preset_row.addWidget(self.theme_preset_combo)
+
+        preset_note = QLabel("Applies a starting color palette. Customize any field below after selecting.")
+        preset_note.setStyleSheet("color:#777; font-style:italic; font-size:9pt;")
+        preset_note.setWordWrap(True)
+        preset_row.addWidget(preset_note)
+        preset_row.addStretch()
+        parent_layout.addLayout(preset_row)
 
         # Color form in group box with two-column layout
         color_group = QGroupBox()
@@ -642,6 +668,48 @@ class BrandingTab(BaseTab):
 
             self._update_preview()
 
+        self._emit_config_changed()
+
+    def _on_preset_selected(self, index: int):
+        """Apply the selected theme preset to all color and font fields."""
+        if index <= 0:
+            # Placeholder entry selected - do nothing
+            return
+        preset_name = self.theme_preset_combo.itemText(index)
+        preset = get_preset(preset_name)
+
+        # Map BrandingConfig keys -> internal short keys used by branding_inputs
+        key_map = {
+            "primary_color": "primary",
+            "secondary_color": "secondary",
+            "body_background_color": "body_background",
+            "body_text_color": "body_text",
+            "footer_background_color": "footer_background",
+            "footer_text_color": "footer_text",
+            "h1_text_color": "h1_text",
+            "h2_text_color": "h2_text",
+            "h3_text_color": "h3_text",
+            "main_menu_text_color": "menu_text",
+        }
+
+        for config_key, internal_key in key_map.items():
+            color = preset.get(config_key, "")
+            if color and internal_key in self.branding_inputs:
+                self.current_colors[internal_key] = color
+                self.branding_inputs[internal_key].setText(color)
+                if internal_key in self.preview_labels:
+                    self.preview_labels[internal_key].setStyleSheet(
+                        f"QLabel {{ background-color: {color}; border: 2px solid #ccc; border-radius: 4px; }}"
+                    )
+
+        # Apply font
+        font = preset.get("font_family", "")
+        if font and "font_family" in self.branding_inputs:
+            idx = self.branding_inputs["font_family"].findText(font)
+            if idx >= 0:
+                self.branding_inputs["font_family"].setCurrentIndex(idx)
+
+        self._update_preview()
         self._emit_config_changed()
 
     def _open_color_picker(self, color_key: str):
