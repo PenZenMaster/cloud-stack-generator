@@ -408,8 +408,19 @@ class HTMLGenerator:
             "generation_date": datetime.now().strftime("%Y-%m-%d"),
             "site_url": config.business.domain,
             "canonical_base_url": canonical_base,  # NEW: For canonical tags
-            "is_backlink_site": hasattr(config.cloud, 'site_type') and config.cloud.site_type == "backlink_site",  # NEW
-            "main_site_url": getattr(config.cloud, 'main_site_url', '') if hasattr(config, 'cloud') else '',  # NEW: For backlink sites
+            "is_backlink_site": hasattr(config.cloud, 'site_type') and config.cloud.site_type == "backlink_site",
+            "is_resource_site": hasattr(config.cloud, 'site_type') and config.cloud.site_type == "resource",
+            "resource_site": getattr(config, 'resource_site', None),
+            "site_display_name": (
+                config.resource_site.site_name
+                if (
+                    config.cloud.site_type == "resource"
+                    and hasattr(config, 'resource_site')
+                    and config.resource_site.site_name
+                )
+                else config.business.business_name
+            ),
+            "main_site_url": getattr(config.cloud, 'main_site_url', '') if hasattr(config, 'cloud') else '',
             "navigation": self._generate_navigation(config),
             "footer_links": self._generate_footer_links(config),
             "social_links": self._get_social_links(config),

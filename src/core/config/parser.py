@@ -22,6 +22,7 @@ from .models import (
     AddressConfig,
     BrandingConfig,
     CloudConfig,
+    ResourceSiteConfig,
     DeploymentConfig,
     ProductConfig,
     ServiceConfig,
@@ -130,6 +131,9 @@ class ConfigParser:
         # Parse multi-deployment configuration (v3.2.0+)
         deployments = self._parse_deployments(yaml_data)
 
+        # Parse resource site identity (only meaningful when cloud.site_type == "resource")
+        resource_site = self._parse_resource_site_config(yaml_data)
+
         # Build complete configuration
         config = ClientConfig(
             business=business,
@@ -148,6 +152,7 @@ class ConfigParser:
             api_keys=api_keys,
             cloud=cloud,
             deployments=deployments,
+            resource_site=resource_site,
         )
 
         self.current_config = config
@@ -504,6 +509,29 @@ class ConfigParser:
             last_deployment=cloud_data.get("last_deployment", ""),
         )
 
+    def _parse_resource_site_config(self, yaml_data: Dict[str, Any]) -> ResourceSiteConfig:
+        """Parse the optional resource_site section (used when site_type == 'resource')."""
+        data = yaml_data.get("resource_site", {})
+        if not isinstance(data, dict):
+            return ResourceSiteConfig()
+
+        raw_sources = data.get("authoritative_sources", [])
+        if isinstance(raw_sources, list):
+            sources = [str(s) for s in raw_sources]
+        else:
+            sources = []
+
+        return ResourceSiteConfig(
+            site_name=data.get("site_name", ""),
+            site_brand=data.get("site_brand", ""),
+            site_mission=data.get("site_mission", ""),
+            editorial_perspective=data.get("editorial_perspective", ""),
+            money_site_name=data.get("money_site_name", ""),
+            money_site_url=data.get("money_site_url", ""),
+            authoritative_sources=sources,
+            cta_style=data.get("cta_style", "educational"),
+        )
+
     def _parse_deployments(self, yaml_data: Dict[str, Any]) -> List[DeploymentConfig]:
         """Parse deployments array (v3.2.0+ multi-deployment support)"""
         deployments_data = yaml_data.get("deployments", [])
@@ -725,6 +753,19 @@ class ConfigParser:
             if config.cloud.last_deployment:
                 cloud_dict["last_deployment"] = config.cloud.last_deployment
             yaml_data["cloud"] = cloud_dict
+
+        # Add resource site identity (only written when fields are populated)
+        if hasattr(config, 'resource_site') and config.resource_site.is_configured():
+            yaml_data["resource_site"] = {
+                "site_name": config.resource_site.site_name,
+                "site_brand": config.resource_site.site_brand,
+                "site_mission": config.resource_site.site_mission,
+                "editorial_perspective": config.resource_site.editorial_perspective,
+                "money_site_name": config.resource_site.money_site_name,
+                "money_site_url": config.resource_site.money_site_url,
+                "authoritative_sources": config.resource_site.authoritative_sources,
+                "cta_style": config.resource_site.cta_style,
+            }
 
         # Add deployments array (v3.2.0+ multi-deployment support)
         if config.deployments:
