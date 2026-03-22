@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ category.get_guide_title() }} - {{ site_display_name }}</title>
+    <meta name="description" content="{% if category.description %}{{ category.description[:160] }}{% else %}Independent comparison guide for {{ category.category_name.lower() }}. Covers multiple brands with selection criteria and decision frameworks.{% endif %}">
+    <meta name="keywords" content="{{ category.category_name.lower() }}, comparison guide, buyer guide, {{ business.industry.lower() }}, {{ site_display_name.lower() }}">
+    <meta name="author" content="{{ site_display_name }}">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{{ category.get_guide_title() }} - {{ site_display_name }}">
+    <meta property="og:description" content="{% if category.description %}{{ category.description[:160] }}{% else %}Independent comparison guide for {{ category.category_name.lower() }}.{% endif %}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ canonical_base_url }}/products/{{ category.get_slug() }}.html">
+
+    <link rel="canonical" href="{{ canonical_base_url }}/products/{{ category.get_slug() }}.html">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <!-- Breadcrumb Schema -->
+    {% if breadcrumb_schema %}
+    <script type="application/ld+json">
+    {{ breadcrumb_schema | tojson }}
+    </script>
+    {% endif %}
+
+    <!-- Article Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "{{ category.get_guide_title() | replace('"', '\\"') }}",
+      "description": "{% if category.description %}{{ category.description[:160] | replace('"', '\\"') }}{% else %}Independent comparison guide for {{ category.category_name.lower() }}.{% endif %}",
+      "author": {"@type": "Organization", "name": "{{ site_display_name }}"},
+      "publisher": {"@type": "Organization", "name": "{{ site_display_name }}"},
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ canonical_base_url }}/products/{{ category.get_slug() }}.html"
+      },
+      "inLanguage": "en"
+    }
+    </script>
+</head>
+<body>
+    {% include 'components/header.html' %}
+
+    <main>
+        <!-- Guide Hero -->
+        <section class="hero" style="background: linear-gradient(135deg, var(--primary-color, #2c3e50), var(--secondary-color, #3498db));">
+            <div class="hero-content">
+                <div class="breadcrumb" style="color: rgba(255,255,255,0.85); margin-bottom: 1rem; font-size: 0.9rem;">
+                    <a href="{{ base_path | default('../') }}index.html" style="color: white;">Home</a> &gt;
+                    <a href="{{ base_path | default('../') }}products.html" style="color: white;">Resources</a> &gt;
+                    <span style="color: white;">{{ category.category_name }}</span>
+                </div>
+                <h1 style="color: white;">{{ category.get_guide_title() }}</h1>
+                {% if category.description %}
+                <p class="hero-subtitle" style="color: rgba(255,255,255,0.9);">{{ category.description[:200] }}{% if category.description|length > 200 %}...{% endif %}</p>
+                {% else %}
+                <p class="hero-subtitle" style="color: rgba(255,255,255,0.9);">An independent comparison guide covering {{ category.category_name.lower() }} across multiple brands and configurations.</p>
+                {% endif %}
+                <a href="{{ base_path | default('../') }}products.html" class="btn" style="background: white; color: var(--primary-color, #2c3e50); padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; text-decoration: none;">Back to Resources</a>
+            </div>
+        </section>
+
+        <!-- Guide Introduction -->
+        <section class="content-section">
+            <div class="container">
+                {% if category.description %}
+                <p>{{ category.description }}</p>
+                {% endif %}
+
+                {% if category.competing_brands %}
+                <p><strong>Brands covered in this guide:</strong> {{ category.competing_brands | join(", ") }}{% if resource_site and resource_site.money_site_name %}, and other {{ business.industry.lower() }} manufacturers{% endif %}.</p>
+                {% endif %}
+
+                {% if category.standards %}
+                <p><strong>Applicable standards:</strong> {{ category.standards | join(" | ") }}</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Product Comparison Table -->
+        {% if category_products and category.comparison_criteria %}
+        <section class="content-section">
+            <div class="container">
+                <h2>Comparison Table</h2>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                        <thead>
+                            <tr style="background: var(--primary-color, #2c3e50); color: white;">
+                                <th style="padding: 0.75rem 1rem; text-align: left; white-space: nowrap;">Model / Option</th>
+                                {% for criterion in category.comparison_criteria %}
+                                <th style="padding: 0.75rem 1rem; text-align: left; white-space: nowrap;">{{ criterion }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in category_products %}
+                            <tr style="border-bottom: 1px solid #e0e0e0; {% if loop.index is odd %}background: #f9f9f9;{% endif %}">
+                                <td style="padding: 0.75rem 1rem; font-weight: 600;">
+                                    <a href="{{ base_path | default('../') }}products/{{ product.slug }}.html" style="color: var(--primary-color, #2c3e50);">{{ product.name }}</a>
+                                    {% if product.category %}<br><span style="font-weight: normal; font-size: 0.85rem; color: #666;">{{ product.category }}</span>{% endif %}
+                                </td>
+                                {% for criterion in category.comparison_criteria %}
+                                <td style="padding: 0.75rem 1rem; color: #444;">
+                                    {% if product.specifications %}
+                                    {% set spec_lower = criterion.lower() %}
+                                    {% set matched = namespace(value="") %}
+                                    {% for spec in product.specifications %}
+                                    {% if spec_lower in spec.lower() %}{% set matched.value = spec %}{% endif %}
+                                    {% endfor %}
+                                    {{ matched.value if matched.value else "—" }}
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size: 0.85rem; color: #888; margin-top: 0.75rem;">Specifications sourced from manufacturer datasheets. Verify current specs directly with the manufacturer before purchasing.</p>
+            </div>
+        </section>
+        {% elif category_products %}
+        <!-- Product list without criteria table -->
+        <section class="content-section">
+            <div class="container">
+                <h2>Products in This Category</h2>
+                <div class="products-grid">
+                    {% for product in category_products %}
+                    <div class="product-card">
+                        <div class="product-card-content">
+                            <h3><a href="{{ base_path | default('../') }}products/{{ product.slug }}.html">{{ product.name }}</a></h3>
+                            {% if product.description %}<p>{{ product.description }}</p>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Best For / Not Ideal For -->
+        {% if category.best_for or category.not_ideal_for %}
+        <section class="content-section">
+            <div class="container">
+                <h2>Decision Framework</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    {% if category.best_for %}
+                    <div style="background: #f0f9f0; border-left: 4px solid #27ae60; padding: 1.5rem; border-radius: 6px;">
+                        <h3 style="color: #27ae60; margin-bottom: 1rem;">Best For</h3>
+                        <ul style="margin: 0; padding-left: 1.25rem;">
+                            {% for item in category.best_for %}
+                            <li style="margin-bottom: 0.5rem;">{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    {% if category.not_ideal_for %}
+                    <div style="background: #fff8f0; border-left: 4px solid #e67e22; padding: 1.5rem; border-radius: 6px;">
+                        <h3 style="color: #e67e22; margin-bottom: 1rem;">Not Ideal For</h3>
+                        <ul style="margin: 0; padding-left: 1.25rem;">
+                            {% for item in category.not_ideal_for %}
+                            <li style="margin-bottom: 0.5rem;">{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Competing Brands -->
+        {% if category.competing_brands %}
+        <section class="content-section">
+            <div class="container">
+                <h2>Manufacturers to Evaluate</h2>
+                <p>When sourcing {{ category.category_name.lower() }}, request quotes and specifications from multiple manufacturers. The following brands offer products in this category:</p>
+                <ul style="columns: 2; column-gap: 2rem; list-style: disc; padding-left: 1.5rem;">
+                    {% for brand in category.competing_brands %}
+                    <li style="margin-bottom: 0.5rem;">{{ brand }}</li>
+                    {% endfor %}
+                </ul>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">This list is not exhaustive. Always verify current product availability, pricing, and lead times directly with each manufacturer or authorized distributor.</p>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Standards References -->
+        {% if category.standards %}
+        <section class="content-section">
+            <div class="container">
+                <h2>Applicable Standards &amp; Codes</h2>
+                <p>The following published standards apply to {{ category.category_name.lower() }}. Verify current requirements with your local authority having jurisdiction (AHJ):</p>
+                <ul>
+                    {% for std in category.standards %}
+                    <li><strong>{{ std }}</strong></li>
+                    {% endfor %}
+                </ul>
+                {% if resource_site and resource_site.authoritative_sources %}
+                <p><strong>Primary references:</strong>
+                    {% for src in resource_site.authoritative_sources %}
+                    <a href="{{ src }}" target="_blank" rel="noopener">{{ src }}</a>{% if not loop.last %} | {% endif %}
+                    {% endfor %}
+                </p>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Local Professional CTA -->
+        <section class="content-section">
+            <div class="container">
+                <div class="contact-cta" style="background: #f8f9fa; padding: 2rem; border-radius: 8px; text-align: center;">
+                    <h2>Ready to Get a Quote?</h2>
+                    {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
+                    <p>Use this guide to evaluate your options. For pricing, lead times, and installation in the {{ contact.address.city if contact.address.city else "local" }} area, established providers include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> and other licensed {{ business.industry.lower() }} contractors.</p>
+                    {% else %}
+                    <p>Use this guide to compare options, then contact a licensed {{ business.industry.lower() }} supplier or installer for current pricing and availability.</p>
+                    {% endif %}
+                    <a href="{{ base_path | default('../') }}products.html" class="btn btn-primary" style="margin-top: 1rem;">Browse All Comparison Guides</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    {% include 'components/footer.html' %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownItems = document.querySelectorAll('.has-dropdown');
+            let resizeTimeoutId;
+
+            dropdownItems.forEach(function(dropdownItem) {
+                const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                const dropdown = dropdownItem.querySelector('.dropdown');
+                let timeoutId;
+
+                if (trigger && dropdown) {
+                    dropdown.style.display = 'none';
+                    trigger.setAttribute('aria-expanded', 'false');
+
+                    dropdownItem.addEventListener('mouseenter', function() {
+                        clearTimeout(timeoutId);
+                        dropdown.style.display = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+                        trigger.setAttribute('aria-expanded', 'true');
+                    });
+
+                    dropdownItem.addEventListener('mouseleave', function() {
+                        timeoutId = setTimeout(function() {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                        }, 200);
+                    });
+
+                    trigger.addEventListener('click', function(e) {
+                        if (window.innerWidth <= 768) {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            const displayType = dropdown.classList.contains('grid-layout') ? 'grid' : 'flex';
+                            dropdownItems.forEach(function(other) {
+                                if (other !== dropdownItem) {
+                                    const otherDropdown = other.querySelector('.dropdown');
+                                    const otherTrigger = other.querySelector('a[aria-haspopup="true"]');
+                                    if (otherDropdown) otherDropdown.style.display = 'none';
+                                    if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+                            dropdown.style.display = isVisible ? 'none' : displayType;
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        }
+                    });
+
+                    trigger.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const isVisible = dropdown.style.display === 'flex' || dropdown.style.display === 'grid';
+                            dropdown.style.display = isVisible ? 'none' : (dropdown.classList.contains('grid-layout') ? 'grid' : 'flex');
+                            trigger.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+                        } else if (e.key === 'Escape') {
+                            dropdown.style.display = 'none';
+                            trigger.setAttribute('aria-expanded', 'false');
+                            trigger.focus();
+                        }
+                    });
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.has-dropdown')) {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown) dropdown.style.display = 'none';
+                        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                    });
+                }
+            });
+
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeoutId);
+                resizeTimeoutId = setTimeout(function() {
+                    dropdownItems.forEach(function(dropdownItem) {
+                        const dropdown = dropdownItem.querySelector('.dropdown');
+                        const trigger = dropdownItem.querySelector('a[aria-haspopup="true"]');
+                        if (dropdown && window.innerWidth > 768) {
+                            dropdown.style.display = 'none';
+                            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>

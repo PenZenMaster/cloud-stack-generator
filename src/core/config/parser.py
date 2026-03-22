@@ -23,6 +23,7 @@ from .models import (
     BrandingConfig,
     CloudConfig,
     ResourceSiteConfig,
+    ProductCategoryConfig,
     DeploymentConfig,
     ProductConfig,
     ServiceConfig,
@@ -134,6 +135,9 @@ class ConfigParser:
         # Parse resource site identity (only meaningful when cloud.site_type == "resource")
         resource_site = self._parse_resource_site_config(yaml_data)
 
+        # Parse product category comparison guides (resource sites)
+        product_categories = self._parse_product_categories(yaml_data)
+
         # Build complete configuration
         config = ClientConfig(
             business=business,
@@ -144,6 +148,7 @@ class ConfigParser:
             google_business_profile=google_business_profile,
             pages=pages,
             products=products,
+            product_categories=product_categories,
             services=services,
             faq=faq,
             city_pages=city_pages,
@@ -532,6 +537,33 @@ class ConfigParser:
             cta_style=data.get("cta_style", "educational"),
         )
 
+    def _parse_product_categories(self, yaml_data: Dict[str, Any]) -> List[ProductCategoryConfig]:
+        """Parse product_categories section (resource site comparison guides)."""
+        raw = yaml_data.get("product_categories", [])
+        if not isinstance(raw, list):
+            return []
+
+        categories = []
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            try:
+                categories.append(ProductCategoryConfig(
+                    category_name=item.get("category_name", ""),
+                    guide_title=item.get("guide_title", ""),
+                    slug=item.get("slug", ""),
+                    description=item.get("description", ""),
+                    products=item.get("products", []) if isinstance(item.get("products"), list) else [],
+                    competing_brands=item.get("competing_brands", []) if isinstance(item.get("competing_brands"), list) else [],
+                    comparison_criteria=item.get("comparison_criteria", []) if isinstance(item.get("comparison_criteria"), list) else [],
+                    best_for=item.get("best_for", []) if isinstance(item.get("best_for"), list) else [],
+                    not_ideal_for=item.get("not_ideal_for", []) if isinstance(item.get("not_ideal_for"), list) else [],
+                    standards=item.get("standards", []) if isinstance(item.get("standards"), list) else [],
+                ))
+            except Exception:
+                continue
+        return categories
+
     def _parse_deployments(self, yaml_data: Dict[str, Any]) -> List[DeploymentConfig]:
         """Parse deployments array (v3.2.0+ multi-deployment support)"""
         deployments_data = yaml_data.get("deployments", [])
@@ -766,6 +798,24 @@ class ConfigParser:
                 "authoritative_sources": config.resource_site.authoritative_sources,
                 "cta_style": config.resource_site.cta_style,
             }
+
+        # Add product categories (resource site comparison guides)
+        if hasattr(config, 'product_categories') and config.product_categories:
+            yaml_data["product_categories"] = [
+                {
+                    "category_name": cat.category_name,
+                    "guide_title": cat.guide_title,
+                    "slug": cat.slug,
+                    "description": cat.description,
+                    "products": cat.products,
+                    "competing_brands": cat.competing_brands,
+                    "comparison_criteria": cat.comparison_criteria,
+                    "best_for": cat.best_for,
+                    "not_ideal_for": cat.not_ideal_for,
+                    "standards": cat.standards,
+                }
+                for cat in config.product_categories
+            ]
 
         # Add deployments array (v3.2.0+ multi-deployment support)
         if config.deployments:
