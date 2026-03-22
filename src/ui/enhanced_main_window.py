@@ -68,6 +68,7 @@ from .content_tabs.products_tab import ProductsTab
 from .content_tabs.services_tab import ServicesTab
 from .content_tabs.faq_tab import FAQTab
 from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
+from .components.resource_site_tab import ResourceSiteTab
 
 # Import core functionality
 from ..core.config.models import ClientConfig, DeploymentConfig
@@ -394,6 +395,7 @@ class EnhancedMainWindow(QMainWindow):
         self.services_tab = ServicesTab()
         self.faq_tab = FAQTab()
         self.cloud_tab = CloudTab()
+        self.resource_site_tab = ResourceSiteTab()
         self.deployment_history_tab = DeploymentHistoryTab()
         self.asset_upload_tab = AssetUploadTab()
 
@@ -406,6 +408,7 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.services_tab, "Services")
         self.main_tabs.addTab(self.faq_tab, "FAQ")
         self.main_tabs.addTab(self.api_keys_tab, "API Keys")
+        self.main_tabs.addTab(self.resource_site_tab, "Resource Site")
         self.main_tabs.addTab(self.cloud_tab, "Cloud Deploy")
         self.main_tabs.addTab(self.deployment_history_tab, "Deployment History")
         self.main_tabs.addTab(self.asset_upload_tab, "Asset Upload")
@@ -730,6 +733,7 @@ class EnhancedMainWindow(QMainWindow):
         self.branding_tab.clear_data()
         self.products_tab.clear_data()
         self.services_tab.clear_data()
+        self.resource_site_tab.clear_data()
 
         self.current_config_file = None
         self.current_config = None
@@ -1070,6 +1074,7 @@ class EnhancedMainWindow(QMainWindow):
             "products": self.products_tab.get_config_data(),
             "services": self.services_tab.get_config_data(),
             "cloud": self.cloud_tab.get_config_data(),
+            "resource_site": self.resource_site_tab.get_config_data(),
             # API keys are application-level, not saved in client configs
         }
 
@@ -1089,6 +1094,7 @@ class EnhancedMainWindow(QMainWindow):
             ServiceConfig,
             SocialMediaConfig,
             CloudConfig,
+            ResourceSiteConfig,
         )
 
         # Create business config with enhanced fields
@@ -1338,6 +1344,19 @@ class EnhancedMainWindow(QMainWindow):
             last_deployment=cloud_data.get("last_deployment"),
         )
 
+        # Build ResourceSiteConfig from UI tab data
+        rs_data = config_data.get("resource_site", {})
+        resource_site = ResourceSiteConfig(
+            site_name=rs_data.get("site_name", ""),
+            site_brand=rs_data.get("site_brand", ""),
+            site_mission=rs_data.get("site_mission", ""),
+            editorial_perspective=rs_data.get("editorial_perspective", ""),
+            money_site_name=rs_data.get("money_site_name", ""),
+            money_site_url=rs_data.get("money_site_url", ""),
+            cta_style=rs_data.get("cta_style", "educational"),
+            authoritative_sources=rs_data.get("authoritative_sources", []),
+        )
+
         # Create complete config
         return ClientConfig(
             business=business,
@@ -1354,6 +1373,7 @@ class EnhancedMainWindow(QMainWindow):
             target_cities=target_cities,  # Keep for backward compatibility
             seo_content=seo_content,
             wikipedia_embeds=wikipedia_embeds,  # Wikipedia image embeds from Cities Tab
+            resource_site=resource_site,
         )
 
     def load_config_into_tabs(self, config: ClientConfig):
@@ -1574,6 +1594,19 @@ class EnhancedMainWindow(QMainWindow):
         }
         self.cloud_tab.set_config_data(cloud_data)
         self.cloud_tab.set_config(config)  # Store full config for deployment tracking (v3.5.0)
+
+        # Load resource site data
+        rs = config.resource_site
+        self.resource_site_tab.set_config_data({
+            "site_name": rs.site_name,
+            "site_brand": rs.site_brand,
+            "site_mission": rs.site_mission,
+            "editorial_perspective": rs.editorial_perspective,
+            "money_site_name": rs.money_site_name,
+            "money_site_url": rs.money_site_url,
+            "cta_style": rs.cta_style,
+            "authoritative_sources": rs.authoritative_sources,
+        })
 
         # Load deployment history (v3.2.0 - Phase 2) - use set_config_path with current config file
         if self.current_config_file:
