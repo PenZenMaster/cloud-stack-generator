@@ -548,6 +548,12 @@ class HTMLGenerator:
 
     def _generate_organization_schema(self, config: ClientConfig) -> Dict[str, Any]:
         """Generate comprehensive JSON-LD @graph schema with Wikipedia entities"""
+        # Resource sites get a simplified editorial Organization schema —
+        # no LocalBusiness, no contact details, publisher is the resource site itself.
+        if (hasattr(config.cloud, 'site_type') and config.cloud.site_type == "resource"
+                and hasattr(config, 'resource_site') and config.resource_site.is_configured()):
+            return self._generate_resource_site_schema(config)
+
         # Generate @graph structure with proper entity linking
         graph = []
 
@@ -691,6 +697,52 @@ class HTMLGenerator:
         return {
             "@context": "https://schema.org",
             "@graph": graph
+        }
+
+    def _generate_resource_site_schema(self, config: ClientConfig) -> Dict[str, Any]:
+        """Generate JSON-LD @graph schema for resource/editorial sites.
+
+        Resource sites are independent editorial entities, not business storefronts.
+        Schema uses Organization (not LocalBusiness), omits contact details,
+        and identifies the site by its resource_site.site_name.
+        """
+        rs = config.resource_site
+        site_name = rs.site_name
+        site_url = config.cloud.deployment_url or config.business.domain or ""
+
+        publisher = {
+            "@type": "Organization",
+            "@id": f"{site_url}#publisher",
+            "name": site_name,
+            "url": site_url,
+        }
+
+        website = {
+            "@type": "WebSite",
+            "@id": f"{site_url}#website",
+            "url": site_url,
+            "name": site_name,
+            "description": rs.site_mission or f"Independent {config.business.industry} guides and resources.",
+            "publisher": {"@id": f"{site_url}#publisher"},
+            "inLanguage": "en",
+        }
+
+        webpage = {
+            "@type": "WebPage",
+            "@id": f"{site_url}#webpage",
+            "url": site_url,
+            "name": site_name,
+            "description": rs.site_mission or f"Independent {config.business.industry} guides and resources.",
+            "inLanguage": "en",
+            "isPartOf": {"@id": f"{site_url}#website"},
+        }
+
+        if rs.authoritative_sources:
+            publisher["sameAs"] = rs.authoritative_sources
+
+        return {
+            "@context": "https://schema.org",
+            "@graph": [publisher, website, webpage],
         }
 
     def _generate_industry_wikipedia_entities(self, industry: str) -> List[str]:

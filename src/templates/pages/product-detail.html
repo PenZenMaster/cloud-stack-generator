@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ product.name }} - {{ business.business_name }}</title>
-    <meta name="description" content="{% if product.description %}{{ product.description[:150] }}{% if product.description|length > 150 %}...{% endif %}{% else %}{{ product.name }} from {{ business.business_name }}. High-quality products for your needs.{% endif %}">
-    <meta name="keywords" content="{{ product.name|lower }}, {{ business.business_name|lower }}, {{ business.industry|lower }}">
-    <meta name="author" content="{{ business.business_name }}">
+    <title>{{ product.name }} - {{ site_display_name }}</title>
+    <meta name="description" content="{% if product.description %}{{ product.description[:150] }}{% if product.description|length > 150 %}...{% endif %}{% elif is_resource_site %}Independent comparison guide for {{ product.name.lower() }}: specifications, alternatives, and selection criteria.{% else %}{{ product.name }} from {{ site_display_name }}. High-quality products for your needs.{% endif %}">
+    <meta name="keywords" content="{{ product.name|lower }}, {{ site_display_name|lower }}, {{ business.industry|lower }}{% if is_resource_site %}, comparison, buyer guide{% endif %}">
+    <meta name="author" content="{{ site_display_name }}">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="{{ product.name }} - {{ business.business_name }}">
-    <meta property="og:description" content="{% if product.description %}{{ product.description[:150] }}{% if product.description|length > 150 %}...{% endif %}{% else %}{{ product.name }} from {{ business.business_name }}{% endif %}">
-    <meta property="og:type" content="product">
-    <meta property="og:url" content="{{ business.domain }}/products/{{ product.name|slugify }}.html">
-    {% if product.image_url %}<meta property="og:image" content="{{ product.image_url }}">{% endif %}
+    <meta property="og:title" content="{{ product.name }} - {{ site_display_name }}">
+    <meta property="og:description" content="{% if product.description %}{{ product.description[:150] }}{% if product.description|length > 150 %}...{% endif %}{% else %}{{ product.name }} - {{ site_display_name }}{% endif %}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ canonical_base_url }}/products/{{ product.name|slugify }}.html">
+    {% if not is_resource_site and product.image_url %}<meta property="og:image" content="{{ product.image_url }}">{% endif %}
 
     <link rel="canonical" href="{{ canonical_base_url }}/products/{{ product.name|slugify }}.html">
     <link rel="stylesheet" href="../css/style.css">
@@ -25,6 +25,22 @@
     {{ breadcrumb_schema | tojson }}
     </script>
     {% endif %}
+
+    <!-- Article Schema (resource sites only) -->
+    {% if is_resource_site %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "{{ product.name }}",
+      "description": "{% if product.description %}{{ product.description[:160] | replace('"', '\\"') }}{% else %}An independent comparison guide for {{ product.name.lower() }}.{% endif %}",
+      "author": {"@type": "Organization", "name": "{{ site_display_name }}"},
+      "publisher": {"@type": "Organization", "name": "{{ site_display_name }}"},
+      "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ canonical_base_url }}/products/{{ product.name|slugify }}.html"},
+      "inLanguage": "en"
+    }
+    </script>
+    {% endif %}
 </head>
 <body>
     {% include 'components/header.html' %}
@@ -33,8 +49,8 @@
     <div class="container">
         <div class="product-detail">
             <div class="breadcrumb">
-                <a href="../index.html">Home</a> >
-                <a href="../products.html">Products</a> >
+                <a href="../index.html">Home</a> &gt;
+                <a href="../products.html">{% if is_resource_site %}Resources{% else %}Products{% endif %}</a> &gt;
                 {{ product.name }}
             </div>
 
@@ -63,14 +79,20 @@
                     <div class="product-description">
                         {% if product.description %}
                         <p>{{ product.description }}</p>
+                        {% elif is_resource_site %}
+                        <p>This guide covers {{ product.name.lower() }} from an independent perspective — comparing specifications, available alternatives, and the key criteria for selecting the right option for your application.</p>
                         {% else %}
-                        <p>High-quality {{ product.name.lower() }} from {{ business.business_name }}. Contact us for more details about this product.</p>
+                        <p>High-quality {{ product.name.lower() }} from {{ site_display_name }}. Contact us for more details about this product.</p>
                         {% endif %}
                     </div>
 
                     <div class="product-actions">
+                        {% if is_resource_site %}
+                        <a href="../products.html" class="btn btn-primary">Back to Resources</a>
+                        {% else %}
                         <a href="{{ base_path | default('') }}contact.html" class="btn btn-primary">Get Quote</a>
                         <a href="{{ base_path | default('') }}contact.html" class="btn btn-secondary">Ask Questions</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -118,9 +140,19 @@
             </div>
 
             <div class="contact-cta">
+                {% if is_resource_site %}
+                <h2>Ready to Purchase or Get a Quote?</h2>
+                {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
+                <p>Use this guide to compare your options. For pricing and installation in the {{ contact.address.city if contact.address.city else "local" }} area, established providers include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> and other licensed {{ business.industry.lower() }} contractors.</p>
+                {% else %}
+                <p>Use this guide to evaluate your options, then contact a licensed {{ business.industry.lower() }} supplier or installer for pricing and availability.</p>
+                {% endif %}
+                <a href="../products.html" class="btn btn-primary">Browse All Resources</a>
+                {% else %}
                 <h2>Interested in {{ product.name }}?</h2>
-                <p>Contact {{ business.business_name }} today for pricing and availability.</p>
+                <p>Contact {{ site_display_name }} today for pricing and availability.</p>
                 <a href="../contact.html" class="btn btn-primary">Contact Us Now</a>
+                {% endif %}
             </div>
         </div>
     </div>
