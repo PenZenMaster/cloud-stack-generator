@@ -70,6 +70,7 @@ from .content_tabs.faq_tab import FAQTab
 from .content_tabs.enhanced_cities_tab import EnhancedCitiesTab
 from .components.resource_site_tab import ResourceSiteTab
 from .components.product_categories_tab import ProductCategoriesTab
+from .components.providers_tab import ProvidersTab
 
 # Import core functionality
 from ..core.config.models import ClientConfig, DeploymentConfig
@@ -405,6 +406,7 @@ class EnhancedMainWindow(QMainWindow):
         self.cloud_tab = CloudTab()
         self.resource_site_tab = ResourceSiteTab()
         self.product_categories_tab = ProductCategoriesTab()
+        self.providers_tab = ProvidersTab()
         self.deployment_history_tab = DeploymentHistoryTab()
         self.asset_upload_tab = AssetUploadTab()
 
@@ -419,6 +421,7 @@ class EnhancedMainWindow(QMainWindow):
         self.main_tabs.addTab(self.api_keys_tab, "API Keys")
         self.main_tabs.addTab(self.resource_site_tab, "Resource Site")
         self.main_tabs.addTab(self.product_categories_tab, "Product Categories")
+        self.main_tabs.addTab(self.providers_tab, "Providers")
         self.main_tabs.addTab(self.cloud_tab, "Cloud Deploy")
         self.main_tabs.addTab(self.deployment_history_tab, "Deployment History")
         self.main_tabs.addTab(self.asset_upload_tab, "Asset Upload")
@@ -745,6 +748,7 @@ class EnhancedMainWindow(QMainWindow):
         self.services_tab.clear_data()
         self.resource_site_tab.clear_data()
         self.product_categories_tab.clear_data()
+        self.providers_tab.clear_data()
 
         self.current_config_file = None
         self.current_config = None
@@ -1087,6 +1091,7 @@ class EnhancedMainWindow(QMainWindow):
             "cloud": self.cloud_tab.get_config_data(),
             "resource_site": self.resource_site_tab.get_config_data(),
             "product_categories": self.product_categories_tab.get_config_data(),
+            "providers": self.providers_tab.get_config_data(),
             # API keys are application-level, not saved in client configs
         }
 
@@ -1357,7 +1362,7 @@ class EnhancedMainWindow(QMainWindow):
         )
 
         # Build ProductCategoryConfig list from UI tab data
-        from ..core.config.models import ProductCategoryConfig
+        from ..core.config.models import ProductCategoryConfig, ProviderConfig
         product_categories = []
         for cat in config_data.get("product_categories", []):
             product_categories.append(
@@ -1372,6 +1377,22 @@ class EnhancedMainWindow(QMainWindow):
                     best_for=cat.get("best_for", []),
                     not_ideal_for=cat.get("not_ideal_for", []),
                     standards=cat.get("standards", []),
+                )
+            )
+
+        # Build ProviderConfig list from UI tab data
+        providers = []
+        for p in config_data.get("providers", []):
+            providers.append(
+                ProviderConfig(
+                    name=p.get("name", ""),
+                    slug=p.get("slug", ""),
+                    url=p.get("url", ""),
+                    phone=p.get("phone", ""),
+                    service_area=p.get("service_area", ""),
+                    specialties=p.get("specialties", []),
+                    description=p.get("description", ""),
+                    verified=p.get("verified", True),
                 )
             )
 
@@ -1406,6 +1427,7 @@ class EnhancedMainWindow(QMainWindow):
             wikipedia_embeds=wikipedia_embeds,  # Wikipedia image embeds from Cities Tab
             resource_site=resource_site,
             product_categories=product_categories,
+            providers=providers,
         )
 
     def load_config_into_tabs(self, config: ClientConfig):
@@ -1655,6 +1677,21 @@ class EnhancedMainWindow(QMainWindow):
                 "standards": cat.standards,
             }
             for cat in config.product_categories
+        ])
+
+        # Load providers data
+        self.providers_tab.set_config_data([
+            {
+                "name": p.name,
+                "slug": p.slug,
+                "url": p.url,
+                "phone": p.phone,
+                "service_area": p.service_area,
+                "specialties": p.specialties,
+                "description": p.description,
+                "verified": p.verified,
+            }
+            for p in getattr(config, "providers", [])
         ])
 
         # Load deployment history (v3.2.0 - Phase 2) - use set_config_path with current config file

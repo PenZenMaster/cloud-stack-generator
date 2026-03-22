@@ -24,6 +24,7 @@ from .models import (
     CloudConfig,
     ResourceSiteConfig,
     ProductCategoryConfig,
+    ProviderConfig,
     DeploymentConfig,
     ProductConfig,
     ServiceConfig,
@@ -138,6 +139,9 @@ class ConfigParser:
         # Parse product category comparison guides (resource sites)
         product_categories = self._parse_product_categories(yaml_data)
 
+        # Parse provider listings (resource sites)
+        providers = self._parse_providers(yaml_data)
+
         # Build complete configuration
         config = ClientConfig(
             business=business,
@@ -149,6 +153,7 @@ class ConfigParser:
             pages=pages,
             products=products,
             product_categories=product_categories,
+            providers=providers,
             services=services,
             faq=faq,
             city_pages=city_pages,
@@ -564,6 +569,31 @@ class ConfigParser:
                 continue
         return categories
 
+    def _parse_providers(self, yaml_data: Dict[str, Any]) -> List[ProviderConfig]:
+        """Parse providers section (resource site provider listings)."""
+        raw = yaml_data.get("providers", [])
+        if not isinstance(raw, list):
+            return []
+
+        providers = []
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            try:
+                providers.append(ProviderConfig(
+                    name=item.get("name", ""),
+                    slug=item.get("slug", ""),
+                    url=item.get("url", ""),
+                    phone=item.get("phone", ""),
+                    service_area=item.get("service_area", ""),
+                    specialties=item.get("specialties", []) if isinstance(item.get("specialties"), list) else [],
+                    description=item.get("description", ""),
+                    verified=item.get("verified", True),
+                ))
+            except Exception:
+                continue
+        return providers
+
     def _parse_deployments(self, yaml_data: Dict[str, Any]) -> List[DeploymentConfig]:
         """Parse deployments array (v3.2.0+ multi-deployment support)"""
         deployments_data = yaml_data.get("deployments", [])
@@ -815,6 +845,22 @@ class ConfigParser:
                     "standards": cat.standards,
                 }
                 for cat in config.product_categories
+            ]
+
+        # Add providers (resource site provider listings)
+        if hasattr(config, 'providers') and config.providers:
+            yaml_data["providers"] = [
+                {
+                    "name": p.name,
+                    "slug": p.slug,
+                    "url": p.url,
+                    "phone": p.phone,
+                    "service_area": p.service_area,
+                    "specialties": p.specialties,
+                    "description": p.description,
+                    "verified": p.verified,
+                }
+                for p in config.providers
             ]
 
         # Add deployments array (v3.2.0+ multi-deployment support)

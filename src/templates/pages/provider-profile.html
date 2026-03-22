@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ provider.name }} | {{ site_display_name }}</title>
+    <meta name="description" content="{% if provider.description %}{{ provider.description[:160] }}{% else %}{{ provider.name }} is a vetted {{ business.industry.lower() }} provider serving {{ provider.service_area or 'the local area' }}.{% endif %}">
+    <meta name="author" content="{{ site_display_name }}">
+    <meta name="robots" content="{% if cloud.allow_indexing %}index, follow{% else %}noindex, nofollow{% endif %}">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="{{ provider.name }} | {{ site_display_name }}">
+    <meta property="og:description" content="{% if provider.description %}{{ provider.description[:160] }}{% else %}{{ provider.name }} is a vetted {{ business.industry.lower() }} provider serving {{ provider.service_area or 'the local area' }}.{% endif %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ canonical_base_url }}providers/{{ provider.get_slug() }}.html">
+
+    <link rel="canonical" href="{{ canonical_base_url }}providers/{{ provider.get_slug() }}.html">
+    <link rel="stylesheet" href="{{ base_path }}css/style.css">
+
+    <!-- LocalBusiness Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "{{ provider.name | replace('"', '\\"') }}"{% if provider.url %},
+      "url": "{{ provider.url }}"{% endif %}{% if provider.phone %},
+      "telephone": "{{ provider.phone }}"{% endif %}{% if provider.service_area %},
+      "areaServed": "{{ provider.service_area }}"{% endif %},
+      "description": "{{ provider.description | replace('"', '\\"') if provider.description else '' }}"
+    }
+    </script>
+
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ canonical_base_url }}"},
+        {"@type": "ListItem", "position": 2, "name": "Providers", "item": "{{ canonical_base_url }}providers/index.html"},
+        {"@type": "ListItem", "position": 3, "name": "{{ provider.name | replace('"', '\\"') }}", "item": "{{ canonical_base_url }}providers/{{ provider.get_slug() }}.html"}
+      ]
+    }
+    </script>
+</head>
+<body>
+    {% include 'components/header.html' %}
+
+    <main>
+        <div class="container">
+            <nav aria-label="Breadcrumb">
+                <ol class="breadcrumb">
+                    <li><a href="{{ base_path }}index.html">Home</a></li>
+                    <li><a href="{{ base_path }}providers/index.html">Providers</a></li>
+                    <li aria-current="page">{{ provider.name }}</li>
+                </ol>
+            </nav>
+
+            <div class="provider-profile">
+                <div class="provider-profile-header">
+                    <h1>{{ provider.name }}</h1>
+                    {% if provider.verified %}<span class="verified-badge">Verified Provider</span>{% endif %}
+                    {% if provider.service_area %}<p class="service-area">Serving: {{ provider.service_area }}</p>{% endif %}
+                </div>
+
+                {% if provider.description %}
+                <p class="provider-description">{{ provider.description }}</p>
+                {% endif %}
+
+                {% if provider.specialties %}
+                <section>
+                    <h2>Specialties</h2>
+                    <ul class="specialty-tags">
+                        {% for s in provider.specialties %}<li>{{ s }}</li>{% endfor %}
+                    </ul>
+                </section>
+                {% endif %}
+
+                {% if provider.phone %}
+                <p><strong>Phone:</strong> <a href="tel:{{ provider.phone }}">{{ provider.phone }}</a></p>
+                {% endif %}
+
+                {% if provider.url %}
+                <div class="provider-cta-box">
+                    <p>Visit {{ provider.name }} for professional {{ business.industry.lower() }} services in {{ provider.service_area or 'your area' }}.</p>
+                    <a href="{{ provider.url }}" rel="noopener noreferrer" target="_blank" class="cta-button">Visit {{ provider.name }}</a>
+                </div>
+                {% endif %}
+
+                {% if related_guides %}
+                <section class="related-guides">
+                    <h2>Related Guides</h2>
+                    <ul>
+                        {% for guide in related_guides %}
+                        <li><a href="{{ base_path }}{{ guide.url }}">{{ guide.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </section>
+                {% endif %}
+
+                <div class="back-link">
+                    <a href="{{ base_path }}providers/index.html">&larr; Back to All Providers</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {% include 'components/footer.html' %}
+</body>
+</html>

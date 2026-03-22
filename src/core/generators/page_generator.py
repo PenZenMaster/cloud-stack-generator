@@ -112,6 +112,12 @@ class PageGenerator:
                     config, output_dir, result, progress_callback
                 )
 
+            # Generate provider pages (resource sites with listed providers)
+            if getattr(config, "providers", []):
+                self._generate_provider_pages(
+                    config, output_dir, result, progress_callback
+                )
+
             # Generate individual service pages
             if config.services:
                 self._generate_service_pages(
@@ -172,6 +178,9 @@ class PageGenerator:
         if config.services:
             (output_dir / "services").mkdir(exist_ok=True)
 
+        if getattr(config, 'providers', []):
+            (output_dir / "providers").mkdir(exist_ok=True)
+
         if config.city_pages:
             (output_dir / "locations").mkdir(exist_ok=True)
 
@@ -219,6 +228,10 @@ class PageGenerator:
             total += len(config.products)
         if product_categories:
             total += len(product_categories)
+
+        providers = getattr(config, 'providers', [])
+        if providers:
+            total += len(providers) + 1  # profile pages + index page
 
         # City pages
         if config.city_pages:
@@ -388,6 +401,70 @@ class PageGenerator:
                 result.add_error(
                     f"Error generating comparison guide for {category.category_name}: {str(e)}"
                 )
+
+    def _generate_provider_pages(
+        self,
+        config: ClientConfig,
+        output_dir: Path,
+        result: GenerationResult,
+        progress_callback=None,
+    ):
+        """Generate providers index page and individual provider profile pages."""
+        providers_dir = output_dir / "providers"
+
+        # Build a map of provider slug -> related guide links for back-links on profile pages.
+        # A guide is "related" to a provider if any of its specialty tokens overlap with
+        # any service name or product category name.
+        def _related_guides_for(provider):
+            specialty_tokens = set()
+            for s in provider.specialties:
+                for tok in s.lower().replace('-', ' ').split():
+                    specialty_tokens.add(tok)
+            guides = []
+            for svc in config.services:
+                svc_tokens = set(svc.name.lower().replace('-', ' ').split())
+                if specialty_tokens & svc_tokens:
+                    slug = self._sanitize_filename(svc.name)
+                    guides.append({"title": svc.name, "url": f"services/{slug}.html"})
+            for cat in getattr(config, 'product_categories', []):
+                cat_tokens = set(cat.category_name.lower().replace('-', ' ').split())
+                if specialty_tokens & cat_tokens:
+                    guides.append({"title": cat.get_guide_title(), "url": f"products/{cat.get_slug()}.html"})
+            return guides
+
+        # Providers index page
+        try:
+            html_content = self.html_generator.generate_providers_index_page(config)
+            index_file = providers_dir / "index.html"
+            with open(index_file, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            result.add_generated_file(str(index_file))
+            result.pages_generated += 1
+            if progress_callback:
+                progress_callback(result.pages_generated, result.total_pages, "Generated providers index page")
+        except Exception as e:
+            result.add_error(f"Error generating providers index page: {str(e)}")
+
+        # Individual provider profile pages
+        for provider in config.providers:
+            try:
+                related = _related_guides_for(provider)
+                html_content = self.html_generator.generate_provider_profile_page(
+                    provider, config, related_guides=related
+                )
+                filename = f"{provider.get_slug()}.html"
+                profile_file = providers_dir / filename
+                with open(profile_file, "w", encoding="utf-8") as f:
+                    f.write(html_content)
+                result.add_generated_file(str(profile_file))
+                result.pages_generated += 1
+                if progress_callback:
+                    progress_callback(
+                        result.pages_generated, result.total_pages,
+                        f"Generated provider profile: {provider.name}"
+                    )
+            except Exception as e:
+                result.add_error(f"Error generating provider profile for {provider.name}: {str(e)}")
 
     def _generate_service_pages(
         self,
@@ -730,6 +807,21 @@ class PageGenerator:
                         "changefreq": "monthly",
                     }
                 )
+
+        # Provider index and profile pages
+        providers = getattr(config, 'providers', [])
+        if providers:
+            urls.append({
+                "loc": f"{base_url}/providers/index.html",
+                "priority": "0.7",
+                "changefreq": "monthly",
+            })
+            for provider in providers:
+                urls.append({
+                    "loc": f"{base_url}/providers/{provider.get_slug()}.html",
+                    "priority": "0.6",
+                    "changefreq": "monthly",
+                })
 
         # Build XML sitemap per sitemaps.org protocol 0.9
         sitemap_content = """<?xml version="1.0" encoding="UTF-8"?>

@@ -239,6 +239,12 @@ class HTMLGenerator:
             }
         )
 
+        # Inject best-matching provider CTA for resource sites
+        providers = getattr(config, 'providers', [])
+        if providers:
+            topic_keywords = [service.name, getattr(service, 'category', '')]
+            template_data['featured_provider'] = self._pick_provider(providers, topic_keywords)
+
         return self._render_template("pages/service-detail.html", template_data)
 
     def generate_individual_product_page(self, product, config: ClientConfig) -> str:
@@ -313,7 +319,54 @@ class HTMLGenerator:
             ),
         })
 
+        # Inject best-matching provider CTA for resource sites
+        providers = getattr(config, 'providers', [])
+        if providers:
+            topic_keywords = [category.category_name] + list(category.competing_brands[:2])
+            template_data['featured_provider'] = self._pick_provider(providers, topic_keywords)
+
         return self._render_template("pages/product-comparison.html", template_data)
+
+    def generate_providers_index_page(self, config: ClientConfig) -> str:
+        """Generate the providers listing page (providers/index.html)."""
+        template_data = self._prepare_template_data(config)
+        canonical_base = template_data['canonical_base_url']
+        template_data.update({
+            "page_title": f"Vetted {config.business.industry} Providers | {template_data['site_display_name']}",
+            "page_description": (
+                getattr(config.resource_site, 'site_mission', '')
+                or f"Vetted local {config.business.industry.lower()} providers reviewed by {template_data['site_display_name']}."
+            ),
+            "page_type": "providers-index",
+            "base_path": "",
+            "breadcrumb_schema": self._generate_breadcrumb_schema(
+                "providers-index",
+                canonical_base,
+            ),
+        })
+        return self._render_template("pages/providers-index.html", template_data)
+
+    def generate_provider_profile_page(self, provider, config: ClientConfig, related_guides=None) -> str:
+        """Generate a single provider profile page (providers/{slug}.html)."""
+        template_data = self._prepare_template_data(config)
+        canonical_base = template_data['canonical_base_url']
+        slug = provider.get_slug()
+        template_data.update({
+            "page_title": f"{provider.name} | {template_data['site_display_name']}",
+            "page_description": (
+                provider.description[:157] + "..." if len(provider.description) > 157 else provider.description
+            ) or f"{provider.name} - vetted {config.business.industry.lower()} provider in {provider.service_area}.",
+            "page_type": "provider-profile",
+            "provider": provider,
+            "related_guides": related_guides or [],
+            "base_path": "../",
+            "breadcrumb_schema": self._generate_breadcrumb_schema(
+                "provider-profile",
+                canonical_base,
+                extra={"name": provider.name, "url": f"{canonical_base}/providers/{slug}.html"},
+            ),
+        })
+        return self._render_template("pages/provider-profile.html", template_data)
 
     def generate_faq_page(self, config: ClientConfig) -> str:
         """Generate FAQ page"""
@@ -448,6 +501,7 @@ class HTMLGenerator:
             "is_resource_site": hasattr(config.cloud, 'site_type') and config.cloud.site_type == "resource",
             "resource_site": getattr(config, 'resource_site', None),
             "product_categories": getattr(config, 'product_categories', []),
+            "providers": getattr(config, 'providers', []),
             "site_display_name": (
                 config.resource_site.site_name
                 if (
@@ -522,6 +576,13 @@ class HTMLGenerator:
                 "dropdown": city_nav_items
             })
 
+        # Add Providers nav item for resource sites with providers
+        if (hasattr(config.cloud, 'site_type') and config.cloud.site_type == 'resource'
+                and getattr(config, 'providers', [])):
+            nav_items.append(
+                {"name": "Providers", "url": "/providers/index.html", "slug": "providers"}
+            )
+
         nav_items.extend(
             [
                 {"name": "FAQ", "url": "/faq.html", "slug": "faq"},
@@ -530,6 +591,43 @@ class HTMLGenerator:
         )
 
         return nav_items
+
+    def _pick_provider(self, providers, topic_keywords):
+        """Return the best-matching ProviderConfig for a topic page, or None.
+
+        Scores each provider by counting overlapping tokens between their
+        specialties and the topic_keywords list. Returns the highest scorer,
+        or the first provider if all scores are zero, or None if no providers.
+
+        Args:
+            providers: list of ProviderConfig objects
+            topic_keywords: list of str keyword tokens for the current page topic
+        Returns:
+            ProviderConfig or None
+        """
+        if not providers:
+            return None
+        if not topic_keywords:
+            return providers[0]
+
+        # tokenize topic keywords
+        topic_tokens = set()
+        for kw in topic_keywords:
+            for token in kw.lower().replace('-', ' ').split():
+                topic_tokens.add(token)
+
+        best = providers[0]
+        best_score = 0
+        for provider in providers:
+            score = 0
+            for specialty in provider.specialties:
+                for token in specialty.lower().replace('-', ' ').split():
+                    if token in topic_tokens:
+                        score += 1
+            if score > best_score:
+                best_score = score
+                best = provider
+        return best
 
     def _generate_footer_links(
         self, config: ClientConfig
@@ -962,7 +1060,8 @@ class HTMLGenerator:
         page_type: str,
         canonical_base_url: str,
         page_title: str = "",
-        page_url: str = ""
+        page_url: str = "",
+        extra: Optional[Dict[str, str]] = None
     ) -> Dict[str, Any]:
         """
         Generate BreadcrumbList schema for better SEO and navigation clarity.
@@ -1080,6 +1179,44 @@ class HTMLGenerator:
                 "name": page_title,
                 "item": page_url or f"{canonical_base_url}/locations/{page_title.lower().replace(' ', '-')}.html"
             })
+
+        elif page_type == "product-comparison":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Products",
+                "item": f"{canonical_base_url}/products.html"
+            })
+            if extra:
+                breadcrumbs.append({
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": extra.get("name", ""),
+                    "item": extra.get("url", "")
+                })
+
+        elif page_type == "providers-index":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Providers",
+                "item": f"{canonical_base_url}/providers/index.html"
+            })
+
+        elif page_type == "provider-profile":
+            breadcrumbs.append({
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Providers",
+                "item": f"{canonical_base_url}/providers/index.html"
+            })
+            if extra:
+                breadcrumbs.append({
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": extra.get("name", ""),
+                    "item": extra.get("url", "")
+                })
 
         return {
             "@context": "https://schema.org",

@@ -14,11 +14,12 @@ Created Date:
 2024-08-15
 
 Last Modified Date:
-2026-03-21
+2026-03-22
 
-Version: 1.04
+Version: 1.05
 
 Comments:
+* v1.05 - Added ProviderConfig dataclass for resource site listed-provider pages; added providers to ClientConfig
 * v1.04 - Added ProductCategoryConfig dataclass for resource site comparison guides; added product_categories to ClientConfig
 * v1.03 - Added ResourceSiteConfig dataclass; extended CloudConfig.site_type to support "resource"; added resource_site field to ClientConfig
 * v1.02 - Added wikipedia_embeds field to ClientConfig for Wikipedia image embed persistence
@@ -164,6 +165,39 @@ class ContactConfig:
         """Check if multiple contact methods are available"""
         contacts = [self.phone, self.office_phone, self.mobile_phone, self.emergency_phone]
         return len([c for c in contacts if c.strip()]) > 1
+
+
+@dataclass
+class ProviderConfig:
+    """A listed local-service provider on a resource site.
+
+    Each provider gets a profile page at providers/{slug}.html and is
+    referenced in relevant topic-page CTA sections. The resource site
+    links TO the provider's own domain; the provider's site is never
+    deployed here.
+    """
+
+    # Identity
+    name: str = ""             # e.g. "Overhead Door Company of Joliet"
+    slug: str = ""             # URL slug; auto-generated from name if blank
+    url: str = ""              # Followed link to provider's own domain
+    phone: str = ""            # Optional display phone
+
+    # Coverage & expertise
+    service_area: str = ""     # e.g. "Will County, IL"
+    specialties: List[str] = field(default_factory=list)  # e.g. ["torsion springs", "commercial doors"]
+    description: str = ""      # 1-2 sentence editorial description
+
+    # Display options
+    verified: bool = True      # Show "Verified Provider" badge
+
+    def get_slug(self) -> str:
+        """Return slug, auto-generating from name if not set."""
+        if self.slug:
+            return self.slug
+        import re
+        s = re.sub(r"[^a-zA-Z0-9\s]", "", self.name.lower())
+        return re.sub(r"\s+", "-", s.strip())
 
 
 @dataclass
@@ -786,6 +820,7 @@ class ClientConfig:
     # Content
     products: List[ProductConfig] = field(default_factory=list)
     product_categories: List[ProductCategoryConfig] = field(default_factory=list)
+    providers: List[ProviderConfig] = field(default_factory=list)
     services: List[ServiceConfig] = field(default_factory=list)
     pages: List[PageConfig] = field(default_factory=list)
     faq: List[FAQItem] = field(default_factory=list)

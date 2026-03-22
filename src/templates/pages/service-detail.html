@@ -197,11 +197,7 @@
             <div class="contact-cta">
                 {% if is_resource_site %}
                 <h2>Ready to Hire a Professional?</h2>
-                {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
-                <p>Use the information in this guide to evaluate your options. Established providers in the {{ contact.address.city if contact.address.city else "local" }} area include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener noreferrer">{{ resource_site.money_site_name }}</a> and other licensed {{ business.industry.lower() }} contractors.</p>
-                {% else %}
-                <p>Use the information in this guide when evaluating {{ business.industry.lower() }} contractors in your area. Ask for references, verify licensing, and request written estimates from at least two providers.</p>
-                {% endif %}
+                {% include 'components/provider-cta.html' %}
                 {% if resource_site and resource_site.authoritative_sources %}
                 <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;"><strong>Primary references:</strong>
                     {% for source in resource_site.authoritative_sources %}

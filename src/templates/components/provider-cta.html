@@ -1,0 +1,44 @@
+{% if featured_provider and is_resource_site %}
+<section class="provider-cta-section">
+    <div class="provider-cta-box">
+        {% if resource_site and resource_site.cta_style == 'contextual' %}
+        <h3>Ready to Get Started?</h3>
+        <p>Connect with a vetted local provider for professional {{ business.industry.lower() }} services.</p>
+        {% else %}
+        <h3>Looking for a Local Provider?</h3>
+        <p>{{ site_display_name }} has reviewed local providers in this area.</p>
+        {% endif %}
+        <div class="featured-provider">
+            <strong><a href="{{ base_path }}providers/{{ featured_provider.get_slug() }}.html">{{ featured_provider.name }}</a></strong>
+            {% if featured_provider.service_area %}<span class="service-area"> &mdash; {{ featured_provider.service_area }}</span>{% endif %}
+            {% if featured_provider.verified %}<span class="verified-badge">Verified</span>{% endif %}
+            {% if featured_provider.specialties %}
+            <ul class="specialty-tags">
+                {% for s in featured_provider.specialties[:3] %}<li>{{ s }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <a href="{{ base_path }}providers/{{ featured_provider.get_slug() }}.html" class="btn-profile">View Provider Profile</a>
+        <a href="{{ base_path }}providers/index.html" class="btn-secondary">All Providers</a>
+    </div>
+</section>
+{% elif is_resource_site and resource_site and resource_site.money_site_name %}
+{# Fallback: no providers configured, use legacy money_site attribution #}
+<section class="provider-cta-section">
+    <div class="provider-cta-box">
+        {% if resource_site.cta_style == 'contextual' %}
+        <h3>Ready to hire?</h3>
+        {% else %}
+        <h3>Looking for a Local Provider?</h3>
+        {% endif %}
+        <p>
+            {% if resource_site.money_site_url %}
+            <a href="{{ resource_site.money_site_url }}" rel="noopener noreferrer">{{ resource_site.money_site_name }}</a>
+            {% else %}
+            {{ resource_site.money_site_name }}
+            {% endif %}
+            is a local provider serving this area.
+        </p>
+    </div>
+</section>
+{% endif %}
