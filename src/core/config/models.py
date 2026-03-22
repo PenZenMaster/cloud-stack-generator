@@ -14,11 +14,12 @@ Created Date:
 2024-08-15
 
 Last Modified Date:
-2025-12-20
+2026-03-21
 
-Version: 1.02
+Version: 1.03
 
 Comments:
+* v1.03 - Added ResourceSiteConfig dataclass; extended CloudConfig.site_type to support "resource"; added resource_site field to ClientConfig
 * v1.02 - Added wikipedia_embeds field to ClientConfig for Wikipedia image embed persistence
 * v1.01 - Added H1/H2/H3/Menu text colors and hero background image to BrandingConfig
 * v1.00 - Initial implementation with core configuration models
@@ -651,7 +652,7 @@ class CloudConfig:
     deployment_url: str = ""
 
     # SEO and backlink site configuration
-    site_type: str = "main_site"  # "main_site" or "backlink_site"
+    site_type: str = "main_site"  # "main_site", "backlink_site", or "resource"
     main_site_url: str = ""  # For backlink sites: the main production site to link to
     allow_indexing: bool = True  # Control search engine indexing
 
@@ -692,6 +693,40 @@ class CloudConfig:
 
 
 @dataclass
+class ResourceSiteConfig:
+    """Identity and branding configuration for resource/editorial cloud sites.
+
+    Used when cloud.site_type == "resource" to give the cloud site its own
+    identity, separate from the money site's business branding. All fields
+    default to empty so storefront configs are unaffected.
+    """
+
+    # Public-facing identity of the resource site
+    site_name: str = ""           # e.g. "Commercial Door Guide"
+    site_brand: str = ""          # Short handle, e.g. "CDG"
+    site_mission: str = ""        # Mission statement shown on About page
+    editorial_perspective: str = ""  # Who produces content, e.g. "Our editorial team..."
+
+    # Money-site reference (used for contextual mentions only)
+    money_site_name: str = ""     # Client business name for in-body mentions
+    money_site_url: str = ""      # Client site URL for contextual links
+
+    # Outbound authority links (diversifies link profile away from money site)
+    authoritative_sources: List[str] = field(default_factory=list)
+
+    # CTA style: "educational" -> "Read the Guide"; "commercial" -> "Get a Quote"
+    cta_style: str = "educational"
+
+    def get_site_display_name(self) -> str:
+        """Return the site name, falling back to an empty string."""
+        return self.site_name or ""
+
+    def is_configured(self) -> bool:
+        """Return True when the resource-site identity fields have been filled in."""
+        return bool(self.site_name)
+
+
+@dataclass
 class ClientConfig:
     """Complete client configuration"""
 
@@ -702,6 +737,9 @@ class ClientConfig:
 
     # Cloud deployment configuration
     cloud: CloudConfig = field(default_factory=CloudConfig)
+
+    # Resource/editorial site identity (only used when cloud.site_type == "resource")
+    resource_site: ResourceSiteConfig = field(default_factory=ResourceSiteConfig)
 
     # Multi-deployment support (v3.2.0+)
     deployments: List[DeploymentConfig] = field(default_factory=list)
