@@ -106,6 +106,12 @@ class PageGenerator:
                     config, output_dir, result, progress_callback
                 )
 
+            # Generate product comparison guide pages (resource sites with categories)
+            if getattr(config, "product_categories", []):
+                self._generate_product_comparison_pages(
+                    config, output_dir, result, progress_callback
+                )
+
             # Generate individual service pages
             if config.services:
                 self._generate_service_pages(
@@ -160,7 +166,7 @@ class PageGenerator:
         (output_dir / "js").mkdir(exist_ok=True)
         (output_dir / "images").mkdir(exist_ok=True)
 
-        if config.products:
+        if config.products or getattr(config, "product_categories", []):
             (output_dir / "products").mkdir(exist_ok=True)
 
         if config.services:
@@ -205,9 +211,14 @@ class PageGenerator:
         if config.services:
             total += 1 + len(config.services)
 
-        # Products overview page + individual product pages
+        # Products overview page + individual product pages + category comparison pages
+        product_categories = getattr(config, "product_categories", [])
+        if config.products or product_categories:
+            total += 1  # products.html hub
         if config.products:
-            total += 1 + len(config.products)
+            total += len(config.products)
+        if product_categories:
+            total += len(product_categories)
 
         # City pages
         if config.city_pages:
@@ -275,8 +286,8 @@ class PageGenerator:
             )
         )
 
-        # Add products overview page if products exist
-        if config.products:
+        # Add products overview page if products or product categories exist
+        if config.products or getattr(config, "product_categories", []):
             pages.append(
                 (
                     "products.html",
@@ -340,6 +351,42 @@ class PageGenerator:
             except Exception as e:
                 result.add_error(
                     f"Error generating product page for {product.name}: {str(e)}"
+                )
+
+    def _generate_product_comparison_pages(
+        self,
+        config: ClientConfig,
+        output_dir: Path,
+        result: GenerationResult,
+        progress_callback: Optional[Callable] = None,
+    ):
+        """Generate product comparison guide pages for resource sites."""
+        products_dir = output_dir / "products"
+
+        for category in getattr(config, "product_categories", []):
+            try:
+                html_content = self.html_generator.generate_product_comparison_page(
+                    category, config
+                )
+                filename = f"{category.get_slug()}.html"
+                category_file = products_dir / filename
+
+                with open(category_file, "w", encoding="utf-8") as f:
+                    f.write(html_content)
+
+                result.add_generated_file(str(category_file))
+                result.pages_generated += 1
+
+                if progress_callback:
+                    progress_callback(
+                        result.pages_generated,
+                        result.total_pages,
+                        f"Generated comparison guide: {category.get_guide_title()}",
+                    )
+
+            except Exception as e:
+                result.add_error(
+                    f"Error generating comparison guide for {category.category_name}: {str(e)}"
                 )
 
     def _generate_service_pages(
@@ -639,8 +686,9 @@ class PageGenerator:
                     }
                 )
 
-        # Products hub and detail pages
-        if config.products:
+        # Products hub, individual product pages, and category comparison guides
+        product_categories = getattr(config, "product_categories", [])
+        if config.products or product_categories:
             urls.append(
                 {
                     "loc": f"{base_url}/products.html",
@@ -648,15 +696,23 @@ class PageGenerator:
                     "changefreq": "monthly",
                 }
             )
-            for product in config.products:
-                product_slug = self._sanitize_filename(product.name)
-                urls.append(
-                    {
-                        "loc": f"{base_url}/products/{product_slug}.html",
-                        "priority": "0.7",
-                        "changefreq": "monthly",
-                    }
-                )
+        for product in config.products:
+            product_slug = self._sanitize_filename(product.name)
+            urls.append(
+                {
+                    "loc": f"{base_url}/products/{product_slug}.html",
+                    "priority": "0.7",
+                    "changefreq": "monthly",
+                }
+            )
+        for category in product_categories:
+            urls.append(
+                {
+                    "loc": f"{base_url}/products/{category.get_slug()}.html",
+                    "priority": "0.7",
+                    "changefreq": "monthly",
+                }
+            )
 
         # City pages (critical for local SEO)
         if config.city_pages:
