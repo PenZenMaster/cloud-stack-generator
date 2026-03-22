@@ -143,9 +143,16 @@
                 {% if is_resource_site %}
                 <h2>Ready to Purchase or Get a Quote?</h2>
                 {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
-                <p>Use this guide to compare your options. For pricing and installation in the {{ contact.address.city if contact.address.city else "local" }} area, established providers include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> and other licensed {{ business.industry.lower() }} contractors.</p>
+                <p>Use this guide to compare your options. For pricing and installation in the {{ contact.address.city if contact.address.city else "local" }} area, established providers include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener noreferrer">{{ resource_site.money_site_name }}</a> and other licensed {{ business.industry.lower() }} contractors.</p>
                 {% else %}
                 <p>Use this guide to evaluate your options, then contact a licensed {{ business.industry.lower() }} supplier or installer for pricing and availability.</p>
+                {% endif %}
+                {% if resource_site and resource_site.authoritative_sources %}
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;"><strong>Primary references:</strong>
+                    {% for source in resource_site.authoritative_sources %}
+                    <a href="{{ source }}" target="_blank" rel="noopener noreferrer">{{ source }}</a>{% if not loop.last %} | {% endif %}
+                    {% endfor %}
+                </p>
                 {% endif %}
                 <a href="../products.html" class="btn btn-primary">Browse All Resources</a>
                 {% else %}

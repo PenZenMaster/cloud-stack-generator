@@ -247,7 +247,7 @@
                     {% if is_resource_site %}
                     <h2>Looking for a Local Professional?</h2>
                     {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
-                    <p>These guides help you make informed decisions. When you're ready to hire, established providers in the {{ contact.address.city if contact.address.city else "local" }} area include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> and other licensed contractors.</p>
+                    <p>These guides help you make informed decisions. When you're ready to hire, established providers in the {{ contact.address.city if contact.address.city else "local" }} area include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener noreferrer">{{ resource_site.money_site_name }}</a> and other licensed contractors.</p>
                     {% else %}
                     <p>These guides help you evaluate your options before contacting a local {{ business.industry.lower() }} professional.</p>
                     {% endif %}

@@ -75,6 +75,13 @@
                 {% else %}
                 <p>This site provides independent, educational content to help facility managers, building owners, and contractors make informed decisions about {{ business.industry.lower() }}.</p>
                 {% endif %}
+                {% if resource_site and resource_site.authoritative_sources %}
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;"><strong>Content references:</strong>
+                    {% for source in resource_site.authoritative_sources %}
+                    <a href="{{ source }}" target="_blank" rel="noopener noreferrer">{{ source }}</a>{% if not loop.last %} | {% endif %}
+                    {% endfor %}
+                </p>
+                {% endif %}
                 {% else %}
                 <h2>Welcome to {{ business.business_name }}</h2>
                 {% if business.company_overview %}
