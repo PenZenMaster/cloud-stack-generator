@@ -16,9 +16,10 @@ Created Date:
 Last Modified Date:
 2026-03-21
 
-Version: 1.03
+Version: 1.04
 
 Comments:
+* v1.04 - Added ProductCategoryConfig dataclass for resource site comparison guides; added product_categories to ClientConfig
 * v1.03 - Added ResourceSiteConfig dataclass; extended CloudConfig.site_type to support "resource"; added resource_site field to ClientConfig
 * v1.02 - Added wikipedia_embeds field to ClientConfig for Wikipedia image embed persistence
 * v1.01 - Added H1/H2/H3/Menu text colors and hero background image to BrandingConfig
@@ -163,6 +164,44 @@ class ContactConfig:
         """Check if multiple contact methods are available"""
         contacts = [self.phone, self.office_phone, self.mobile_phone, self.emergency_phone]
         return len([c for c in contacts if c.strip()]) > 1
+
+
+@dataclass
+class ProductCategoryConfig:
+    """Comparison guide configuration for a group of related products.
+
+    Used on resource sites (cloud.site_type == "resource") to consolidate
+    multiple individual product pages into a single comparison guide page.
+    Each category becomes one products/{slug}.html comparison guide.
+    """
+
+    # Identity
+    category_name: str = ""       # Display name, e.g. "Insulated Steel Sectional Doors"
+    guide_title: str = ""         # Full SEO title, e.g. "Insulated Commercial Steel Doors: R-Value Comparison"
+    slug: str = ""                # URL slug, e.g. "insulated-steel-sectional-doors"
+    description: str = ""        # Intro paragraph for the guide
+
+    # Products grouped into this category (by name or SKU)
+    products: List[str] = field(default_factory=list)
+
+    # Comparison content
+    competing_brands: List[str] = field(default_factory=list)   # e.g. ["Wayne Dalton", "Clopay", "Amarr"]
+    comparison_criteria: List[str] = field(default_factory=list) # Table column headers
+    best_for: List[str] = field(default_factory=list)            # "Best for" scenarios
+    not_ideal_for: List[str] = field(default_factory=list)       # "Not ideal for" scenarios
+    standards: List[str] = field(default_factory=list)           # e.g. ["IECC 2021 Section C402.5"]
+
+    def get_slug(self) -> str:
+        """Return slug, auto-generating from category_name if not set."""
+        if self.slug:
+            return self.slug
+        import re
+        s = re.sub(r"[^a-zA-Z0-9\s]", "", self.category_name.lower())
+        return re.sub(r"\s+", "-", s.strip())
+
+    def get_guide_title(self) -> str:
+        """Return guide_title, falling back to category_name."""
+        return self.guide_title or self.category_name
 
 
 @dataclass
@@ -746,6 +785,7 @@ class ClientConfig:
 
     # Content
     products: List[ProductConfig] = field(default_factory=list)
+    product_categories: List[ProductCategoryConfig] = field(default_factory=list)
     services: List[ServiceConfig] = field(default_factory=list)
     pages: List[PageConfig] = field(default_factory=list)
     faq: List[FAQItem] = field(default_factory=list)
