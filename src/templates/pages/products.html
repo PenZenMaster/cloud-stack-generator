@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products - {{ business.business_name }}</title>
-    <meta name="description" content="Explore {{ business.business_name }} {{ business.industry.lower() }} products and solutions">
+    <title>{% if is_resource_site %}{{ business.industry }} Resources &amp; Buyer Guides - {{ site_display_name }}{% else %}Products - {{ site_display_name }}{% endif %}</title>
+    <meta name="description" content="{% if is_resource_site %}Independent buyer guides and comparison resources for {{ business.industry.lower() }} products. Compare options across multiple brands with objective criteria.{% else %}Explore {{ site_display_name }} {{ business.industry.lower() }} products and solutions{% endif %}">
     <meta name="robots" content="index, follow">
-    
+
     <link rel="canonical" href="{{ canonical_base_url }}/products.html">
     <link rel="stylesheet" href="css/style.css">
 
@@ -23,36 +23,54 @@
     <main>
         <section class="content-section">
             <div class="container">
-                <h1>Our Products</h1>
-                
+                <h1>{% if is_resource_site %}{{ business.industry }} Buyer Guides &amp; Comparisons{% else %}Our Products{% endif %}</h1>
+
+                {% if is_resource_site %}
+                <p>Independent comparison guides covering {{ business.industry.lower() }} product categories. Each guide compares options across multiple manufacturers — not just one brand's catalog — and includes decision frameworks to help you choose the right product for your application.</p>
+                {% else %}
                 <p>Discover our comprehensive range of {{ business.industry.lower() }} products designed to meet your specific needs.</p>
-                
+                {% endif %}
+
                 {% if products %}
                 <div class="products-grid">
                     {% for product in products %}
                     <div class="product-card">
+                        {% if not is_resource_site %}
                         {% if product.image_url %}
                         <img src="{{ product.image_url }}" alt="{{ product.name if product.name else product }}">
                         {% else %}
                         <img src="https://via.placeholder.com/400x300?text={{ (product.name if product.name else product)|urlencode }}" alt="{{ product.name if product.name else product }}">
                         {% endif %}
+                        {% endif %}
                         <div class="product-card-content">
                             <h3>{{ product.name if product.name else product }}</h3>
-                            <p>{% if product.description %}{{ product.description }}{% else %}Professional {{ (product.name if product.name else product).lower() }} solution designed for excellence.{% endif %}</p>
+                            <p>{% if product.description %}{{ product.description }}{% elif is_resource_site %}An independent comparison guide covering {{ (product.name if product.name else product).lower() }} options across multiple brands, with selection criteria and application-specific recommendations.{% else %}Professional {{ (product.name if product.name else product).lower() }} solution designed for excellence.{% endif %}</p>
                             {% if product.category %}
                             <p class="product-category"><strong>Category:</strong> {{ product.category|title }}</p>
                             {% endif %}
-                            <a href="{{ base_path | default('') }}products/{{ (product.name if product.name else product)|slugify }}.html" class="product-link">Learn More →</a>
+                            <a href="{{ base_path | default('') }}products/{{ (product.name if product.name else product)|slugify }}.html" class="product-link">{% if is_resource_site %}Compare Options &#8594;{% else %}Learn More &#8594;{% endif %}</a>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
+                {% if is_resource_site %}
+                <p>Comparison guides for {{ business.industry.lower() }} products are being added. Check back for buyer guides covering major product categories.</p>
+                {% else %}
                 <p>We offer a variety of high-quality {{ business.industry.lower() }} products. Contact us to learn more about our available solutions.</p>
                 {% endif %}
-                
+                {% endif %}
+
                 <div class="contact-cta">
+                    {% if is_resource_site %}
+                    {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
+                    <p>Ready to purchase or get a quote? Contact a licensed installer such as <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> for pricing and availability.</p>
+                    {% else %}
+                    <p>Use these guides to evaluate your options before contacting a {{ business.industry.lower() }} supplier or installer.</p>
+                    {% endif %}
+                    {% else %}
                     <p>Need a custom solution? <a href="{{ base_path | default('') }}contact.html">Contact us</a> to discuss your specific requirements!</p>
+                    {% endif %}
                 </div>
             </div>
         </section>
@@ -64,37 +82,33 @@
         // Enhanced dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
             const dropdowns = document.querySelectorAll('.dropdown');
-            
+
             dropdowns.forEach(function(dropdown) {
                 const dropdownContent = dropdown.querySelector('.dropdown-content');
                 let timeoutId;
-                
+
                 if (dropdownContent) {
-                    // Show dropdown on hover
                     dropdown.addEventListener('mouseenter', function() {
                         clearTimeout(timeoutId);
                         dropdownContent.style.display = 'block';
                     });
-                    
-                    // Hide dropdown with delay on mouse leave
+
                     dropdown.addEventListener('mouseleave', function() {
                         timeoutId = setTimeout(function() {
                             dropdownContent.style.display = 'none';
                         }, 300);
                     });
-                    
-                    // Prevent dropdown from closing when hovering over content
+
                     dropdownContent.addEventListener('mouseenter', function() {
                         clearTimeout(timeoutId);
                     });
-                    
+
                     dropdownContent.addEventListener('mouseleave', function() {
                         timeoutId = setTimeout(function() {
                             dropdownContent.style.display = 'none';
                         }, 300);
                     });
-                    
-                    // Click to toggle dropdown (mobile friendly)
+
                     const dropdownTrigger = dropdown.querySelector('a');
                     if (dropdownTrigger) {
                         dropdownTrigger.addEventListener('click', function(e) {
@@ -105,8 +119,7 @@
                     }
                 }
             });
-            
-            // Close all dropdowns when clicking outside
+
             document.addEventListener('click', function(e) {
                 if (!e.target.closest('.dropdown')) {
                     dropdowns.forEach(function(dropdown) {
