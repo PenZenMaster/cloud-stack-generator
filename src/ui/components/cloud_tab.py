@@ -1826,6 +1826,18 @@ class CloudTab(BaseTab):
         site_type_layout.addStretch()
         layout.addLayout(site_type_layout)
 
+        # Contextual help panel - updates when site type changes
+        self.site_type_help_label = QLabel(
+            "Main Site: Your primary business website. All canonical URLs point "
+            "here. Use this for your main customer-facing presence."
+        )
+        self.site_type_help_label.setWordWrap(True)
+        self.site_type_help_label.setStyleSheet(
+            "background:#f0f7ff; border:1px solid #b8d4f0; border-radius:4px; "
+            "padding:8px; color:#1a3a5c; font-size:9pt; margin-top:2px;"
+        )
+        layout.addWidget(self.site_type_help_label)
+
         # Main Site URL (only enabled for backlink sites)
         main_site_layout = QHBoxLayout()
         main_site_label = QLabel("Main Site URL:")
@@ -3502,10 +3514,37 @@ class CloudTab(BaseTab):
             self.site_type_backlink_radio is not None
             and self.site_type_backlink_radio.isChecked()
         )
+        is_resource_site = (
+            self.site_type_resource_radio is not None
+            and self.site_type_resource_radio.isChecked()
+        )
         self.main_site_url_input.setEnabled(is_backlink_site)
 
         if not is_backlink_site:
             self.main_site_url_input.clear()
+
+        # Update contextual help text
+        if hasattr(self, "site_type_help_label") and self.site_type_help_label:
+            if is_backlink_site:
+                self.site_type_help_label.setText(
+                    "Backlink Site: A satellite or city-specific site. Canonical "
+                    "URLs point to the Main Site URL you enter below, which "
+                    "consolidates SEO authority on your primary domain. Each city "
+                    "page links back to the main site."
+                )
+            elif is_resource_site:
+                self.site_type_help_label.setText(
+                    "Resource Site: An independent topical authority site (e.g. "
+                    "a buyer guide or industry reference). Appears editorially "
+                    "neutral. Fill in the 'Resource Site' tab with identity, "
+                    "editorial mission, money-site attribution, and authority "
+                    "sources. Product Categories drive comparison guide pages."
+                )
+            else:
+                self.site_type_help_label.setText(
+                    "Main Site: Your primary business website. All canonical URLs "
+                    "point here. Use this for your main customer-facing presence."
+                )
 
     def update_deploy_button_state(self):
         """Update deploy button enabled state"""
