@@ -205,7 +205,7 @@
                 {% if resource_site and resource_site.authoritative_sources %}
                 <p><strong>Primary references:</strong>
                     {% for src in resource_site.authoritative_sources %}
-                    <a href="{{ src }}" target="_blank" rel="noopener">{{ src }}</a>{% if not loop.last %} | {% endif %}
+                    <a href="{{ src }}" target="_blank" rel="noopener noreferrer">{{ src }}</a>{% if not loop.last %} | {% endif %}
                     {% endfor %}
                 </p>
                 {% endif %}
@@ -219,7 +219,7 @@
                 <div class="contact-cta" style="background: #f8f9fa; padding: 2rem; border-radius: 8px; text-align: center;">
                     <h2>Ready to Get a Quote?</h2>
                     {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
-                    <p>Use this guide to evaluate your options. For pricing, lead times, and installation in the {{ contact.address.city if contact.address.city else "local" }} area, established providers include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> and other licensed {{ business.industry.lower() }} contractors.</p>
+                    <p>Use this guide to evaluate your options. For pricing, lead times, and installation in the {{ contact.address.city if contact.address.city else "local" }} area, established providers include <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener noreferrer">{{ resource_site.money_site_name }}</a> and other licensed {{ business.industry.lower() }} contractors.</p>
                     {% else %}
                     <p>Use this guide to compare options, then contact a licensed {{ business.industry.lower() }} supplier or installer for current pricing and availability.</p>
                     {% endif %}

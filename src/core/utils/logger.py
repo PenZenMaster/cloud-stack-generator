@@ -16,6 +16,7 @@ Last Modified Date:
 2025-11-18
 
 Comments:
+* v1.01 - WindowsSafeRotatingFileHandler: catch PermissionError on rollover (WinError 32)
 * v1.00 - Initial logging system implementation
 * Replaces print statements with proper logging
 * Supports DEBUG, INFO, WARNING, ERROR, CRITICAL levels
@@ -37,6 +38,23 @@ import time
 
 # Default log directory
 DEFAULT_LOG_DIR = Path.home() / ".cloud-stack-generator" / "logs"
+
+
+class WindowsSafeRotatingFileHandler(logging.handlers.RotatingFileHandler):
+    """
+    RotatingFileHandler that tolerates Windows file-lock errors during rollover.
+
+    On Windows, renaming an open log file raises PermissionError (WinError 32).
+    Rather than crashing, this handler silently skips the rotation cycle and
+    continues writing to the existing file until the next opportunity.
+    """
+
+    def doRollover(self) -> None:
+        try:
+            super().doRollover()
+        except PermissionError:
+            # Another process holds a handle on the log file; skip this rotation.
+            pass
 
 
 class JsonFormatter(logging.Formatter):
@@ -154,7 +172,7 @@ def setup_logger(
 
         # Main log file (all levels, JSON format)
         main_log = log_dir / "cloud_stack_generator.log"
-        main_handler = logging.handlers.RotatingFileHandler(
+        main_handler = WindowsSafeRotatingFileHandler(
             main_log,
             maxBytes=10 * 1024 * 1024,  # 10MB
             backupCount=5,
@@ -166,7 +184,7 @@ def setup_logger(
 
         # Error log file (ERROR and above, detailed)
         error_log = log_dir / "errors.log"
-        error_handler = logging.handlers.RotatingFileHandler(
+        error_handler = WindowsSafeRotatingFileHandler(
             error_log,
             maxBytes=10 * 1024 * 1024,  # 10MB
             backupCount=5,

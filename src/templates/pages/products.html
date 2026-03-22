@@ -85,7 +85,7 @@
                 <div class="contact-cta">
                     {% if is_resource_site %}
                     {% if resource_site and resource_site.money_site_name and resource_site.money_site_url %}
-                    <p>Ready to purchase or get a quote? Contact a licensed installer such as <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener">{{ resource_site.money_site_name }}</a> for pricing and availability.</p>
+                    <p>Ready to purchase or get a quote? Contact a licensed installer such as <a href="{{ resource_site.money_site_url }}" target="_blank" rel="noopener noreferrer">{{ resource_site.money_site_name }}</a> for pricing and availability.</p>
                     {% else %}
                     <p>Use these guides to evaluate your options before contacting a {{ business.industry.lower() }} supplier or installer.</p>
                     {% endif %}

@@ -1103,6 +1103,7 @@ class CloudTab(BaseTab):
         # SEO and canonical URL settings
         self.site_type_main_radio = None
         self.site_type_backlink_radio = None
+        self.site_type_resource_radio = None
         self.main_site_url_input = None
 
         self.progress_bar = None
@@ -1813,6 +1814,14 @@ class CloudTab(BaseTab):
         )
         self.site_type_backlink_radio.toggled.connect(self.on_site_type_changed)
         site_type_layout.addWidget(self.site_type_backlink_radio)
+
+        self.site_type_resource_radio = QRadioButton("Resource Site")
+        self.site_type_resource_radio.setToolTip(
+            "Independent editorial/topical authority site - fill in the "
+            "Resource Site tab for identity and attribution details"
+        )
+        self.site_type_resource_radio.toggled.connect(self.on_site_type_changed)
+        site_type_layout.addWidget(self.site_type_resource_radio)
 
         site_type_layout.addStretch()
         layout.addLayout(site_type_layout)
@@ -3484,15 +3493,17 @@ class CloudTab(BaseTab):
                 self.cloudfront_settings_group.setStyleSheet("")
 
     def on_site_type_changed(self):
-        """Handle site type change (Main Site vs Backlink Site)"""
+        """Handle site type change (Main Site / Backlink Site / Resource Site)"""
         if not hasattr(self, "main_site_url_input") or self.main_site_url_input is None:
             return  # UI not fully initialized yet
 
-        # Enable/disable Main Site URL input based on selection
-        is_backlink_site = self.site_type_backlink_radio.isChecked()
+        # Main Site URL only applies to Backlink Site
+        is_backlink_site = (
+            self.site_type_backlink_radio is not None
+            and self.site_type_backlink_radio.isChecked()
+        )
         self.main_site_url_input.setEnabled(is_backlink_site)
 
-        # Clear the field if switching to main site
         if not is_backlink_site:
             self.main_site_url_input.clear()
 
@@ -4934,6 +4945,11 @@ class CloudTab(BaseTab):
             "site_type": (
                 "backlink_site"
                 if self.site_type_backlink_radio.isChecked()
+                else "resource"
+                if (
+                    self.site_type_resource_radio is not None
+                    and self.site_type_resource_radio.isChecked()
+                )
                 else "main_site"
             ),
             "main_site_url": self.main_site_url_input.text().strip(),
@@ -5029,6 +5045,8 @@ class CloudTab(BaseTab):
         site_type = data.get("site_type", "main_site")
         if site_type == "backlink_site":
             self.site_type_backlink_radio.setChecked(True)
+        elif site_type == "resource" and self.site_type_resource_radio is not None:
+            self.site_type_resource_radio.setChecked(True)
         else:
             self.site_type_main_radio.setChecked(True)
 
