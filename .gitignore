@@ -89,6 +89,8 @@ token.json
 # Google service account keys
 *-[0-9a-f]*.json
 flight-deck-*.json
+credentials_service_account.json
+*_service_account*.json
 
 # Temporary files
 *.tmp
