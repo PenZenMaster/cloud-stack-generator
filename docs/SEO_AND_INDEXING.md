@@ -129,6 +129,8 @@ Always use canonical tags to indicate the preferred URL:
 
 Current implementation includes this automatically in all page templates.
 
+**Single source of truth for canonical targets**: buffer (`backlink_site`) and `resource` sites always self-canonicalize to their own `deployment_url` — never to `main_site_url` or another domain. Only a `main_site` config may canonicalize elsewhere. Pointing a buffer/resource site's canonical at another domain marks it a duplicate and drops it from the index with zero SEO value. See `_get_canonical_base_url()` in `html_generator.py`, `page_generator.py`, and `city_page_generator.py`.
+
 ### 2. Sitemap.xml
 
 Every site gets an auto-generated sitemap.xml with:

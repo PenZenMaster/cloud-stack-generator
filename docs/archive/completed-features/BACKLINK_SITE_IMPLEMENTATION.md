@@ -1,4 +1,4 @@
-# Backlink Site Implementation - v3.6.0+
+# Backlink Site Implementation - v3.5.0+
 
 ## Summary
 
@@ -6,16 +6,15 @@ Successfully implemented a complete backlink site architecture that enables Clou
 
 ## Version History
 
-- **v3.5.0**: Initial implementation - backlink sites used `deployment_url` for canonicals
-- **v3.6.0**: Updated implementation - backlink sites now use `main_site_url` for canonicals (points to main site)
-- **v3.7.1**: Added validation - requires `main_site_url` when `site_type` is `backlink_site`
+- **v3.5.0**: Initial implementation - backlink sites use `deployment_url` for canonicals (self-referencing) - correct
+- **v3.6.0**: Regression - canonical logic was changed to point at `main_site_url` instead, breaking independent indexing of the satellite site
+- **v3.7.1**: Reverted the v3.6.0 regression and added validation requiring `main_site_url` when `site_type` is `backlink_site`. `main_site_url` is used only for the on-page backlink links described below, never for canonical tags. See `docs/archive/resolved-issues/BACKLINK_SITE_BUG_FIX.md` for the full incident writeup.
 
-## IMPORTANT: v3.6.0+ Behavior Change
+## Canonical Tags Always Self-Reference (as of v3.7.1)
 
-**OLD (v3.5.0)**: Backlink sites used CloudFront URL for canonical tags
-**NEW (v3.6.0+)**: Backlink sites use `main_site_url` for canonical tags
+Backlink (and resource) sites canonicalize to their own `deployment_url`. `main_site_url` is only used to build the strategic on-page backlinks (CTAs, footer link, contextual links) described in section 4 below; it must never be used as the canonical target. Pointing a satellite's canonical at the main site tells Google the satellite is a duplicate, and the whole site drops out of the index with zero backlink value.
 
-This change better aligns with the original backlink strategy where satellite sites point TO the main site via canonicals.
+**Correction (2026-08-07)**: this document's "v3.6.0+" section previously described the v3.6.0 regression's canonical-to-`main_site_url` behavior as the *current* recommended approach, contradicting both the shipped v3.7.1 code and this document's own "Impact"/"How It Works" sections further down, which already described the correct self-referencing behavior. That section has been corrected to reflect the v3.7.1 fix. See `docs/SEO_AND_INDEXING.md` for the single source of truth on this rule.
 
 ## Changes Implemented
 
@@ -44,22 +43,17 @@ class CloudConfig:
 - `src/core/generators/enhanced_city_page_generator.py`
 - `src/core/generators/page_generator.py`
 
-**Key Method (v3.6.0+)**:
+**Key Method (as shipped)**:
 ```python
 def _get_canonical_base_url(self, config: ClientConfig) -> str:
     """
     Get the base URL for canonical tags and sitemaps.
 
     Priority order:
-    1. Backlink sites -> main_site_url (canonical points to main production site)
-    2. Main sites -> deployment_url (if specified)
-    3. Fallback -> business.domain
+    1. deployment_url, for both main and backlink/resource sites (self-referencing)
+    2. Fallback -> business.domain
     """
-    # For backlink sites, canonical should point to the main site
-    if config.cloud.site_type == "backlink_site" and config.cloud.main_site_url:
-        return config.cloud.main_site_url.rstrip("/")
-
-    # For main sites, prefer deployment_url if specified (canonical matches deployment)
+    # Use deployment_url for both main and backlink sites
     if config.cloud.deployment_url:
         return config.cloud.deployment_url.rstrip("/")
 
@@ -230,11 +224,11 @@ cloud:
 
 ## Testing Checklist
 
-After regenerating the site (v3.6.0+):
+After regenerating the site:
 
 - [ ] **VALIDATION**: `main_site_url` is populated in cloud config when `site_type: backlink_site`
 - [ ] **VALIDATION**: UI prevents deployment without valid `main_site_url` for backlink sites
-- [ ] Canonical tags point to **main site URL** (NOT CloudFront)
+- [ ] Canonical tags self-reference the **CloudFront/deployment URL** (NOT the main site)
 - [ ] Sitemap.xml contains CloudFront deployment URLs
 - [ ] robots.txt allows indexing (Allow: /)
 - [ ] robots.txt sitemap points to CloudFront sitemap

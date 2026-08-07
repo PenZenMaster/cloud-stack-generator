@@ -1046,6 +1046,52 @@ class TestImagePathNormalization:
         assert result['branding'].hero_background_image_url == "images/hero.png"
 
 
+class TestCanonicalBaseUrl:
+    """Buffer/resource sites must always self-canonicalize to deployment_url,
+    never to main_site_url - see docs/SEO_AND_INDEXING.md and issue #34"""
+
+    @pytest.fixture
+    @patch('core.generators.html_generator.AIContentService')
+    @patch('core.generators.html_generator.ContentCache')
+    def generator(self, mock_cache, mock_ai_service):
+        """Create HTMLGenerator instance"""
+        return HTMLGenerator()
+
+    def test_backlink_site_canonicalizes_to_deployment_url_not_main_site(self, generator):
+        """Regression test for the v3.6.0 canonical regression (BACKLINK_SITE_BUG_FIX.md)"""
+        cloud = MockCloudConfig(
+            site_type="backlink_site",
+            main_site_url="https://mainsite.example.com",
+            deployment_url="https://d123.cloudfront.net",
+        )
+        config = MockClientConfig(cloud=cloud)
+
+        result = generator._get_canonical_base_url(config)
+
+        assert result == "https://d123.cloudfront.net"
+
+    def test_resource_site_canonicalizes_to_deployment_url(self, generator):
+        """Resource sites also self-canonicalize, same as backlink sites"""
+        cloud = MockCloudConfig(
+            site_type="resource",
+            deployment_url="https://d456.cloudfront.net",
+        )
+        config = MockClientConfig(cloud=cloud)
+
+        result = generator._get_canonical_base_url(config)
+
+        assert result == "https://d456.cloudfront.net"
+
+    def test_falls_back_to_business_domain_when_no_deployment_url(self, generator):
+        """Without a deployment_url, canonical falls back to the business domain"""
+        cloud = MockCloudConfig(site_type="backlink_site", deployment_url=None)
+        config = MockClientConfig(cloud=cloud)
+
+        result = generator._get_canonical_base_url(config)
+
+        assert result == config.business.domain.rstrip("/")
+
+
 class TestBusinessLogicHelpers:
     """Test business logic helper methods"""
 
