@@ -24,10 +24,13 @@ from .home_content_generator import HomeContentGenerator
 from .city_content_generator import CityContentGenerator
 from .footer_generator import FooterGenerator
 from .navigation_builder import NavigationBuilder
+from .content_quality_gate import ContentQualityGate, ContentQualityGateError
 
 __all__ = [
     "HomeContentGenerator",
     "CityContentGenerator",
     "FooterGenerator",
     "NavigationBuilder",
+    "ContentQualityGate",
+    "ContentQualityGateError",
 ]

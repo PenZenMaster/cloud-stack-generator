@@ -75,7 +75,8 @@ class ContentCoordinator:
         self,
         config: ClientConfig,
         output_dir: str,
-        use_ai: bool = True
+        use_ai: bool = True,
+        allow_template_fallback: bool = False,
     ) -> list[str]:
         """
         Generate all city pages using enhanced city page generator.
@@ -86,6 +87,9 @@ class ContentCoordinator:
             config: Client configuration
             output_dir: Output directory path
             use_ai: Whether to use AI for enhanced content
+            allow_template_fallback: If False (default), aborts when too many
+                pages lack real content and would render scaled boilerplate.
+                See content_quality_gate.py / issue #35.
 
         Returns:
             list[str]: List of generated file paths
@@ -93,7 +97,8 @@ class ContentCoordinator:
         city_generator = CityPageGenerator(
             config,
             ai_service=self.ai_service,
-            cache=self.content_cache
+            cache=self.content_cache,
+            allow_template_fallback=allow_template_fallback,
         )
         return city_generator.generate_all_city_pages(output_dir, use_ai=use_ai)
 

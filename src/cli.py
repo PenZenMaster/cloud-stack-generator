@@ -68,7 +68,17 @@ def cli():
 @click.option(
     "--ai/--no-ai", default=True, help="Enable/disable AI-powered content generation"
 )
-def generate(config: Path, output: Path, ai: bool):
+@click.option(
+    "--allow-template-fallback",
+    is_flag=True,
+    default=False,
+    help=(
+        "Allow generating more than the template-fallback page limit of city pages "
+        "that lack real content (about_city/seo_content_body) and would otherwise "
+        "render scaled boilerplate. Off by default; requires deliberate opt-in."
+    ),
+)
+def generate(config: Path, output: Path, ai: bool, allow_template_fallback: bool):
     """Generate a website from a configuration file."""
     try:
         logger.info(f"Loading config from: {config}")
@@ -88,7 +98,9 @@ def generate(config: Path, output: Path, ai: bool):
         click.echo(f"AI content generation: {'enabled' if ai else 'disabled'}")
 
         # Initialize orchestrator
-        orchestrator = WebsiteOrchestrator(use_ai=ai)
+        orchestrator = WebsiteOrchestrator(
+            use_ai=ai, allow_template_fallback=allow_template_fallback
+        )
 
         # Generate website
         with click.progressbar(length=100, label="Generating website") as bar:

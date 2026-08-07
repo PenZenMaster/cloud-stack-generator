@@ -60,9 +60,21 @@ class PageGenerator:
         self.output_base_dir.mkdir(exist_ok=True)
 
     def generate_complete_website(
-        self, config: ClientConfig, progress_callback: Optional[Callable] = None
+        self,
+        config: ClientConfig,
+        progress_callback: Optional[Callable] = None,
+        allow_template_fallback: bool = False,
     ) -> GenerationResult:
-        """Generate complete website from configuration"""
+        """Generate complete website from configuration
+
+        Args:
+            config: Client configuration to generate the website from
+            progress_callback: Optional callback for progress updates
+            allow_template_fallback: If False (default), city page generation
+                aborts when more than template_fallback_page_limit pages lack
+                real content and would render scaled boilerplate. See
+                content_quality_gate.py / issue #35.
+        """
         result = GenerationResult()
         start_time = datetime.now()
 
@@ -126,7 +138,9 @@ class PageGenerator:
 
             # Generate city pages
             if config.city_pages:
-                self._generate_city_pages(config, output_dir, result, progress_callback)
+                self._generate_city_pages(
+                    config, output_dir, result, progress_callback, allow_template_fallback
+                )
 
             # Generate additional files
             self._generate_additional_files(config, output_dir, result)
@@ -508,8 +522,11 @@ class PageGenerator:
         output_dir: Path,
         result: GenerationResult,
         progress_callback: Optional[Callable] = None,
+        allow_template_fallback: bool = False,
     ):
         """Generate individual city pages"""
+        from .content.content_quality_gate import ContentQualityGateError
+
         locations_dir = output_dir / "locations"
 
         # Clean up old city pages to prevent cross-contamination between configs
@@ -540,8 +557,20 @@ class PageGenerator:
             logger.debug(f"Could not load API keys: {e}")
 
         city_generator = CityPageGenerator(
-            config, google_maps_api_key=google_maps_api_key
+            config,
+            google_maps_api_key=google_maps_api_key,
+            allow_template_fallback=allow_template_fallback,
         )
+
+        try:
+            city_generator.check_content_quality(config.city_pages)
+        except ContentQualityGateError as e:
+            result.add_error(str(e))
+            return
+
+        gate = city_generator.content_quality_gate
+        if gate.fallback_count:
+            result.add_warning(gate.summary())
 
         for city_page in config.city_pages:
             try:

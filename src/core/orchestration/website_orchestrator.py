@@ -48,14 +48,19 @@ class WebsiteOrchestrator:
     - Dependency injection setup
     """
 
-    def __init__(self, use_ai: bool = True):
+    def __init__(self, use_ai: bool = True, allow_template_fallback: bool = False):
         """
         Initialize WebsiteOrchestrator.
 
         Args:
             use_ai: Whether to use AI services for enhanced content generation
+            allow_template_fallback: If False (default), city page generation
+                (legacy target_cities path) aborts when too many pages lack
+                real content and would render scaled boilerplate. See
+                content_quality_gate.py / issue #35.
         """
         self.use_ai = use_ai
+        self.allow_template_fallback = allow_template_fallback
 
         # Initialize AI services
         self.ai_service = AIContentService() if use_ai else None
@@ -165,7 +170,8 @@ class WebsiteOrchestrator:
             city_files = self.content_coordinator.generate_city_pages(
                 config,
                 output_dir,
-                use_ai=self.use_ai
+                use_ai=self.use_ai,
+                allow_template_fallback=self.allow_template_fallback,
             )
             generated_files.extend(city_files)
 

@@ -92,7 +92,7 @@ class GenerationWorker(QThread):
     """Worker thread for website generation to keep UI responsive"""
 
     progress = pyqtSignal(str)
-    finished = pyqtSignal(bool, str, list, str)
+    finished = pyqtSignal(bool, str, list, str, list)
 
     def __init__(self, config, output_dir: str):
         super().__init__()
@@ -117,14 +117,17 @@ class GenerationWorker(QThread):
                     "Website generated successfully!",
                     result.generated_files,
                     self.output_dir,
+                    result.warnings,
                 )
             else:
                 self.finished.emit(
-                    False, f"Generation failed: {result.errors}", [], self.output_dir
+                    False, f"Generation failed: {result.errors}", [], self.output_dir, []
                 )
 
         except Exception as e:
-            self.finished.emit(False, f"Unexpected error: {str(e)}", [], self.output_dir)
+            self.finished.emit(
+                False, f"Unexpected error: {str(e)}", [], self.output_dir, []
+            )
 
 
 class EnhancedMainWindow(QMainWindow):
@@ -2159,7 +2162,12 @@ class EnhancedMainWindow(QMainWindow):
         self.status_label.setText(message)
 
     def _generation_finished(
-        self, success: bool, message: str, generated_files: list, output_dir: str
+        self,
+        success: bool,
+        message: str,
+        generated_files: list,
+        output_dir: str,
+        warnings: Optional[list] = None,
     ):
         """Handle generation completion"""
         self.progress_bar.setVisible(False)
@@ -2187,6 +2195,17 @@ class EnhancedMainWindow(QMainWindow):
             )
             summary_label.setWordWrap(True)
             v_layout.addWidget(summary_label)
+
+            if warnings:
+                warning_label = QLabel(
+                    "WARNING:\n" + "\n".join(f"- {w}" for w in warnings)
+                )
+                warning_label.setWordWrap(True)
+                warning_label.setStyleSheet(
+                    "color: #7a5b00; background-color: #fff3cd; "
+                    "border: 1px solid #ffe69c; border-radius: 4px; padding: 8px;"
+                )
+                v_layout.addWidget(warning_label)
 
             file_list = QListWidget()
             for file_path in generated_files:

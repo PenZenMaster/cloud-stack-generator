@@ -37,6 +37,10 @@ from ..services.ai_content_service import AIContentService
 from ..services.content_cache import ContentCache
 from ..utils.logger import get_logger
 from .content import CityContentGenerator
+from .content.content_quality_gate import (
+    ContentQualityGate,
+    DEFAULT_TEMPLATE_FALLBACK_PAGE_LIMIT,
+)
 
 # Initialize module logger
 logger = get_logger(__name__)
@@ -51,9 +55,15 @@ class CityPageGenerator:
         ai_service: Optional[AIContentService] = None,
         cache: Optional[ContentCache] = None,
         google_maps_api_key: Optional[str] = None,
+        allow_template_fallback: bool = False,
+        template_fallback_page_limit: int = DEFAULT_TEMPLATE_FALLBACK_PAGE_LIMIT,
     ):
         self.config = config
         self.google_maps_api_key = google_maps_api_key
+        self.content_quality_gate = ContentQualityGate(
+            template_fallback_page_limit=template_fallback_page_limit,
+            allow_template_fallback=allow_template_fallback,
+        )
         self.template_dir = Path(__file__).parent.parent.parent / "templates"
         self.jinja_env = Environment(
             loader=FileSystemLoader(str(self.template_dir)),
@@ -143,6 +153,17 @@ class CityPageGenerator:
         # Generate using unified method with AI support
         return self.generate_city_page(city_page, output_dir, use_ai=use_ai)
 
+    def check_content_quality(self, city_pages: Optional[List[CityPageConfig]] = None) -> None:
+        """
+        Scan a batch of city pages for scaled template-fallback content before
+        generating any output.
+
+        Raises:
+            ContentQualityGateError: if too many pages lack real content and
+                fallback was not explicitly allowed. See content_quality_gate.py.
+        """
+        self.content_quality_gate.check_batch(city_pages or self.config.city_pages)
+
     def generate_all_city_pages(
         self, output_dir: str, use_ai: bool = True
     ) -> List[str]:
@@ -151,6 +172,7 @@ class CityPageGenerator:
 
         # Priority 1: Use enhanced city_pages if available
         if hasattr(self.config, "city_pages") and self.config.city_pages:
+            self.check_content_quality(self.config.city_pages)
             for city_page in self.config.city_pages:
                 try:
                     file_path = self.generate_city_page(

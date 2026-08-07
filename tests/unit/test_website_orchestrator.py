@@ -205,7 +205,8 @@ class TestGenerateWorkflow:
         mock_content_coordinator.generate_city_pages.assert_called_once_with(
             sample_config,
             str(tmp_path),
-            use_ai=True
+            use_ai=True,
+            allow_template_fallback=False
         )
 
         # Verify result contains city pages

@@ -221,7 +221,8 @@ class TestCityPagesGeneration:
         mock_city_generator_class.assert_called_once_with(
             sample_config,
             ai_service=mock_ai_service,
-            cache=mock_content_cache
+            cache=mock_content_cache,
+            allow_template_fallback=False
         )
 
         # Verify generate_all_city_pages was called
