@@ -84,6 +84,8 @@ class MockProduct:
         self.category = kwargs.get('category', 'Hardware')
         self.sku = kwargs.get('sku', 'TEST-001')
         self.material = kwargs.get('material', 'Steel')
+        self.rating = kwargs.get('rating', '')
+        self.review_count = kwargs.get('review_count', '')
 
 
 class MockCityPage:
@@ -777,6 +779,28 @@ class TestSchemaGeneration:
         offers = result['offers']
         assert offers['@type'] == 'Offer'
         assert offers['price'] == '$499.99'
+
+    def test_generate_product_schema_no_rating_data_omits_aggregate_rating(self, generator):
+        """Products without real review data must not emit a fabricated aggregateRating"""
+        product = MockProduct(name="Unrated Product")
+        config = MockClientConfig()
+
+        result = generator._generate_product_schema(product, config)
+
+        assert 'aggregateRating' not in result
+
+    def test_generate_product_schema_with_rating_data_includes_aggregate_rating(self, generator):
+        """Products with real rating/review_count data emit an accurate aggregateRating"""
+        product = MockProduct(name="Reviewed Product", rating="4.8", review_count="37")
+        config = MockClientConfig()
+
+        result = generator._generate_product_schema(product, config)
+
+        assert 'aggregateRating' in result
+        rating = result['aggregateRating']
+        assert rating['@type'] == 'AggregateRating'
+        assert rating['ratingValue'] == '4.8'
+        assert rating['reviewCount'] == '37'
 
 
 class TestWikipediaEntityGeneration:

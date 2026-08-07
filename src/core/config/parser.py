@@ -363,6 +363,8 @@ class ConfigParser:
                         description=offering_data.get("description", ""),
                         category=offering_data.get("category", ""),
                         price=offering_data.get("price", ""),
+                        rating=offering_data.get("rating", ""),
+                        review_count=offering_data.get("review_count", ""),
                     )
                     products.append(product)
                 except ValueError as e:

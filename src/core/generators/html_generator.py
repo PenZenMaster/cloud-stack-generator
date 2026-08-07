@@ -1036,15 +1036,15 @@ class HTMLGenerator:
             schema["offers"]["price"] = str(product.price)
             schema["offers"]["priceCurrency"] = "USD"
 
-        # Add aggregateRating (Google requires offers, review, OR rating)
-        # Provide default rating to ensure validation
-        schema["aggregateRating"] = {
-            "@type": "AggregateRating",
-            "ratingValue": "4.5",
-            "reviewCount": "10",
-            "bestRating": "5",
-            "worstRating": "1"
-        }
+        # Add aggregateRating only when backed by real review data - never fabricated
+        if getattr(product, "rating", "") and getattr(product, "review_count", ""):
+            schema["aggregateRating"] = {
+                "@type": "AggregateRating",
+                "ratingValue": product.rating,
+                "reviewCount": product.review_count,
+                "bestRating": "5",
+                "worstRating": "1"
+            }
 
         # Add @context for standalone schema
         if not for_graph:

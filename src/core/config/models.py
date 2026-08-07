@@ -248,6 +248,8 @@ class ProductConfig:
     description: str = ""
     category: str = ""
     price: str = ""
+    rating: str = ""  # Average rating (e.g., "4.8") - only from real reviews, never defaulted
+    review_count: str = ""  # Number of reviews backing the rating
 
     def __post_init__(self):
         """Validate product data after initialization"""
@@ -273,6 +275,8 @@ class ProductConfig:
             "description": self.description,
             "category": self.category,
             "price": self.price,
+            "rating": self.rating,
+            "review_count": self.review_count,
             "type": "product",
         }
 
