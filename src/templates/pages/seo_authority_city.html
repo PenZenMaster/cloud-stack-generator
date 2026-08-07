@@ -19,7 +19,7 @@
   <script type="application/ld+json">
    {
         "@context": "https://schema.org",
-        "@type": ["WebPage", "LocalBusiness"],
+        "@type": {% if entity_additional_type %}["WebPage", "{{ entity_additional_type }}"]{% else %}"WebPage"{% endif %},
         "name": "{{ business.business_name }}",
         "description": "{{ city_page.meta_description }}",
         "url": "{{ page_url }}",
@@ -28,6 +28,7 @@
             "name": "{{ city_page.city_name }}",
             "addressRegion": "{{ city_page.state }}"
         },
+        {% if include_nap_schema %}
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "{{ contact.address.street }}",
@@ -38,6 +39,7 @@
         },
         "telephone": "{{ contact.phone }}",
         "email": "{{ contact.email }}",
+        {% endif %}
         "serviceType": [{% for service in services %}"{{ service.name }}"{% if not loop.last %}, {% endif %}{% endfor %}],
         "priceRange": "$$",
         "openingHours": "{{ business.hours | default('Mo-Fr 08:00-17:00') }}",

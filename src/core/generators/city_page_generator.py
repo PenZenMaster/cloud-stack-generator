@@ -41,6 +41,7 @@ from .content.content_quality_gate import (
     ContentQualityGate,
     DEFAULT_TEMPLATE_FALLBACK_PAGE_LIMIT,
 )
+from .content.entity_schema import resolve_entity_schema
 
 # Initialize module logger
 logger = get_logger(__name__)
@@ -400,6 +401,7 @@ class CityPageGenerator:
             "base_path": "../",
             # SEO and schema data
             "schema_data": self._build_schema_data(city_page),
+            **resolve_entity_schema(self.config),
         }
 
     def _normalize_image_path(self, image_path: str) -> str:

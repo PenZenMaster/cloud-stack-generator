@@ -24,11 +24,11 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ page_url }}">
 
-    <!-- Enhanced LocalBusiness Schema with Multiple Service Areas -->
+    <!-- Entity Schema - LocalBusiness+NAP is main_site only, see issue #36 -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": ["WebPage", "LocalBusiness"],
+        "@type": {% if entity_additional_type %}["WebPage", "{{ entity_additional_type }}"]{% else %}"WebPage"{% endif %},
         "name": "{{ business.business_name }}",
         "description": "{{ city_page.meta_description }}",
         "url": "{{ page_url }}",
@@ -45,6 +45,7 @@
                 "addressRegion": "{{ other_city.state }}"
             }{% endfor %}{% endif %}
         ],
+        {% if include_nap_schema %}
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "{{ contact.address.street }}",
@@ -60,6 +61,7 @@
             "latitude": "{{ geo_coordinates.latitude }}",
             "longitude": "{{ geo_coordinates.longitude }}"
         },{% endif %}
+        {% endif %}
         "serviceType": [{% for service in services %}"{{ service.name }}"{% if not loop.last %}, {% endif %}{% endfor %}],
         "knowsAbout": [{% for service in services %}"{{ service.name }}"{% if not loop.last %}, {% endif %}{% endfor %}],
         "priceRange": "$$",

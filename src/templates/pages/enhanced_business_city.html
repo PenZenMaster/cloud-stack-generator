@@ -595,10 +595,11 @@
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
-        "@type": "LocalBusiness",
+        "@type": "{{ entity_additional_type or 'WebPage' }}",
         "name": "{{ business.business_name }}",
         "description": "{{ business.description or city_page.meta_description }}",
         "url": "{{ page_url }}",
+        {% if include_nap_schema %}
         "telephone": "{{ contact.phone }}",
         "email": "{{ contact.email }}",
         "address": {
@@ -609,6 +610,7 @@
             "postalCode": "{{ contact.address.zip_code }}",
             "addressCountry": "{{ contact.address.country or 'US' }}"
         },
+        {% endif %}
         "areaServed": {
             "@type": "City",
             "name": "{{ city_page.city_name }}",

@@ -25,6 +25,7 @@ from .city_content_generator import CityContentGenerator
 from .footer_generator import FooterGenerator
 from .navigation_builder import NavigationBuilder
 from .content_quality_gate import ContentQualityGate, ContentQualityGateError
+from .entity_schema import resolve_entity_schema
 
 __all__ = [
     "HomeContentGenerator",
@@ -33,4 +34,5 @@ __all__ = [
     "NavigationBuilder",
     "ContentQualityGate",
     "ContentQualityGateError",
+    "resolve_entity_schema",
 ]

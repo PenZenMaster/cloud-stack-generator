@@ -26,6 +26,7 @@ from datetime import datetime
 from ..templates.template_manager import TemplateManager, TemplateType
 from ..config.models import ClientConfig, CityPageConfig
 from ..utils.logger import get_logger
+from .content.entity_schema import resolve_entity_schema
 
 # Initialize module logger
 logger = get_logger(__name__)
@@ -402,6 +403,8 @@ class EnhancedCityPageGenerator:
                 city_page.slug
             ),
         }
+
+        context.update(resolve_entity_schema(self.config))
 
         return context
 
