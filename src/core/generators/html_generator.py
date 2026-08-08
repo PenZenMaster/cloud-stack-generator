@@ -15,6 +15,7 @@ from ..config.models import ClientConfig
 from ..services.ai_content_service import AIContentService
 from ..services.content_cache import ContentCache
 from .content import HomeContentGenerator
+from .content.anchor_selector import AnchorSelector, build_anchor_selector
 from ..utils.logger import get_logger
 
 # Initialize module logger
@@ -34,6 +35,14 @@ class HTMLGenerator:
             # Use absolute path relative to this file's location
             template_dir = Path(__file__).parent.parent.parent / "templates"
         self.template_dir = Path(template_dir)
+
+        # Anchor-text selector for outbound links to the money site - lazily
+        # built from the first config seen in _prepare_template_data(), then
+        # reused across every page rendered by this instance so realized
+        # distribution converges over the whole site. See issue #37.
+        self._anchor_selector: Optional[AnchorSelector] = None
+        self._current_page_id: str = "_default"
+
         self.jinja_env = self._setup_jinja_environment()
 
         # Initialize AI content generation
@@ -63,6 +72,8 @@ class HTMLGenerator:
             env.filters["slugify"] = self._slugify
             env.filters["truncate_words"] = self._truncate_words
             env.filters["date"] = self._date_filter
+
+            env.globals["anchor"] = self._anchor_global
 
             return env
         except Exception as e:
@@ -469,8 +480,18 @@ class HTMLGenerator:
         # If already relative, ensure it uses forward slashes for web
         return image_path.replace("\\", "/")
 
+    def _anchor_global(self, slot: str = "generic") -> str:
+        """Jinja global: {{ anchor(slot='footer') }} - selects anchor text
+        for the current page's outbound link(s) to the money site."""
+        if self._anchor_selector is None:
+            return ""
+        return self._anchor_selector.select(slot=slot, page_id=self._current_page_id)
+
     def _prepare_template_data(self, config: ClientConfig) -> Dict[str, Any]:
         """Prepare common template data for all pages"""
+        if self._anchor_selector is None:
+            self._anchor_selector = build_anchor_selector(config)
+
         canonical_base = self._get_canonical_base_url(config)
 
         # Normalize hero background image path if present
@@ -1228,6 +1249,7 @@ class HTMLGenerator:
         self, template_name: str, template_data: Dict[str, Any]
     ) -> str:
         """Render template with data"""
+        self._current_page_id = template_name
         if self.jinja_env:
             try:
                 template = self.jinja_env.get_template(template_name)

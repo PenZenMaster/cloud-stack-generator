@@ -42,6 +42,7 @@ from .content.content_quality_gate import (
     DEFAULT_TEMPLATE_FALLBACK_PAGE_LIMIT,
 )
 from .content.entity_schema import resolve_entity_schema
+from .content.anchor_selector import build_anchor_selector
 
 # Initialize module logger
 logger = get_logger(__name__)
@@ -65,6 +66,8 @@ class CityPageGenerator:
             template_fallback_page_limit=template_fallback_page_limit,
             allow_template_fallback=allow_template_fallback,
         )
+        self.anchor_selector = build_anchor_selector(config)
+        self._current_page_id: str = "_default"
         self.template_dir = Path(__file__).parent.parent.parent / "templates"
         self.jinja_env = Environment(
             loader=FileSystemLoader(str(self.template_dir)),
@@ -80,6 +83,8 @@ class CityPageGenerator:
         self.jinja_env.filters["fix_maps_url"] = self._fix_maps_url_filter
         self.jinja_env.filters["generate_embed_url"] = self._generate_embed_url_filter
 
+        self.jinja_env.globals["anchor"] = self._anchor_global
+
         # Initialize AI content generation
         self.ai_service = ai_service or AIContentService()
         self.cache = cache or ContentCache()
@@ -88,6 +93,11 @@ class CityPageGenerator:
         self.city_gen = CityContentGenerator(
             ai_service=self.ai_service, cache=self.cache
         )
+
+    def _anchor_global(self, slot: str = "generic") -> str:
+        """Jinja global: {{ anchor(slot='footer') }} - selects anchor text
+        for the current city page's outbound link(s) to the money site."""
+        return self.anchor_selector.select(slot=slot, page_id=self._current_page_id)
 
     def _get_canonical_base_url(self) -> str:
         """
@@ -112,6 +122,7 @@ class CityPageGenerator:
             template = self.jinja_env.get_template("pages/seo_authority_city_page.html")
 
             # Prepare template context
+            self._current_page_id = city_page.slug or city_page.city_name
             context = self._build_template_context(city_page)
 
             # Use AI-powered content generation if available
@@ -387,6 +398,11 @@ class CityPageGenerator:
                 self.config, "google_business_profile", None
             ),
             "google_business": getattr(self.config, "google_business", None),
+            # Backlink CTA visibility - without these, the {% if is_backlink_site
+            # and main_site_url %} blocks in seo_authority_city_page.html never
+            # fire, so the strategic backlink section is silently absent
+            "is_backlink_site": getattr(self.config.cloud, "site_type", "") == "backlink_site",
+            "main_site_url": getattr(self.config.cloud, "main_site_url", ""),
             # Strategic interlinking
             "other_cities": other_cities,
             "related_services": self._get_related_services(city_page),

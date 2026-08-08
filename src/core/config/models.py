@@ -16,9 +16,10 @@ Created Date:
 Last Modified Date:
 2026-03-22
 
-Version: 1.05
+Version: 1.06
 
 Comments:
+* v1.06 - Added AnchorProfileConfig dataclass for anchor-text distribution control; added anchor_profile to CloudConfig
 * v1.05 - Added ProviderConfig dataclass for resource site listed-provider pages; added providers to ClientConfig
 * v1.04 - Added ProductCategoryConfig dataclass for resource site comparison guides; added product_categories to ClientConfig
 * v1.03 - Added ResourceSiteConfig dataclass; extended CloudConfig.site_type to support "resource"; added resource_site field to ClientConfig
@@ -696,6 +697,50 @@ class DeploymentConfig:
 
 
 @dataclass
+class AnchorProfileConfig:
+    """
+    Anchor-text distribution profile for outbound links to the money site.
+
+    Controls the mix of anchor categories used across generated pages so a
+    buffer/resource property's outbound link profile doesn't read as
+    mechanically uniform, and so the same anchor set doesn't repeat
+    identically across every client's properties. See issue #37.
+
+    distribution values are target percentages and should sum to 100;
+    pools left empty are auto-generated from business_name/industry/cities
+    at generation time. Validated by AnchorSelector at generation time
+    (not here) so an invalid profile doesn't block loading/editing the
+    config in the UI.
+    """
+
+    distribution: Dict[str, int] = field(
+        default_factory=lambda: {
+            "branded": 40,
+            "naked_url": 15,
+            "generic": 20,
+            "partial_match": 20,
+            "exact_match": 5,
+        }
+    )
+    pools: Dict[str, List[str]] = field(default_factory=dict)
+    seed: int = 0
+    exact_match_ceiling: int = 10
+
+    def is_configured(self) -> bool:
+        """Whether the user has supplied their own anchor pools."""
+        return bool(self.pools)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for YAML serialization"""
+        return {
+            "distribution": self.distribution,
+            "pools": self.pools,
+            "seed": self.seed,
+            "exact_match_ceiling": self.exact_match_ceiling,
+        }
+
+
+@dataclass
 class CloudConfig:
     """Cloud deployment configuration following SOP patterns"""
 
@@ -738,6 +783,9 @@ class CloudConfig:
 
     # CloudFront cache invalidation
     auto_invalidate_cache: bool = True  # Automatically invalidate CloudFront cache after deployment
+
+    # Anchor-text distribution profile for outbound links to the money site
+    anchor_profile: AnchorProfileConfig = field(default_factory=AnchorProfileConfig)
 
     def __post_init__(self):
         """Post-initialization validation and setup"""

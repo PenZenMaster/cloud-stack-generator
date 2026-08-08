@@ -26,6 +26,7 @@ from .footer_generator import FooterGenerator
 from .navigation_builder import NavigationBuilder
 from .content_quality_gate import ContentQualityGate, ContentQualityGateError
 from .entity_schema import resolve_entity_schema
+from .anchor_selector import AnchorSelector, AnchorSelectionError, build_anchor_selector
 
 __all__ = [
     "HomeContentGenerator",
@@ -35,4 +36,7 @@ __all__ = [
     "ContentQualityGate",
     "ContentQualityGateError",
     "resolve_entity_schema",
+    "AnchorSelector",
+    "AnchorSelectionError",
+    "build_anchor_selector",
 ]

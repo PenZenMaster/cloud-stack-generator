@@ -91,6 +91,6 @@
 
         <!-- Copyright -->
         <div class="footer-bottom">
-            <p>&copy; {{ "now"|date("%Y") }} {{ site_display_name }}. All rights reserved. | <a href="{{ base_path | default('') }}privacy-policy.html">Privacy Policy</a>{% if is_backlink_site and main_site_url %} | <a href="{{ main_site_url }}" rel="noopener">Visit Main Website</a>{% endif %}</p>
+            <p>&copy; {{ "now"|date("%Y") }} {{ site_display_name }}. All rights reserved. | <a href="{{ base_path | default('') }}privacy-policy.html">Privacy Policy</a>{% if is_backlink_site and main_site_url %} | <a href="{{ main_site_url }}" rel="noopener">{{ anchor(slot='footer') }}</a>{% endif %}</p>
         </div>
     </footer>

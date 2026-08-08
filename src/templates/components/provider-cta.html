@@ -33,7 +33,7 @@
         {% endif %}
         <p>
             {% if resource_site.money_site_url %}
-            <a href="{{ resource_site.money_site_url }}" rel="noopener noreferrer">{{ resource_site.money_site_name }}</a>
+            <a href="{{ resource_site.money_site_url }}" rel="noopener noreferrer">{{ anchor(slot='footer') }}</a>
             {% else %}
             {{ resource_site.money_site_name }}
             {% endif %}

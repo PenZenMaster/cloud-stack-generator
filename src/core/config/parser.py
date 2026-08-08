@@ -22,6 +22,7 @@ from .models import (
     AddressConfig,
     BrandingConfig,
     CloudConfig,
+    AnchorProfileConfig,
     ResourceSiteConfig,
     ProductCategoryConfig,
     ProviderConfig,
@@ -519,6 +520,30 @@ class ConfigParser:
 
             # Deployment history
             last_deployment=cloud_data.get("last_deployment", ""),
+
+            # Anchor-text distribution profile
+            anchor_profile=self._parse_anchor_profile_config(cloud_data),
+        )
+
+    def _parse_anchor_profile_config(self, cloud_data: Dict[str, Any]) -> AnchorProfileConfig:
+        """Parse the optional anchor_profile section within cloud config."""
+        data = cloud_data.get("anchor_profile", {})
+        if not isinstance(data, dict):
+            return AnchorProfileConfig()
+
+        default = AnchorProfileConfig()
+        raw_pools = data.get("pools", {})
+        pools = {
+            category: [str(a) for a in anchors]
+            for category, anchors in raw_pools.items()
+            if isinstance(anchors, list)
+        } if isinstance(raw_pools, dict) else {}
+
+        return AnchorProfileConfig(
+            distribution=data.get("distribution", default.distribution),
+            pools=pools,
+            seed=data.get("seed", default.seed),
+            exact_match_ceiling=data.get("exact_match_ceiling", default.exact_match_ceiling),
         )
 
     def _parse_resource_site_config(self, yaml_data: Dict[str, Any]) -> ResourceSiteConfig:
@@ -816,6 +841,8 @@ class ConfigParser:
             }
             if config.cloud.last_deployment:
                 cloud_dict["last_deployment"] = config.cloud.last_deployment
+            if config.cloud.anchor_profile.is_configured():
+                cloud_dict["anchor_profile"] = config.cloud.anchor_profile.to_dict()
             yaml_data["cloud"] = cloud_dict
 
         # Add resource site identity (only written when fields are populated)
