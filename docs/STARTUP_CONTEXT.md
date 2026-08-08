@@ -1,46 +1,49 @@
 # AWG Startup Context
 
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-08-07
 **Branch:** main
 **Version:** 4.1.0
-**Last Commit:** 2e09426 - chore(checkpoint): 2026-03-22 - Listed Providers system complete
+**Last Commit:** 4c8a98e - feat(seo): anchor-text rotation engine (core engine only)
 
 ---
 
 ## Last 3 Accomplishments
 
-1. **Listed Providers system shipped (506a6a1)** - Full stack: `ProviderConfig` dataclass,
-   YAML round-trip in parser, `ProvidersTab` UI (QSplitter list-manager), wired into
-   `enhanced_main_window.py`, `_pick_provider()` scoring, `generate_providers_index_page()`,
-   `generate_provider_profile_page()`, `provider-cta.html` component, Providers nav item,
-   sitemap entries. 926 tests passing, 0 new failures.
+1. **4 critical/high SEO-risk issues closed (#33-36)** - fabricated Product ratings removed
+   (f6df206); stale canonical-URL doc corrected (6883d9e); scaled template-fallback content
+   gated via `ContentQualityGate` after redirecting from the issue's dead-code premise to the
+   real mechanism in `seo_authority_city_page.html` (5b5ecdc); LocalBusiness+NAP schema
+   restricted to `main_site` only via `resolve_entity_schema()` (6355daf).
 
-2. **Resource site workflow documented** - Walked through end-to-end: Business Info
-   (Website field = resource domain), Resource Site tab, Providers tab for each client,
-   generate, deploy. Clarified that `Main Site URL` is for backlink sites only; resource
-   sites use Providers tab instead of money_site_url.
+2. **Anchor-text rotation engine core shipped (#37, 4c8a98e)** - `AnchorProfileConfig` +
+   `AnchorSelector` (seeded, drift-correcting, no intra-page repeats, safety ceiling), wired
+   into both page generators, all 6 hardcoded anchors replaced. Scoped to core-engine-only per
+   explicit user decision - UI editor tab and `anchor_report.json` deferred, issue left OPEN
+   with scope documented in a comment. Found and fixed a real blocker along the way:
+   `city_page_generator.py` never set `is_backlink_site`/`main_site_url`, so the backlink CTA
+   section in the live city template never rendered for any city page at all.
 
-3. **AWS S3 + CloudFront setup walkthrough** - Full sequence for custom domain:
-   ACM cert (us-east-1, DNS validation), S3 bucket (OAC, no public access),
-   CloudFront distribution (OAC, CNAME, SSL cert, index.html root), DNS CNAME/ALIAS,
-   bucket policy from CloudFront banner, Cloud Deploy tab wiring (bucket, region, dist ID).
+3. **926 -> 979 tests passing, 0 regressions** - 53 new tests across the 5 fixes; same 83
+   pre-existing failures (test_backup_manager, test_template_preview, test_template_validator)
+   unchanged throughout.
 
 ---
 
 ## Next 3 Priorities
 
-1. **QA - Resource Site + Providers** - User to complete AWS setup for
-   `localgaragedoorcompanyreviews.com`, then do end-to-end test: create config,
-   add first client as Provider, generate, deploy, verify providers/index.html,
-   provider profile page, and provider CTA on service-detail pages.
+1. **#38 - Content uniqueness gate** - similarity scoring and publish block across generated
+   pages. Feature-sized; ask the user for scope (core logic vs full UI) before diving in.
 
-2. **Sprint 5 - Advanced City Page Content** - Enhance city page generation
-   with richer localized content: nearby cities/regions, seasonal context,
-   local landmarks, more FAQ depth. Improve `city_content_generator.py`.
+2. **#39 - Footprint diversifier** - bucket naming, template skins, CSS prefixes, provider
+   rotation. Also feature-sized.
 
-3. **Sprint 5 - Analytics Integration Prep** - Add optional Google Analytics 4
-   snippet injection field to Cloud Deploy or Branding tab. YAML key
-   `cloud.analytics_id` injected into all page `<head>` blocks via Jinja2 base template.
+3. **#40 - GSC indexing pipeline** - property provisioning, sitemap submit, coverage tracking.
+   Also feature-sized; likely needs Google API credentials/scoping discussion.
+
+All three came from the same 2026-08-07 risk assessment as #33-37 (see
+`docs/cloud-stack-generator-assessment.md`, still untracked). #41-62 (template-system epic,
+cloud-deployment backlog) are untouched and lower priority than the remaining risk-assessment
+items.
 
 ---
 
@@ -49,20 +52,32 @@
 **Git:**
 - Branch: main
 - Version: 4.1.0
-- Last commit: 2e09426 (pushed, providers system + STARTUP_CONTEXT update)
-- Working tree: minor non-code files only (.claude/claude.md, settings.local.json, docs/qa1.png)
+- Last commit: 4c8a98e (pushed as part of this checkpoint)
+- Working tree: `.claude/settings.local.json` modified (local, not committed);
+  `docs/cloud-stack-generator-assessment.md` and `docs/qa1.png` untracked (source assessment
+  doc + screenshot, left as-is - user hasn't said whether to commit them)
 
 **Tests:**
-- Total: 926 PASSING, 83 pre-existing failures (unchanged), 6 skipped
-- No new failures introduced by any Sprint 5 work
+- Total: 979 PASSING, 83 pre-existing failures (unchanged), 6 skipped, 1 pre-existing error
+- No new failures from any of #33-37
+- Full-suite run time was erratic this session (118s-945s across identical runs, no code
+  changes between) - system load from stacked background bash processes, not a code issue
 
 **Blockers:**
-- User needs AWS S3/CloudFront setup for localgaragedoorcompanyreviews.com before QA deploy
+- User still needs AWS S3/CloudFront setup for localgaragedoorcompanyreviews.com before the
+  Resource Site + Providers QA from the prior session (carried over, untouched this session)
 
 **Known Issues:**
 - Camphouse Country Landscaping (SAB) GBP unresolved - try direct Place ID
 - Cost display shows $0.0000 instead of actual cost - LOW priority
 - Business tab "Generate with AI" buttons use OpenAI (not Claude) - works if OPENAI_API_KEY set
+- `enhanced_city_page_generator.py` confirmed dead code (never instantiated anywhere) - touched
+  for consistency on #36/#37 but genuine cleanup is issue #44's scope
+- `google_business_profile` field in `generate_yaml_dict()` writes the raw dataclass object
+  instead of a plain dict, so a full save-to-disk-and-reload round trip crashes on
+  `yaml.safe_load`. Pre-existing, unrelated to this session's work
+  (`test_meta_tags_feature.py::test_save_load_roundtrip_preserves_meta_tags` already covers it
+  as a known failure) - worth a small fix whenever someone's in that file
 
 ---
 
@@ -80,6 +95,19 @@
 3. **AWS setup sequence** - ACM cert must be in us-east-1. S3 uses OAC (not public
    access). Bucket policy comes from CloudFront banner after distribution creation.
    Cloud Deploy tab needs: S3 bucket name, AWS region, CloudFront distribution ID.
+
+4. **Anchor-text engine (#37)** - `src/core/generators/content/anchor_selector.py`.
+   `build_anchor_selector(config)` resolves identity per site_type: client's own business for
+   backlink_site, `resource_site.money_site_name`/`money_site_url` for resource sites (a
+   different entity than the resource site's own editorial identity). Template usage:
+   `{{ anchor(slot='footer') }}` or `{{ anchor(slot='body_contextual') }}`. `anchor_profile` on
+   `CloudConfig` only gets written to YAML when the user has actually configured custom pools.
+
+5. **When scoping a feature-sized issue** (#37 was the template) - ask the user upfront how
+   much to build (core engine vs full UI vs everything across multiple commits) rather than
+   assuming. Also worth checking whether the issue's named root-cause file is actually in the
+   live render path before fixing it - #35 turned out to name dead code, and the real fix was
+   elsewhere entirely.
 
 ---
 

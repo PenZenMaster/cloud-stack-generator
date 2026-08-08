@@ -1,11 +1,53 @@
 # SEO Authority Website Generator - Project Status
 
-**Last Updated**: 2026-03-21
-**Current Status**: v4.0.0 - BACK-007 deploy command complete, merged to main
+**Last Updated**: 2026-08-07
+**Current Status**: v4.1.0 - Critical/high SEO-risk issues from the risk assessment being worked
+  through one at a time (4 closed, 1 core-engine-shipped this session)
 **Working Directory**: `E:\projects\cloud-stack-generator\`
 **Current Branch**: main
-**Last Commit**: 9ffa06f - Merge PR #28 (feature/onboarding-gbp-fix)
-**Git Status**: Clean (pushed)
+**Last Commit**: 4c8a98e - feat(seo): anchor-text rotation engine (core engine only)
+**Git Status**: Clean except untracked `docs/cloud-stack-generator-assessment.md` / `docs/qa1.png`
+
+---
+
+## 2026-08-07 Session - Risk Assessment Remediation (Issues #33-37)
+
+A capability/risk assessment (`docs/cloud-stack-generator-assessment.md`) was converted into ~43
+GitHub issues earlier the same day. This session worked through them one at a time.
+
+### Completed (CLOSED)
+- **#33**: Removed hardcoded fabricated `aggregateRating` from Product schema - gated behind real
+  `ProductConfig.rating`/`review_count`.
+- **#34**: Corrected `BACKLINK_SITE_IMPLEMENTATION.md`'s self-contradictory canonical-URL guidance
+  to match the shipped self-referencing behavior; added regression test.
+- **#35**: Redirected from the issue's named (but dead-code) mechanism to the real one - added
+  `ContentQualityGate` to abort/warn on scaled template-fallback boilerplate in city pages.
+- **#36**: Restricted `LocalBusiness`+NAP schema to `main_site` only via `resolve_entity_schema()`;
+  `Organization`/`WebPage` for backlink/resource sites.
+
+### In Progress / Partially Shipped
+- **#37**: Anchor-text rotation engine - core engine (config, selector, template wiring, tests)
+  shipped. UI editor tab and `anchor_report.json` distribution-report artifact deferred; issue
+  remains open with scope documented in a comment.
+
+### Deferred (not started this session)
+- **#38**: Content uniqueness gate (similarity scoring across generated pages).
+- **#39**: Footprint diversifier (bucket naming, template skins, provider rotation).
+- **#40**: GSC indexing pipeline (property provisioning, sitemap submit, coverage tracking).
+- **#41-62**: Template-system re-architecture epic (3 phases) and cloud-deployment backlog -
+  untouched.
+
+### Next Session Priorities
+1. #38 - content uniqueness gate.
+2. #39 - footprint diversifier.
+3. #40 - GSC indexing pipeline.
+
+All three are feature-sized; confirm scope with the user upfront (core-engine-only vs full UI) the
+way #37 was handled.
+
+### Test Suite
+926 -> 979 passing over the session (53 new tests), 0 regressions - same 83 pre-existing failures
+throughout.
 
 ---
 
