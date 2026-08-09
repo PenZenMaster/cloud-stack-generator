@@ -1,12 +1,34 @@
 # SEO Authority Website Generator - Project Status
 
-**Last Updated**: 2026-08-07
+**Last Updated**: 2026-08-08
 **Current Status**: v4.1.0 - Critical/high SEO-risk issues from the risk assessment being worked
-  through one at a time (4 closed, 1 core-engine-shipped this session)
+  through one at a time (4 closed, 2 core-engine-shipped-with-issue-left-open)
 **Working Directory**: `E:\projects\cloud-stack-generator\`
 **Current Branch**: main
-**Last Commit**: 4c8a98e - feat(seo): anchor-text rotation engine (core engine only)
+**Last Commit**: 75b225f - feat(seo): content uniqueness gate (core engine only)
 **Git Status**: Clean except untracked `docs/cloud-stack-generator-assessment.md` / `docs/qa1.png`
+
+---
+
+## 2026-08-08 Session - Risk Assessment Remediation Continued (Issue #38)
+
+Continuation of the 2026-08-07 session below.
+
+### In Progress / Partially Shipped
+- **#38**: Content uniqueness gate - core engine (`UniquenessGate` shingle/MinHash/LSH
+  similarity scoring, `ContentQualityConfig`, pre-publish wiring into both PageGenerator and
+  WebsiteOrchestrator, strengthened AI prompt) shipped. Embedding-based scoring, money-site
+  live comparison, AI regeneration retry loop, and `uniqueness_report.json`+UI dialog
+  deferred; issue remains open with scope documented in a comment - same pattern as #37.
+
+### Next Session Priorities
+1. #39 - footprint diversifier.
+2. #40 - GSC indexing pipeline.
+3. Consider returning to the deferred halves of #37/#38, or move to the template-system epic
+   (#41-62), once #39/#40 are triaged.
+
+### Test Suite
+979 -> 1009 passing this session (30 new tests), 0 regressions.
 
 ---
 
