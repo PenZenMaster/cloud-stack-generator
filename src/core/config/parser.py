@@ -23,6 +23,7 @@ from .models import (
     BrandingConfig,
     CloudConfig,
     AnchorProfileConfig,
+    ContentQualityConfig,
     ResourceSiteConfig,
     ProductCategoryConfig,
     ProviderConfig,
@@ -523,6 +524,25 @@ class ConfigParser:
 
             # Anchor-text distribution profile
             anchor_profile=self._parse_anchor_profile_config(cloud_data),
+
+            # Content uniqueness gate
+            content_quality=self._parse_content_quality_config(cloud_data),
+        )
+
+    def _parse_content_quality_config(self, cloud_data: Dict[str, Any]) -> ContentQualityConfig:
+        """Parse the optional content_quality section within cloud config."""
+        data = cloud_data.get("content_quality", {})
+        if not isinstance(data, dict):
+            return ContentQualityConfig()
+
+        default = ContentQualityConfig()
+        return ContentQualityConfig(
+            warn_threshold=data.get("warn_threshold", default.warn_threshold),
+            block_threshold=data.get("block_threshold", default.block_threshold),
+            enable_embeddings=data.get("enable_embeddings", default.enable_embeddings),
+            max_regeneration_attempts=data.get(
+                "max_regeneration_attempts", default.max_regeneration_attempts
+            ),
         )
 
     def _parse_anchor_profile_config(self, cloud_data: Dict[str, Any]) -> AnchorProfileConfig:
@@ -843,6 +863,8 @@ class ConfigParser:
                 cloud_dict["last_deployment"] = config.cloud.last_deployment
             if config.cloud.anchor_profile.is_configured():
                 cloud_dict["anchor_profile"] = config.cloud.anchor_profile.to_dict()
+            if config.cloud.content_quality.is_configured():
+                cloud_dict["content_quality"] = config.cloud.content_quality.to_dict()
             yaml_data["cloud"] = cloud_dict
 
         # Add resource site identity (only written when fields are populated)

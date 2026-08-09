@@ -16,9 +16,10 @@ Created Date:
 Last Modified Date:
 2026-03-22
 
-Version: 1.06
+Version: 1.07
 
 Comments:
+* v1.07 - Added ContentQualityConfig dataclass for the content uniqueness gate; added content_quality to CloudConfig
 * v1.06 - Added AnchorProfileConfig dataclass for anchor-text distribution control; added anchor_profile to CloudConfig
 * v1.05 - Added ProviderConfig dataclass for resource site listed-provider pages; added providers to ClientConfig
 * v1.04 - Added ProductCategoryConfig dataclass for resource site comparison guides; added product_categories to ClientConfig
@@ -741,6 +742,40 @@ class AnchorProfileConfig:
 
 
 @dataclass
+class ContentQualityConfig:
+    """
+    Content uniqueness gate configuration.
+
+    Scores generated pages for pairwise content similarity and blocks
+    publish when pages are too similar to each other, catching scaled
+    near-duplicate content (the same page structure with only a proper
+    noun changed) before it ships. See issue #38.
+
+    enable_embeddings and max_regeneration_attempts are reserved for the
+    optional embedding-based scoring pass and the AI regeneration retry
+    loop - not yet implemented (core shingle-based gate only so far).
+    """
+
+    warn_threshold: float = 0.75
+    block_threshold: float = 0.85
+    enable_embeddings: bool = False
+    max_regeneration_attempts: int = 2
+
+    def is_configured(self) -> bool:
+        """Whether the user has customized this from the defaults."""
+        return self != ContentQualityConfig()
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for YAML serialization"""
+        return {
+            "warn_threshold": self.warn_threshold,
+            "block_threshold": self.block_threshold,
+            "enable_embeddings": self.enable_embeddings,
+            "max_regeneration_attempts": self.max_regeneration_attempts,
+        }
+
+
+@dataclass
 class CloudConfig:
     """Cloud deployment configuration following SOP patterns"""
 
@@ -786,6 +821,9 @@ class CloudConfig:
 
     # Anchor-text distribution profile for outbound links to the money site
     anchor_profile: AnchorProfileConfig = field(default_factory=AnchorProfileConfig)
+
+    # Content uniqueness gate - blocks publish on scaled near-duplicate pages
+    content_quality: ContentQualityConfig = field(default_factory=ContentQualityConfig)
 
     def __post_init__(self):
         """Post-initialization validation and setup"""

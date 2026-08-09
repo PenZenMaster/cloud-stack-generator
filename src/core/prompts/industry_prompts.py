@@ -438,13 +438,14 @@ LOCAL TRUST SIGNALS:
 REQUIREMENTS:
 1. Generate ONLY the HTML content sections (no <html>, <head>, or <body> tags)
 2. Emphasize LOCAL service and expertise in {city}
-3. Include these sections:
-   - Hero section highlighting {industry} services in {city}
-   - Local expertise section explaining why we're the best choice in {city}
-   - Services section tailored for {city} residents and businesses
-   - Why choose us for {city} services
+3. Cover these topics, but do NOT use them as a fixed template - vary the section
+   order, the number of sections, and the heading wording every time so this page
+   does not read as a copy of another city's page with the name swapped:
+   - {industry} services available in {city}
+   - Local expertise and why this business is a strong choice here
+   - Services tailored to {city} residents and businesses
    - Local trust signals and community commitment
-   - Call-to-action with {city} focus
+   - A call-to-action with a {city} focus
 4. Use CSS classes: hero, hero-overlay, hero-text, content, services-grid, local-expertise
 5. Naturally incorporate location keywords: {keywords}
 6. Also use these location terms naturally: {city}, local, area, community, neighborhood
@@ -453,6 +454,13 @@ REQUIREMENTS:
 9. Include strong local call-to-action
 10. Emphasize quick response time and local availability
 11. Use proper heading hierarchy (h2, h3, h4)
+12. Mention at least one concrete, specific local detail about {city} itself (a
+    neighborhood, landmark, climate/geography trait, or well-known local
+    characteristic) rather than only generic "local"/"community" phrasing -
+    this is what makes the page genuinely about {city} rather than a template
+13. Write distinct sentence structures and phrasing from what you would use for
+    a different city - avoid reusable boilerplate sentences that only need the
+    city name changed to apply anywhere
 
 OUTPUT FORMAT:
 Return ONLY the HTML sections, starting with <section> tags. No explanatory text before or after."""

@@ -15,6 +15,7 @@ from datetime import datetime
 from .html_generator import HTMLGenerator
 from .css_generator import CSSGenerator
 from ..config.models import ClientConfig
+from ..quality.uniqueness_gate import UniquenessGate, UniquenessGateError
 from ..utils.logger import get_logger
 
 # Initialize module logger
@@ -147,6 +148,11 @@ class PageGenerator:
 
             # Copy static assets
             self._copy_static_assets(config, output_dir, result)
+
+            # Content uniqueness gate - pre-publish check across every generated
+            # HTML page; runs after generation, before this method returns, so
+            # it always fires before any subsequent deploy step. See issue #38.
+            self._check_content_uniqueness(config, result)
 
             result.success = len(result.errors) == 0
             result.generation_time = (datetime.now() - start_time).total_seconds()
@@ -720,6 +726,46 @@ class PageGenerator:
 
         except Exception as e:
             result.add_warning(f"Could not copy static assets: {str(e)}")
+
+    def _check_content_uniqueness(
+        self, config: ClientConfig, result: GenerationResult
+    ) -> None:
+        """
+        Score every generated HTML page for pairwise content similarity and
+        block the build if any pair is too similar to publish. See issue #38.
+        """
+        quality_config = getattr(config.cloud, "content_quality", None)
+        warn_threshold = getattr(quality_config, "warn_threshold", 0.75)
+        block_threshold = getattr(quality_config, "block_threshold", 0.85)
+
+        gate = UniquenessGate(warn_threshold=warn_threshold, block_threshold=block_threshold)
+
+        for file_path in result.generated_files:
+            if not file_path.endswith(".html"):
+                continue
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                if not isinstance(content, str):
+                    continue
+                gate.add_page(file_path, content)
+            except OSError as e:
+                logger.warning(f"Could not read {file_path} for uniqueness scoring: {e}")
+
+        try:
+            report = gate.check()
+        except UniquenessGateError as e:
+            result.add_error(str(e))
+            return
+
+        warned = report.warned_pages(warn_threshold) - report.blocked_pages(block_threshold)
+        if warned:
+            pages = ", ".join(Path(p).name for p in sorted(warned)[:10])
+            more = f", and {len(warned) - 10} more" if len(warned) > 10 else ""
+            result.add_warning(
+                f"{len(warned)} page(s) have high content similarity to another page "
+                f"in this build (>= warn_threshold {warn_threshold}): {pages}{more}"
+            )
 
     def _get_canonical_base_url(self, config: ClientConfig) -> str:
         """

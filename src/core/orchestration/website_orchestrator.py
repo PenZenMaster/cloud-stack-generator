@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from ..config.models import ClientConfig
 from ..services.ai_content_service import AIContentService
 from ..services.content_cache import ContentCache
+from ..quality.uniqueness_gate import UniquenessGate
 from .content_coordinator import ContentCoordinator
 from .build_pipeline import BuildPipeline, BuildPhase
 
@@ -102,6 +103,10 @@ class WebsiteOrchestrator:
             asset_files = self._generate_assets(config, output_dir)
             generated_files.extend(asset_files)
 
+            # Content uniqueness gate - pre-publish check across every
+            # generated HTML page, before finalizing the build. See issue #38.
+            self._check_content_uniqueness(config, generated_files)
+
             # Phase 4: Finalize build
             self._finalize_build(build_context)
 
@@ -117,6 +122,35 @@ class WebsiteOrchestrator:
                 generated_files=[],
                 errors=error_msg
             )
+
+    def _check_content_uniqueness(self, config: ClientConfig, generated_files: List[str]) -> None:
+        """
+        Score every generated HTML page for pairwise content similarity and
+        raise if any pair is too similar to publish. See issue #38.
+
+        Raises:
+            UniquenessGateError: propagates to generate()'s broad except
+                clause, which converts it into a failed GenerationResult.
+        """
+        quality_config = getattr(config.cloud, "content_quality", None)
+        warn_threshold = getattr(quality_config, "warn_threshold", 0.75)
+        block_threshold = getattr(quality_config, "block_threshold", 0.85)
+
+        gate = UniquenessGate(warn_threshold=warn_threshold, block_threshold=block_threshold)
+
+        for file_path in generated_files:
+            if not file_path.endswith(".html"):
+                continue
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                if not isinstance(content, str):
+                    continue
+                gate.add_page(file_path, content)
+            except OSError:
+                continue
+
+        gate.check()
 
     def _setup_build_environment(self):
         """
