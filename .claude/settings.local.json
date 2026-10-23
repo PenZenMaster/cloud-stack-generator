@@ -1,12 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Read(C:\\Users\\georg\\.claude/**)",
+      "Read(C:\\Users\\Rocket\\.claude/**)",
       "Bash(npx:*)",
       "Bash(node:*)",
       "Bash(npm --version)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Read(C:\\Users\\georg\\.config\\ccstatusline/**)",
+      "Read(C:\\Users\\Rocket\\.config\\ccstatusline/**)",
       "Bash(ruff check:*)",
       "Bash(pytest:*)",
       "Bash(git commit:*)",

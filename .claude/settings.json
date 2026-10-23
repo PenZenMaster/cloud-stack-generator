@@ -9,7 +9,7 @@
 			"Bash(git rm:*)",
 			"Bash(mkdir:*)",
 			"Bash(mv:*)",
-			"Read(C:\\Users\\georg\\.config\\ccstatusline/**)",
+			"Read(C:\\Users\\Rocket\\.config\\ccstatusline/**)",
 			"Bash(grep:*)"
 		],
 		"deny": [],
